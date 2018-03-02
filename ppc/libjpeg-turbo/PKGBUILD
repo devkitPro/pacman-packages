@@ -1,0 +1,34 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=ppc-libjpeg-turbo
+pkgver=1.5.3
+pkgrel=1
+pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression (for wii/gamecube homebrew development)'
+arch=('any')
+url='https://sourceforge.net/projects/libjpeg-turbo'
+license=('IJG')
+options=(!strip libtool staticlibs)
+source=("http://downloads.devkitpro.org/portlibs/sources/libjpeg-turbo-$pkgver.tar.xz")
+sha256sums=('7c650554cc7742db41ebb014e183ee69d5a1b2f010fbf8a4de11cf783319a42c')
+
+build() {
+  cd libjpeg-turbo-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+    ./configure --prefix="/opt/devkitpro/portlibs/ppc" --host=powerpc-eabi --disable-shared --enable-static
+
+  make
+
+}
+
+package() {
+  cd libjpeg-turbo-$pkgver
+  make DESTDIR="$pkgdir" install
+  # license
+  install -d "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname
+  cp -v LICENSE.md "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname/
+  # remove useless stuff
+  rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/share
+}
