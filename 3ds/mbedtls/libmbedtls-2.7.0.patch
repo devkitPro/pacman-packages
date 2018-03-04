@@ -1,0 +1,108 @@
+diff --git a/include/mbedtls/config.h b/include/mbedtls/config.h
+index 79eedffd..7294a9da 100644
+--- a/include/mbedtls/config.h
++++ b/include/mbedtls/config.h
+@@ -435,7 +435,7 @@
+  *
+  * Uncomment to use your own hardware entropy collector.
+  */
+-//#define MBEDTLS_ENTROPY_HARDWARE_ALT
++#define MBEDTLS_ENTROPY_HARDWARE_ALT
+ 
+ /**
+  * \def MBEDTLS_AES_ROM_TABLES
+@@ -944,7 +944,7 @@
+  *
+  * Uncomment this macro to disable the built-in platform entropy functions.
+  */
+-//#define MBEDTLS_NO_PLATFORM_ENTROPY
++#define MBEDTLS_NO_PLATFORM_ENTROPY
+ 
+ /**
+  * \def MBEDTLS_ENTROPY_FORCE_SHA256
+@@ -1061,7 +1061,7 @@
+  *
+  * Enable the checkup functions (*_self_test).
+  */
+-#define MBEDTLS_SELF_TEST
++//#define MBEDTLS_SELF_TEST
+ 
+ /**
+  * \def MBEDTLS_SHA256_SMALLER
+@@ -2531,7 +2531,7 @@
+  *
+  * This module is used by the HAVEGE random number generator.
+  */
+-#define MBEDTLS_TIMING_C
++//#define MBEDTLS_TIMING_C
+ 
+ /**
+  * \def MBEDTLS_VERSION_C
+diff --git a/library/entropy.c b/library/entropy.c
+index e17512e7..871f7863 100644
+--- a/library/entropy.c
++++ b/library/entropy.c
+@@ -123,6 +123,20 @@ void mbedtls_entropy_init( mbedtls_entropy_context *ctx )
+ #endif /* MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES */
+ }
+ 
++#define LIBCTRU
++#ifdef LIBCTRU
++    #include <3ds.h>
++    int mbedtls_hardware_poll( void *data,
++                               unsigned char *output, size_t len, size_t *olen )
++    {
++        (void)(data);
++        sslcGenerateRandomData(output, len);
++        if(olen)
++            *olen = len;
++        return 0;
++    }
++#endif
++
+ void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
+ {
+ #if defined(MBEDTLS_HAVEGE_C)
+diff --git a/library/net_sockets.c b/library/net_sockets.c
+index 345f1022..846e798d 100644
+--- a/library/net_sockets.c
++++ b/library/net_sockets.c
+@@ -27,11 +27,6 @@
+ 
+ #if defined(MBEDTLS_NET_C)
+ 
+-#if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
+-    !defined(__APPLE__) && !defined(_WIN32)
+-#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
+-#endif
+-
+ #if defined(MBEDTLS_PLATFORM_C)
+ #include "mbedtls/platform.h"
+ #else
+@@ -271,7 +266,7 @@ static int net_would_block( const mbedtls_net_context *ctx )
+ static int net_would_block( const mbedtls_net_context *ctx )
+ {
+     int err = errno;
+-    
++
+     /*
+      * Never return 'WOULD BLOCK' on a non-blocking socket
+      */
+@@ -398,7 +393,7 @@ int mbedtls_net_accept( mbedtls_net_context *bind_ctx,
+ 
+             memcpy( client_ip, &addr4->sin_addr.s_addr, *ip_len );
+         }
+-        else
++        /* else
+         {
+             struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
+             *ip_len = sizeof( addr6->sin6_addr.s6_addr );
+@@ -407,7 +402,7 @@ int mbedtls_net_accept( mbedtls_net_context *bind_ctx,
+                 return( MBEDTLS_ERR_NET_BUFFER_TOO_SMALL );
+ 
+             memcpy( client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
+-        }
++        } */
+     }
+ 
+     return( 0 );

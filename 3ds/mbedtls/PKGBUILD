@@ -1,0 +1,51 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=3ds-mbedtls
+pkgver=2.7.0
+pkgrel=1
+pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
+arch=('any')
+url='http://www.zlib.net/'
+license=('apache')
+options=(!strip libtool staticlibs)
+depends=(armv6k-zlib)
+source=( 'https://tls.mbed.org/download/mbedtls-2.7.0-apache.tgz'
+         'libmbedtls-2.7.0.patch' )
+
+sha256sums=('aeb66d6cd43aa1c79c145d15845c655627a7fc30d624148aaafbb6c36d7f55ef'
+            '2797172f502dca4c57e98f6c49a3d1608b371816567075dba22b6d8ebf25f8b6'
+)
+
+build() {
+  cd mbedtls-$pkgver
+
+  patch -Np1 -i $srcdir/libmbedtls-2.7.0.patch
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="CFLAGS -fno-exceptions -fno-rtti" \
+    -DZLIB_ROOT="$PORTLIBS_ROOT/armv6k" \
+    -DENABLE_ZLIB_SUPPORT=TRUE -DENABLE_TESTING=FALSE -DENABLE_PROGRAMS=FALSE \
+    .
+
+  make
+
+}
+
+package() {
+
+  cd mbedtls-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  make install DESTDIR="$pkgdir"
+
+  install -d "$pkgdir"$PORTLIBS_PREFIX/licenses/$pkgname
+  cp -v LICENSE "$pkgdir"$PORTLIBS_PREFIX/licenses/$pkgname 
+
+}
