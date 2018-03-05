@@ -8,7 +8,7 @@ arch=('any')
 url='http://www.zlib.net/'
 license=('apache')
 options=(!strip libtool staticlibs)
-depends=(armv6k-zlib)
+depends=(3ds-zlib)
 source=( 'https://tls.mbed.org/download/mbedtls-2.7.0-apache.tgz'
          'libmbedtls-2.7.0.patch' )
 
@@ -28,7 +28,7 @@ build() {
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="CFLAGS -fno-exceptions -fno-rtti" \
-    -DZLIB_ROOT="$PORTLIBS_ROOT/armv6k" \
+    -DZLIB_ROOT="$PORTLIBS_PREFIX" \
     -DENABLE_ZLIB_SUPPORT=TRUE -DENABLE_TESTING=FALSE -DENABLE_PROGRAMS=FALSE \
     .
 
