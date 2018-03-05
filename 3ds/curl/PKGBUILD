@@ -1,0 +1,43 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=3ds-curl
+pkgver=7.58.0
+pkgrel=1
+pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
+arch=('any')
+url='http://www.zlib.net/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+depends=('armv6k-zlib' '3ds-mbedtls')
+source=('https://github.com/curl/curl/releases/download/curl-7_58_0/curl-7.58.0.tar.xz'
+        'curl-7.58.0.patch'
+)
+
+sha256sums=( '6a813875243609eb75f37fa72044e4ad618b55ec15a4eafdac2df6a7e800e3e3'
+             '937dc6fc621ce29cb14bf1083b232dd1c795618ad2a5c4b53ad399be189ef873'
+)
+
+build() {
+  cd curl-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  patch -Np1 -i $srcdir/curl-7.58.0.patch
+
+  ./configure --prefix=$PORTLIBS_PREFIX --host=arm-none-eabi \
+    --disable-shared --enable-static --disable-ipv6 --disable-unix-sockets \
+    --disable-manual --disable-ntlm-wb --disable-threaded-resolver \
+    --with-mbedtls=$PORTLIBS_PREFIX
+
+  make -C lib
+  
+}
+
+package() {
+  cd curl-$pkgver
+
+  make DESTDIR="$pkgdir" -C lib install
+  make DESTDIR="$pkgdir" -C include install
+
+}
