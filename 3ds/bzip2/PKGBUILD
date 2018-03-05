@@ -1,7 +1,7 @@
 
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
-pkgname=('armv6k-bzip2')
+pkgname=('3ds-bzip2')
 pkgver=1.0.6
 pkgrel=2
 pkgdesc="A high-quality data compression program"
@@ -16,7 +16,7 @@ sha256sums=('a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd')
 build() {
 
   source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/armv6kvars.sh
+  source /opt/devkitpro/3dsvars.sh
 
   make -C "$srcdir/bzip2-$pkgver" \
   CC=arm-none-eabi-gcc \
@@ -29,7 +29,7 @@ build() {
 
 package() {
   source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/armv6kvars.sh
+  source /opt/devkitpro/3dsvars.sh
 
   install -Dm 644 "$srcdir/bzip2-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
   install -Dm 644 "$srcdir/bzip2-$pkgver"/bzlib.h -t "${pkgdir}/${PORTLIBS_PREFIX}/include/"

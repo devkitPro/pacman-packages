@@ -1,6 +1,6 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=armv6k-libjpeg-turbo
+pkgname=3ds-libjpeg-turbo
 pkgver=1.5.3
 pkgrel=1
 pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression (for Nintendo 3DS homebrew development)'
@@ -15,18 +15,22 @@ build() {
   cd libjpeg-turbo-$pkgver
 
   source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/armv6kvars.sh
+  source /opt/devkitpro/3dsvars.sh
 
-    ./configure --prefix="/opt/devkitpro/portlibs/armv6k" --host=arm-none-eabi --disable-shared --enable-static
+    ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --disable-shared --enable-static
   make
 }
 
 package() {
   cd libjpeg-turbo-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
   make DESTDIR="$pkgdir" install
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/armv6k/licenses/$pkgname
-  cp -v LICENSE.md "$pkgdir"/opt/devkitpro/portlibs/armv6k/licenses/$pkgname/
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  cp -v LICENSE.md "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/armv6k/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }

@@ -2,7 +2,7 @@
 # Contributor: carstene1ns <arch carsten-teibes de> - http://git.io/ctPKG
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
-pkgname=armv6k-libpng
+pkgname=3ds-libpng
 pkgver=1.6.15
 pkgrel=1
 pkgdesc='PNG format graphic files library (for Nintendo 3DS homebrew development)'
@@ -10,7 +10,7 @@ arch=('any')
 url='http://www.libpng.org'
 license=('custom')
 options=(!strip libtool staticlibs)
-depends=('armv6k-zlib')
+depends=('3ds-zlib')
 source=("http://downloads.devkitpro.org/portlibs/sources/libpng-$pkgver.tar.xz")
 sha256sums=('cc6d11cc10f10db234fea308c5d8ec1c729a7615423cb139e6bcb6e15c18d014')
 
@@ -18,9 +18,9 @@ build() {
   cd libpng-$pkgver
 
   source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/armv6kvars.sh
+  source /opt/devkitpro/3dsvars.sh
 
-  ./configure --prefix="$DEVKITPRO/portlibs/armv6k" --host=arm-none-eabi \
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
     --disable-shared --enable-static
   make
 }
@@ -28,9 +28,12 @@ build() {
 package() {
   cd libpng-$pkgver
 
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
   make DESTDIR="$pkgdir" install
   # license
-  install -Dm644 LICENSE "$pkgdir"/opt/devkitpro/portlibs/armv6k/licenses/$pkgname/LICENSE
+  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/armv6k/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }

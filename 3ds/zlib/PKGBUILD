@@ -1,6 +1,6 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=armv6k-zlib
+pkgname=3ds-zlib
 pkgver=1.2.11
 pkgrel=1
 pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
@@ -15,20 +15,23 @@ build() {
   cd zlib-$pkgver
 
   source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/armv6kvars.sh
+  source /opt/devkitpro/3dsvars.sh
 
   CHOST=arm-none-eabi \
-    ./configure --prefix="/opt/devkitpro/portlibs/armv6k" --static
+    ./configure --prefix="${PORTLIBS_PREFIX}" --static
   make libz.a # only build library, no programs
 }
 
 package() {
   cd zlib-$pkgver
 
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
   make DESTDIR="$pkgdir" install
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/armv6k/licenses/$pkgname
-  tail -n 31 README > "$pkgdir"/opt/devkitpro/portlibs/armv6k/licenses/$pkgname/LICENSE
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  tail -n 31 README > "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/armv6k/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }
