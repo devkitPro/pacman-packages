@@ -1,0 +1,15 @@
+set(CMAKE_SYSTEM_NAME Generic)
+
+set(CMAKE_C_COMPILER "aarch64-none-elf-gcc")
+set(CMAKE_CXX_COMPILER "aaarch64-none-elf-g++")
+set(CMAKE_AR "aarch64-none-elf-gcc-ar")
+set(CMAKE_RANLIB "aarch64-none-elf-gcc-ranlib")
+
+
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+
+SET(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available" )
+

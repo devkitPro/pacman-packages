@@ -1,0 +1,40 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=pkgbuild-helpers
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='makepkg helpers for devkitPro portlibs'
+arch=('any')
+url='http://devkitpro.org/'
+source=(
+
+'devkitarm.sh' 'devkitarm.cmake' '3dsvars.sh'
+'devkitppc.sh' 'devkitppc.cmake' 'ppcvars.sh'
+'devkita64.sh' 'devkita64.cmake' 'switchvars.sh'
+
+)
+
+sha256sums=(
+
+  'c46175fdd7e757a1d3c5a9aaf38db0b8ae4df0e0f568eb51047523e2ae838483'
+  '58298fb49cd18c789191b770642b44d0ba0fecf1bea0445e63b82e613d4d953f'
+  '7630f58008f2f6d04c673e144dbaaf29f3b9359ed11c3c66c68ef339398535d1'
+
+  'ed31deffb86bd738b894b944e87aff43d2790f04b9ea4991547d6098e9eb9e7e'
+  'c5da26b3ac8cd756750de8baf7754b3f6a689dd16dc129ef17d423a0634eea1a'
+  'e864b3f0c9550ff488c2aec07ca311e6b14fd0fecec15718b8396a8cd7e7c523'
+
+  '94a26f5181b3dbe07c1ad2e0be209b5bc5f83ff431730474ada2fa28acf8f172'
+  '7f8e85ca5e7a3b64982732c647c9e8234b49c535651961551a82281a27739c9d'
+  'bfba8506fcf139412818284de54ff62e4696329a640dbb899499d6ec8d42126b'
+
+)
+
+package() {
+
+  install -d "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitarm.sh devkitarm.cmake 3dsvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkita64.sh devkita64.cmake switchvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitppc.sh devkitppc.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
+
+}
