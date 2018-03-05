@@ -1,0 +1,23 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=devkitarm-pkgbuild-scripts
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='makepkg helpers for devkitARM'
+arch=('any')
+url='http://devkitpro.org/'
+source=('devkitarm.sh' 'devkitarm.cmake' '3dsvars.sh')
+sha256sums=(
+  'c46175fdd7e757a1d3c5a9aaf38db0b8ae4df0e0f568eb51047523e2ae838483'
+  '58298fb49cd18c789191b770642b44d0ba0fecf1bea0445e63b82e613d4d953f'
+  '7630f58008f2f6d04c673e144dbaaf29f3b9359ed11c3c66c68ef339398535d1'
+)
+
+package() {
+
+  install -Dm644 devkitarm.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitarm.cmake "$pkgdir"/opt/devkitpro
+  install -Dm644 3dsvars.sh "$pkgdir"/opt/devkitpro
+
+}
+
