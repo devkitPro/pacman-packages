@@ -1,0 +1,40 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: carstene1ns <arch carsten-teibes de> - http://git.io/ctPKG
+# Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
+
+pkgname=ppc-libpng
+pkgver=1.6.34
+pkgrel=1
+pkgdesc='PNG format graphic files library (for Nintendo Gamecube/Wii homebrew development)'
+arch=('any')
+url='http://www.libpng.org'
+license=('custom')
+options=(!strip libtool staticlibs)
+depends=('switch-zlib')
+source=("http://downloads.devkitpro.org/portlibs/sources/libpng-$pkgver.tar.xz")
+sha256sums=('55952766b5db751efc7c5aa4157c6342783561b44040cfeef91961ab1dfca310')
+
+build() {
+  cd libpng-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd libpng-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # license
+  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+  # remove useless stuff
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+}
