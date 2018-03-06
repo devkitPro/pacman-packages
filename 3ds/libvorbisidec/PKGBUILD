@@ -1,0 +1,35 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=3ds-libvorbisidec
+pkgver=1.2.0
+pkgrel=1
+pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for Nintendo 3DS homebrew development)'
+arch=('any')
+url="http://xiph.org"
+license=('LGPL')
+options=(!strip libtool staticlibs)
+source=("https://downloads.devkitpro.org/portlibs/sources/libvorbisidec-${pkgver}.tar.bz2")
+sha256sums=('177687b863c22c8d6f64f7a1d9fab4aefbf898c481230b825b34bfc0a87cf52c')
+
+build() {
+  cd libvorbisidec-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi 
+
+  make
+}
+
+package() {
+  cd libvorbisidec-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="$pkgdir" install
+  # license
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+}
+
