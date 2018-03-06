@@ -1,6 +1,7 @@
-export PORTLIBS_PREFIX=/opt/devkitpro/portlibs
-export PATH=${PORTLIBS_PREFIX}/bin:$PATH
+export DEVKITPRO=/opt/devkitpro
+export PORTLIBS_PREFIX=${DEVKITPRO}/portlibs/ppc
 
-export CPPFLAGS="-I${PORTLIBS_PREFIX}/include"
-export LDFLAGS="-L${PORTLIBS_PRIX}/lib"
+export CPPFLAGS="-I${PORTLIBS_PREFIX}/ppc/include"
+export LDFLAGS="-L${PORTLIBS_PREFIX}/ppc/lib"
 
+export PATH=/opt/devkitpro/portlibs/ppc/bin:$PATH
