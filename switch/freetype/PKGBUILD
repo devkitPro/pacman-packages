@@ -1,6 +1,5 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
-# Contributor: carstene1ns <arch carsten-teibes de> - http://git.io/ctPKG
-# Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
+# Contributor: cpasjuste <cpasjuste@gmail.com>
 
 pkgname=switch-freetype
 pkgver=2.9
@@ -22,7 +21,7 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
-  ./configure --prefix="$DEVKITPRO/portlibs/switch" --host=aarch64-none-elf \
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static \
     --with-zlib \
     --with-bzip2 \
@@ -37,10 +36,7 @@ package() {
   make DESTDIR="$pkgdir" install
   
   # Licenses
-  install -Dm644 "docs/LICENSE.TXT" "${pkgdir}${DEVKITPRO}/portlibs/switch/licenses/${pkgname}/LICENSE.TXT"
-  install -Dm644 "docs/GPLv2.TXT"   "${pkgdir}${DEVKITPRO}/portlibs/switch/licenses/${pkgname}/GPLv2.TXT"
-  install -Dm644 "docs/FTL.TXT"     "${pkgdir}${DEVKITPRO}/portlibs/switch/licenses/${pkgname}/FTL.TXT"
-  
-  # remove useless stuff
-  rm -r "${pkgdir}${DEVKITPRO}/portlibs/switch/share"
+  install -Dm644 "docs/LICENSE.TXT" "${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
+  install -Dm644 "docs/GPLv2.TXT"   "${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
+  install -Dm644 "docs/FTL.TXT"     "${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
 }
