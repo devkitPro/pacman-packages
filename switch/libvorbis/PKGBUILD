@@ -1,0 +1,34 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-libvorbis
+pkgver=1.3.5
+pkgrel=1
+pkgdesc='Vorbis is a patent-clear, fully open, general purpose audio encoding format standard that rivals or even surpasses the 'upcoming' generation of proprietary codecs (AAC and TwinVQ, also known as VQF).'
+arch=('any')
+url='https://wiki.xiph.org/Vorbis'
+license=(Xiph.org)
+options=(!strip libtool staticlibs)
+depends=('switch-libogg')
+makedepends=('devkitpro-pkgbuild-helpers' 'switch-pkg-config')
+
+source=("https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-$pkgver.tar.gz")
+sha256sums=('6efbcecdd3e5dfbf090341b485da9d176eb250d893e3eb378c428a2db38301ce')
+
+build() {
+  cd libvorbis-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd libvorbis-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
