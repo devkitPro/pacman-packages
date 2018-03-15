@@ -3,7 +3,7 @@
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
 pkgname=3ds-libpng
-pkgver=1.6.15
+pkgver=1.6.34
 pkgrel=1
 pkgdesc='PNG format graphic files library (for Nintendo 3DS homebrew development)'
 arch=('any')
@@ -11,8 +11,9 @@ url='http://www.libpng.org'
 license=('custom')
 options=(!strip libtool staticlibs)
 depends=('3ds-zlib')
+makedepends=('devkitpro-pkgbuild-helpers')
 source=("http://downloads.devkitpro.org/portlibs/sources/libpng-$pkgver.tar.xz")
-sha256sums=('cc6d11cc10f10db234fea308c5d8ec1c729a7615423cb139e6bcb6e15c18d014')
+sha256sums=('55952766b5db751efc7c5aa4157c6342783561b44040cfeef91961ab1dfca310')
 
 build() {
   cd libpng-$pkgver
