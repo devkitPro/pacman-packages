@@ -5,7 +5,6 @@ pkgver=r1.787e015
 pkgrel=1
 pkgdesc='devkitPro PGP keyring'
 arch=('any')
-groups=('base')
 url='https://github.com/devkitpro/devkitpro-keyring'
 license=('GPL')
 install="${pkgname}.install"
