@@ -3,7 +3,7 @@
 pkgname=switch-sdl2
 pkgver=2.0.8
 pkgrel=1
-pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard (Nintendo 3DS port)"
+pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard (Nintendo Switch port)"
 arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
