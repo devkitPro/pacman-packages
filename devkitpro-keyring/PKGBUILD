@@ -2,7 +2,7 @@
 
 pkgname=devkitpro-keyring
 pkgver=r1.787e015
-pkgrel=1
+pkgrel=2
 pkgdesc='devkitPro PGP keyring'
 arch=('any')
 url='https://github.com/devkitpro/devkitpro-keyring'
