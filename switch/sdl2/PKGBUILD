@@ -1,0 +1,39 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-sdl2
+pkgver=2f48af3aed7471919362fb994a1deb200fbe69f8
+pkgrel=1
+pkgdesc='Simple DirectMedia Layer is a cross-platform development library.'
+arch=('any')
+url='https://www.libsdl.org/'
+license=(zlib)
+options=(!strip libtool staticlibs)
+source=("https://codeload.github.com/devkitPro/SDL/zip/$pkgver")
+sha256sums=('dc002a33dd0675e35d79691f953067836b386394f6a823d5412a40d87ff49695')
+
+build() {
+  cd SDL-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static \
+	--disable-audio \
+	--disable-joystick \
+	--disable-power \
+	--disable-cpuinfo \
+	--disable-filesystem \
+	--enable-threads \
+	--enable-timers \
+	--enable-video
+
+  make
+}
+
+package() {
+  cd SDL-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
