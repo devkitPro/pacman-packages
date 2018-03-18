@@ -1,0 +1,42 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=3ds-sdl_gfx
+pkgver=2.0.25
+pkgrel=1
+pkgdesc="Graphics drawing primitives and other support functions wrapped up in an add-on, C-based library for the Simple Direct Media (SDL) cross-platform API layer"
+arch=('any')
+url="http://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+makedepends=(
+ '3ds-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
+ '3ds-sdl'
+)
+source=("https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-${pkgver}.tar.gz")
+sha256sums=(
+'556eedc06b6cf29eb495b6d27f2dcc51bf909ad82389ba2fa7bdc4dec89059c0'
+)
+
+build() {
+  cd SDL_gfx-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static \
+    --disable-mmx
+
+  make
+}
+
+package() {
+  cd SDL_gfx-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
