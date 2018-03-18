@@ -8,11 +8,13 @@ arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
 options=(!strip libtool staticlibs)
+depends=(
+ '3ds-freetype'
+ '3ds-sdl'
+)
 makedepends=(
  '3ds-pkg-config'
  'devkitpro-pkgbuild-helpers'
- '3ds-freetype'
- '3ds-sdl'
 )
 source=("https://downloads.devkitpro.org/SDL_ttf-${pkgver}.tar.bz2")
 sha256sums=(
