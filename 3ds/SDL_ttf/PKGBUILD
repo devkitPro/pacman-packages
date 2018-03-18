@@ -1,0 +1,41 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=3ds-sdl_ttf
+pkgver=2.0.11
+pkgrel=1
+pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications (Nintendo 3DS port)"
+arch=('any')
+url="https://libsdl.org"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+makedepends=(
+ '3ds-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
+ '3ds-freetype'
+ '3ds-sdl'
+)
+source=("https://downloads.devkitpro.org/SDL_ttf-${pkgver}.tar.bz2")
+sha256sums=(
+'39ed8915152ec4a600e3f15107f21fde552c6e5e3f22d2d0d68a55f35de75a24'
+)
+
+build() {
+  cd SDL_ttf-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd SDL_ttf-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
