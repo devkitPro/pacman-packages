@@ -8,10 +8,12 @@ arch=('any')
 url="http://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/"
 license=("LGPL")
 options=(!strip libtool staticlibs)
+depends=(
+ '3ds-sdl'
+)
 makedepends=(
  '3ds-pkg-config'
  'devkitpro-pkgbuild-helpers'
- '3ds-sdl'
 )
 source=("https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-${pkgver}.tar.gz")
 sha256sums=(

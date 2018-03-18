@@ -8,13 +8,15 @@ arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
 options=(!strip libtool staticlibs)
-makedepends=(
- '3ds-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+depends=(
  '3ds-sdl'
  '3ds-libvorbisidec'
  '3ds-mikmod'
  '3ds-libogg'
+)
+makedepends=(
+ '3ds-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
 )
 source=("${url}/projects/SDL_mixer/release/SDL_mixer-${pkgver}.tar.gz")
 sha256sums=(

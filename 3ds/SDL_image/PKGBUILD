@@ -8,12 +8,14 @@ arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
 options=(!strip libtool staticlibs)
-makedepends=(
- '3ds-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+depends=(
  '3ds-sdl'
  '3ds-libpng'
  '3ds-libjpeg-turbo'
+)
+makedepends=(
+ '3ds-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
 )
 source=("${url}/projects/SDL_image-${pkgver}.tar.gz")
 sha256sums=(
