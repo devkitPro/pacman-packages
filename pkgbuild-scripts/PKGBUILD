@@ -1,4 +1,3 @@
-
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitpro-pkgbuild-helpers
 pkgver=1.0.1
@@ -7,26 +6,25 @@ pkgdesc='makepkg helpers for devkitPro portlibs'
 arch=('any')
 url='http://devkitpro.org/'
 source=(
-
 'devkitarm.sh' 'devkitarm.cmake' '3dsvars.sh'
 'devkitppc.sh' 'devkitppc.cmake' 'ppcvars.sh'
 'devkita64.sh' 'devkita64.cmake' 'switchvars.sh'
 
 )
-
+options=(!strip)
 sha256sums=(
 
   'c46175fdd7e757a1d3c5a9aaf38db0b8ae4df0e0f568eb51047523e2ae838483'
   '58298fb49cd18c789191b770642b44d0ba0fecf1bea0445e63b82e613d4d953f'
-  '7630f58008f2f6d04c673e144dbaaf29f3b9359ed11c3c66c68ef339398535d1'
+  'baf6e839a579d84d0f8d53501644fc98690744e24cb51399e5d41da4a5d7338b'
 
   '88deee00bcf787b455bd1428fb0f41c12204db93145200d0d1831b10f7845d57'
   'c5da26b3ac8cd756750de8baf7754b3f6a689dd16dc129ef17d423a0634eea1a'
-  '2a1f158296518cf6ea7d3fab413791eed323ff0b60aa93c60298c33468df1ccb'
+  '54351d8de789a662b1f4a165e034acb10a54775a23e51a3c13411aa37b902694'
 
   '94a26f5181b3dbe07c1ad2e0be209b5bc5f83ff431730474ada2fa28acf8f172'
   '7f8e85ca5e7a3b64982732c647c9e8234b49c535651961551a82281a27739c9d'
-  'bfba8506fcf139412818284de54ff62e4696329a640dbb899499d6ec8d42126b'
+  '1a19d88a9221c1f0d80181955ab851f7515413600d18bf39d14ba6c2ac04345f'
 
 )
 
