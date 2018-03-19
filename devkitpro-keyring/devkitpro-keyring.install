@@ -1,11 +1,15 @@
-post_upgrade() {
-  if usr/bin/pacman-key -l >/dev/null 2>&1; then
-    usr/bin/pacman-key --populate devkitpro
+post_upgrade () {
+  if $1 -l >/dev/null 2>&1; then
+    $1 --populate devkitpro
   fi
 }
 
 post_install() {
-  if [ -x usr/bin/pacman-key ]; then
-    post_upgrade
+  if [ -x /usr/bin/pacman-key ]; then
+    post_upgrade /usr/bin/pacman-key
+  else
+    if [ -x /usr/local/bin/dkp-pacman-key ]; then
+      post_upgrade /usr/local/bin/dkp-pacman-key
+    fi
   fi
 }
