@@ -13,6 +13,7 @@ depends=(
  '3ds-libvorbisidec'
  '3ds-mikmod'
  '3ds-libogg'
+ '3ds-libmad'
 )
 makedepends=(
  '3ds-pkg-config'
@@ -29,11 +30,14 @@ build() {
   source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
+  sed -i 's,\$(objects)/playwave\$(EXE) \$(objects)/playmus\$(EXE),,g' Makefile.in
+
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
     --disable-shared --enable-static \
     --enable-music-ogg-tremor \
     --disable-music-ogg \
-    --disable-music-cmd
+    --disable-music-cmd \
+    --enable-music-mp3-mad-gpl
 
   make
 }
