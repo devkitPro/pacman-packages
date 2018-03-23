@@ -82,36 +82,19 @@ index 000000000..eaf670550
 +        DEPENDS ${PROJECT_NAME}.elf
 +        COMMAND elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}.nro)
 diff --git a/configure b/configure
-index 1c7f87eb0..af93fdba7 100755
+index 1c7f87eb0..b9bdd8544 100755
 --- a/configure
 +++ b/configure
-@@ -1572,7 +1572,7 @@ Optional Features:
-                           QtWayland server support for Wayland video driver
-                           [[default=yes]]
-   --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
--  --enable-video-mir      use Mir video driver [[default=yes]]
-+  --enable-video-mir      use Mir video driver [[default=no]]
-   --enable-mir-shared     dynamically load Mir support [[default=maybe]]
-   --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
-   --enable-video-x11      use X11 video driver [[default=yes]]
-@@ -19300,7 +19300,7 @@ CheckMir()
- if test "${enable_video_mir+set}" = set; then :
-   enableval=$enable_video_mir;
- else
--  enable_video_mir=yes
-+  enable_video_mir=no
- fi
- 
- 
-@@ -24621,6 +24621,71 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+@@ -24621,6 +24621,72 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
              have_timers=yes
          fi
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -isystem${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__=1"
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec"
 +        CheckDeclarationAfterStatement
++        CheckDiskAudio
++        CheckDummyAudio
 +
 +        # Set up files for the video library
 +        if test x$enable_video = xyes; then
@@ -540,10 +523,10 @@ new file mode 100644
 index 000000000..e69de29bb
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..d2b9303a1
+index 000000000..6a9cc5764
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,225 @@
+@@ -0,0 +1,228 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -575,7 +558,7 @@ index 000000000..d2b9303a1
 +
 +#include <switch.h>
 +
-+#define JOYSTICK_COUNT 9
++#define JOYSTICK_COUNT 8
 +
 +typedef struct JoystickState
 +{
@@ -589,21 +572,22 @@ index 000000000..d2b9303a1
 +static JoystickState pad[JOYSTICK_COUNT];
 +
 +static HidControllerID pad_id[JOYSTICK_COUNT] = {
-+    CONTROLLER_P1_AUTO, CONTROLLER_PLAYER_1, CONTROLLER_PLAYER_2,
-+    CONTROLLER_PLAYER_3, CONTROLLER_PLAYER_4, CONTROLLER_PLAYER_5,
-+    CONTROLLER_PLAYER_6, CONTROLLER_PLAYER_7, CONTROLLER_PLAYER_8
++    CONTROLLER_PLAYER_1, CONTROLLER_PLAYER_2,
++    CONTROLLER_PLAYER_3, CONTROLLER_PLAYER_4,
++    CONTROLLER_PLAYER_5, CONTROLLER_PLAYER_6,
++    CONTROLLER_PLAYER_7, CONTROLLER_PLAYER_8
 +};
 +
 +static const HidControllerKeys pad_mapping[] = {
-+    KEY_A, KEY_B, KEY_X, KEY_Y, KEY_LSTICK, KEY_RSTICK,
-+    KEY_L, KEY_R, KEY_ZL, KEY_ZR, KEY_PLUS, KEY_MINUS,
++    KEY_A, KEY_B, KEY_X, KEY_Y,
++    KEY_LSTICK, KEY_RSTICK,
++    KEY_L, KEY_R,
++    KEY_ZL, KEY_ZR,
++    KEY_PLUS, KEY_MINUS,
 +    KEY_DLEFT, KEY_DUP, KEY_DRIGHT, KEY_DDOWN,
 +    KEY_LSTICK_LEFT, KEY_LSTICK_UP, KEY_LSTICK_RIGHT, KEY_LSTICK_DOWN,
-+    KEY_RSTICK_LEFT, KEY_RSTICK_UP, KEY_RSTICK_RIGHT, KEY_RSTICK_DOWN,
-+    KEY_SL, KEY_SR, KEY_TOUCH
++    KEY_RSTICK_LEFT, KEY_RSTICK_UP, KEY_RSTICK_RIGHT, KEY_RSTICK_DOWN
 +};
-+
-+static int SDL_numjoysticks = JOYSTICK_COUNT;
 +
 +/* Function to scan the system for joysticks.
 + * It should return 0, or -1 on an unrecoverable fatal error.
@@ -613,21 +597,23 @@ index 000000000..d2b9303a1
 +{
 +    for (int i = 0; i < JOYSTICK_COUNT; i++) {
 +        pad[i].id = pad_id[i];
++        hidSetNpadJoyAssignmentModeSingleByDefault(pad[i].id);
 +    }
 +
-+    return SDL_numjoysticks;
++    return JOYSTICK_COUNT;
 +}
 +
 +int
 +SDL_SYS_NumJoysticks(void)
 +{
-+    return SDL_numjoysticks;
++    return JOYSTICK_COUNT;
 +}
 +
 +void
 +SDL_SYS_JoystickDetect(void)
 +{
-+    // TODO: handle joysticks change
++    pad[0].id = hidGetHandheldMode() ?
++                CONTROLLER_HANDHELD : CONTROLLER_PLAYER_1;
 +}
 +
 +/* Function to get the device-dependent name of a joystick */
@@ -651,7 +637,7 @@ index 000000000..d2b9303a1
 +    if (device_index == 8)
 +        return "Switch Controller #8";
 +
-+    return "Switch Controller #0 (Auto)";
++    return "Switch Controller #0";
 +}
 +
 +/* Function to perform the mapping from device index to the instance id for this index */
@@ -721,13 +707,13 @@ index 000000000..d2b9303a1
 +    }
 +
 +    // Buttons
-+    changed = pad_old[index].buttons ^pad[index].buttons;
++    changed = pad_old[index].buttons ^ pad[index].buttons;
 +    pad_old[index].buttons = pad[index].buttons;
 +    if (changed) {
-+        for (int i = 0; i < sizeof(pad_mapping) / sizeof(*pad_mapping); i++) {
++        for (int i = 0; i < joystick->nbuttons; i++) {
 +            if (changed & pad_mapping[i]) {
 +                SDL_PrivateJoystickButton(
-+                    joystick, (Uint8) BIT(i),
++                    joystick, (Uint8) i,
 +                    (Uint8) ((pad[index].buttons & pad_mapping[i]) ? SDL_PRESSED : SDL_RELEASED));
 +            }
 +        }
@@ -1501,10 +1487,10 @@ index 8cf195d1a..bde5b1643 100644
  #endif
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 000000000..cb8446618
+index 000000000..aee219b3b
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,223 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -1533,12 +1519,18 @@ index 000000000..cb8446618
 +/* SDL internals */
 +#include "../SDL_sysvideo.h"
 +#include "../../events/SDL_keyboard_c.h"
++#include "../../events/SDL_windowevents_c.h"
 +
 +#include <switch.h>
 +
 +#define SWITCH_DATA "_SDL_SwitchData"
 +#define SCREEN_WIDTH    1280
 +#define SCREEN_HEIGHT   720
++
++typedef struct
++{
++    SDL_Surface *surface;
++} SWITCH_WindowData;
 +
 +static int SWITCH_VideoInit(_THIS);
 +
@@ -1596,14 +1588,12 @@ index 000000000..cb8446618
 +{
 +    SDL_DisplayMode mode;
 +
-+    consoleDebugInit(debugDevice_SVC);
-+    stdout = stderr;
-+
 +    gfxInitResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
 +    gfxInitDefault();
-+    gfxSetMode(GfxMode_LinearDouble);
++    gfxSetMode(GfxMode_TiledDouble);
 +
-+    mode.format = SDL_PIXELFORMAT_ARGB8888;
++    // add default mode (1280x720)
++    mode.format = SDL_PIXELFORMAT_ABGR8888;
 +    mode.w = SCREEN_WIDTH;
 +    mode.h = SCREEN_HEIGHT;
 +    mode.refresh_rate = 60;
@@ -1611,7 +1601,11 @@ index 000000000..cb8446618
 +    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
 +        return -1;
 +    }
++    SDL_AddDisplayMode(&_this->displays[0], &mode);
 +
++    // allow any resolution
++    mode.w = 0;
++    mode.h = 0;
 +    SDL_AddDisplayMode(&_this->displays[0], &mode);
 +
 +    return 0;
@@ -1624,7 +1618,9 @@ index 000000000..cb8446618
 +
 +static int SWITCH_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 +{
-+    // TODO: use gfxConfigureResolution
++    SDL_SendWindowEvent(display->fullscreen_window,
++                        SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
++
 +    return 0;
 +}
 +
@@ -1640,23 +1636,38 @@ index 000000000..cb8446618
 +    hidScanInput();
 +}
 +
-+typedef struct
-+{
-+} SWITCH_WindowData;
-+
 +static int SWITCH_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
 +{
-+    int w, h;
++    int bpp;
++    Uint32 r, g, b, a;
++    SDL_Surface *surface;
++    SWITCH_WindowData *data;
 +
-+    //SWITCH_WindowData *data = SDL_calloc(1, sizeof(SWITCH_WindowData));
-+    //SDL_SetWindowData(window, SWITCH_DATA, data);
++    // create sdl surface framebuffer
++    SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_ABGR8888, &bpp, &r, &g, &b, &a);
++    surface = SDL_CreateRGBSurface(0, window->w, window->h, bpp, r, g, b, a);
++    if (!surface) {
++        return -1;
++    }
 +
-+    SDL_GetWindowSize(window, &w, &h);
-+    gfxConfigureResolution(w, h);
-+    *pitch = w * 4;
++    // hold a pointer to our surface
++    data = SDL_calloc(1, sizeof(SWITCH_WindowData));
++    data->surface = surface;
++    SDL_SetWindowData(window, SWITCH_DATA, data);
++
++    // use switch hardware scaling in fullscreen mode
++    if (window->flags & SDL_WINDOW_FULLSCREEN) {
++        gfxConfigureResolution(window->w, window->h);
++    }
++    else {
++        gfxConfigureResolution(0, 0);
++    }
++
 +    *format = SDL_PIXELFORMAT_ABGR8888;
-+    *pixels = gfxGetFramebuffer(NULL, NULL);
++    *pixels = surface->pixels;
++    *pitch = surface->pitch;
 +
++    // inform SDL we're ready to accept inputs
 +    SDL_SetKeyboardFocus(window);
 +
 +    return 0;
@@ -1664,34 +1675,51 @@ index 000000000..cb8446618
 +
 +static int SWITCH_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
 +{
-+    //SWITCH_WindowData *data = (SWITCH_WindowData *) SDL_GetWindowData(window, SWITCH_DATA);
-+    //if (!data) {
-+    //    return SDL_SetError("Couldn't find switch data for window");
-+    //}
++    SWITCH_WindowData *data = (SWITCH_WindowData *) SDL_GetWindowData(window, SWITCH_DATA);
++
++    u32 fb_w, fb_h;
++    int x, y, w = window->w, h = window->h;
++    u32 *src = (u32 *) data->surface->pixels;
++    u32 *dst = (u32 *) gfxGetFramebuffer(&fb_w, &fb_h);
++
++    // prevent framebuffer overflow in case of resolution change outside SDL,
++    // which should not happen
++    if(window->x + w > fb_w) {
++        w = fb_w - window->x;
++    }
++    if(window->y + h > fb_h) {
++        h = fb_h - window->y;
++    }
++
++    for (y = 0; y < h; y++) {
++        for (x = 0; x < w; x += 4) {
++            *((u128 *) &dst[gfxGetFramebufferDisplayOffset((u32) (x + window->x), (u32) (y + window->y))]) =
++                *((u128 *) &src[y * w + x]);
++        }
++    }
 +
 +    gfxFlushBuffers();
 +    gfxSwapBuffers();
++    // TODO: handle SDL_RENDERER_PRESENTVSYNC (SW_RenderDriver not using flags)
 +    gfxWaitForVsync();
-+
-+    // update fb ptr for double buffering
-+    window->surface->pixels = gfxGetFramebuffer(NULL, NULL);
 +
 +    return 0;
 +}
 +
 +static void SWITCH_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 +{
-+    //SWITCH_WindowData *data = (SWITCH_WindowData *) SDL_GetWindowData(window, SWITCH_DATA);
-+    //SDL_free(data);
++    SWITCH_WindowData *data = (SWITCH_WindowData *) SDL_GetWindowData(window, SWITCH_DATA);
++    SDL_FreeSurface(data->surface);
++    SDL_free(data);
 +}
 +
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 diff --git a/test/testswitch.c b/test/testswitch.c
 new file mode 100644
-index 000000000..885ec7c19
+index 000000000..6429ccdbf
 --- /dev/null
 +++ b/test/testswitch.c
-@@ -0,0 +1,88 @@
+@@ -0,0 +1,125 @@
 +/*
 +  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 +
@@ -1708,10 +1736,8 @@ index 000000000..885ec7c19
 +#include <stdio.h>
 +
 +#include <switch.h>
++#include <video/SDL_sysvideo.h>
 +#include "SDL2/SDL.h"
-+
-+#define WINDOW_WIDTH    1280
-+#define WINDOW_HEIGHT   720
 +
 +int main(int argc, char *argv[])
 +{
@@ -1730,48 +1756,87 @@ index 000000000..885ec7c19
 +        return -1;
 +    }
 +
-+    // switch only support software renderer for now
-+    if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
-+        printf("SDL_CreateWindowAndRenderer: %s\n", SDL_GetError());
++    // create a 800x600 centered window for demonstration.
++    // if SDL_WINDOW_FULLSCREEN flag is passed, the window will be hardware scaled to fit switch screen.
++    // maximum window dimension is currently limited to 1280x720
++    window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, 0);
++    if (!window) {
++        printf("SDL_CreateWindow: %s\n", SDL_GetError());
 +        SDL_Quit();
 +        return -1;
 +    }
 +
-+    // open CONTROLLER_P1_AUTO
-+    // https://github.com/devkitPro/SDL/blob/switch-sdl2/src/joystick/switch/SDL_sysjoystick.c#L45
-+    if (SDL_JoystickOpen(0) == NULL) {
-+        printf("SDL_JoystickOpen: %s\n", SDL_GetError());
++    // switch only support software renderer for now
++    renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_SOFTWARE);
++    if (!renderer) {
++        printf("SDL_CreateRenderer: %s\n", SDL_GetError());
 +        SDL_Quit();
 +        return -1;
++    }
++
++    // open CONTROLLER_PLAYER_1 and CONTROLLER_PLAYER_2
++    // when connected, both joycons are mapped to joystick #0,
++    // else joycons are individually mapped to joystick #0, joystick #1, ...
++    // https://github.com/devkitPro/SDL/blob/switch-sdl2/src/joystick/switch/SDL_sysjoystick.c#L45
++    for (int i = 0; i < 2; i++) {
++        if (SDL_JoystickOpen(i) == NULL) {
++            printf("SDL_JoystickOpen: %s\n", SDL_GetError());
++            SDL_Quit();
++            return -1;
++        }
 +    }
 +
 +    while (!done) {
 +
 +        while (SDL_PollEvent(&event)) {
-+            // seek for (B) button press
-+            // https://github.com/devkitPro/SDL/blob/switch-sdl2/src/joystick/switch/SDL_sysjoystick.c#L51
-+            if (event.type == SDL_JOYBUTTONDOWN && event.jbutton.button == KEY_B) {
-+                done = 1;
++
++            switch (event.type) {
++
++            case SDL_JOYAXISMOTION:
++                printf("Joystick %d axis %d value: %d\n",
++                       event.jaxis.which,
++                       event.jaxis.axis, event.jaxis.value);
++                break;
++
++            case SDL_JOYBUTTONDOWN:
++                printf("Joystick %d button %d down\n",
++                       event.jbutton.which, event.jbutton.button);
++                // seek for joystick #0 down (B)
++                // https://github.com/devkitPro/SDL/blob/switch-sdl2/src/joystick/switch/SDL_sysjoystick.c#L51
++                if (event.jbutton.which == 0 && event.jbutton.button == 1) {
++                    done = 1;
++                }
++                break;
++
++            default:
++                break;
 +            }
 +        }
 +
-+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-+        SDL_RenderClear(renderer);
++        for (int i = 0; i < 100; i++) {
 +
-+        // R
-+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-+        SDL_Rect r = {0, 0, 64, 64};
-+        SDL_RenderFillRect(renderer, &r);
++            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
++            SDL_RenderClear(renderer);
 +
-+        // G
-+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-+        SDL_Rect g = {64, 0, 64, 64};
-+        SDL_RenderFillRect(renderer, &g);
++            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
++            SDL_Rect bg = {0, 0, window->w, window->h};
++            SDL_RenderFillRect(renderer, &bg);
 +
-+        // B
-+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-+        SDL_Rect b = {128, 0, 64, 64};
-+        SDL_RenderFillRect(renderer, &b);
++            // R
++            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
++            SDL_Rect r = {0, 0, 64, 64};
++            SDL_RenderFillRect(renderer, &r);
++
++            // G
++            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
++            SDL_Rect g = {64, 0, 64, 64};
++            SDL_RenderFillRect(renderer, &g);
++
++            // B
++            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
++            SDL_Rect b = {128, 0, 64, 64};
++            SDL_RenderFillRect(renderer, &b);
++        }
 +
 +        SDL_RenderPresent(renderer);
 +    }
