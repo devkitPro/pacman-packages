@@ -11,8 +11,9 @@ url='http://www.libpng.org'
 license=('custom')
 options=(!strip libtool staticlibs)
 depends=('ppc-zlib')
-source=("http://downloads.devkitpro.org/portlibs/sources/libpng-$pkgver.tar.xz")
+source=("http://downloads.devkitpro.org/packages/sources/libpng-$pkgver.tar.xz")
 sha256sums=('55952766b5db751efc7c5aa4157c6342783561b44040cfeef91961ab1dfca310')
+makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 build() {
   cd libpng-$pkgver

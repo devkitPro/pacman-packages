@@ -9,6 +9,7 @@ url='http://www.zlib.net/'
 license=('apache')
 options=(!strip libtool staticlibs)
 depends=(3ds-zlib)
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=( 'https://tls.mbed.org/download/mbedtls-2.7.0-apache.tgz'
          'libmbedtls-2.7.0.patch' )
 

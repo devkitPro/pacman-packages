@@ -8,8 +8,9 @@ arch=('any')
 url="http://xiph.org"
 license=('LGPL')
 options=(!strip libtool staticlibs)
-source=("https://downloads.devkitpro.org/portlibs/sources/libvorbisidec-${pkgver}.tar.bz2")
+source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.bz2")
 sha256sums=('177687b863c22c8d6f64f7a1d9fab4aefbf898c481230b825b34bfc0a87cf52c')
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 build() {
   cd libvorbisidec-$pkgver

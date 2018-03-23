@@ -9,6 +9,8 @@ url='http://www.zlib.net/'
 license=('zlib')
 options=(!strip libtool staticlibs)
 depends=('3ds-zlib' '3ds-mbedtls')
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+
 source=('https://github.com/curl/curl/releases/download/curl-7_58_0/curl-7.58.0.tar.xz'
         'curl-7.58.0.patch'
 )

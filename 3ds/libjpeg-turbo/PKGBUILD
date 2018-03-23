@@ -8,8 +8,9 @@ arch=('any')
 url='https://sourceforge.net/projects/libjpeg-turbo'
 license=('IJG')
 options=(!strip libtool staticlibs)
-source=("http://downloads.devkitpro.org/portlibs/sources/libjpeg-turbo-$pkgver.tar.xz")
+source=("http://downloads.devkitpro.org/packages/sources/libjpeg-turbo-$pkgver.tar.xz")
 sha256sums=('7c650554cc7742db41ebb014e183ee69d5a1b2f010fbf8a4de11cf783319a42c')
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 build() {
   cd libjpeg-turbo-$pkgver

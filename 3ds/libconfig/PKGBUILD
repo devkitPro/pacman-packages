@@ -10,6 +10,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("https://hyperrealm.github.io/libconfig/dist/libconfig-${pkgver}.tar.gz")
 sha256sums=('7c3c7a9c73ff3302084386e96f903eb62ce06953bb1666235fac74363a16fad9')
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 build() {
   cd libconfig-$pkgver
@@ -18,9 +19,8 @@ build() {
   source /opt/devkitpro/3dsvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
-     --disable-shared --enable-static --without-nettle --without-openssl \
-     --without-xml2 --without-expat --without-iconv --disable-bsdtar \
-     --disable-bsdcpio --disable-acl --disable-examples
+     --disable-shared --enable-static \
+     --disable-examples
 
   make
 }
