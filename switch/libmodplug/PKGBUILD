@@ -1,0 +1,32 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-libmodplug
+pkgver=0.8.8.5
+pkgrel=1
+pkgdesc='Play various .mod formats'
+arch=('any')
+url='http://modplug-xmms.sourceforge.net/'
+license=(public domain)
+options=(!strip libtool staticlibs)
+depends=("switch-zlib")
+source=("https://sourceforge.net/projects/modplug-xmms/files/libmodplug/$pkgver/libmodplug-$pkgver.tar.gz")
+sha256sums=('77462d12ee99476c8645cb5511363e3906b88b33a6b54362b4dbc0f39aa2daad')
+
+build() {
+  cd libmodplug-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd libmodplug-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
