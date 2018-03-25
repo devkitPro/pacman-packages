@@ -12,7 +12,7 @@ makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("${url}/release/SDL2-${pkgver}.tar.gz" "SDL2-2.0.8.patch")
 sha256sums=(
 'edc77c57308661d576e843344d8638e025a7818bff73f8fbfab09c3c5fd092ec'
-'4ad0e6d2696c91e1109da7d95b70142970e54e3c286229855aee7a70c4bf75c3'
+'285f138891a7a15f4f72ab7e0e06e88a85cae068434c392e028cf299b3ea253e'
 )
 
 build() {
