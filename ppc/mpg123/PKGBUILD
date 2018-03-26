@@ -1,0 +1,46 @@
+# Maintainer: Gabriel Kind <gabriel-dkp mastergk de>
+
+pkgname=ppc-mpg123
+pkgver=1.25.10
+pkgrel=1
+pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
+arch=('any')
+url="http://sourceforge.net/projects/mpg123"
+license=('LGPL2.1')
+options=(!strip libtool staticlibs)
+source=(
+ "http://downloads.sourceforge.net/sourceforge/mpg123/mpg123-${pkgver}.tar.bz2"
+ "mpg123-1.25.10.patch"
+)
+sha256sums=('6c1337aee2e4bf993299851c70b7db11faec785303cfca3a5c3eb5f329ba7023'
+            '57cd203fdd92d4441eb5639859c50efe9018e3e5d10ee240a6e06fd9a24ae508')
+makedepends=('devkitpro-pkgbuild-helpers')
+
+build() {
+  cd mpg123-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch
+
+  autoreconf -fi
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static --enable-fifo=no \
+    --enable-ipv6=no --enable-network=no --enable-int-quality=no \
+    --with-cpu=generic --with-default-audio=dummy
+
+  make
+}
+
+package() {
+  cd mpg123-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # remove useless stuff
+  rm -rf "$pkgdir"${PORTLIBS_PREFIX}/bin "$pkgdir"${PORTLIBS_PREFIX}/share
+}
