@@ -19,6 +19,7 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
+  CXXFLAGS="${CFLAGS}" \
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
 
