@@ -1,0 +1,38 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-libtremor
+pkgver=9999
+pkgrel=1
+pkgdesc='Tremor support for the Nintendo Switch'
+arch=('any')
+url='https://xiph.org/vorbis/'
+license=(Xiph.org)
+options=(!strip libtool staticlibs)
+depends=('switch-libogg')
+makedepends=('devkitpro-pkgbuild-helpers')
+source=("http://downloads.sourceforge.net/sourceforge/devkitpro/tremor-lowmem-src.tar.bz2")
+sha256sums=('54a40ce5521f908b91b44bc9259ea499b8b7299b37b154c348614373ed79840c')
+
+build() {
+  cd tremor-lowmem
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  # add aarch64
+  sed -i '240i| aarch64 | aarch64_be \\' config.sub
+  sed -i '316i| aarch64-* | aarch64_be-* \\' config.sub
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd tremor-lowmem
+
+  make DESTDIR="$pkgdir" install
+}
+
