@@ -10,11 +10,11 @@ license=('LGPL2.1')
 options=(!strip libtool staticlibs)
 source=(
  "http://downloads.sourceforge.net/sourceforge/mpg123/mpg123-${pkgver}.tar.bz2"
- "mpg123-1.25.10.patch"
+ "https://downloads.devkitpro.org/packages/sources/mpg123-1.25.10.patch"
 )
 sha256sums=('6c1337aee2e4bf993299851c70b7db11faec785303cfca3a5c3eb5f329ba7023'
             '57cd203fdd92d4441eb5639859c50efe9018e3e5d10ee240a6e06fd9a24ae508')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('devkitpro-pkgbuild-helpers' 'switch-pkg-config')
 
 build() {
   cd mpg123-$pkgver
