@@ -1,24 +1,24 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=3ds-libvorbisidec
+pkgname=switch-libvorbisidec
 pkgver=1.2.1
 pkgrel=1
-pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for Nintendo 3DS homebrew development)'
+pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for Nintendo Switch homebrew development)'
 arch=('any')
 url="http://xiph.org"
 license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.bz2")
 sha256sums=('1afbc18e0104ca8c9e9943cfcfa995ea0100bf246c425962770d455d4ad03c65')
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
-depends=('3ds-libogg')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('switch-libogg')
 build() {
   cd libvorbisidec-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi 
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf
 
   make
 }
@@ -26,8 +26,8 @@ build() {
 package() {
   cd libvorbisidec-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install
   # license
