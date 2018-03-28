@@ -19,6 +19,11 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
+  # "fix" sleep
+  sed -i 's/sleep(1)/usleep(1000*1000)/g' src/load_pat.cpp
+  sed -i 's/sleep(1)/usleep(1000*1000)/g' src/load_mid.cpp
+  sed -i 's/sleep(1)/usleep(1000*1000)/g' src/load_abc.cpp
+
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
 
