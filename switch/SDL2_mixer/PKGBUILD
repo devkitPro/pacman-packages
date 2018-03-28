@@ -1,0 +1,48 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-sdl2_mixer
+pkgver=2.0.2
+pkgrel=1
+pkgdesc="A sample multi-channel audio mixer library (Nintendo Switch port)."
+arch=('any')
+url="https://libsdl.org"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=(
+  'switch-sdl2'
+  'switch-libvorbisidec'
+  'switch-libvorbis'
+  'switch-libmodplug'
+  'switch-mpg123'
+)
+source=("${url}/projects/SDL_mixer/release/SDL2_mixer-${pkgver}.tar.gz")
+sha256sums=(
+'4e615e27efca4f439df9af6aa2c6de84150d17cbfd12174b54868c12f19c83bb'
+)
+
+build() {
+  cd SDL2_mixer-$pkgver
+
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
+
+  CFLAGS="-fPIC" LIBS="-lm" ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=aarch64-none-elf --disable-shared --enable-static \
+    --disable-music-cmd \
+    --enable-music-ogg-tremor \
+    --enable-music-mod-modplug
+
+  make
+}
+
+package() {
+  cd SDL2_mixer-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
