@@ -1,6 +1,6 @@
 diff --git a/CMakeLists.switch b/CMakeLists.switch
 new file mode 100644
-index 000000000..eaf670550
+index 0000000..eaf6705
 --- /dev/null
 +++ b/CMakeLists.switch
 @@ -0,0 +1,77 @@
@@ -82,19 +82,37 @@ index 000000000..eaf670550
 +        DEPENDS ${PROJECT_NAME}.elf
 +        COMMAND elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}.nro)
 diff --git a/configure b/configure
-index 1c7f87eb0..b9bdd8544 100755
+index 1c7f87e..5fef7ee 100755
 --- a/configure
 +++ b/configure
+@@ -1572,7 +1572,7 @@ Optional Features:
+                           QtWayland server support for Wayland video driver
+                           [[default=yes]]
+   --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
+-  --enable-video-mir      use Mir video driver [[default=yes]]
++  --enable-video-mir      use Mir video driver [[default=no]]
+   --enable-mir-shared     dynamically load Mir support [[default=maybe]]
+   --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
+   --enable-video-x11      use X11 video driver [[default=yes]]
+@@ -19300,7 +19300,7 @@ CheckMir()
+ if test "${enable_video_mir+set}" = set; then :
+   enableval=$enable_video_mir;
+ else
+-  enable_video_mir=yes
++  enable_video_mir=no
+ fi
+ 
+ 
 @@ -24621,6 +24621,72 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
              have_timers=yes
          fi
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -isystem${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__=1"
++        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__=1 -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec"
++        SDL_LIBS="-march=armv8-a  -fPIC -specs=${DEVKITPRO}/libnx/switch.specs -L${DEVKITPRO}/portlibs/switch/lib $SDL_LIBS  -L${DEVKITPRO}/libnx/lib -lnx"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 $SDL_CFLAGS -fPIC"
 +        CheckDeclarationAfterStatement
-+        CheckDiskAudio
-+        CheckDummyAudio
 +
 +        # Set up files for the video library
 +        if test x$enable_video = xyes; then
@@ -159,17 +177,18 @@ index 1c7f87eb0..b9bdd8544 100755
          as_fn_error $? "
  *** Unsupported host:  Please add to configure.in
 diff --git a/configure.in b/configure.in
-index 1c7e79338..a6796ac98 100644
+index 1c7e793..d48c68f 100644
 --- a/configure.in
 +++ b/configure.in
-@@ -3905,6 +3905,57 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
+@@ -3905,6 +3905,58 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
              have_timers=yes
          fi
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -isystem${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__=1"
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec"
++        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__=1 -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec"
++        SDL_LIBS="-march=armv8-a  -fPIC -specs=${DEVKITPRO}/libnx/switch.specs -L${DEVKITPRO}/portlibs/switch/lib $SDL_LIBS  -L${DEVKITPRO}/libnx/lib -lnx"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 $SDL_CFLAGS -fPIC"
 +        CheckDeclarationAfterStatement
 +
 +        # Set up files for the video library
@@ -221,7 +240,7 @@ index 1c7e79338..a6796ac98 100644
          AC_MSG_ERROR([
  *** Unsupported host:  Please add to configure.in
 diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index 422f47f78..9cc4de52f 100644
+index 422f47f..9cc4de5 100644
 --- a/include/SDL_config.h.in
 +++ b/include/SDL_config.h.in
 @@ -262,6 +262,7 @@
@@ -280,7 +299,7 @@ index 422f47f78..9cc4de52f 100644
  /* Enable assembly routines */
  #undef SDL_ASSEMBLY_ROUTINES
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index dcaebea6d..6d930adc1 100644
+index dcaebea..6d930ad 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
 @@ -98,6 +98,9 @@ static const AudioBootStrap *const bootstrap[] = {
@@ -294,7 +313,7 @@ index dcaebea6d..6d930adc1 100644
      &JACK_bootstrap,
  #endif
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index f0e1f3dad..a7e519281 100644
+index f0e1f3d..a7e5192 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
 @@ -205,6 +205,7 @@ extern AudioBootStrap FUSIONSOUND_bootstrap;
@@ -307,7 +326,7 @@ index f0e1f3dad..a7e519281 100644
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 000000000..00e1ea53e
+index 0000000..00e1ea5
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
 @@ -0,0 +1,148 @@
@@ -461,7 +480,7 @@ index 000000000..00e1ea53e
 +#endif /* SDL_AUDIO_DRIVER_SWITCH */
 diff --git a/src/audio/switch/SDL_switchaudio.h b/src/audio/switch/SDL_switchaudio.h
 new file mode 100644
-index 000000000..aeada608a
+index 0000000..aeada60
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.h
 @@ -0,0 +1,40 @@
@@ -506,7 +525,7 @@ index 000000000..aeada608a
 +
 +#endif /* SDL_switchaudio_h_ */
 diff --git a/src/dynapi/SDL_dynapi.h b/src/dynapi/SDL_dynapi.h
-index 73316f1f8..81021e9e9 100644
+index 73316f1..81021e9 100644
 --- a/src/dynapi/SDL_dynapi.h
 +++ b/src/dynapi/SDL_dynapi.h
 @@ -55,6 +55,8 @@
@@ -520,10 +539,10 @@ index 73316f1f8..81021e9e9 100644
  /* everyone else. This is where we turn on the API if nothing forced it off. */
 diff --git a/src/filesystem/switch/dummy.c b/src/filesystem/switch/dummy.c
 new file mode 100644
-index 000000000..e69de29bb
+index 0000000..e69de29
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..6a9cc5764
+index 0000000..6a9cc57
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
 @@ -0,0 +1,228 @@
@@ -757,9 +776,9 @@ index 000000000..6a9cc5764
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/power/switch/dummy.c b/src/power/switch/dummy.c
 new file mode 100644
-index 000000000..e69de29bb
+index 0000000..e69de29
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index b68f90e91..3af243df7 100644
+index b68f90e..3af243d 100644
 --- a/src/thread/SDL_thread_c.h
 +++ b/src/thread/SDL_thread_c.h
 @@ -36,6 +36,8 @@
@@ -773,7 +792,7 @@ index b68f90e91..3af243df7 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/switch/SDL_syscond.c b/src/thread/switch/SDL_syscond.c
 new file mode 100644
-index 000000000..435c99b8f
+index 0000000..435c99b
 --- /dev/null
 +++ b/src/thread/switch/SDL_syscond.c
 @@ -0,0 +1,140 @@
@@ -919,7 +938,7 @@ index 000000000..435c99b8f
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/thread/switch/SDL_sysmutex.c b/src/thread/switch/SDL_sysmutex.c
 new file mode 100644
-index 000000000..3789046a9
+index 0000000..3789046
 --- /dev/null
 +++ b/src/thread/switch/SDL_sysmutex.c
 @@ -0,0 +1,85 @@
@@ -1010,7 +1029,7 @@ index 000000000..3789046a9
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_sysmutex_c.h b/src/thread/switch/SDL_sysmutex_c.h
 new file mode 100644
-index 000000000..307537fc9
+index 0000000..307537f
 --- /dev/null
 +++ b/src/thread/switch/SDL_sysmutex_c.h
 @@ -0,0 +1,22 @@
@@ -1038,7 +1057,7 @@ index 000000000..307537fc9
 +#include "../../SDL_internal.h"
 diff --git a/src/thread/switch/SDL_syssem.c b/src/thread/switch/SDL_syssem.c
 new file mode 100644
-index 000000000..6a8d20701
+index 0000000..6a8d207
 --- /dev/null
 +++ b/src/thread/switch/SDL_syssem.c
 @@ -0,0 +1,172 @@
@@ -1216,7 +1235,7 @@ index 000000000..6a8d20701
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread.c b/src/thread/switch/SDL_systhread.c
 new file mode 100644
-index 000000000..4a54e3e4a
+index 0000000..4a54e3e
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread.c
 @@ -0,0 +1,85 @@
@@ -1307,7 +1326,7 @@ index 000000000..4a54e3e4a
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread_c.h b/src/thread/switch/SDL_systhread_c.h
 new file mode 100644
-index 000000000..cc58e2c28
+index 0000000..cc58e2c
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread_c.h
 @@ -0,0 +1,24 @@
@@ -1337,7 +1356,7 @@ index 000000000..cc58e2c28
 +typedef Thread SYS_ThreadHandle;
 diff --git a/src/thread/switch/SDL_systls.c b/src/thread/switch/SDL_systls.c
 new file mode 100644
-index 000000000..2472fbd60
+index 0000000..2472fbd
 --- /dev/null
 +++ b/src/thread/switch/SDL_systls.c
 @@ -0,0 +1,34 @@
@@ -1377,7 +1396,7 @@ index 000000000..2472fbd60
 +}
 diff --git a/src/timer/switch/SDL_systimer.c b/src/timer/switch/SDL_systimer.c
 new file mode 100644
-index 000000000..5c5d209e0
+index 0000000..5c5d209
 --- /dev/null
 +++ b/src/timer/switch/SDL_systimer.c
 @@ -0,0 +1,78 @@
@@ -1460,7 +1479,7 @@ index 000000000..5c5d209e0
 +
 +#endif /* SDL_TIMER_SWITCH */
 diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index 9df71c9aa..c37bb012f 100644
+index 9df71c9..c37bb01 100644
 --- a/src/video/SDL_sysvideo.h
 +++ b/src/video/SDL_sysvideo.h
 @@ -418,6 +418,7 @@ extern VideoBootStrap NACL_bootstrap;
@@ -1472,7 +1491,7 @@ index 9df71c9aa..c37bb012f 100644
  extern SDL_VideoDevice *SDL_GetVideoDevice(void);
  extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 8cf195d1a..bde5b1643 100644
+index 8cf195d..bde5b16 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
 @@ -112,6 +112,9 @@ static VideoBootStrap *bootstrap[] = {
@@ -1487,7 +1506,7 @@ index 8cf195d1a..bde5b1643 100644
  #endif
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 000000000..86091afd4
+index 0000000..86091af
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
 @@ -0,0 +1,232 @@
@@ -1725,7 +1744,7 @@ index 000000000..86091afd4
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 diff --git a/test/testswitch.c b/test/testswitch.c
 new file mode 100644
-index 000000000..4c1613d40
+index 0000000..4c1613d
 --- /dev/null
 +++ b/test/testswitch.c
 @@ -0,0 +1,126 @@
