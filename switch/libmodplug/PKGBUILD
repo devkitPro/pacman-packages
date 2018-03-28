@@ -10,8 +10,14 @@ url='http://modplug-xmms.sourceforge.net/'
 license=(public domain)
 options=(!strip libtool staticlibs)
 depends=("switch-zlib")
-source=("https://sourceforge.net/projects/modplug-xmms/files/libmodplug/$pkgver/libmodplug-$pkgver.tar.gz")
-sha256sums=('77462d12ee99476c8645cb5511363e3906b88b33a6b54362b4dbc0f39aa2daad')
+source=(
+  "https://sourceforge.net/projects/modplug-xmms/files/libmodplug/$pkgver/libmodplug-$pkgver.tar.gz"
+  "libmodplug-${pkgver}.patch"
+)
+sha256sums=(
+  '77462d12ee99476c8645cb5511363e3906b88b33a6b54362b4dbc0f39aa2daad'
+  'e898148dc021a2efe49942a5d1a58661cda34888403bfea279c552ebe65d21da'
+)
 
 build() {
   cd libmodplug-$pkgver
@@ -19,10 +25,7 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
-  # "fix" sleep
-  sed -i 's/sleep(1)/usleep(1000*1000)/g' src/load_pat.cpp
-  sed -i 's/sleep(1)/usleep(1000*1000)/g' src/load_mid.cpp
-  sed -i 's/sleep(1)/usleep(1000*1000)/g' src/load_abc.cpp
+  patch -Np1 -i "$srcdir/libmodplug-${pkgver}.patch"
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
