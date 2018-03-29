@@ -8,5 +8,5 @@ export PKG_CONFIG_SYSROOT_DIR=
 
 export PKG_CONFIG_LIBDIR=${DEVKITPRO}/portlibs/3ds/lib/pkgconfig:${DEVKITPRO}/portlibs/armv6k/lib/pkgconfig
 
-exec pkg-config "$@"
+exec pkg-config --static "$@"
 

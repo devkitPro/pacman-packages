@@ -8,5 +8,5 @@ export PKG_CONFIG_SYSROOT_DIR=
 
 export PKG_CONFIG_LIBDIR=${DEVKITPRO}/portlibs/switch/lib/pkgconfig
 
-exec pkg-config "$@"
+exec pkg-config --static "$@"
 
