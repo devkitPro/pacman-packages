@@ -1,0 +1,46 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=switch-libsamplerate
+pkgver=0.1.9
+pkgrel=1
+pkgdesc='Secret Rabbit Code (aka libsamplerate) is a Sample Rate Converter for audio (for Nintendo Switch homebrew development)'
+arch=('any')
+url="http://www.mega-nerd.com/libsamplerate"
+license=('BSD')
+options=(!strip libtool staticlibs)
+source=(
+  "http://www.mega-nerd.com/libsamplerate/libsamplerate-${pkgver}.tar.gz"
+  "libsamplerate-${pkgver}.patch"
+)
+sha256sums=(
+  '0a7eb168e2f21353fb6d84da152e4512126f7dc48ccb0be80578c565413444c1'
+  'e11521959e926907ffbceff2abd4c509bab2e8d777575effc05dab41264e967c'
+)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+
+build() {
+  cd libsamplerate-$pkgver
+
+  patch -Np1 -i "$srcdir/libsamplerate-${pkgver}.patch"
+  autoreconf -i
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+     --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd libsamplerate-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+  # license
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+}
+
