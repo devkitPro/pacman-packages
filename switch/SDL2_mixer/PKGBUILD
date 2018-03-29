@@ -28,7 +28,7 @@ build() {
   source ${DEVKITPRO}/devkita64.sh
   source ${DEVKITPRO}/switchvars.sh
 
-  CFLAGS="-fPIC" LIBS="-lm" ./configure --prefix="${PORTLIBS_PREFIX}" \
+  LIBS="-lm" ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=aarch64-none-elf --disable-shared --enable-static \
     --disable-music-cmd \
     --enable-music-ogg-tremor \
