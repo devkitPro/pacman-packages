@@ -1,0 +1,42 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-sdl2_image
+pkgver=2.0.3
+pkgrel=1
+pkgdesc="SDL2 image loading library (Nintendo Switch port)."
+arch=('any')
+url="https://libsdl.org"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=(
+  'switch-sdl2' 'switch-libpng' 'switch-libjpeg-turbo'
+)
+source=("https://downloads.devkitpro.org/packages/sources/SDL2_image-${pkgver}.tar.bz2")
+sha256sums=(
+ '3fdff3e2ebd9bc629098ca3fb4360c0eee3b0ccb158c06106e7175305ea2d6f5'
+)
+
+build() {
+  cd SDL2_image-$pkgver
+
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=aarch64-none-elf --disable-shared --enable-static \
+    --disable-sdltest
+
+  make
+}
+
+package() {
+  cd SDL2_image-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
