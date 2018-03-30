@@ -1,0 +1,33 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=switch-libmad
+pkgver=0.15.1b
+pkgrel=1
+pkgdesc='A high-quality MPEG audio decoder. (for Nintendo 3DS homebrew development)'
+arch=('any')
+url='https://www.underbit.com'
+license=('GPL')
+options=(!strip libtool staticlibs)
+source=("https://downloads.devkitpro.org/packages/sources/libmad/${pkgver}/libmad-${pkgver}.tar.bz2")
+sha256sums=(
+ '7e8af486a31fa0dfd1f5d2457961b37a3a194ba0c8a375b07e8df983a6e5ca92'
+)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+
+build() {
+  cd libmad-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd libmad-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
