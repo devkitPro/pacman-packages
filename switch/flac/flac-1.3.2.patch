@@ -1,0 +1,19 @@
+diff -Naur flac-1.3.2-stock/include/share/compat.h flac-1.3.2/include/share/compat.h
+--- flac-1.3.2-stock/include/share/compat.h	2016-12-07 21:10:26.218454157 +0100
++++ flac-1.3.2/include/share/compat.h	2018-03-30 11:00:35.571965899 +0200
+@@ -167,8 +167,14 @@
+ #define flac_vfprintf vfprintf
+ 
+ #define flac_fopen fopen
++#ifdef __SWITCH__
++#define flac_chmod(a, b) printf("flac_chmod: not implemented\n")
++#define flac_utime(a, b) printf("flac_utime: not implemented\n")
++#define chown(a, b, c) printf("flac_chown: not implemented\n")
++#else
+ #define flac_chmod chmod
+ #define flac_utime utime
++#endif
+ #define flac_unlink unlink
+ #define flac_rename rename
+ #define flac_stat stat
+

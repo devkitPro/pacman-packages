@@ -10,9 +10,15 @@ url='https://xiph.org/flac/'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
 depends=("switch-libogg")
-source=("https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz")
-sha256sums=('91cfc3ed61dc40f47f050a109b08610667d73477af6ef36dcad31c31a4a8d53f')
 makedepends=('devkitpro-pkgbuild-helpers')
+source=(
+  "https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz"
+  "flac-${pkgver}.patch"
+)
+sha256sums=(
+  '91cfc3ed61dc40f47f050a109b08610667d73477af6ef36dcad31c31a4a8d53f'
+  'cd5e6ecde894647397cf67630087880da5e39835b72d4f6d0a1ba9a0936634f1'
+)
 
 build() {
   cd flac-$pkgver
@@ -20,12 +26,15 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static --disable-thorough-tests \
-    --disable-xmms-plugin --disable-oggtest --disable-cpplibs \
-    --disable-largefile
+  patch -Np1 -i "$srcdir/flac-${pkgver}.patch"
 
-  make
+  CFLAGS="${CFLAGS} -D__SWITCH__ " \
+    ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static \
+    --disable-xmms-plugin --disable-cpplibs \
+    --disable-sse
+
+  make -C src/libFLAC
 }
 
 package() {
