@@ -27,7 +27,7 @@ build() {
     --disable-shared --enable-static --enable-speed
 
   # remove invalid flags
-  sed  -i 's/-fforce-mem//g' Makefile
+  sed  -i 's/-O -fforce-mem/-O2 -fPIC -ftls-model=local-exec/g' Makefile
 
   make
 }
