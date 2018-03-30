@@ -1,0 +1,43 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-sdl2_ttf
+pkgver=2.0.14
+pkgrel=1
+pkgdesc="SDL2 TrueType font library (Nintendo Switch port)."
+arch=('any')
+url="https://libsdl.org"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=(
+  'switch-sdl2'
+  'switch-freetype'
+)
+source=("https://downloads.devkitpro.org/packages/sources//SDL2_ttf-${pkgver}.tar.bz2")
+sha256sums=(
+ 'c63622772fefdcd9222bf6cb74eeadb275bb5f98de45e0180dfc39343d4491e8'
+)
+
+build() {
+  cd SDL2_ttf-$pkgver
+
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=aarch64-none-elf --disable-shared --enable-static \
+    --disable-sdltest
+
+  make
+}
+
+package() {
+  cd SDL2_ttf-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
