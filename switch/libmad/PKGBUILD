@@ -1,0 +1,40 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-libmad
+pkgver=0.15.1b
+pkgrel=1
+pkgdesc='A high-quality MPEG audio decoder. (for Nintendo Switch homebrew development)'
+arch=('any')
+url='https://www.underbit.com'
+license=('GPL')
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("ftp://ftp.mars.org/pub/mpeg/libmad-${pkgver}.tar.gz")
+sha256sums=('bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690')
+
+build() {
+  cd libmad-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  # add aarch64 support
+  sed -i '230i | aarch64 | aarch64_be \\' config.sub
+  sed -i '296i | aarch64-* | aarch64_be-* \\' config.sub
+
+  ./configure --prefix="$DEVKITPRO/portlibs/switch" --host=aarch64-none-elf \
+    --disable-shared --enable-static --enable-speed
+
+  # remove invalid flags
+  sed  -i 's/-fforce-mem//g' Makefile
+
+  make
+}
+
+package() {
+  cd libmad-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
+
