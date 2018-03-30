@@ -3,7 +3,7 @@
 
 pkgname=switch-sdl2_image
 pkgver=2.0.3
-pkgrel=1
+pkgrel=2
 pkgdesc="SDL2 image loading library (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org"
@@ -26,7 +26,8 @@ build() {
 
   ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=aarch64-none-elf --disable-shared --enable-static \
-    --disable-sdltest
+    --disable-sdltest \
+    --with-sdl-prefix=${PORTLIBS_PREFIX}
 
   make
 }
