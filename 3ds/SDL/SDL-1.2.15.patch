@@ -225,8 +225,8 @@ index f9c4e0702..d184221da 100644
 +#define SDL_DUALSCR		0x00300000	/**< N3DS Top+Bottom Screen mode */
 +#define SDL_FITWIDTH	0x00400000	/**> Render a resized surface to fit systen screen width */
 +#define SDL_FITHEIGHT	0x00800000	/**> Render a resized surface to fit systen screen height */
-+#define SDL_CONSOLETOP	0x00040000	/**> Enale console output on Top screen */
-+#define SDL_CONSOLEBOTTOM	0x00080000	/**> Enale console output on Bottom screen */
++#define SDL_CONSOLETOP	0x00040000	/**> Enable console output on Top screen */
++#define SDL_CONSOLEBOTTOM	0x00080000	/**> Enable console output on Bottom screen */
 +#endif
  /*@}*/
  
