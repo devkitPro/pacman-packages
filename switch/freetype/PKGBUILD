@@ -3,7 +3,7 @@
 
 pkgname=switch-freetype
 pkgver=2.9
-pkgrel=1
+pkgrel=2
 pkgdesc='FreeType is a freely available software library to render fonts.'
 arch=('any')
 url='https://www.freetype.org/'
@@ -11,7 +11,9 @@ license=(GPL2+ custom:FreeType)
 options=(!strip libtool staticlibs)
 depends=("switch-bzip2"
          "switch-libpng"
-         "switch-zlib")
+         "switch-zlib"
+         "switch-pkg-config"
+)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
 sha256sums=('bf380e4d7c4f3b5b1c1a7b2bf3abb967bda5e9ab480d0df656e0e08c5019c5e6')
@@ -34,10 +36,16 @@ build() {
 package() {
   cd freetype-$pkgver
 
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
   make DESTDIR="$pkgdir" install
-  
+
   # Licenses
-  install -Dm644 "docs/LICENSE.TXT" "${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
-  install -Dm644 "docs/GPLv2.TXT"   "${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
-  install -Dm644 "docs/FTL.TXT"     "${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
+  install -Dm644 "docs/LICENSE.TXT" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
+  install -Dm644 "docs/GPLv2.TXT"   "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
+  install -Dm644 "docs/FTL.TXT"     "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
+
+  # remove useless stuff
+  rm -r "${pkgdir}/${PORTLIBS_PREFIX}/share"
 }
