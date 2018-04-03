@@ -2,7 +2,7 @@
 
 pkgname=3ds-sdl_mixer
 pkgver=1.2.12
-pkgrel=1
+pkgrel=2
 pkgdesc="A simple library to load images of various formats as SDL surfaces (Nintendo 3DS port)"
 arch=('any')
 url="https://libsdl.org"
@@ -32,10 +32,9 @@ build() {
 
   sed -i 's,\$(objects)/playwave\$(EXE) \$(objects)/playmus\$(EXE),,g' Makefile.in
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+  LIBS="-logg" ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
     --disable-shared --enable-static \
     --enable-music-ogg-tremor \
-    --disable-music-ogg \
     --disable-music-cmd \
     --enable-music-mp3-mad-gpl
 
