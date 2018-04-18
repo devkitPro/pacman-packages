@@ -27,5 +27,13 @@ build() {
 package() {
   cd libogg-$pkgver
 
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
   make DESTDIR="$pkgdir" install
+
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+
+  # remove useless documentation
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share/doc
 }
