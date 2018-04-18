@@ -1,0 +1,47 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: TurtleP     <jeremy.postelnek@gmail.co>
+
+pkgname=switch-sdl2_gfx
+pkgver=1.0.4
+pkgrel=1
+pkgdesc="SDL2 graphics drawing primitives (Nintendo Switch port)."
+arch=('any')
+url="https://libsdl.org"
+license=("zlib")
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('switch-sdl2')
+source=("http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-1.0.4.tar.gz" "config.sub" "config.guess")
+sha256sums=(
+ '63e0e01addedc9df2f85b93a248f06e8a04affa014a835c2ea34bfe34e576262'
+ '72e02ea93447038f8ced24f296b31e0f397bbcc6b32abdcf9b38c80f153433fd'
+ 'fbc2337aa59a204f5d74743b82c8be7aab8b39853b4e54a888008f70430c4305'
+)
+
+build() {
+  cp config.sub SDL2_gfx-$pkgver
+  cp config.guess SDL2_gfx-$pkgver
+  
+  cd SDL2_gfx-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+  
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --enable-mmx=no \
+    --host=aarch64-none-elf \
+    --disable-shared --enable-static \
+    --with-sdl-prefix=${PORTLIBS_PREFIX}
+
+  make
+}
+
+package() {
+  cd SDL2_gfx-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
