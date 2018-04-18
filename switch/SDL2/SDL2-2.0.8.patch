@@ -326,7 +326,7 @@ index f0e1f3d..a7e5192 100644
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 0000000..00e1ea5
+index 0000000..b3568a4
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
 @@ -0,0 +1,148 @@
@@ -406,7 +406,7 @@ index 0000000..00e1ea5
 +        this->hidden->source_buffer[i].next = NULL;
 +        this->hidden->source_buffer[i].buffer = this->hidden->buffer[i];
 +        this->hidden->source_buffer[i].buffer_size =
-+            (u64) this->spec.size / this->spec.channels / 2;
++            (u64) this->spec.size / this->spec.channels / 4;
 +        this->hidden->source_buffer[i].data_size = (u64) this->spec.size;
 +        this->hidden->source_buffer[i].data_offset = (u64) 0;
 +        audoutAppendAudioOutBuffer(&this->hidden->source_buffer[i]);
@@ -540,12 +540,26 @@ index 73316f1..81021e9 100644
 diff --git a/src/filesystem/switch/dummy.c b/src/filesystem/switch/dummy.c
 new file mode 100644
 index 0000000..e69de29
+diff --git a/src/joystick/SDL_gamecontrollerdb.h b/src/joystick/SDL_gamecontrollerdb.h
+index fdc0b59..8dcc6ca 100644
+--- a/src/joystick/SDL_gamecontrollerdb.h
++++ b/src/joystick/SDL_gamecontrollerdb.h
+@@ -226,6 +226,9 @@ static const char *s_ControllerMappings [] =
+ #if defined(SDL_JOYSTICK_EMSCRIPTEN)
+     "emscripten,Standard Gamepad,a:b0,b:b1,back:b8,dpdown:b13,dpleft:b14,dpright:b15,dpup:b12,guide:b16,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
+ #endif
++#if defined(SDL_JOYSTICK_SWITCH)
++    "53776974636820436F6E74726F6C6C65,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
++#endif
+     NULL
+ };
+ 
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 0000000..6a9cc57
+index 0000000..7fdbe3d
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,228 @@
+@@ -0,0 +1,211 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -639,24 +653,7 @@ index 0000000..6a9cc57
 +const char *
 +SDL_SYS_JoystickNameForDeviceIndex(int device_index)
 +{
-+    if (device_index == 1)
-+        return "Switch Controller #1";
-+    if (device_index == 2)
-+        return "Switch Controller #2";
-+    if (device_index == 3)
-+        return "Switch Controller #3";
-+    if (device_index == 4)
-+        return "Switch Controller #4";
-+    if (device_index == 5)
-+        return "Switch Controller #5";
-+    if (device_index == 6)
-+        return "Switch Controller #6";
-+    if (device_index == 7)
-+        return "Switch Controller #7";
-+    if (device_index == 8)
-+        return "Switch Controller #8";
-+
-+    return "Switch Controller #0";
++    return "Switch Controller";
 +}
 +
 +/* Function to perform the mapping from device index to the instance id for this index */
@@ -1235,7 +1232,7 @@ index 0000000..6a8d207
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread.c b/src/thread/switch/SDL_systhread.c
 new file mode 100644
-index 0000000..4a54e3e
+index 0000000..3b0f75c
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread.c
 @@ -0,0 +1,85 @@
@@ -1272,7 +1269,7 @@ index 0000000..4a54e3e
 +#include "SDL_thread.h"
 +#include "../SDL_systhread.h"
 +
-+#define STACK_SIZE 0x2000
++#define STACK_SIZE 0x5000
 +
 +static void
 +SDL_SYS_RunThread(void *data)
@@ -1282,7 +1279,7 @@ index 0000000..4a54e3e
 +
 +int SDL_SYS_CreateThread(SDL_Thread *thread, void *args)
 +{
-+    Result res = threadCreate(&thread->handle, SDL_SYS_RunThread, args, STACK_SIZE, 0x2B, -2);
++    Result res = threadCreate(&thread->handle, SDL_SYS_RunThread, args, STACK_SIZE, 0x1C, -2);
 +    if (res != 0) {
 +        return SDL_SetError("threadCreate() failed: 0x%08X", res);
 +    }
@@ -1504,12 +1501,173 @@ index 8cf195d..bde5b16 100644
  #if SDL_VIDEO_DRIVER_DUMMY
      &DUMMY_bootstrap,
  #endif
+diff --git a/src/video/switch/SDL_switchtouch.c b/src/video/switch/SDL_switchtouch.c
+new file mode 100644
+index 0000000..9191817
+--- /dev/null
++++ b/src/video/switch/SDL_switchtouch.c
+@@ -0,0 +1,115 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#if SDL_VIDEO_DRIVER_SWITCH
++
++#include <switch.h>
++
++#include "SDL_events.h"
++#include "SDL_switchtouch.h"
++#include "../../events/SDL_touch_c.h"
++
++#define MAX_TOUCH 16
++
++typedef struct SwitchTouch
++{
++    SDL_FingerID id;
++    touchPosition position;
++} SwitchTouch;
++
++typedef struct TouchState
++{
++    SwitchTouch touch[MAX_TOUCH];
++    u32 count;
++} TouchState;
++
++TouchState touchState;
++
++TouchState touchState_old;
++
++void
++SWITCH_InitTouch(void)
++{
++    SDL_AddTouch((SDL_TouchID) 0, "Switch");
++}
++
++void
++SWITCH_QuitTouch(void)
++{
++
++}
++
++void
++SWITCH_PollTouch(void)
++{
++    memcpy(&touchState_old, &touchState, sizeof(touchState));
++
++    touchState.count = hidTouchCount();
++    if (touchState.count >= MAX_TOUCH) {
++        touchState.count = MAX_TOUCH - 1;
++    }
++
++    if (touchState.count > 0) {
++        for (u32 i = 0; i < touchState.count; i++) {
++
++            touchState.touch[i].id = i;
++            hidTouchRead(&touchState.touch[i].position, i);
++
++            // Send an initial touch
++            SDL_SendTouch(0, (SDL_FingerID) i, SDL_TRUE,
++                          (float) touchState.touch[i].position.px / 1280.0f,
++                          (float) touchState.touch[i].position.py / 720.0f, 1);
++
++            // Always send the motion
++            SDL_SendTouchMotion(0, (SDL_FingerID) i,
++                                (float) touchState.touch[i].position.px / 1280.0f,
++                                (float) touchState.touch[i].position.py / 720.0f, 1);
++        }
++    }
++
++    // some fingers might have been let go
++    if (touchState_old.count > 0) {
++
++        for (int i = 0; i < touchState_old.count; i++) {
++
++            int finger_up = 1;
++            if (touchState.count > 0) {
++                for (int j = 0; j < touchState.count; j++) {
++                    if (touchState.touch[j].id == touchState_old.touch[i].id) {
++                        finger_up = 0;
++                    }
++                }
++            }
++
++            if (finger_up == 1) {
++                // Finger released from screen
++                SDL_SendTouch((SDL_TouchID) 0, (SDL_FingerID) touchState_old.touch[i].id, SDL_FALSE,
++                              (float) touchState_old.touch[i].position.px / 1280.0f,
++                              (float) touchState_old.touch[i].position.py / 720.0f, 1);
++            }
++        }
++    }
++}
++
++#endif /* SDL_VIDEO_DRIVER_SWITCH */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/switch/SDL_switchtouch.h b/src/video/switch/SDL_switchtouch.h
+new file mode 100644
+index 0000000..ac5908e
+--- /dev/null
++++ b/src/video/switch/SDL_switchtouch.h
+@@ -0,0 +1,34 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#ifndef _SDL_switchtouch_h
++#define _SDL_switchtouch_h
++
++#include "../../SDL_internal.h"
++
++/* Touch functions */
++extern void SWITCH_InitTouch(void);
++extern void SWITCH_QuitTouch(void);
++extern void SWITCH_PollTouch(void);
++
++#endif /* _SDL_switchtouch_h */
++
++/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 0000000..86091af
+index 0000000..3862883
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
-@@ -0,0 +1,232 @@
+@@ -0,0 +1,269 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -1539,6 +1697,7 @@ index 0000000..86091af
 +#include "../SDL_sysvideo.h"
 +#include "../../events/SDL_keyboard_c.h"
 +#include "../../events/SDL_windowevents_c.h"
++#include "SDL_switchtouch.h"
 +
 +#include <switch.h>
 +
@@ -1550,6 +1709,7 @@ index 0000000..86091af
 +{
 +    SDL_Surface *surface;
 +    int x_offset;
++    int y_offset;
 +} SWITCH_WindowData;
 +
 +static int SWITCH_VideoInit(_THIS);
@@ -1628,11 +1788,15 @@ index 0000000..86091af
 +    mode.h = 0;
 +    SDL_AddDisplayMode(&_this->displays[0], &mode);
 +
++    // init touch
++    SWITCH_InitTouch();
++
 +    return 0;
 +}
 +
 +static void SWITCH_VideoQuit(_THIS)
 +{
++    SWITCH_QuitTouch();
 +    gfxExit();
 +}
 +
@@ -1654,6 +1818,32 @@ index 0000000..86091af
 +    }
 +
 +    hidScanInput();
++    SWITCH_PollTouch();
++}
++
++static void SWITCH_SetResolution(u32 width, u32 height)
++{
++    u32 x, y, w, h, i;
++    u32 *fb;
++
++    // clear framebuffers before switching res
++    for (i = 0; i < 2; i++) {
++
++        fb = (u32 *) gfxGetFramebuffer(&w, &h);
++
++        for (y = 0; y < h; y++) {
++            for (x = 0; x < w; x++) {
++                fb[gfxGetFramebufferDisplayOffset(x, y)] =
++                    (u32) RGBA8_MAXALPHA(0, 0, 0);
++            }
++        }
++
++        gfxFlushBuffers();
++        gfxSwapBuffers();
++        gfxWaitForVsync();
++    }
++
++    gfxConfigureResolution(width, height);
 +}
 +
 +static int SWITCH_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
@@ -1680,13 +1870,18 @@ index 0000000..86091af
 +        float w = SDL_min(SCREEN_WIDTH, SCREEN_WIDTH * scaling);
 +        // calculate x offset, to respect aspect ratio
 +        // round down to multiple of 4 for faster fb writes
-+        int offset = (int) (w - (window->w)) / 2;
-+        data->x_offset = offset & ~3;
-+        gfxConfigureResolution((int) w, window->h);
++        data->x_offset = ((int) (w - window->w) / 2) & ~3;
++        data->y_offset = 0;
++        SWITCH_SetResolution((u32) w, (u32) window->h);
++        printf("gfxConfigureResolution: %i x %i (window: %i x %i, offset: %i x %i)\n",
++               (int) w, window->h, window->w, window->h, data->x_offset, data->y_offset);
 +    }
 +    else {
-+        gfxConfigureResolution(0, 0);
-+        data->x_offset = 0;
++        data->x_offset = ((SCREEN_WIDTH - window->w) / 2) & ~3;
++        data->y_offset = (SCREEN_HEIGHT - window->h) / 2;
++        SWITCH_SetResolution(0, 0);
++        printf("gfxConfigureResolution: %i x %i (window: %i x %i, offset: %i x %i)\n",
++               1280, 720, window->w, window->h, data->x_offset, data->y_offset);
 +    }
 +
 +    *format = SDL_PIXELFORMAT_ABGR8888;
@@ -1711,17 +1906,17 @@ index 0000000..86091af
 +    u32 *dst = (u32 *) gfxGetFramebuffer(&fb_w, &fb_h);
 +
 +    // prevent fb overflow in case of resolution change outside SDL
-+    if (window->x + w > fb_w) {
-+        w = fb_w - window->x;
++    if (data->x_offset + w > fb_w) {
++        w = fb_w - data->x_offset;
 +    }
-+    if (window->y + h > fb_h) {
-+        h = fb_h - window->y;
++    if (data->y_offset + h > fb_h) {
++        h = fb_h - data->y_offset;
 +    }
 +
 +    for (y = 0; y < h; y++) {
 +        for (x = 0; x < w; x += 4) {
 +            *((u128 *) &dst[gfxGetFramebufferDisplayOffset(
-+                (u32) (x + window->x + data->x_offset), (u32) (y + window->y))]) =
++                (u32) (x + data->x_offset), (u32) (y + data->y_offset))]) =
 +                *((u128 *) &src[y * w + x]);
 +        }
 +    }
