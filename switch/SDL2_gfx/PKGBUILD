@@ -21,8 +21,10 @@ sha256sums=(
 build() {
   cp config.sub SDL2_gfx-$pkgver
   cp config.guess SDL2_gfx-$pkgver
-  
+
   cd SDL2_gfx-$pkgver
+
+  ./autogen.sh
 
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
