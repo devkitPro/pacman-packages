@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-curl
 pkgver=7.58.0
-pkgrel=2
+pkgrel=3
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='http://www.zlib.net/'
@@ -27,7 +27,8 @@ build() {
 
   patch -Np1 -i $srcdir/curl-7.58.0.patch
 
-  ./configure --prefix=$PORTLIBS_PREFIX --host=arm-none-eabi \
+  ./configure CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LIBS="-lctru" \
+    --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
     --disable-shared --enable-static --disable-ipv6 --disable-unix-sockets \
     --disable-manual --disable-ntlm-wb --disable-threaded-resolver \
     --with-mbedtls=$PORTLIBS_PREFIX
