@@ -33,13 +33,16 @@ build() {
     --with-mbedtls=$PORTLIBS_PREFIX
 
   make -C lib
-  
 }
 
 package() {
   cd curl-$pkgver
 
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
   make DESTDIR="$pkgdir" -C lib install
   make DESTDIR="$pkgdir" -C include install
 
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
 }
