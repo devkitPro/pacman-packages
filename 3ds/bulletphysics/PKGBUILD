@@ -27,11 +27,9 @@ build() {
     .
 
   make
-
 }
 
 package() {
-
   cd bullet3-$pkgver
 
   source /opt/devkitpro/devkitarm.sh
@@ -39,4 +37,5 @@ package() {
 
   make install DESTDIR="$pkgdir"
 
+  install -Dm644 "LICENSE.txt" "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.txt"
 }
