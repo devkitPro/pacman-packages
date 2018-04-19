@@ -1,23 +1,23 @@
-
 # Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: Elouan Martinet <exa@elou.world>
+
 pkgname=3ds-curl
-pkgver=7.58.0
-pkgrel=3
+pkgver=7.59.0
+pkgrel=1
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
-url='http://www.zlib.net/'
-license=('zlib')
+url='https://curl.haxx.se'
+license=('MIT')
 options=(!strip libtool staticlibs)
 depends=('3ds-zlib' '3ds-mbedtls')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 
-source=('https://github.com/curl/curl/releases/download/curl-7_58_0/curl-7.58.0.tar.xz'
+source=("https://curl.haxx.se/download/curl-${pkgver}.tar.gz"
         'curl-7.58.0.patch'
 )
 
-sha256sums=( '6a813875243609eb75f37fa72044e4ad618b55ec15a4eafdac2df6a7e800e3e3'
-             '937dc6fc621ce29cb14bf1083b232dd1c795618ad2a5c4b53ad399be189ef873'
-)
+sha256sums=('099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
+            '937dc6fc621ce29cb14bf1083b232dd1c795618ad2a5c4b53ad399be189ef873')
 
 build() {
   cd curl-$pkgver
