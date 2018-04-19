@@ -1,7 +1,8 @@
-
 # Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: Elouan Martinet <exa@elou.world>
+
 pkgname=3ds-mbedtls
-pkgver=2.7.0
+pkgver=2.8.0
 pkgrel=1
 pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
 arch=('any')
@@ -10,12 +11,11 @@ license=('apache')
 options=(!strip libtool staticlibs)
 depends=(3ds-zlib)
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
-source=( 'https://tls.mbed.org/download/mbedtls-2.7.0-apache.tgz'
+source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
          'libmbedtls-2.7.0.patch' )
 
-sha256sums=('aeb66d6cd43aa1c79c145d15845c655627a7fc30d624148aaafbb6c36d7f55ef'
-            '2797172f502dca4c57e98f6c49a3d1608b371816567075dba22b6d8ebf25f8b6'
-)
+sha256sums=('ab8b62b995781bcf22e87a265ed06267f87c3041198e996b44441223d19fa9c3'
+            '2797172f502dca4c57e98f6c49a3d1608b371816567075dba22b6d8ebf25f8b6')
 
 build() {
   cd mbedtls-$pkgver
