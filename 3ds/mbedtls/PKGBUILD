@@ -12,7 +12,7 @@ options=(!strip libtool staticlibs)
 depends=(3ds-zlib)
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
-         'libmbedtls-2.7.0.patch' )
+         '3ds-mbedtls.patch' )
 
 sha256sums=('ab8b62b995781bcf22e87a265ed06267f87c3041198e996b44441223d19fa9c3'
             '2797172f502dca4c57e98f6c49a3d1608b371816567075dba22b6d8ebf25f8b6')
@@ -20,7 +20,7 @@ sha256sums=('ab8b62b995781bcf22e87a265ed06267f87c3041198e996b44441223d19fa9c3'
 build() {
   cd mbedtls-$pkgver
 
-  patch -Np1 -i $srcdir/libmbedtls-2.7.0.patch
+  patch -Np1 -i $srcdir/3ds-mbedtls.patch
 
   source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
