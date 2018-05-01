@@ -1,22 +1,23 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 # Contributor: Cpasjuste <cpasjuste@gmail.com>
+# Contributor: carstene1ns <dev f4ke de>
 
 pkgname=switch-sdl2_image
 pkgver=2.0.3
-pkgrel=2
+pkgrel=3
 pkgdesc="SDL2 image loading library (Nintendo Switch port)."
 arch=('any')
-url="https://libsdl.org"
-license=("LGPL")
+url="https://libsdl.org/projects/SDL_image/"
+license=("zlib")
 options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=(
-  'switch-sdl2' 'switch-libpng' 'switch-libjpeg-turbo'
+  'switch-sdl2'
+  'switch-libpng'
+  'switch-libjpeg-turbo'
 )
-source=("https://downloads.devkitpro.org/packages/sources/SDL2_image-${pkgver}.tar.bz2")
-sha256sums=(
- '3fdff3e2ebd9bc629098ca3fb4360c0eee3b0ccb158c06106e7175305ea2d6f5'
-)
+source=("${url}release/SDL2_image-${pkgver}.tar.bz2")
+sha256sums=('3fdff3e2ebd9bc629098ca3fb4360c0eee3b0ccb158c06106e7175305ea2d6f5')
 
 build() {
   cd SDL2_image-$pkgver
@@ -40,4 +41,9 @@ package() {
 
   make DESTDIR="$pkgdir" install
 
+  # add our static libs
+  echo "Requires.private: libpng libjpeg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_image.pc"
+
+  # License
+  install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
 }
