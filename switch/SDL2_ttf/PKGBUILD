@@ -1,23 +1,22 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 # Contributor: Cpasjuste <cpasjuste@gmail.com>
+# Contributor: carstene1ns <dev f4ke de>
 
 pkgname=switch-sdl2_ttf
 pkgver=2.0.14
-pkgrel=1
+pkgrel=2
 pkgdesc="SDL2 TrueType font library (Nintendo Switch port)."
 arch=('any')
-url="https://libsdl.org"
-license=("LGPL")
+url="https://libsdl.org/projects/SDL_ttf/"
+license=("zlib")
 options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=(
   'switch-sdl2'
   'switch-freetype'
 )
-source=("https://downloads.devkitpro.org/packages/sources//SDL2_ttf-${pkgver}.tar.bz2")
-sha256sums=(
- 'c63622772fefdcd9222bf6cb74eeadb275bb5f98de45e0180dfc39343d4491e8'
-)
+source=("${url}release/SDL2_ttf-${pkgver}.tar.gz")
+sha256sums=('34db5e20bcf64e7071fe9ae25acaa7d72bdc4f11ab3ce59acc768ab62fe39276')
 
 build() {
   cd SDL2_ttf-$pkgver
@@ -25,9 +24,12 @@ build() {
   source ${DEVKITPRO}/devkita64.sh
   source ${DEVKITPRO}/switchvars.sh
 
+  # patch out compiling showfont and glfont
+  sed '/^noinst_PROGRAMS/d' -i Makefile.in
+
   ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=aarch64-none-elf --disable-shared --enable-static \
-    --disable-sdltest
+    --disable-sdltest --without-x
 
   make
 }
@@ -40,4 +42,9 @@ package() {
 
   make DESTDIR="$pkgdir" install
 
+  # add our static lib
+  echo "Requires.private: freetype2" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_ttf.pc"
+
+  # License
+  install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
 }
