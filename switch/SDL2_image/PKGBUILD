@@ -16,8 +16,8 @@ depends=(
   'switch-libpng'
   'switch-libjpeg-turbo'
 )
-source=("${url}release/SDL2_image-${pkgver}.tar.bz2")
-sha256sums=('3fdff3e2ebd9bc629098ca3fb4360c0eee3b0ccb158c06106e7175305ea2d6f5')
+source=("${url}release/SDL2_image-${pkgver}.tar.gz")
+sha256sums=('3510c25da735ffcd8ce3b65073150ff4f7f9493b866e85b83738083b556d2368')
 
 build() {
   cd SDL2_image-$pkgver
