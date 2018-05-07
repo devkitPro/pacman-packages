@@ -12,7 +12,7 @@ makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("${url}/release/SDL-${pkgver}.tar.gz" "SDL-1.2.15.patch")
 sha256sums=(
 'd6d316a793e5e348155f0dd93b979798933fb98aa1edebcc108829d6474aad00'
-'6114d820145836771c0a958b7603eaa4a72615627dc8e633e357062680e59de8'
+'441c44eb04c18e303d09533acc01761f732959523a4dc6eb7fb51ba4c50cad95'
 )
 
 build() {
