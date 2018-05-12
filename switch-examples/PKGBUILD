@@ -1,0 +1,23 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('switch-examples')
+pkgver=20180302
+pkgrel=1
+pkgdesc="Nintendo Switch example code."
+arch=('any')
+license=('custom')
+url="http://github.com/switchbrew/switch-examples"
+options=(!strip libtool staticlibs)
+source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
+sha256sums=('a2028fe2dcf1217144ca0663b52109ebc5096263df6464a4e68dd5cc197e60cc')
+makedepends=('devkitA64')
+
+groups=('switch-dev')
+
+package() {
+  rm $srcdir/${pkgname}-${pkgver}.tar.bz2
+  mkdir -p "$pkgdir"/opt/devkitpro/examples/switch
+  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/switch  
+
+}
