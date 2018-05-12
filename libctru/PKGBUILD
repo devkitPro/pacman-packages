@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libctru')
-pkgver=1.4.0
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="Nintendo 3DS userland library."
 arch=('any')
@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/smealum"
 options=(!strip libtool staticlibs)
 source=(${url}/ctrulib/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
-sha256sums=('4afb01e641a1d8724ad28b23cbcd28dfe86321f46b2bd805bb819cc2af69f143')
+sha256sums=('86214d4b17bdf6e385daf977431267a96ff16c55218434b913136c4b7a29a5f9')
 makedepends=('devkitARM')
 
 groups=('3ds-dev')
