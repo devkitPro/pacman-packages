@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('3ds-examples')
-pkgver=20170714
+pkgver=20180513
 pkgrel=1
 pkgdesc="Nintendo 3DS example code."
 arch=('any')
@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/devkitpro/3ds-examples"
 options=(!strip libtool staticlibs)
 source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('533dcf4ee6e7c0117e04ad30fe8436d19df786915ff6f3ade27bc9cad6924bde')
+sha256sums=('82e724b0ea77853d2a01a6f66cb86deab17879ce12d5b777c3693570e246badb')
 makedepends=('devkitARM')
 
 groups=('3ds-dev')
