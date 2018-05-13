@@ -1,0 +1,29 @@
+
+# Maintainer: fincs <fincs.alt1@gmail.com>
+
+pkgname=('citro3d')
+pkgver=1.4.0
+pkgrel=1
+pkgdesc="Nintendo 3DS gpu library."
+arch=('any')
+license=('custom')
+url="http://github.com/fincs/${pkgname}"
+options=(!strip libtool staticlibs)
+source=(${url}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
+sha256sums=('063b846a7824d40764a6d0a784000f509625c7673091140d71a1f0c53a0e4b99')
+makedepends=('devkitARM')
+depends=('libctru')
+
+groups=('3ds-dev')
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir install
+
+}
