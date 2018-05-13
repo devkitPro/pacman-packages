@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/devkitpro/3ds-examples"
 options=(!strip libtool staticlibs)
 source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('82e724b0ea77853d2a01a6f66cb86deab17879ce12d5b777c3693570e246badb')
+sha256sums=('9eea26bb10c3b6e8294449bd7bc2b2243189b37bf68c1214d2f247f3bcb0ecb7')
 makedepends=('devkitARM')
 
 groups=('3ds-dev')
