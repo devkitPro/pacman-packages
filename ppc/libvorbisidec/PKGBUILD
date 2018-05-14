@@ -1,0 +1,36 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=ppc-libvorbisidec
+pkgver=1.2.1
+pkgrel=1
+pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for Nintendo Gamecube/wii homebrew development)'
+arch=('any')
+url="http://xiph.org"
+license=('LGPL')
+options=(!strip libtool staticlibs)
+source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.bz2")
+sha256sums=('1afbc18e0104ca8c9e9943cfcfa995ea0100bf246c425962770d455d4ad03c65')
+makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('ppc-libogg')
+build() {
+  cd libvorbisidec-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi 
+
+  make
+}
+
+package() {
+  cd libvorbisidec-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  make DESTDIR="$pkgdir" install
+  # license
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+}
+
