@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=ppc-pkg-config
 pkgver=0.28
-pkgrel=2
+pkgrel=3
 pkgdesc='pkg-config wrapper (for Nintendo Gamecube/Wii homebrew development)'
 arch=('any')
 url='http://devkitpro.org/'
