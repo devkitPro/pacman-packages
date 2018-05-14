@@ -1,0 +1,29 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgbasename=('libfat')
+pkgname=("${pkgbasename}-ogc")
+pkgver=1.1.3
+pkgrel=1
+pkgdesc="Nintendo Gamecube & Wii FAT library."
+arch=('any')
+license=('custom')
+url="http://github.com/devkitpro"
+options=(!strip libtool staticlibs)
+source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
+sha256sums=('25f1cbbacaa5bb8215ac8dd5068cf66e6043b6f08d0e722762e08dcbdd085458')
+makedepends=('devkitPPC')
+
+groups=('wii-dev' 'gamecube-dev')
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir ogc-install
+
+}
