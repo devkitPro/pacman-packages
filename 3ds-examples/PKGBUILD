@@ -3,14 +3,14 @@
 
 pkgname=('3ds-examples')
 pkgver=20180513
-pkgrel=1
+pkgrel=2
 pkgdesc="Nintendo 3DS example code."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/3ds-examples"
 options=(!strip libtool staticlibs)
 source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('9eea26bb10c3b6e8294449bd7bc2b2243189b37bf68c1214d2f247f3bcb0ecb7')
+sha256sums=('c4e8f82a2d95f5a538b5ceabfc03fe975fe4ba4fd307e02657ac47ef7d7493a7')
 makedepends=('devkitARM')
 
 groups=('3ds-dev')
