@@ -1,0 +1,22 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('wii-examples')
+pkgver=20180514
+pkgrel=1
+pkgdesc="Nintendo Wii example code."
+arch=('any')
+license=('custom')
+url="http://github.com/devkitpro/wii-examples"
+options=(!strip libtool staticlibs)
+source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
+sha256sums=('27e1df97ce8a1f2045cd93190d13531f517e55155810711d4b7364a47654d982')
+makedepends=('devkitPPC')
+
+groups=('wii-dev')
+
+package() {
+  rm $srcdir/${pkgname}-${pkgver}.tar.bz2
+  mkdir -p "$pkgdir"/opt/devkitpro/examples/wii
+  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/wii  
+}
