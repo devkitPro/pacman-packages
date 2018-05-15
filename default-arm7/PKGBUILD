@@ -1,0 +1,29 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('default-arm7')
+pkgver=0.7.4
+pkgrel=1
+pkgdesc="Nintendo DS library."
+arch=('any')
+license=('zlib')
+url="http://github.com/devkitpro"
+options=(!strip libtool staticlibs)
+source=(${url}/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
+sha256sums=('2cbaa1fb18676b67d73901b70ad0633ab89ea408b29ef6f9723c0e9a8f9e70c4')
+makedepends=('devkitARM')
+depends=('libnds')
+
+groups=('nds-dev')
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir install
+
+}
