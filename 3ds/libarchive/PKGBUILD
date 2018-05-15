@@ -2,7 +2,7 @@
 
 pkgname=3ds-libarchive
 pkgver=3.1.2
-pkgrel=1
+pkgrel=2
 pkgdesc='library that can create and read several streaming archive format (for Nintendo 3DS homebrew development)'
 arch=('any')
 url="https://www.libarchive.org"
