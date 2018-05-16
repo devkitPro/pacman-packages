@@ -1,6 +1,6 @@
 diff --git a/CMakeLists.switch b/CMakeLists.switch
 new file mode 100644
-index 0000000..eaf6705
+index 000000000..eaf670550
 --- /dev/null
 +++ b/CMakeLists.switch
 @@ -0,0 +1,77 @@
@@ -82,7 +82,7 @@ index 0000000..eaf6705
 +        DEPENDS ${PROJECT_NAME}.elf
 +        COMMAND elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}.nro)
 diff --git a/configure b/configure
-index 1c7f87e..5fef7ee 100755
+index 1c7f87eb0..5fef7ee5e 100755
 --- a/configure
 +++ b/configure
 @@ -1572,7 +1572,7 @@ Optional Features:
@@ -177,7 +177,7 @@ index 1c7f87e..5fef7ee 100755
          as_fn_error $? "
  *** Unsupported host:  Please add to configure.in
 diff --git a/configure.in b/configure.in
-index 1c7e793..d48c68f 100644
+index 1c7e79338..192321508 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -3905,6 +3905,58 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
@@ -186,9 +186,9 @@ index 1c7e793..d48c68f 100644
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
-+        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__=1 -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec"
-+        SDL_LIBS="-march=armv8-a  -fPIC -specs=${DEVKITPRO}/libnx/switch.specs -L${DEVKITPRO}/portlibs/switch/lib $SDL_LIBS  -L${DEVKITPRO}/libnx/lib -lnx"
++        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 $SDL_CFLAGS -fPIC"
++        EXTRA_LDFLAGS="-march=armv8-a -fPIE -specs=${DEVKITPRO}/libnx/switch.specs -L${DEVKITPRO}/libnx/lib -lnx"
 +        CheckDeclarationAfterStatement
 +
 +        # Set up files for the video library
@@ -240,7 +240,7 @@ index 1c7e793..d48c68f 100644
          AC_MSG_ERROR([
  *** Unsupported host:  Please add to configure.in
 diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index 422f47f..9cc4de5 100644
+index 422f47f78..9cc4de52f 100644
 --- a/include/SDL_config.h.in
 +++ b/include/SDL_config.h.in
 @@ -262,6 +262,7 @@
@@ -299,7 +299,7 @@ index 422f47f..9cc4de5 100644
  /* Enable assembly routines */
  #undef SDL_ASSEMBLY_ROUTINES
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index dcaebea..6d930ad 100644
+index dcaebea6d..6d930adc1 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
 @@ -98,6 +98,9 @@ static const AudioBootStrap *const bootstrap[] = {
@@ -313,7 +313,7 @@ index dcaebea..6d930ad 100644
      &JACK_bootstrap,
  #endif
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index f0e1f3d..a7e5192 100644
+index f0e1f3dad..a7e519281 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
 @@ -205,6 +205,7 @@ extern AudioBootStrap FUSIONSOUND_bootstrap;
@@ -326,10 +326,10 @@ index f0e1f3d..a7e5192 100644
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 0000000..b3568a4
+index 000000000..961c2cf0d
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,156 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -368,7 +368,11 @@ index 0000000..b3568a4
 +static int
 +SWITCHAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 +{
-+    Result res = audoutInitialize();
++    Result res;
++    SDL_bool supported_format = SDL_FALSE;
++    SDL_AudioFormat test_format;
++
++    res = audoutInitialize();
 +    if (res != 0) {
 +        return SDL_SetError("audoutInitialize failed (0x%x)", res);
 +    }
@@ -385,15 +389,19 @@ index 0000000..b3568a4
 +    }
 +    SDL_zerop(this->hidden);
 +
-+    switch (this->spec.format & 0xff) {
-+        case 8:
-+        case 16:
-+            this->spec.format = AUDIO_S16LSB;
-+            break;
-+        default:
-+            return SDL_SetError("Unsupported audio format");
++    test_format = SDL_FirstAudioFormat(this->spec.format);
++    while ((!supported_format) && (test_format)) {
++        if (test_format == AUDIO_S16LSB) {
++            supported_format = SDL_TRUE;
++        } else {
++            test_format = SDL_NextAudioFormat();
++        }
++    }
++    if (!supported_format) {
++        return SDL_SetError("Unsupported audio format");
 +    }
 +
++    this->spec.format = test_format;
 +    this->spec.freq = 48000;
 +    this->spec.channels = 2;
 +
@@ -480,7 +488,7 @@ index 0000000..b3568a4
 +#endif /* SDL_AUDIO_DRIVER_SWITCH */
 diff --git a/src/audio/switch/SDL_switchaudio.h b/src/audio/switch/SDL_switchaudio.h
 new file mode 100644
-index 0000000..aeada60
+index 000000000..aeada608a
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.h
 @@ -0,0 +1,40 @@
@@ -525,7 +533,7 @@ index 0000000..aeada60
 +
 +#endif /* SDL_switchaudio_h_ */
 diff --git a/src/dynapi/SDL_dynapi.h b/src/dynapi/SDL_dynapi.h
-index 73316f1..81021e9 100644
+index 73316f1f8..81021e9e9 100644
 --- a/src/dynapi/SDL_dynapi.h
 +++ b/src/dynapi/SDL_dynapi.h
 @@ -55,6 +55,8 @@
@@ -539,27 +547,27 @@ index 73316f1..81021e9 100644
  /* everyone else. This is where we turn on the API if nothing forced it off. */
 diff --git a/src/filesystem/switch/dummy.c b/src/filesystem/switch/dummy.c
 new file mode 100644
-index 0000000..e69de29
+index 000000000..e69de29bb
 diff --git a/src/joystick/SDL_gamecontrollerdb.h b/src/joystick/SDL_gamecontrollerdb.h
-index fdc0b59..8dcc6ca 100644
+index fdc0b592b..8dcc6ca1d 100644
 --- a/src/joystick/SDL_gamecontrollerdb.h
 +++ b/src/joystick/SDL_gamecontrollerdb.h
-@@ -226,6 +226,9 @@ static const char *s_ControllerMappings [] =
+@@ -225,6 +225,9 @@ static const char *s_ControllerMappings [] =
+ #endif
  #if defined(SDL_JOYSTICK_EMSCRIPTEN)
      "emscripten,Standard Gamepad,a:b0,b:b1,back:b8,dpdown:b13,dpleft:b14,dpright:b15,dpup:b12,guide:b16,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
- #endif
++#endif
 +#if defined(SDL_JOYSTICK_SWITCH)
 +    "53776974636820436F6E74726F6C6C65,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
-+#endif
+ #endif
      NULL
  };
- 
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 0000000..7fdbe3d
+index 000000000..78e699b3f
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,208 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -605,7 +613,7 @@ index 0000000..7fdbe3d
 +static JoystickState pad[JOYSTICK_COUNT];
 +
 +static HidControllerID pad_id[JOYSTICK_COUNT] = {
-+    CONTROLLER_PLAYER_1, CONTROLLER_PLAYER_2,
++    CONTROLLER_HANDHELD, CONTROLLER_PLAYER_2,
 +    CONTROLLER_PLAYER_3, CONTROLLER_PLAYER_4,
 +    CONTROLLER_PLAYER_5, CONTROLLER_PLAYER_6,
 +    CONTROLLER_PLAYER_7, CONTROLLER_PLAYER_8
@@ -630,7 +638,6 @@ index 0000000..7fdbe3d
 +{
 +    for (int i = 0; i < JOYSTICK_COUNT; i++) {
 +        pad[i].id = pad_id[i];
-+        hidSetNpadJoyAssignmentModeSingleByDefault(pad[i].id);
 +    }
 +
 +    return JOYSTICK_COUNT;
@@ -645,8 +652,6 @@ index 0000000..7fdbe3d
 +void
 +SDL_SYS_JoystickDetect(void)
 +{
-+    pad[0].id = hidGetHandheldMode() ?
-+                CONTROLLER_HANDHELD : CONTROLLER_PLAYER_1;
 +}
 +
 +/* Function to get the device-dependent name of a joystick */
@@ -768,14 +773,14 @@ index 0000000..7fdbe3d
 +    return guid;
 +}
 +
-+#endif /* SDL_JOYSTICK_DUMMY || SDL_JOYSTICK_DISABLED */
++#endif /* SDL_JOYSTICK_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/power/switch/dummy.c b/src/power/switch/dummy.c
 new file mode 100644
-index 0000000..e69de29
+index 000000000..e69de29bb
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index b68f90e..3af243d 100644
+index b68f90e91..3af243df7 100644
 --- a/src/thread/SDL_thread_c.h
 +++ b/src/thread/SDL_thread_c.h
 @@ -36,6 +36,8 @@
@@ -789,7 +794,7 @@ index b68f90e..3af243d 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/switch/SDL_syscond.c b/src/thread/switch/SDL_syscond.c
 new file mode 100644
-index 0000000..435c99b
+index 000000000..435c99b8f
 --- /dev/null
 +++ b/src/thread/switch/SDL_syscond.c
 @@ -0,0 +1,140 @@
@@ -935,7 +940,7 @@ index 0000000..435c99b
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/thread/switch/SDL_sysmutex.c b/src/thread/switch/SDL_sysmutex.c
 new file mode 100644
-index 0000000..3789046
+index 000000000..3789046a9
 --- /dev/null
 +++ b/src/thread/switch/SDL_sysmutex.c
 @@ -0,0 +1,85 @@
@@ -1026,7 +1031,7 @@ index 0000000..3789046
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_sysmutex_c.h b/src/thread/switch/SDL_sysmutex_c.h
 new file mode 100644
-index 0000000..307537f
+index 000000000..307537fc9
 --- /dev/null
 +++ b/src/thread/switch/SDL_sysmutex_c.h
 @@ -0,0 +1,22 @@
@@ -1054,7 +1059,7 @@ index 0000000..307537f
 +#include "../../SDL_internal.h"
 diff --git a/src/thread/switch/SDL_syssem.c b/src/thread/switch/SDL_syssem.c
 new file mode 100644
-index 0000000..6a8d207
+index 000000000..6a8d20701
 --- /dev/null
 +++ b/src/thread/switch/SDL_syssem.c
 @@ -0,0 +1,172 @@
@@ -1232,10 +1237,10 @@ index 0000000..6a8d207
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread.c b/src/thread/switch/SDL_systhread.c
 new file mode 100644
-index 0000000..3b0f75c
+index 000000000..01fa7ef75
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread.c
-@@ -0,0 +1,85 @@
+@@ -0,0 +1,102 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
@@ -1279,7 +1284,7 @@ index 0000000..3b0f75c
 +
 +int SDL_SYS_CreateThread(SDL_Thread *thread, void *args)
 +{
-+    Result res = threadCreate(&thread->handle, SDL_SYS_RunThread, args, STACK_SIZE, 0x1C, -2);
++    Result res = threadCreate(&thread->handle, SDL_SYS_RunThread, args, STACK_SIZE, 0x2C, -2);
 +    if (res != 0) {
 +        return SDL_SetError("threadCreate() failed: 0x%08X", res);
 +    }
@@ -1299,31 +1304,48 @@ index 0000000..3b0f75c
 +
 +SDL_threadID SDL_ThreadID(void)
 +{
-+    return (SDL_threadID) armGetTls();
++    u64 tid = 0;
++
++    svcGetThreadId(&tid, CUR_THREAD_HANDLE);
++
++    return (SDL_threadID) tid;
 +}
 +
 +void SDL_SYS_WaitThread(SDL_Thread *thread)
 +{
-+    threadWaitForExit(&thread->handle);
-+    threadClose(&thread->handle);
++    if (thread && thread->handle.handle) {
++        threadWaitForExit(&thread->handle);
++        threadClose(&thread->handle);
++    }
 +}
 +
 +void SDL_SYS_DetachThread(SDL_Thread *thread)
 +{
-+    if (thread->handle.handle) {
++    if (thread && thread->handle.handle) {
 +        threadClose(&thread->handle);
 +    }
 +}
 +
 +int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 +{
++    u32 value = 0x2C;
++
++    if (priority == SDL_THREAD_PRIORITY_LOW) {
++        value = 0x2D;
++    }
++    else if (priority == SDL_THREAD_PRIORITY_HIGH) {
++        value = 0x2B;
++    }
++
++    svcSetThreadPriority(CUR_THREAD_HANDLE, value);
++
 +    return 0;
 +}
 +
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread_c.h b/src/thread/switch/SDL_systhread_c.h
 new file mode 100644
-index 0000000..cc58e2c
+index 000000000..cc58e2c28
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread_c.h
 @@ -0,0 +1,24 @@
@@ -1353,7 +1375,7 @@ index 0000000..cc58e2c
 +typedef Thread SYS_ThreadHandle;
 diff --git a/src/thread/switch/SDL_systls.c b/src/thread/switch/SDL_systls.c
 new file mode 100644
-index 0000000..2472fbd
+index 000000000..2472fbd60
 --- /dev/null
 +++ b/src/thread/switch/SDL_systls.c
 @@ -0,0 +1,34 @@
@@ -1393,7 +1415,7 @@ index 0000000..2472fbd
 +}
 diff --git a/src/timer/switch/SDL_systimer.c b/src/timer/switch/SDL_systimer.c
 new file mode 100644
-index 0000000..5c5d209
+index 000000000..5c5d209e0
 --- /dev/null
 +++ b/src/timer/switch/SDL_systimer.c
 @@ -0,0 +1,78 @@
@@ -1476,7 +1498,7 @@ index 0000000..5c5d209
 +
 +#endif /* SDL_TIMER_SWITCH */
 diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index 9df71c9..c37bb01 100644
+index 9df71c9aa..c37bb012f 100644
 --- a/src/video/SDL_sysvideo.h
 +++ b/src/video/SDL_sysvideo.h
 @@ -418,6 +418,7 @@ extern VideoBootStrap NACL_bootstrap;
@@ -1488,7 +1510,7 @@ index 9df71c9..c37bb01 100644
  extern SDL_VideoDevice *SDL_GetVideoDevice(void);
  extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 8cf195d..bde5b16 100644
+index 8cf195d1a..bde5b1643 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
 @@ -112,6 +112,9 @@ static VideoBootStrap *bootstrap[] = {
@@ -1503,7 +1525,7 @@ index 8cf195d..bde5b16 100644
  #endif
 diff --git a/src/video/switch/SDL_switchtouch.c b/src/video/switch/SDL_switchtouch.c
 new file mode 100644
-index 0000000..9191817
+index 000000000..9191817c0
 --- /dev/null
 +++ b/src/video/switch/SDL_switchtouch.c
 @@ -0,0 +1,115 @@
@@ -1624,7 +1646,7 @@ index 0000000..9191817
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchtouch.h b/src/video/switch/SDL_switchtouch.h
 new file mode 100644
-index 0000000..ac5908e
+index 000000000..ac5908e39
 --- /dev/null
 +++ b/src/video/switch/SDL_switchtouch.h
 @@ -0,0 +1,34 @@
@@ -1664,7 +1686,7 @@ index 0000000..ac5908e
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 0000000..3862883
+index 000000000..386288354
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
 @@ -0,0 +1,269 @@
@@ -1939,7 +1961,7 @@ index 0000000..3862883
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 diff --git a/test/testswitch.c b/test/testswitch.c
 new file mode 100644
-index 0000000..4c1613d
+index 000000000..4c1613d40
 --- /dev/null
 +++ b/test/testswitch.c
 @@ -0,0 +1,126 @@
