@@ -1,0 +1,49 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgbasename=('libfat')
+
+if [ -z "$PLATFORM" ];then
+  PLATFORM=nds
+fi
+
+if [ "$PLATFORM" = "gba" ]; then
+  platdesc="Nintendo GBA"
+  makedepends=('devkitARM')
+  groups=('gba-dev')
+elif [ "$PLATFORM" = "ogc" ]; then
+  platdesc="Nintendo Wii & Gamecube"
+  makedepends=('devkitARM')
+  groups=('nds-dev')
+elif [ "$PLATFORM" = "nds" ]; then
+  platdesc="Nintendo NDS"
+  makedepends=('devkitARM')
+  groups=('nds-dev')
+else
+  echo "$PLATFORM unsupported"
+  exit 1
+fi
+
+
+pkgname=("${pkgbasename}-${PLATFORM}")
+pkgver=1.1.3
+pkgrel=1
+pkgdesc="${platdesc} FAT library."
+arch=('any')
+license=('custom')
+url="http://github.com/devkitpro"
+options=(!strip libtool staticlibs)
+source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
+sha256sums=('25f1cbbacaa5bb8215ac8dd5068cf66e6043b6f08d0e722762e08dcbdd085458')
+
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir $PLATFORM-install
+
+}
