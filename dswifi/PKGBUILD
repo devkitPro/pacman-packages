@@ -1,0 +1,28 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('dswifi')
+pkgver=0.4.2
+pkgrel=1
+pkgdesc="Nintendo DS wifi library."
+arch=('any')
+license=('zlib')
+url="http://github.com/devkitpro"
+options=(!strip libtool staticlibs)
+source=(${url}/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
+sha256sums=('f07dbc7a76ea62de81a86a98508f66b8b943c6f36b948a987f2779584bf3ba76')
+makedepends=('devkitARM')
+
+groups=('nds-dev')
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir install
+
+}
