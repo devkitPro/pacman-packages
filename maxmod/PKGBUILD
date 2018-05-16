@@ -1,0 +1,45 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgbasename=('maxmod')
+
+if [ -z "$PLATFORM" ];then
+  PLATFORM=nds
+fi
+
+if [ "$PLATFORM" = "gba" ]; then
+  platdesc="Nintendo GBA"
+  makedepends=('devkitARM')
+  groups=('gba-dev')
+elif [ "$PLATFORM" = "nds" ]; then
+  platdesc="Nintendo NDS"
+  makedepends=('devkitARM')
+  groups=('nds-dev')
+else
+  echo "$PLATFORM unsupported"
+  exit 1
+fi
+
+
+pkgname=("${pkgbasename}-${PLATFORM}")
+pkgver=1.0.11
+pkgrel=1
+pkgdesc="${platdesc} Audio library."
+arch=('any')
+license=('custom')
+url="http://github.com/devkitpro"
+options=(!strip libtool staticlibs)
+source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
+sha256sums=('a1458dfd4aa67eeb15f33ed911c40ebee14dcba8fc6264bd4f2de26ae6a330e0')
+
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir install-$PLATFORM
+
+}
