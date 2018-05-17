@@ -13,10 +13,10 @@ source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
 sha256sums=('7d542f3771cc6bdfef385d82aedf1bb8acf854fc96468b061e84b8dcbae1a755')
 makedepends=('devkitARM')
 
-groups=('3p32-dev')
+groups=('gp32-dev')
 
 package() {
   rm $srcdir/${pkgname}-${pkgver}.tar.bz2
-  mkdir -p "$pkgdir"/opt/devkitpro/examples/3ds
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/3ds  
+  mkdir -p "$pkgdir"/opt/devkitpro/examples/gp32
+  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/gp32  
 }
