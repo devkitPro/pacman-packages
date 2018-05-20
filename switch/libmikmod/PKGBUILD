@@ -15,6 +15,8 @@ source=("https://sourceforge.net/projects/mikmod/files/libmikmod/$pkgver/libmikm
 sha256sums=('ad9d64dfc8f83684876419ea7cd4ff4a41d8bcd8c23ef37ecb3a200a16b46d19'
             '624350141cfcae38301622c7bc8df0d0d698282d7aca3033c5083c701e7bb20f')
 
+groups=('switch-portlibs')
+
 prepare() {
   cd libmikmod-$pkgver
   patch -Np1 < ../libmikmod-switch-support.patch
