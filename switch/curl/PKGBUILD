@@ -1,7 +1,7 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-curl
-pkgver=7.58.0
+pkgver=7.59.0
 pkgrel=1
 pkgdesc='Deflate compression method library (for Nintendo Switch homebrew development)'
 arch=('any')
@@ -10,10 +10,10 @@ license=('zlib')
 options=(!strip libtool staticlibs)
 depends=('switch-zlib')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
-source=('https://github.com/curl/curl/releases/download/curl-7_58_0/curl-7.58.0.tar.xz'
-)
+source=("https://curl.haxx.se/download/curl-${pkgver}.tar.gz")
+groups=('switch-portlibs')
 
-sha256sums=( '6a813875243609eb75f37fa72044e4ad618b55ec15a4eafdac2df6a7e800e3e3'
+sha256sums=( '099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
 )
 
 build() {
