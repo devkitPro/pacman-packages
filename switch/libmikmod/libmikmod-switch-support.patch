@@ -1,0 +1,430 @@
+From 924ff6ec7bc4e3417f904f62a0deef11e83c1175 Mon Sep 17 00:00:00 2001
+From: Carsten Teibes <dev@f4ke.de>
+Date: Mon, 7 May 2018 23:27:07 +0200
+Subject: [PATCH] Add Nintendo Switch Port
+
+---
+ Makefile.am                |   1 +
+ configure.ac               |  54 +++++++++++-
+ drivers/Makefile.am        |   1 +
+ drivers/drv_switch.c       | 205 +++++++++++++++++++++++++++++++++++++++++++++
+ include/mikmod.h           |   1 +
+ include/mikmod_internals.h |  11 +++
+ playercode/mdriver.c       |   6 ++
+ 7 files changed, 278 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/drv_switch.c
+
+diff --git a/Makefile.am b/Makefile.am
+index 44bc0b0..90e76a1 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -63,6 +63,7 @@ libmikmod_la_SOURCES = \
+ 		drivers/drv_sndio.c \
+ 		drivers/drv_stdout.c \
+ 		drivers/drv_sun.c \
++		drivers/drv_switch.c \
+ 		drivers/drv_ultra.c \
+ 		drivers/drv_wav.c \
+ 		drivers/drv_win.c \
+diff --git a/configure.ac b/configure.ac
+index b5cdbb5..dd77cb4 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -49,6 +49,7 @@ libmikmod_irix=no
+ libmikmod_sun=no
+ libmikmod_aix=no
+ libmikmod_hpux=no
++libmikmod_switch=no
+ 
+ case $host_os in
+ 	mingw*) libmikmod_mingw=yes ;;
+@@ -76,6 +77,11 @@ case $host_os in
+ 		libmikmod_sun=yes ;;
+ esac
+ 
++if test $host = aarch64-none-elf
++then
++  libmikmod_switch=yes
++fi
++
+ # ==============================================================
+ # libmikmod specific control variables and their default values.
+ # ==============================================================
+@@ -115,6 +121,7 @@ libmikmod_driver_xaudio2=no
+ libmikmod_driver_ultra=no
+ libmikmod_driver_os2=$libmikmod_os2
+ libmikmod_driver_dart=$libmikmod_os2
++libmikmod_driver_switch=$libmikmod_switch
+ libmikmod_driver_aiff=yes
+ libmikmod_driver_wav=yes
+ libmikmod_driver_raw=yes
+@@ -173,6 +180,7 @@ then
+   libmikmod_driver_ultra=no
+   libmikmod_driver_os2=no
+   libmikmod_driver_dart=no
++  libmikmod_driver_switch=no
+   libmikmod_driver_aiff=no
+   libmikmod_driver_wav=no
+   libmikmod_driver_raw=no
+@@ -309,6 +317,12 @@ case $host_os in
+   *) ;;
+ esac
+ 
++if test $host = aarch64-none-elf
++then
++  libmikmod_driver_pipe=no
++  libmikmod_driver_stdout=no
++fi
++
+ AC_ARG_ENABLE([aiff], [AS_HELP_STRING([--enable-aiff],[include support for output to an aiff file [default=yes]])],
+ [if test "$enableval" = "yes"
+ then
+@@ -455,6 +469,14 @@ else
+   libmikmod_driver_ultra=no
+ fi])
+ 
++AC_ARG_ENABLE([switch], [AS_HELP_STRING([--enable-switch],[include Nintendo Switch driver [default=no]])],
++[if test "$enableval" = "yes"
++then
++  libmikmod_driver_switch=$libmikmod_switch
++else
++  libmikmod_driver_switch=no
++fi])
++
+ AC_ARG_ENABLE([dl], [AS_HELP_STRING([--enable-dl],[load alsa, esound and ultra drivers at runtime [default=yes]])],
+ [if test "$enableval" = "yes"
+ then
+@@ -627,7 +649,7 @@ fi
+ 
+ # POSIX.4 threads
+ # ---------------
+-if test $libmikmod_mingw = yes || test $libmikmod_amiga = yes
++if test $libmikmod_mingw = yes || test $libmikmod_amiga = yes || test $libmikmod_switch = yes
+ then
+ 	dnl libmikmod_threads variable is for pthreads only
+ 	libmikmod_threads=no
+@@ -928,6 +950,29 @@ then
+ 	fi
+ fi
+ 
++# nintendo switch audio
++# ---------------------
++if test $libmikmod_driver_switch = yes
++then
++  libmikmod_driver_switch=no
++  ac_save_CPPFLAGS=$CPPFLAGS
++  ac_save_LDFLAGS=$LDFLAGS
++  ac_save_LIBS=$LIBS
++  CPPFLAGS="$CPPFLAGS -isystem${DEVKITPRO}/libnx/include -D__SWITCH__"
++  LDFLAGS="$LDFLAGS -L${DEVKITPRO}/libnx/lib"
++  LIBS="$LIBS -lnx"
++  AC_CHECK_HEADERS([switch.h],[AC_CHECK_LIB([nx],[svcGetSystemTick],[libmikmod_driver_switch=yes])])
++  CPPFLAGS=$ac_save_CPPFLAGS
++  LDFLAGS=$ac_save_LDFLAGS
++  LIBS=$ac_save_LIBS
++  if test $libmikmod_driver_switch = yes
++  then
++    CPPFLAGS="$CPPFLAGS -isystem${DEVKITPRO}/libnx/include -D__SWITCH__"
++    LDFLAGS="$LDFLAGS -L${DEVKITPRO}/libnx/lib"
++    LIBS="$LIBS -lnx"
++  fi
++fi
++
+ # ================
+ # Choose settings.
+ # ================
+@@ -1186,6 +1231,13 @@ then
+ 	fi
+ fi
+ 
++if test $libmikmod_driver_switch = yes
++then
++  libmikmod_driverlist="switch $libmikmod_driverlist"
++  AC_DEFINE([DRV_SWITCH], 1, [Define if the Nintendo Switch driver is compiled])
++  LIBRARY_LIB="-lnx $LIBRARY_LIB"
++fi
++
+ if test $libmikmod_debug = yes
+ then
+ 	AC_DEFINE([MIKMOD_DEBUG], 1, [Define if you want a debug version of the library])
+diff --git a/drivers/Makefile.am b/drivers/Makefile.am
+index fee4fb4..2fe22c3 100644
+--- a/drivers/Makefile.am
++++ b/drivers/Makefile.am
+@@ -30,6 +30,7 @@ EXTRA_DIST = CMakeLists.txt \
+ 	     drv_sndio.c  \
+ 	     drv_stdout.c \
+ 	     drv_sun.c    \
++	     drv_switch.c \
+ 	     drv_ultra.c  \
+ 	     drv_wav.c    \
+ 	     drv_win.c    \
+diff --git a/drivers/drv_switch.c b/drivers/drv_switch.c
+new file mode 100644
+index 0000000..12d1f10
+--- /dev/null
++++ b/drivers/drv_switch.c
+@@ -0,0 +1,205 @@
++/*	MikMod sound library
++	(c) 1998-2014 Miodrag Vallat and others - see file AUTHORS for
++	complete list.
++
++	This library is free software; you can redistribute it and/or modify
++	it under the terms of the GNU Library General Public License as
++	published by the Free Software Foundation; either version 2 of
++	the License, or (at your option) any later version.
++
++	This program is distributed in the hope that it will be useful,
++	but WITHOUT ANY WARRANTY; without even the implied warranty of
++	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++	GNU Library General Public License for more details.
++
++	You should have received a copy of the GNU Library General Public
++	License along with this library; if not, write to the Free Software
++	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
++	02111-1307, USA.
++*/
++
++/*==============================================================================
++==============================================================================*/
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include "mikmod_internals.h"
++
++#ifdef DRV_SWITCH
++
++#include <switch.h>
++#include <string.h>
++#include <malloc.h>
++
++#define SAMPLERATE 48000
++#define CHANNELCOUNT 2
++#define FRAMERATE (1000 / 30)
++#define SAMPLECOUNT (SAMPLERATE / FRAMERATE) * 2
++#define BYTESPERSAMPLE 4
++
++AudioOutBuffer out_buf;
++AudioOutBuffer *audout_released_buf;
++u32 data_size = (SAMPLECOUNT * CHANNELCOUNT * BYTESPERSAMPLE);
++u32 buffer_size;
++u32 released_count;
++
++static volatile int audio_ready = 0;
++static volatile int audio_terminate = 0;
++static volatile int playing = 0;
++
++static void SWITCH_Update(void) {
++	if (!audio_terminate) {
++		if (audio_ready) {
++			// play
++			audoutWaitPlayFinish(&audout_released_buf, &released_count, U64_MAX);
++		}
++
++		void *bufptr = audout_released_buf->buffer;
++
++		MUTEX_LOCK(vars);
++		if (playing) {
++			// fill
++			VC_WriteBytes(bufptr, data_size);
++		} else {
++			// silence
++			memset(bufptr, 0, data_size);
++		}
++		MUTEX_UNLOCK(vars);
++
++		if (audio_ready) {
++			audoutAppendAudioOutBuffer(audout_released_buf);
++		}
++	}
++}
++
++static BOOL SWITCH_IsPresent(void) {
++	return 1;
++}
++
++static int SWITCH_Init(void) {
++	Result rc = 0;
++
++	if (VC_Init())
++		return 1;
++
++	audio_terminate = 0;
++	audio_ready = 0;
++
++	// alignment
++	buffer_size = (data_size + 0xfff) & ~0xfff;
++
++	out_buf.buffer = memalign(0x1000, buffer_size);
++	if (out_buf.buffer == NULL) {
++		printf("Failed to allocate sample data buffers\n");
++		return 1;
++	}
++	out_buf.buffer_size = buffer_size;
++	out_buf.data_size = data_size;
++	out_buf.next = NULL;
++	out_buf.data_offset = 0;
++
++	// clear
++	memset(out_buf.buffer, 0, buffer_size);
++
++	audout_released_buf = NULL;
++	released_count = 0;
++
++	// init hardware
++	rc = audoutInitialize();
++	if (R_SUCCEEDED(rc))
++		rc = audoutStartAudioOut();
++
++	if (R_FAILED(rc)) {
++		_mm_errno = MMERR_OPENING_AUDIO;
++		printf("Failed to initialize Switch audio hardware\n");
++		return 1;
++	}
++
++	// start playback with a bit of silence
++	audoutAppendAudioOutBuffer(&out_buf);
++
++	audio_ready = 1;
++	return 0;
++}
++
++static void SWITCH_Exit(void)
++{
++	audio_ready = 0;
++	audio_terminate = 1;
++
++	VC_Exit();
++
++	// deinit hardware
++	audoutStopAudioOut();
++	audoutExit();
++
++	// cleanup
++	if (out_buf.buffer) {
++		free(out_buf.buffer);
++		out_buf.buffer = NULL;
++	}
++}
++
++static int SWITCH_Reset(void)
++{
++	VC_Exit();
++	return VC_Init();
++}
++
++static int SWITCH_PlayStart(void)
++{
++	VC_PlayStart();
++	playing = 1;
++	return 0;
++}
++
++static void SWITCH_PlayStop(void)
++{
++	playing = 0;
++	VC_PlayStop();
++}
++
++MIKMODAPI MDRIVER drv_switch = {
++	NULL,
++	"Switch Audio",
++	"Switch Output Driver v1.0 - by carstene1ns",
++	0, 255,
++	"switch",
++	NULL,
++	NULL,
++
++	SWITCH_IsPresent,
++	VC_SampleLoad,
++	VC_SampleUnload,
++	VC_SampleSpace,
++	VC_SampleLength,
++	SWITCH_Init,
++	SWITCH_Exit,
++	SWITCH_Reset,
++
++	VC_SetNumVoices,
++	SWITCH_PlayStart,
++	SWITCH_PlayStop,
++	SWITCH_Update,
++	NULL,
++
++	VC_VoiceSetVolume,
++	VC_VoiceGetVolume,
++	VC_VoiceSetFrequency,
++	VC_VoiceGetFrequency,
++	VC_VoiceSetPanning,
++	VC_VoiceGetPanning,
++	VC_VoicePlay,
++	VC_VoiceStop,
++	VC_VoiceStopped,
++	VC_VoiceGetPosition,
++	VC_VoiceRealVolume
++};
++
++#else
++
++MISSING(drv_switch);
++
++#endif
+diff --git a/include/mikmod.h b/include/mikmod.h
+index 7822a74..8913f69 100644
+--- a/include/mikmod.h
++++ b/include/mikmod.h
+@@ -833,6 +833,7 @@ MIKMODAPI extern struct MDRIVER drv_osx;    /* MacOS X CoreAudio Driver */
+ MIKMODAPI extern struct MDRIVER drv_dc;     /* Dreamcast driver */
+ MIKMODAPI extern struct MDRIVER drv_gp32;   /* GP32 Sound driver */
+ MIKMODAPI extern struct MDRIVER drv_psp;    /* PlayStation Portable driver */
++MIKMODAPI extern struct MDRIVER drv_switch; /* Nintendo Switch driver */
+ 
+ MIKMODAPI extern struct MDRIVER drv_wss;    /* DOS WSS driver */
+ MIKMODAPI extern struct MDRIVER drv_sb;     /* DOS S/B driver */
+diff --git a/include/mikmod_internals.h b/include/mikmod_internals.h
+index cb92c79..8282f88 100644
+--- a/include/mikmod_internals.h
++++ b/include/mikmod_internals.h
+@@ -117,6 +117,17 @@ extern MikMod_handler_t _mm_errorhandler;
+         if(_mm_mutex_##name)\
+             ReleaseMutex(_mm_mutex_##name)
+ 
++#elif defined(__SWITCH__)
++#include <switch.h>
++#define DECLARE_MUTEX(name) \
++        extern Mutex _mm_mutex_##name
++#define MUTEX_LOCK(name)    \
++        if(_mm_mutex_##name)\
++            mutexLock(&_mm_mutex_##name)
++#define MUTEX_UNLOCK(name)  \
++        if(_mm_mutex_##name)\
++            mutexUnlock(&_mm_mutex_##name)
++
+ #else
+ #define DECLARE_MUTEX(name) \
+         extern void *_mm_mutex_##name
+diff --git a/playercode/mdriver.c b/playercode/mdriver.c
+index 6f15711..1307812 100644
+--- a/playercode/mdriver.c
++++ b/playercode/mdriver.c
+@@ -835,6 +835,10 @@ MIKMODAPI long MikMod_GetVersion(void)
+ #define INIT_MUTEX(name) \
+ 	HANDLE _mm_mutex_##name
+ 
++#elif defined(__SWITCH__)
++#define INIT_MUTEX(name) \
++	Mutex _mm_mutex_##name = 0;
++
+ #else
+ #define INIT_MUTEX(name) \
+ 	void *_mm_mutex_##name = NULL
+@@ -865,6 +869,8 @@ MIKMODAPI BOOL MikMod_InitThreads(void)
+ 			result=0;
+ 		else
+ 			result=1;
++#elif defined(__SWITCH__)
++		result=1;
+ #endif
+ 	}
+ 	return result;
