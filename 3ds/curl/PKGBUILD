@@ -3,7 +3,7 @@
 
 pkgname=3ds-curl
 pkgver=7.59.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://curl.haxx.se'
@@ -13,7 +13,7 @@ depends=('3ds-zlib' '3ds-mbedtls')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 source=("https://curl.haxx.se/download/curl-${pkgver}.tar.gz"
-        'curl-7.58.0.patch'
+        '3ds-curl.patch'
 )
 
 sha256sums=('099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
@@ -25,7 +25,7 @@ build() {
   source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
-  patch -Np1 -i $srcdir/curl-7.58.0.patch
+  patch -Np1 -i $srcdir/3ds-curl.patch
 
   ./configure CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LIBS="-lctru" \
     --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
