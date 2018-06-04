@@ -1,0 +1,40 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: carstene1ns <arch carsten-teibes de> - http://git.io/ctPKG
+# Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
+
+pkgname=ppc-mxml
+pkgver=2.11
+pkgrel=1
+pkgdesc='XML parsing library (for Nintendo Gamecube/Wii homebrew development)'
+arch=('any')
+url='https://github.com/michaelrsweet/mxml'
+license=('custom')
+options=(!strip libtool staticlibs)
+source=("${url}/releases/download/v${pkgver}/mxml-${pkgver}.tar.gz")
+sha256sums=('aaf68aac637dd06ba73ae5bb0537a3c4e89ca86f8c09a2d806a1f5b937e2ba8f')
+makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('ppc-portlibs')
+
+build() {
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static --disable-threads
+  make
+}
+
+package() {
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  make BUILDROOT="$pkgdir" install
+
+  # license
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+  # remove useless stuff
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/bin
+}
