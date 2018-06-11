@@ -8,6 +8,7 @@ license=('GPL-2.0')
 options=(!strip libtool staticlibs)
 depends=()
 makedepends=('patch')
+groups=('switch-portlibs')
 source=(
     "https://github.com/wolfSSL/wolfssl/archive/$pkgver.zip"
     "wolfssl-${pkgver}-csrng-wc_GenerateSeed.patch"

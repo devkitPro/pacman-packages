@@ -6,6 +6,7 @@ url='https://sourceforge.net/projects/libuuid'
 license=('GPL-2.0')
 options=(!strip libtool staticlibs)
 source=("https://github.com/natinusala/switch-libuuid/archive/$pkgver.zip")
+groups=('switch-portlibs')
 
 sha256sums=('287ca3e61dc9e70839dcb8be2654f739a6696ce843d41b6c05e07f75a2e55fcd')
 
