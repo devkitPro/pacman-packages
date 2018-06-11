@@ -1,0 +1,32 @@
+pkgname=switch-libuuid
+pkgver=4af5d5971d8cdf5ee733ae38fb7fc7f8da85b989
+pkgrel=1
+arch=('any')
+url='https://sourceforge.net/projects/libuuid'
+license=('GPL-2.0')
+options=(!strip libtool staticlibs)
+source=("https://github.com/natinusala/switch-libuuid/archive/$pkgver.zip")
+
+sha256sums=('287ca3e61dc9e70839dcb8be2654f739a6696ce843d41b6c05e07f75a2e55fcd')
+
+build() {
+  cd switch-libuuid-$pkgver
+  
+  autoreconf -vfi
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+  
+  ./configure --prefix=$PORTLIBS_PREFIX --host=aarch64-none-elf --disable-shared --enable-static CFLAGS="-UHAVE_UUIDD"
+  
+  make
+}
+
+package() {
+  cd switch-libuuid-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
