@@ -14,7 +14,7 @@ source=("http://festvox.org/flite/packed/flite-${pkgver}/flite-${pkgver}-release
 sha256sums=('c73c3f6a2ea764977d6eaf0a287722d1e2066b4697088c552e342c790f3d2b85')
 
 build() {
-  cd flite-$pkgver
+  cd flite-$pkgver-release
 
   source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
