@@ -1,0 +1,40 @@
+pkgname=3ds-flite
+pkgver=master
+pkgrel=1
+pkgdesc='A small fast portable speech synthesis system'
+arch=('any')
+url='https://github.com/festvox/flite'
+license=('MIT')
+options=(!strip libtool staticlibs)
+depends=()
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+
+source=("https://github.com/festvox/flite/archive/$pkgver.zip")
+
+sha256sums=('2d48f3cc733d24d358f53fa1719ffa0be40b8b55214da634566e7fba2f2bff95')
+
+build() {
+  cd flite-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  ./configure --prefix=$PORTLIBS_PREFIX --host=arm-none-eabi --disable-shared \
+  CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LIBS="${LIBS}"
+
+  make -C src
+  make -C lang
+}
+
+package() {
+  cd flite-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  cp -a build/arm-eabi/lib/. $PORTLIBS_PREFIX/lib/
+
+  mkdir -p $PORTLIBS_PREFIX/include/flite/
+  install -m 644 include/*.h $PORTLIBS_PREFIX/include/flite/
+  install -Dm644 COPYING $PORTLIBS_PREFIX/licenses/$pkgname/COPYING
+}
