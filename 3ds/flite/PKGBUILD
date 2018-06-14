@@ -27,14 +27,15 @@ build() {
 }
 
 package() {
-  cd flite-$pkgver
+  cd flite-$pkgver-release
 
   source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
-  cp -a build/arm-eabi/lib/. $PORTLIBS_PREFIX/lib/
+  mkdir -p $pkgdir$PORTLIBS_PREFIX/lib
+  cp -a build/arm-eabi/lib/. $pkgdir$PORTLIBS_PREFIX/lib/
 
-  mkdir -p $PORTLIBS_PREFIX/include/flite/
-  install -m 644 include/*.h $PORTLIBS_PREFIX/include/flite/
-  install -Dm644 COPYING $PORTLIBS_PREFIX/licenses/$pkgname/COPYING
+  mkdir -p $pkgdir$PORTLIBS_PREFIX/include/flite/
+  install -m 644 include/*.h $pkgdir$PORTLIBS_PREFIX/include/flite/
+  install -Dm644 COPYING $pkgdir$PORTLIBS_PREFIX/licenses/$pkgname/COPYING
 }
