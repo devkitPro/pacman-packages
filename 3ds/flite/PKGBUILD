@@ -11,7 +11,7 @@ makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 source=("http://festvox.org/flite/packed/flite-${pkgver}/flite-${pkgver}-release.tar.bz2")
 
-sha256sums=('2d48f3cc733d24d358f53fa1719ffa0be40b8b55214da634566e7fba2f2bff95')
+sha256sums=('c73c3f6a2ea764977d6eaf0a287722d1e2066b4697088c552e342c790f3d2b85')
 
 build() {
   cd flite-$pkgver
