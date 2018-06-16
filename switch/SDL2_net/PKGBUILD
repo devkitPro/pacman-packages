@@ -1,0 +1,46 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=switch-sdl2_net
+pkgver=2.0.1
+pkgrel=1
+pkgdesc="SDL2 image loading library (Nintendo Switch port)."
+arch=('any')
+url="https://libsdl.org/projects/SDL_net/"
+license=("zlib")
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=(
+  'switch-sdl2'
+  'switch-libpng'
+  'switch-libjpeg-turbo'
+)
+source=("${url}release/SDL2_net-${pkgver}.tar.gz")
+sha256sums=('15ce8a7e5a23dafe8177c8df6e6c79b6749a03fff1e8196742d3571657609d21')
+
+build() {
+  cd SDL2_net-$pkgver
+
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
+
+  sed '/^noinst_PROGRAMS/d' -i Makefile.in
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=aarch64-none-elf --disable-shared --enable-static \
+    --disable-sdltest \
+    --with-sdl-prefix=${PORTLIBS_PREFIX}
+
+  make
+}
+
+package() {
+  cd SDL2_net-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # License
+  install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
+}
