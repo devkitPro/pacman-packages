@@ -2,7 +2,7 @@
 
 pkgname=switch-sdl2
 pkgver=2.0.8
-pkgrel=7
+pkgrel=8
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard (Nintendo Switch port)"
 arch=('any')
 url="https://libsdl.org"
@@ -12,7 +12,7 @@ makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("${url}/release/SDL2-${pkgver}.tar.gz" "SDL2-2.0.8.patch")
 sha256sums=(
 'edc77c57308661d576e843344d8638e025a7818bff73f8fbfab09c3c5fd092ec'
-'b592a9c334fafc44d52aed3e1a07a84f3b0cef2aee511c593234414fbb270a11'
+'6ce0d5a2ea3d87480fa2317278e8e1b9f3d26662faa57c7bdb90c00f35709c8f'
 )
 
 build() {

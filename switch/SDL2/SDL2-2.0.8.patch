@@ -177,7 +177,7 @@ index 1c7f87eb0..5fef7ee5e 100755
          as_fn_error $? "
  *** Unsupported host:  Please add to configure.in
 diff --git a/configure.in b/configure.in
-index 1c7e79338..192321508 100644
+index 1c7e79338..661ddea13 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -3905,6 +3905,58 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
@@ -188,7 +188,7 @@ index 1c7e79338..192321508 100644
 +        ARCH=switch
 +        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 $SDL_CFLAGS -fPIC"
-+        EXTRA_LDFLAGS="-march=armv8-a -fPIE -specs=${DEVKITPRO}/libnx/switch.specs -L${DEVKITPRO}/libnx/lib -lnx"
++        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lnx"
 +        CheckDeclarationAfterStatement
 +
 +        # Set up files for the video library
