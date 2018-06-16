@@ -19,24 +19,16 @@ else
   exit 1
 fi
 
-
 pkgname=("${pkgbasename}-${PLATFORM}")
 pkgver=1.0.11
-pkgrel=1
+pkgrel=2
 pkgdesc="${platdesc} Audio library."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro"
 options=(!strip libtool staticlibs)
 source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
-sha256sums=('a1458dfd4aa67eeb15f33ed911c40ebee14dcba8fc6264bd4f2de26ae6a330e0')
-
-
-build() {
-
-  make -C $srcdir
-
-}
+sha256sums=('37c7696db1347292580d17e36a4290d662a80073f8e882cf6b5261cee33df33b')
 
 package() {
 
