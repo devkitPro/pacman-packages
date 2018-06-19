@@ -1,0 +1,50 @@
+pkgname=switch-mbedtls
+pkgver=2.9.0
+pkgrel=1
+pkgdesc='An open source, portable, easy to use, readable and flexible SSL library'
+arch=('any')
+url='https://tls.mbed.org'
+license=('apache')
+options=(!strip libtool staticlibs)
+depends=(switch-zlib)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=( 
+    "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
+    'switch-mbedtls.patch'
+)
+
+sha256sums=('a06a9b43e583b7e6707becfeeb13d88ed00f25fee31a5386cb3a3014c454bad8' 'ea211f1fb25f1ce5948ab83827a8cbca3415ed84367491ff5620906a9750ff59')
+
+build() {
+  cd mbedtls-$pkgver
+
+  patch -Np1 -i $srcdir/switch-mbedtls.patch
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkita64.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="CFLAGS -fno-exceptions -fno-rtti" \
+    -DZLIB_ROOT="$PORTLIBS_PREFIX" \
+    -DENABLE_ZLIB_SUPPORT=TRUE -DENABLE_TESTING=FALSE -DENABLE_PROGRAMS=FALSE \
+    .
+
+  make
+
+}
+
+package() {
+
+  cd mbedtls-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make install DESTDIR="$pkgdir"
+
+  install -d "$pkgdir"$PORTLIBS_PREFIX/licenses/$pkgname
+  cp -v LICENSE "$pkgdir"$PORTLIBS_PREFIX/licenses/$pkgname 
+
+}

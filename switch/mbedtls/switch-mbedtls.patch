@@ -1,0 +1,95 @@
+diff -NBaur mbedtls-2.9.0/include/mbedtls/config.h switch-mbedtls-2.9.0/include/mbedtls/config.h
+--- mbedtls-2.9.0/include/mbedtls/config.h	2018-05-01 15:28:18.000000000 +0100
++++ switch-mbedtls-2.9.0/include/mbedtls/config.h	2018-06-26 18:11:25.725319571 +0100
+@@ -435,7 +435,7 @@
+  *
+  * Uncomment to use your own hardware entropy collector.
+  */
+-//#define MBEDTLS_ENTROPY_HARDWARE_ALT
++#define MBEDTLS_ENTROPY_HARDWARE_ALT
+ 
+ /**
+  * \def MBEDTLS_AES_ROM_TABLES
+@@ -978,7 +978,7 @@
+  *
+  * Uncomment this macro to disable the built-in platform entropy functions.
+  */
+-//#define MBEDTLS_NO_PLATFORM_ENTROPY
++#define MBEDTLS_NO_PLATFORM_ENTROPY
+ 
+ /**
+  * \def MBEDTLS_ENTROPY_FORCE_SHA256
+@@ -1096,7 +1096,7 @@
+  *
+  * Enable the checkup functions (*_self_test).
+  */
+-#define MBEDTLS_SELF_TEST
++//#define MBEDTLS_SELF_TEST
+ 
+ /**
+  * \def MBEDTLS_SHA256_SMALLER
+@@ -2593,7 +2593,7 @@
+  *
+  * This module is used by the HAVEGE random number generator.
+  */
+-#define MBEDTLS_TIMING_C
++//#define MBEDTLS_TIMING_C
+ 
+ /**
+  * \def MBEDTLS_VERSION_C
+diff -NBaur mbedtls-2.9.0/library/entropy.c switch-mbedtls-2.9.0/library/entropy.c
+--- mbedtls-2.9.0/library/entropy.c	2018-05-01 15:28:18.000000000 +0100
++++ switch-mbedtls-2.9.0/library/entropy.c	2018-06-26 18:12:19.485719323 +0100
+@@ -123,6 +123,19 @@
+ #endif /* MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES */
+ }
+ 
++#ifdef __SWITCH__
++    #include <switch.h>
++    int mbedtls_hardware_poll( void *data,
++                               unsigned char *output, size_t len, size_t *olen )
++    {
++        (void)(data);
++        csrngGetRandomBytes(output, len);
++        if(olen)
++            *olen = len;
++        return 0;
++    }
++#endif
++
+ void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
+ {
+ #if defined(MBEDTLS_HAVEGE_C)
+diff -NBaur mbedtls-2.9.0/library/net_sockets.c switch-mbedtls-2.9.0/library/net_sockets.c
+--- mbedtls-2.9.0/library/net_sockets.c	2018-05-01 15:28:18.000000000 +0100
++++ switch-mbedtls-2.9.0/library/net_sockets.c	2018-06-26 18:11:25.725319571 +0100
+@@ -27,11 +27,6 @@
+ 
+ #if defined(MBEDTLS_NET_C)
+ 
+-#if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
+-    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__)
+-#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
+-#endif
+-
+ #if defined(MBEDTLS_PLATFORM_C)
+ #include "mbedtls/platform.h"
+ #else
+@@ -402,7 +397,7 @@
+ 
+             memcpy( client_ip, &addr4->sin_addr.s_addr, *ip_len );
+         }
+-        else
++        /* else
+         {
+             struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
+             *ip_len = sizeof( addr6->sin6_addr.s6_addr );
+@@ -411,7 +406,7 @@
+                 return( MBEDTLS_ERR_NET_BUFFER_TOO_SMALL );
+ 
+             memcpy( client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
+-        }
++        } */
+     }
+ 
+     return( 0 );

@@ -1,20 +1,19 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-curl
-pkgver=7.59.0
+pkgver=7.60.0
 pkgrel=1
 pkgdesc='Deflate compression method library (for Nintendo Switch homebrew development)'
 arch=('any')
 url='http://www.zlib.net/'
 license=('zlib')
 options=(!strip libtool staticlibs)
-depends=('switch-zlib')
+depends=('switch-zlib' 'switch-mbedtls')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("https://curl.haxx.se/download/curl-${pkgver}.tar.gz")
 groups=('switch-portlibs')
 
-sha256sums=( '099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
-)
+sha256sums=('SKIP')
 
 build() {
   cd curl-$pkgver
@@ -24,7 +23,10 @@ build() {
 
   ./configure --prefix=$PORTLIBS_PREFIX --host=aarch64-none-elf \
     --disable-shared --enable-static --disable-ipv6 --disable-unix-sockets \
-    --disable-manual --disable-ntlm-wb --disable-threaded-resolver
+    --disable-manual --disable-ntlm-wb --disable-threaded-resolver \
+    --without-ssl --without-polar-ssl --without-cyassl --without-wolfssl \
+    --with-mbedtls=$PORTLIBS_PREFIX \
+    --with-default-ssl-backend=mbedtls
 
   make -C lib
   
