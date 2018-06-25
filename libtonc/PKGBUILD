@@ -1,0 +1,28 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('libtonc')
+pkgver=1.4.3
+pkgrel=1
+pkgdesc="Nintendo GBA library ."
+arch=('any')
+license=('zlib')
+url="http://www.coranac.com/projects/#tonc"
+options=(!strip libtool staticlibs)
+source=(https://github.com/devkitpro/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
+sha256sums=('4ae30b45d8ef079119a3719b025766f242addd3df69a9b1c0066145a671a657f')
+makedepends=('devkitARM')
+
+groups=('gba-dev')
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir install
+
+}
