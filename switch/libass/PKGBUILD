@@ -1,0 +1,42 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+# Contributor: carstene1ns <dev f4ke de>
+
+pkgname=switch-libass
+pkgver=0.14.0
+pkgrel=1
+pkgdesc='A portable subtitle renderer (Nintendo Switch port)'
+arch=('any')
+url="https://github.com/libass/libass"
+license=('custom: ISC')
+options=(!strip staticlibs)
+depends=('switch-freetype' 'switch-libfribidi')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("https://github.com/libass/libass/releases/download/$pkgver/libass-$pkgver.tar.xz")
+sha256sums=('881f2382af48aead75b7a0e02e65d88c5ebd369fe46bc77d9270a94aa8fd38a2')
+groups=('switch-portlibs')
+
+build() {
+  cd libass-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="$PORTLIBS_PREFIX" --host=aarch64-none-elf \
+    --disable-shared --enable-static \
+    --disable-asm --enable-large-tiles \
+    --disable-require-system-font-provider
+
+  make
+}
+
+package() {
+  cd libass-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # license
+  install -Dm644 "COPYING" "$pkgdir/$PORTLIBS_PREFIX/licenses/$pkgname/COPYING"
+}
