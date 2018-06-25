@@ -1,0 +1,45 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+# Contributor: carstene1ns <dev f4ke de>
+
+pkgname=switch-libfribidi
+pkgver=1.0.4
+pkgrel=1
+pkgdesc='Free Implementation of the Unicode Bidirectional Algorithm (Nintendo Switch port)'
+arch=('any')
+url="https://github.com/fribidi/fribidi"
+license=('LGPL2.1')
+options=(!strip staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("https://github.com/fribidi/fribidi/releases/download/v$pkgver/fribidi-$pkgver.tar.bz2")
+sha256sums=('94bdfe553e004d8bd095b109e182682311dd511740d5083326d1582f1df237be')
+groups=('switch-portlibs')
+
+prepare() {
+  cd fribidi-$pkgver
+  # patch out binaries, as they conflict with getopt and do not work anyway
+  sed '/^SUBDIRS/ s/bin //' -i Makefile.am
+}
+
+build() {
+  cd fribidi-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="$PORTLIBS_PREFIX" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd fribidi-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # remove documentation
+  rm -fr "$pkgdir"${PORTLIBS_PREFIX}/share
+}
