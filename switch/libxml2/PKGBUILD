@@ -26,7 +26,11 @@ build() {
   export LIBS=-lnx
   export CFLAGS="${CFLAGS} -D__LINUX_ERRNO_EXTENSIONS__"
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+
+  # patch out compiling xmlcatalog & xmllint
+  sed '/^bin_PROGRAMS/d' -i Makefile.in
+
+ ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static --disable-maintainer-mode \
     --enable-rebuild-docs=no --enable-ipv6=no \
     --without-icu --without-python --without-lzma
