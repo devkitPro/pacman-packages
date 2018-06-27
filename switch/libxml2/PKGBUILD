@@ -11,11 +11,9 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 source=(
   "http://xmlsoft.org/sources/libxml2-${pkgver}.tar.gz"
-  "libxml2-${pkgver}.patch"
 )
 sha256sums=(
   '0b74e51595654f958148759cfef0993114ddccccbb6f31aee018f3558e8e2732'
-  '3aaf5ec5ddda6ec9e16df9c3ae178dce3bef66dbaa088d7cd16a0825048442c0'
 )
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 
@@ -24,8 +22,6 @@ build() {
 
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
-
-  patch -Np1 -i "$srcdir/libxml2-${pkgver}.patch"
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static --disable-maintainer-mode \
