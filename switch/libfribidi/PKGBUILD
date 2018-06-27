@@ -18,6 +18,7 @@ prepare() {
   cd fribidi-$pkgver
   # patch out binaries, as they conflict with getopt and do not work anyway
   sed '/^SUBDIRS/ s/bin //' -i Makefile.am
+  ./autogen.sh
 }
 
 build() {
