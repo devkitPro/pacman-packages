@@ -23,10 +23,13 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
+  export LIBS=-lnx
+  export CFLAGS="${CFLAGS} -D__LINUX_ERRNO_EXTENSIONS__"
+
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static --disable-maintainer-mode \
-	--enable-rebuild-docs=no --enable-ipv6=no --without-html \
-	--without-ftp --without-http --without-icu --without-python --without-lzma
+    --enable-rebuild-docs=no --enable-ipv6=no \
+    --without-icu --without-python --without-lzma
 
   make
 }
