@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-DEVKITPRO=/opt/devkitpro
-DEVKITARM=$DEVKITPRO/devkitARM
-PORTLIBS_ROOT=/opt/devkitpro/portlibs
-PATH=$DEVKITARM/bin:$PATH
+export DEVKITPRO=/opt/devkitpro
+export DEVKITARM=${DEVKITPRO}/devkitARM
+export PORTLIBS_ROOT=${DEVKITPRO}/portlibs
+export PATH=$DEVKITARM/bin:$PATH
+export TOOL_PREFIX=arm-none-eabi-
+export AR=${TOOL_PREFIX}gcc-ar
+export RANLIB=${TOOL_PREFIX}gcc-ranlib

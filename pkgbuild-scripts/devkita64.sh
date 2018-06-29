@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
-
-PATH=/opt/devkitpro/devkitA64/bin:$PATH
+export DEVKITPRO=/opt/devkitpro
+export PORTLIBS_ROOT=${DEVKITPRO}/portlibs
+export PATH=${DEVKITPRO}/devkitA64/bin:$PATH
+export TOOL_PREFIX=aarch64-none-elf-
+export AR=${TOOL_PREFIX}gcc-ar
+export RANLIB=${TOOL_PREFIX}gcc-ranlib
