@@ -225,8 +225,8 @@ index f9c4e0702..d184221da 100644
 +#define SDL_DUALSCR		0x00300000	/**< N3DS Top+Bottom Screen mode */
 +#define SDL_FITWIDTH	0x00400000	/**> Render a resized surface to fit systen screen width */
 +#define SDL_FITHEIGHT	0x00800000	/**> Render a resized surface to fit systen screen height */
-+#define SDL_CONSOLETOP	0x00040000	/**> Enable console output on Top screen */
-+#define SDL_CONSOLEBOTTOM	0x00080000	/**> Enable console output on Bottom screen */
++#define SDL_CONSOLETOP	0x00040000	/**> Enale console output on Top screen */
++#define SDL_CONSOLEBOTTOM	0x00080000	/**> Enale console output on Bottom screen */
 +#endif
  /*@}*/
  
@@ -261,10 +261,10 @@ index 74ac21df0..2cba86dae 100644
  #endif
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.c b/src/audio/n3ds/SDL_n3dsaudio.c
 new file mode 100644
-index 000000000..581c54162
+index 000000000..f365966f9
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.c
-@@ -0,0 +1,256 @@
+@@ -0,0 +1,263 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -429,7 +429,14 @@ index 000000000..581c54162
 +static int N3DSAUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
 +{	
 +   //start 3ds DSP init
-+	if(ndspInit()) return (-1);
++	Result rc = ndspInit();
++	if (R_FAILED(rc)) {
++		if ((R_SUMMARY(rc) == RS_NOTFOUND) && (R_MODULE(rc) == RM_DSP))
++			SDL_SetError("DSP init failed: dspfirm.cdc missing!");
++		else
++			SDL_SetError("DSP init failed. Error code: 0x%X", rc);
++		return -1;
++	}
 +
 +	int format = 0;
 +	if(spec->channels > 2)
