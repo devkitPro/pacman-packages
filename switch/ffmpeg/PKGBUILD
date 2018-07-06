@@ -1,0 +1,56 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+# Contributor: Ezekiel Bethel <stary@9net.org>
+# Contributor: carstene1ns <dev f4ke de>
+
+pkgname=switch-ffmpeg
+pkgver=4.0.1
+pkgrel=1
+pkgdesc='ffmpeg port (for Nintendo Switch homebrew development)'
+arch=('any')
+url='https://ffmpeg.org/'
+license=('LGPL' 'GPL')
+options=(!strip staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
+         'switch-freetype' 'switch-libtheora')
+source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz")
+sha256sums=('605f5c01c60db35d3b617a79cabb2c7032412be243554602eeed1b628125c0ee')
+groups=('switch-portlibs')
+
+
+build() {
+  cd ffmpeg-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix=$PORTLIBS_PREFIX --disable-shared --enable-static \
+    --cross-prefix=aarch64-none-elf- --enable-cross-compile \
+    --arch=aarch64 --target-os=none --enable-pic --disable-asm \
+    --extra-cflags='-D__SWITCH__ -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
+    --extra-cxxflags='-D__SWITCH__ -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
+    --extra-ldflags='-fPIE -L${PORTLIBS_PREFIX}/lib -L${DEVKITPRO}/libnx/lib' \
+    --disable-runtime-cpudetect --disable-programs --disable-debug --disable-doc \
+    --disable-network --disable-hwaccels --disable-encoders \
+    --disable-avfilter --disable-avdevice --enable-swscale --enable-swresample \
+    --enable-libass --enable-libfreetype --enable-libfribidi --enable-libtheora \
+    --enable-filter='rotate,transpose' \
+    --disable-protocols --enable-protocol=file \
+    --disable-demuxers --enable-demuxer=h264,matroska,mov,ogg \
+    --disable-decoders --enable-decoder=h264,aac,ac3,mp3,theora,ogg,vorbis \
+    --disable-parsers --enable-parser=h264,aac
+
+  make
+}
+
+package() {
+  cd ffmpeg-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # remove examples
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+}
