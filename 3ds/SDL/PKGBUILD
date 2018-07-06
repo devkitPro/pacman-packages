@@ -2,7 +2,7 @@
 
 pkgname=3ds-sdl
 pkgver=1.2.15
-pkgrel=2
+pkgrel=4
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard (Nintendo 3DS port)"
 arch=('any')
 url="https://libsdl.org"
@@ -12,7 +12,7 @@ makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("${url}/release/SDL-${pkgver}.tar.gz" "SDL-1.2.15.patch")
 sha256sums=(
 'd6d316a793e5e348155f0dd93b979798933fb98aa1edebcc108829d6474aad00'
-'8f7e43476a95967a3bc29506010c4105a6f82a89f75f7e7ea549459cfb832597'
+'01ddf994b4d60979b26d757e829df7a1a365bcaf0135ce853d240642a0a3468e'
 )
 
 build() {
