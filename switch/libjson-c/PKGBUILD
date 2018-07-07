@@ -1,0 +1,37 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Pablo Curiel <pabloacurielz@gmail.com>
+
+pkgname=switch-libjson-c
+pkgver=0.13.1
+pkgrel=1
+pkgdesc='A JSON implementation in C.'
+arch=('any')
+url='https://github.com/json-c/json-c/'
+license=('MIT')
+options=(!strip libtool staticlibs)
+source=("https://s3.amazonaws.com/json-c_releases/releases/json-c-${pkgver}.tar.gz")
+sha256sums=('b87e608d4d3f7bfdd36ef78d56d53c74e66ab278d318b71e6002a369d36f4873')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+
+build() {
+  cd json-c-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  export LIBS=-lnx
+  export CFLAGS="${CFLAGS} -D__LINUX_ERRNO_EXTENSIONS__"
+  
+  ./autogen.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd json-c-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
