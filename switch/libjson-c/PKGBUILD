@@ -19,11 +19,6 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
-  export LIBS=-lnx
-  export CFLAGS="${CFLAGS} -D__LINUX_ERRNO_EXTENSIONS__"
-  
-  ./autogen.sh
-
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
 
