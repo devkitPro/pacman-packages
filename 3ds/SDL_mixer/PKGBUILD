@@ -2,7 +2,7 @@
 
 pkgname=3ds-sdl_mixer
 pkgver=1.2.12
-pkgrel=2
+pkgrel=7
 pkgdesc="A simple library to load images of various formats as SDL surfaces (Nintendo 3DS port)"
 arch=('any')
 url="https://libsdl.org"
