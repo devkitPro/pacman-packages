@@ -42,4 +42,9 @@ package() {
   cd libxml2-$pkgver
 
   make DESTDIR="$pkgdir" install
+
+  #remove uneeded extras
+  rm -fr $pkgdir/doc $pkgdir/man $pkgdir/gtk-doc 
+
+
 }
