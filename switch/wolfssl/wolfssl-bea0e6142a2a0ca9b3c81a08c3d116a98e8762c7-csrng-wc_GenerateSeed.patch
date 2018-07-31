@@ -1,0 +1,23 @@
+diff --git a/wolfcrypt/src/random.c b/wolfcrypt/src/random.c
+index 92234de522..70e2550ca5 100644
+--- a/wolfcrypt/src/random.c
++++ b/wolfcrypt/src/random.c
+@@ -1702,14 +1702,13 @@ int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
+ 
+ #elif defined(NO_DEV_RANDOM)
+ 
+-    #error "you need to write an os specific wc_GenerateSeed() here"
+-
+-    /*
++	#include <switch.h>
++ 
+     int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
+     {
+-        return 0;
++        return csrngGetRandomBytes(output, sz);
+     }
+-    */
++    
+ 
+ #else
+ 

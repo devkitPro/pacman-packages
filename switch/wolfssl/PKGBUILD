@@ -1,0 +1,44 @@
+pkgname=switch-wolfssl
+pkgver=bea0e6142a2a0ca9b3c81a08c3d116a98e8762c7
+pkgrel=1
+pkgdesc='wolfSSL (formerly CyaSSL) is a small, fast, portable implementation of TLS/SSL for embedded devices to the cloud.'
+arch=('any')
+url='http://www.wolfssl.com'
+license=('GPL-2.0')
+options=(!strip libtool staticlibs)
+depends=()
+makedepends=('patch')
+groups=('switch-portlibs')
+source=(
+    "https://github.com/wolfSSL/wolfssl/archive/$pkgver.zip"
+    "wolfssl-${pkgver}-csrng-wc_GenerateSeed.patch"
+)
+
+sha256sums=(
+    '71e2db94d0416d1f4af6651d1605fa74fc9065baee6a6ad9fa462b70df11b019'
+    'd83a83ff8fb757d471dca6e038a1f3a315aeea32dd761b00d1040e9acb1b2b4b'
+)
+
+build() {
+  cd wolfssl-$pkgver
+  
+  patch -Np1 -i "$srcdir/wolfssl-${pkgver}-csrng-wc_GenerateSeed.patch"
+  
+  autoreconf -vfi
+  
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+  
+  ./configure --prefix=$PORTLIBS_PREFIX --host=aarch64-none-elf --disable-examples --enable-harden --disable-shared --enable-static --enable-certgen --enable-opensslextra --enable-pwdbased --enable-keygen --enable-sslv3 CFLAGS="-DNO_DEV_RANDOM -DNO_WRITEV -DTFM_TIMING_RESISTANT -fPIC"
+  
+  make src/libwolfssl.la
+}
+
+package() {
+  cd wolfssl-$pkgver
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
