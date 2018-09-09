@@ -794,10 +794,10 @@ index b68f90e91..3af243df7 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/switch/SDL_syscond.c b/src/thread/switch/SDL_syscond.c
 new file mode 100644
-index 000000000..435c99b8f
+index 000000000..1f60567c1
 --- /dev/null
 +++ b/src/thread/switch/SDL_syscond.c
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,148 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
@@ -833,8 +833,12 @@ index 000000000..435c99b8f
 +
 +struct SDL_cond
 +{
-+    Mutex mutex;
 +    CondVar var;
++};
++
++struct SDL_mutex
++{
++    RMutex mtx;
 +};
 +
 +/* Create a condition variable */
@@ -845,8 +849,7 @@ index 000000000..435c99b8f
 +
 +    cond = (SDL_cond *) SDL_malloc(sizeof(SDL_cond));
 +    if (cond) {
-+        mutexInit(&cond->mutex);
-+        condvarInit(&cond->var, &cond->mutex);
++        condvarInit(&cond->var);
 +    }
 +    else {
 +        SDL_OutOfMemory();
@@ -913,17 +916,22 @@ index 000000000..435c99b8f
 +int
 +SDL_CondWaitTimeout(SDL_cond *cond, SDL_mutex *mutex, Uint32 ms)
 +{
++    uint32_t mutex_state[2];
++
 +    if (!cond) {
 +        return SDL_SetError("Passed a NULL condition variable");
 +    }
 +
-+    /* Unlock the mutex, as is required by condition variable semantics */
-+    SDL_UnlockMutex(mutex);
++	// backup mutex state
++    mutex_state[0] = mutex->mtx.thread_tag;
++    mutex_state[1] = mutex->mtx.counter;
++    mutex->mtx.thread_tag = 0;
++    mutex->mtx.counter = 0;
 +
-+    condvarWaitTimeout(&cond->var, ms * 1000000);
++    condvarWaitTimeout(&cond->var, &mutex->mtx.lock, ms * 1000000);
 +
-+    /* Lock the mutex, as is required by condition variable semantics */
-+    SDL_LockMutex(mutex);
++    mutex->mtx.thread_tag = mutex_state[0];
++    mutex->mtx.counter = mutex_state[1];
 +
 +    return 0;
 +}
@@ -1237,7 +1245,7 @@ index 000000000..6a8d20701
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread.c b/src/thread/switch/SDL_systhread.c
 new file mode 100644
-index 000000000..01fa7ef75
+index 000000000..4ea162ae1
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread.c
 @@ -0,0 +1,102 @@
@@ -1334,7 +1342,7 @@ index 000000000..01fa7ef75
 +        value = 0x2D;
 +    }
 +    else if (priority == SDL_THREAD_PRIORITY_HIGH) {
-+        value = 0x2B;
++        value = 0x1C;
 +    }
 +
 +    svcSetThreadPriority(CUR_THREAD_HANDLE, value);
