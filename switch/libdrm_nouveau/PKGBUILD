@@ -1,8 +1,8 @@
 
 # Maintainer: fincs <fincs.alt1@gmail.com>
 
-pkgbasename=('libdrm_nouveau')
-pkgname=('switch-$pkgbasename')
+pkgbasename=libdrm_nouveau
+pkgname=switch-$pkgbasename
 pkgver=0.1.0
 pkgrel=1
 pkgdesc="Interface between mesa/nouveau and Nintendo Switch Nvidia GPU driver"
