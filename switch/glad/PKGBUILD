@@ -1,0 +1,28 @@
+
+# Maintainer: fincs <fincs.alt1@gmail.com>
+
+pkgbasename=glad
+pkgname=switch-$pkgbasename
+pkgver=0.1.27
+pkgrel=1
+pkgdesc="OpenGL Loader (modified for Switch)"
+arch=('any')
+license=('MIT')
+url="http://github.com/devkitPro"
+options=(!strip libtool staticlibs)
+source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
+sha256sums=('0d045640757b3583b1c92466d45d77a3856c861ac91b3bdfab204efd090cd4f4')
+makedepends=('devkitA64')
+depends=('switch-mesa')
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir install
+
+}

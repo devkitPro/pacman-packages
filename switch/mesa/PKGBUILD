@@ -1,0 +1,39 @@
+# Maintainer:  fincs <fincs.alt1@gmail.com>
+
+pkgbasename=mesa
+pkgname=switch-$pkgbasename
+pkgver=18.0_beta
+pkgrel=1
+pkgdesc='The Mesa 3D Graphics Library'
+arch=('any')
+url='https://github.com/devkitPro'
+license=(MIT)
+options=(!strip libtool staticlibs)
+source=("${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.xz")
+sha256sums=('cf2cae067e17269f9ce7ab1dee9533b866931f2189e27a60d501f8a6802de74e')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('switch-libdrm_nouveau')
+
+build() {
+  cd mesa
+
+  source /opt/devkitpro/switchvars.sh
+
+  autoreconf --force --verbose --install
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static --disable-dri --disable-glx \
+    --enable-egl --disable-gbm --with-dri-drivers=no \
+    --with-platforms=switch --with-gallium-drivers=nouveau \
+    --enable-glx-tls --enable-texture-float --enable-debug
+
+  make -j3
+}
+
+package() {
+  cd mesa
+
+  source /opt/devkitpro/switchvars.sh
+
+  make -j3 DESTDIR="$pkgdir" install
+}

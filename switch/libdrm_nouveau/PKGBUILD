@@ -1,0 +1,27 @@
+
+# Maintainer: fincs <fincs.alt1@gmail.com>
+
+pkgbasename=('libdrm_nouveau')
+pkgname=('switch-$pkgbasename')
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Interface between mesa/nouveau and Nintendo Switch Nvidia GPU driver"
+arch=('any')
+license=('MIT')
+url="http://github.com/devkitPro"
+options=(!strip libtool staticlibs)
+source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
+sha256sums=('d30b2add3aea64ff16aec6573e0033341272a02aaf0f5e7e8e44dd3850568704')
+makedepends=('devkitA64')
+
+build() {
+
+  make -C $srcdir
+
+}
+
+package() {
+
+  make -C $srcdir DESTDIR=$pkgdir install
+
+}
