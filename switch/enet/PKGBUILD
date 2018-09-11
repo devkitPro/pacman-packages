@@ -1,0 +1,39 @@
+pkgname=switch-enet
+pkgver=r252.e2ef839
+pkgrel=1
+pkgdesc='ENet reliable UDP networking library (adapted for Nintendo Switch homebrew development)'
+arch=('any')
+url='https://github.com/lsalzman/enet'
+license=('MIT')
+options=(!strip libtool staticlibs)
+makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=(${pkgname}::"git+https://github.com/lsalzman/enet.git#commit=e2ef83927d1626d6ee479742343a3011333fdfdd")
+md5sums=('SKIP')
+
+pkgver() {
+    cd "$srcdir/${pkgname}"
+    printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd ${pkgname}
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  autoreconf -vfi
+
+  ./configure --prefix=$PORTLIBS_PREFIX --host=aarch64-none-elf \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd ${pkgname}
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
