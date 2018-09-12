@@ -1,7 +1,9 @@
+
+
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitpro-pkgbuild-helpers
 pkgver=1.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc='makepkg helpers for devkitPro portlibs'
 arch=('any')
 url='http://devkitpro.org/'
@@ -16,13 +18,13 @@ sha256sums=(
 
   '55f781d1f1c0aad9edd5b7547aa2b9d33b36e727ae4cc969e36bdae92671f116'
   '2338f07a3cff9ca0cf58d36d78236cb3452042c351cd318a25ff046ed978dca2'
-  'ee177f092b4a01acd594c01684e46313f17ede519a198ab6539db133f3b1114b'
+  '40ca1a2137843956e365dcf105f5bac13a84c085a666473229fe6946f7d2e22c'
   '7614edfb2ae0900428f8f9f9fe9dacc5719a2ab8c1d9796fa7b8b3914763dbae'
 
   '95ca2a35f2026d1c47a5609c35273ff346e6b57989aa1e0b29fe3431a61ee3e1'
   '3b94b4d0c78394c826feffd377c10bba496c814c083bc4a47673629608a8651e'
-  'e5334baa018a530475622d2acf00bb0098d3030fec3e9f07cfbdcbad75765062'
-  '606e3f05fc8756e6c732704f45970784dcf446e312309eb0df9fdcb8bfb5d95b'
+  'e96bb8d2143b35d7fe6888bb76830dff5856dba2510db4b83d5dca79de1c48f4'
+  'f8bee092bff96a41ba46b35f352f93dfe7ded231de9ca2acf6e71216b5182370'
   'a9b1e4614d71bc3984145b3708d7fdf5f3faa0deb2124eeeedb267a653236142'
 
   '9503f0bdf33f6b2a324ddcb185f6550c4eb815b6891365337ed2b7bb222569bb'
@@ -35,7 +37,7 @@ sha256sums=(
 package() {
 
   install -d "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitarm.sh devkitarm.cmake 3dsvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
 
