@@ -1,0 +1,48 @@
+# Maintainer: Michael Theall <pigman46@gmail.com>
+
+pkgbasename=('libxmp-lite')
+
+pkgname=("3ds-${pkgbasename}")
+pkgver=4.4.1
+pkgrel=1
+pkgdesc="Extended Module Player library. (for Nintendo 3DS homebrew development)"
+arch=('any')
+license=('LGPL')
+url="http://xmp.sourceforge.net"
+options=(!strip libtool staticlibs)
+source=(
+ "https://sourceforge.net/projects/xmp/files/libxmp/${pkgver}/libxmp-lite-${pkgver}.tar.gz"
+ "https://sourceforge.net/projects/xmp/files/libxmp/${pkgver}/fix-libxmp-lite-mod-loader.patch"
+)
+sha256sums=('bce9cbdaa19234e08e62660c19ed9a190134262066e7f8c323ea8ad2ac20dc39'
+            '9222acc232475c6d8016f0922c5e608f4a1592cb9345d09308ff902beb4a3066')
+depends=('3ds-pkg-config' 'devkitARM' 'libctru')
+makedepends=('devkitpro-pkgbuild-helpers')
+
+
+build() {
+
+  cd ${pkgbasename}-${pkgver}
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  patch -Np2 -i "${srcdir}/fix-libxmp-lite-mod-loader.patch"
+
+  ./configure --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
+    --disable-shared --enable-static
+
+  make
+
+}
+
+package() {
+
+  cd ${pkgbasename}-${pkgver}
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="${pkgdir}" install
+
+}
