@@ -1,10 +1,7 @@
-set(CMAKE_SYSTEM_NAME Generic)
-
 set(CMAKE_C_COMPILER "aarch64-none-elf-gcc")
 set(CMAKE_CXX_COMPILER "aarch64-none-elf-g++")
-set(CMAKE_AR "aarch64-none-elf-gcc-ar")
-set(CMAKE_RANLIB "aarch64-none-elf-gcc-ranlib")
 
+set(PKG_CONFIG_EXECUTABLE "aarch64-none-elf-pkg-config")
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)

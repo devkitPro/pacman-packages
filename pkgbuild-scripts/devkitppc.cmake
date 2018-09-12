@@ -1,9 +1,7 @@
-set(CMAKE_SYSTEM_NAME Generic)
-
 set(CMAKE_C_COMPILER "powerpc-eabi-gcc")
 set(CMAKE_CXX_COMPILER "powerpc-eabi-g++")
-set(CMAKE_AR "powerpc-eabi-gcc-ar")
-set(CMAKE_RANLIB "powerpc-eabi-gcc-ranlib")
+
+set(PKG_CONFIG_EXECUTABLE "powerpc-eabi-pkg-config")
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)

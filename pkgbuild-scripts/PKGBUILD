@@ -1,29 +1,33 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitpro-pkgbuild-helpers
-pkgver=1.0.6
+pkgver=1.1.0
 pkgrel=1
 pkgdesc='makepkg helpers for devkitPro portlibs'
 arch=('any')
 url='http://devkitpro.org/'
 source=(
-'devkitarm.sh' 'devkitarm.cmake' '3dsvars.sh'
-'devkitppc.sh' 'devkitppc.cmake' 'ppcvars.sh'
-'devkita64.sh' 'devkita64.cmake' 'switchvars.sh'
+'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh'
+'devkitppc.sh' 'devkitppc.cmake' 'gamecube.cmake' 'wii.cmake' 'ppcvars.sh'
+'devkita64.sh' 'devkita64.cmake' 'switch.cmake' 'switchvars.sh'
 
 )
 options=(!strip)
 sha256sums=(
 
   '55f781d1f1c0aad9edd5b7547aa2b9d33b36e727ae4cc969e36bdae92671f116'
-  '58298fb49cd18c789191b770642b44d0ba0fecf1bea0445e63b82e613d4d953f'
+  '2338f07a3cff9ca0cf58d36d78236cb3452042c351cd318a25ff046ed978dca2'
+  'ee177f092b4a01acd594c01684e46313f17ede519a198ab6539db133f3b1114b'
   '7614edfb2ae0900428f8f9f9fe9dacc5719a2ab8c1d9796fa7b8b3914763dbae'
 
   '95ca2a35f2026d1c47a5609c35273ff346e6b57989aa1e0b29fe3431a61ee3e1'
-  'cde5f36d2d7f673c173ac6cce4daa70547597eb7727cea65c3aa77cc5e1dc136'
+  '3b94b4d0c78394c826feffd377c10bba496c814c083bc4a47673629608a8651e'
+  'e5334baa018a530475622d2acf00bb0098d3030fec3e9f07cfbdcbad75765062'
+  '606e3f05fc8756e6c732704f45970784dcf446e312309eb0df9fdcb8bfb5d95b'
   'a9b1e4614d71bc3984145b3708d7fdf5f3faa0deb2124eeeedb267a653236142'
 
   '9503f0bdf33f6b2a324ddcb185f6550c4eb815b6891365337ed2b7bb222569bb'
-  'b3adffeb58a39630ef619dfe29a9934c9338e76f35ce57038b99ee28cf588f41'
+  '5b1036bd0d6eb9e1b893b0018944e3820b10802574fd43171f9183c5c3f9c73d'
+  '60d02a8ab3f1e1bbd6d043df6005d40eec02174105dc23c792f1c767cde6a31e'
   '43a26371d4c0d54c5513dd43d634a5955b4e0cdb24504f89e9992c6556a13615'
 
 )
@@ -32,7 +36,7 @@ package() {
 
   install -d "$pkgdir"/opt/devkitpro
   install -Dm644 devkitarm.sh devkitarm.cmake 3dsvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkita64.sh devkita64.cmake switchvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitppc.sh devkitppc.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
 
 }

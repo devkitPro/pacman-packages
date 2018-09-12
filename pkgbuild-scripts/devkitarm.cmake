@@ -1,11 +1,7 @@
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR armv6k)
-
 set(CMAKE_C_COMPILER "arm-none-eabi-gcc")
 set(CMAKE_CXX_COMPILER "arm-none-eabi-g++")
-set(CMAKE_AR "arm-none-eabi-gcc-ar")
-set(CMAKE_RANLIB "arm-none-eabi-gcc-ranlib")
 
+set(PKG_CONFIG_EXECUTABLE "arm-none-eabi-pkg-config")
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
