@@ -18,15 +18,26 @@ build() {
   CHOST=aarch64-none-elf \
     ./configure --prefix="/opt/devkitpro/portlibs/switch" --static
   make libz.a # only build library, no programs
+
+  # libminizip
+  cd contrib/minizip
+  source /opt/devkitpro/switchvars.sh
+  autoreconf --force --verbose --install
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+  make
 }
 
 package() {
   cd zlib-$pkgver
-
+  # zlib
   make DESTDIR="$pkgdir" install
   # license
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname
   tail -n 31 README > "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
   # remove useless stuff
   rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
+  # libminizip
+  cd contrib/minizip
+  make DESTDIR="$pkgdir" install
 }
