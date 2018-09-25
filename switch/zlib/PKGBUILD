@@ -23,6 +23,7 @@ build() {
   cd contrib/minizip
   source /opt/devkitpro/switchvars.sh
   autoreconf --force --verbose --install
+  CFLAGS="${CFLAGS} -DUSE_FILE32API"
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
   make
