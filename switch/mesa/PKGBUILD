@@ -2,7 +2,7 @@
 
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
-pkgver=18.2_beta
+pkgver=18.2_beta2
 pkgrel=1
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
@@ -10,7 +10,7 @@ url='https://github.com/devkitPro'
 license=(MIT)
 options=(!strip libtool staticlibs)
 source=("${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.xz")
-sha256sums=('a7fd2d5834c1dd6320074ee25d91d1fc06828b848fd7a081a2f6ad1df65f911a')
+sha256sums=('0162f778af8cd758ee008fddd9bc8691827ddd87f67259484a46194165ef43b6')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-libdrm_nouveau')
 
