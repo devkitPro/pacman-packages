@@ -3,7 +3,7 @@
 
 pkgname=3ds-mbedtls
 pkgver=2.8.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='http://www.zlib.net/'
@@ -15,7 +15,7 @@ source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
          '3ds-mbedtls.patch' )
 
 sha256sums=('ab8b62b995781bcf22e87a265ed06267f87c3041198e996b44441223d19fa9c3'
-            '2797172f502dca4c57e98f6c49a3d1608b371816567075dba22b6d8ebf25f8b6')
+            '802cd6cebcfded7b8d593900643bc5deb06b215cfd7b0663702fbd66124bb474')
 
 build() {
   cd mbedtls-$pkgver
