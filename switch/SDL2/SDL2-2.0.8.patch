@@ -1,9 +1,9 @@
 diff --git a/CMakeLists.switch b/CMakeLists.switch
 new file mode 100644
-index 000000000..eaf670550
+index 000000000..f80218eff
 --- /dev/null
 +++ b/CMakeLists.switch
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,82 @@
 +cmake_minimum_required(VERSION 3.0)
 +#set(CMAKE_VERBOSE_MAKEFILE ON)
 +
@@ -16,8 +16,8 @@ index 000000000..eaf670550
 +set(CMAKE_ASM_COMPILER "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-as")
 +set(CMAKE_AR "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-gcc-ar" CACHE STRING "")
 +set(CMAKE_RANLIB "${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-gcc-ranlib" CACHE STRING "")
-+set(CMAKE_C_FLAGS "-O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec -I${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include" CACHE STRING "C flags")
-+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fpermissive -fno-rtti -fno-exceptions -std=gnu++11" CACHE STRING "C++ flags")
++set(CMAKE_C_FLAGS "-g -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec -fPIC -I${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include" CACHE STRING "C flags")
++set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions" CACHE STRING "C++ flags")
 +set(CMAKE_FIND_ROOT_PATH ${DEVKITPRO} ${DEVKITPRO}/devkitA64 ${DEVKITPRO}/libnx ${DEVKITPRO}/portlibs/switch)
 +set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 +set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
@@ -45,6 +45,9 @@ index 000000000..eaf670550
 +        src/power
 +        src/render
 +        src/render/software
++        src/render/opengl
++        src/render/opengles
++        src/render/opengles2
 +        src/stdlib
 +        src/thread
 +        src/thread/switch
@@ -64,17 +67,19 @@ index 000000000..eaf670550
 +# SDL2 library
 +add_library(${PROJECT_NAME} STATIC ${SRC_FILES})
 +target_include_directories(${PROJECT_NAME} PUBLIC ${SRC_DIRS} include)
-+target_compile_options(${PROJECT_NAME} PUBLIC -O3 -D__SWITCH__)
++target_compile_options(${PROJECT_NAME} PUBLIC -O3 -D__SWITCH__ -DSDL_VIDEO_STATIC_ANGLE)
 +
 +# SDL2 test
 +add_executable(${PROJECT_NAME}.elf test/testswitch.c)
 +target_include_directories(${PROJECT_NAME}.elf PRIVATE include)
-+#target_include_directories(${PROJECT_NAME}.elf PRIVATE ${DEVKITPRO}/portlibs/switch/include)
 +target_compile_options(${PROJECT_NAME}.elf PRIVATE -O3 -D__SWITCH__)
 +target_link_libraries(${PROJECT_NAME}.elf
 +        ${PROJECT_NAME}
-+        #${DEVKITPRO}/portlibs/switch/lib/libSDL2.a
++        ${DEVKITPRO}/portlibs/switch/lib/libEGL.a
++        ${DEVKITPRO}/portlibs/switch/lib/libglapi.a
++        ${DEVKITPRO}/portlibs/switch/lib/libdrm_nouveau.a
 +        ${DEVKITPRO}/libnx/lib/libnx.a
++        stdc++
 +        m
 +        )
 +set_target_properties(${PROJECT_NAME}.elf PROPERTIES LINK_FLAGS "-specs=${DEVKITPRO}/libnx/switch.specs")
@@ -177,26 +182,32 @@ index 1c7f87eb0..5fef7ee5e 100755
          as_fn_error $? "
  *** Unsupported host:  Please add to configure.in
 diff --git a/configure.in b/configure.in
-index 1c7e79338..661ddea13 100644
+index 1c7e79338..3660e6b57 100644
 --- a/configure.in
 +++ b/configure.in
-@@ -3905,6 +3905,58 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
+@@ -3905,6 +3905,64 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
              have_timers=yes
          fi
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
-+        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec"
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 $SDL_CFLAGS -fPIC"
-+        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lnx"
++        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec -fPIC"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
++        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lglapi -ldrm_nouveau -lnx"
 +        CheckDeclarationAfterStatement
 +
 +        # Set up files for the video library
 +        if test x$enable_video = xyes; then
-+           AC_DEFINE(SDL_VIDEO_DRIVER_SWITCH, 1, [ ])
-+           SOURCES="$SOURCES $srcdir/src/video/switch/*.c"
-+           SUMMARY_video="${SUMMARY_video} switch"
-+           have_video=yes
++            SOURCES="$SOURCES $srcdir/src/video/switch/*.c"
++            AC_DEFINE(SDL_VIDEO_DRIVER_SWITCH, 1, [ ])
++            AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
++            AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
++            AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
++            AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
++            SUMMARY_video="${SUMMARY_video} switch_opengles2"
++            have_video=yes
 +        fi
 +        # Set up files for the audio library
 +        if test x$enable_audio = xyes; then
@@ -779,6 +790,40 @@ index 000000000..a57c662a5
 diff --git a/src/power/switch/dummy.c b/src/power/switch/dummy.c
 new file mode 100644
 index 000000000..e69de29bb
+diff --git a/src/render/opengles2/SDL_render_gles2.c b/src/render/opengles2/SDL_render_gles2.c
+index 0cd388c37..a7b084d40 100644
+--- a/src/render/opengles2/SDL_render_gles2.c
++++ b/src/render/opengles2/SDL_render_gles2.c
+@@ -29,6 +29,10 @@
+ #include "../../video/SDL_blit.h"
+ #include "SDL_shaders_gles2.h"
+ 
++#if SDL_VIDEO_DRIVER_SWITCH
++#include "../../video/switch/SDL_switchvideo.h"
++#endif
++
+ /* !!! FIXME: Emscripten makes these into WebGL calls, and WebGL doesn't offer
+    !!! FIXME:  client-side arrays (without an Emscripten compatibility hack,
+    !!! FIXME:  at least), but the current VBO code here is dramatically
+@@ -451,8 +455,18 @@ GLES2_UpdateViewport(SDL_Renderer * renderer)
+         int w, h;
+ 
+         SDL_GL_GetDrawableSize(renderer->window, &w, &h);
++#if SDL_VIDEO_DRIVER_SWITCH
++        renderer->viewport.x =
++            ((SDL_DisplayModeData *) SDL_GetVideoDevice()->displays[0].current_mode.driverdata)->padding;
++        renderer->viewport.y =  SDL_GetVideoDevice()->displays[0].desktop_mode.h - h;
++        renderer->viewport.w = w;
++        renderer->viewport.h = h;
++        data->glViewport(renderer->viewport.x, renderer->viewport.y,
++                         renderer->viewport.w, renderer->viewport.h);
++#else
+         data->glViewport(renderer->viewport.x, (h - renderer->viewport.y - renderer->viewport.h),
+                          renderer->viewport.w, renderer->viewport.h);
++#endif
+     }
+ 
+     if (data->current_program) {
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
 index b68f90e91..3af243df7 100644
 --- a/src/thread/SDL_thread_c.h
@@ -1518,7 +1563,7 @@ index 9df71c9aa..c37bb012f 100644
  extern SDL_VideoDevice *SDL_GetVideoDevice(void);
  extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 8cf195d1a..bde5b1643 100644
+index 8cf195d1a..a2df8486a 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
 @@ -112,6 +112,9 @@ static VideoBootStrap *bootstrap[] = {
@@ -1531,6 +1576,151 @@ index 8cf195d1a..bde5b1643 100644
  #if SDL_VIDEO_DRIVER_DUMMY
      &DUMMY_bootstrap,
  #endif
+@@ -1376,7 +1379,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
+     }
+ 
+     /* Some platforms have OpenGL enabled by default */
+-#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
++#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__ || __SWITCH__
+     if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN)) {
+         flags |= SDL_WINDOW_OPENGL;
+     }
+diff --git a/src/video/switch/SDL_switchopengles.c b/src/video/switch/SDL_switchopengles.c
+new file mode 100644
+index 000000000..6681eb2cf
+--- /dev/null
++++ b/src/video/switch/SDL_switchopengles.c
+@@ -0,0 +1,75 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#include "../../SDL_internal.h"
++#include "SDL_log.h"
++
++#if SDL_VIDEO_DRIVER_SWITCH
++
++#include "SDL_video.h"
++#include "SDL_switchopengles.h"
++#include "SDL_switchvideo.h"
++
++/* EGL implementation of SDL OpenGL support */
++
++void
++SWITCH_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
++{
++    *mask = SDL_GL_CONTEXT_PROFILE_ES;
++    *major = 2;
++    *minor = 0;
++}
++
++int
++SWITCH_GLES_LoadLibrary(_THIS, const char *path)
++{
++    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
++}
++
++void
++SWITCH_GLES_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
++{
++    SDL_DisplayMode mode = {0, 0, 0, 0, 0};
++    SDL_GetCurrentDisplayMode(0, &mode);
++    *w = mode.w;
++    *h = mode.h;
++}
++
++SDL_EGL_CreateContext_impl(SWITCH)
++SDL_EGL_MakeCurrent_impl(SWITCH)
++SDL_EGL_SwapWindow_impl(SWITCH)
++
++// for SDL_egl.c compatibility
++void *
++SDL_LoadFunction(void *handle, const char *name)
++{
++    return NULL;
++}
++
++void
++SDL_UnloadObject(void *handle)
++{
++
++}
++
++#endif /* SDL_VIDEO_DRIVER_SWITCH */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/switch/SDL_switchopengles.h b/src/video/switch/SDL_switchopengles.h
+new file mode 100644
+index 000000000..3beb5eea7
+--- /dev/null
++++ b/src/video/switch/SDL_switchopengles.h
+@@ -0,0 +1,49 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#ifndef SDL_switchteopengles_h_
++#define SDL_switchteopengles_h_
++
++#if SDL_VIDEO_DRIVER_SWITCH
++
++#include "../SDL_sysvideo.h"
++#include "../SDL_egl_c.h"
++
++/* OpenGLES functions */
++#define SWITCH_GLES_GetAttribute SDL_EGL_GetAttribute
++#define SWITCH_GLES_GetProcAddress SDL_EGL_GetProcAddress
++#define SWITCH_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
++#define SWITCH_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
++#define SWITCH_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
++#define SWITCH_GLES_DeleteContext SDL_EGL_DeleteContext
++
++extern int SWITCH_GLES_LoadLibrary(_THIS, const char *path);
++extern SDL_GLContext SWITCH_GLES_CreateContext(_THIS, SDL_Window *window);
++extern int SWITCH_GLES_SwapWindow(_THIS, SDL_Window *window);
++extern int SWITCH_GLES_MakeCurrent(_THIS, SDL_Window *window, SDL_GLContext context);
++extern void SWITCH_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor);
++extern void SWITCH_GLES_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
++
++#endif /* SDL_VIDEO_DRIVER_SWITCH */
++#endif /* SDL_switchteopengles_h_ */
++
++/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchtouch.c b/src/video/switch/SDL_switchtouch.c
 new file mode 100644
 index 000000000..9191817c0
@@ -1694,10 +1884,10 @@ index 000000000..ac5908e39
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 000000000..386288354
+index 000000000..0fd0cdb67
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
-@@ -0,0 +1,269 @@
+@@ -0,0 +1,351 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -1723,122 +1913,319 @@ index 000000000..386288354
 +
 +#if SDL_VIDEO_DRIVER_SWITCH
 +
-+/* SDL internals */
-+#include "../SDL_sysvideo.h"
-+#include "../../events/SDL_keyboard_c.h"
-+#include "../../events/SDL_windowevents_c.h"
-+#include "SDL_switchtouch.h"
-+
 +#include <switch.h>
 +
-+#define SWITCH_DATA "_SDL_SwitchData"
-+#define SCREEN_WIDTH    1280
-+#define SCREEN_HEIGHT   720
++#include "../SDL_sysvideo.h"
++#include "../../render/SDL_sysrender.h"
++#include "../../events/SDL_keyboard_c.h"
++#include "../../events/SDL_mouse_c.h"
++#include "../../events/SDL_windowevents_c.h"
 +
-+typedef struct
-+{
-+    SDL_Surface *surface;
-+    int x_offset;
-+    int y_offset;
-+} SWITCH_WindowData;
++#include "SDL_switchvideo.h"
++#include "SDL_switchopengles.h"
++#include "SDL_switchtouch.h"
 +
-+static int SWITCH_VideoInit(_THIS);
-+
-+static int SWITCH_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-+
-+static void SWITCH_VideoQuit(_THIS);
-+
-+static void SWITCH_PumpEvents(_THIS);
-+
-+static int SWITCH_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch);
-+
-+static int SWITCH_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects);
-+
-+static void SWITCH_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
-+
-+static int SWITCH_Available(void)
++static int
++SWITCH_Available(void)
 +{
 +    return 1;
 +}
 +
-+static void SWITCH_DeleteDevice(SDL_VideoDevice *device)
++static void
++SWITCH_Destroy(SDL_VideoDevice *device)
 +{
-+    SDL_free(device);
++    if (device) {
++        SDL_free(device);
++    }
 +}
 +
-+static SDL_VideoDevice *SWITCH_CreateDevice(int devindex)
++static SDL_VideoDevice *
++SWITCH_CreateDevice(int devindex)
 +{
 +    SDL_VideoDevice *device;
 +
++    /* Initialize SDL_VideoDevice structure */
 +    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-+    if (!device) {
++    if (device == NULL) {
 +        SDL_OutOfMemory();
 +        return NULL;
 +    }
 +
++    /* Setup amount of available displays */
++    device->num_displays = 0;
++
++    /* Set device free function */
++    device->free = SWITCH_Destroy;
++
++    /* Setup all functions which we can handle */
 +    device->VideoInit = SWITCH_VideoInit;
 +    device->VideoQuit = SWITCH_VideoQuit;
++    device->GetDisplayModes = SWITCH_GetDisplayModes;
 +    device->SetDisplayMode = SWITCH_SetDisplayMode;
-+    device->PumpEvents = SWITCH_PumpEvents;
-+    device->CreateWindowFramebuffer = SWITCH_CreateWindowFramebuffer;
-+    device->UpdateWindowFramebuffer = SWITCH_UpdateWindowFramebuffer;
-+    device->DestroyWindowFramebuffer = SWITCH_DestroyWindowFramebuffer;
++    device->CreateSDLWindow = SWITCH_CreateWindow;
++    device->CreateSDLWindowFrom = SWITCH_CreateWindowFrom;
++    device->SetWindowTitle = SWITCH_SetWindowTitle;
++    device->SetWindowIcon = SWITCH_SetWindowIcon;
++    device->SetWindowPosition = SWITCH_SetWindowPosition;
++    device->SetWindowSize = SWITCH_SetWindowSize;
++    device->ShowWindow = SWITCH_ShowWindow;
++    device->HideWindow = SWITCH_HideWindow;
++    device->RaiseWindow = SWITCH_RaiseWindow;
++    device->MaximizeWindow = SWITCH_MaximizeWindow;
++    device->MinimizeWindow = SWITCH_MinimizeWindow;
++    device->RestoreWindow = SWITCH_RestoreWindow;
++    device->SetWindowGrab = SWITCH_SetWindowGrab;
++    device->DestroyWindow = SWITCH_DestroyWindow;
 +
-+    device->free = SWITCH_DeleteDevice;
++    device->GL_LoadLibrary = SWITCH_GLES_LoadLibrary;
++    device->GL_GetProcAddress = SWITCH_GLES_GetProcAddress;
++    device->GL_UnloadLibrary = SWITCH_GLES_UnloadLibrary;
++    device->GL_CreateContext = SWITCH_GLES_CreateContext;
++    device->GL_MakeCurrent = SWITCH_GLES_MakeCurrent;
++    device->GL_SetSwapInterval = SWITCH_GLES_SetSwapInterval;
++    device->GL_GetSwapInterval = SWITCH_GLES_GetSwapInterval;
++    device->GL_SwapWindow = SWITCH_GLES_SwapWindow;
++    device->GL_DeleteContext = SWITCH_GLES_DeleteContext;
++    device->GL_DefaultProfileConfig = SWITCH_GLES_DefaultProfileConfig;
++    device->GL_GetDrawableSize = SWITCH_GLES_GetDrawableSize;
++
++    device->PumpEvents = SWITCH_PumpEvents;
 +
 +    return device;
 +}
 +
 +VideoBootStrap SWITCH_bootstrap = {
-+    "Switch", "Video driver for Nintendo Switch (libnx)",
-+    SWITCH_Available, SWITCH_CreateDevice
++    "Switch",
++    "OpenGL ES2 video driver for Nintendo Switch",
++    SWITCH_Available,
++    SWITCH_CreateDevice
 +};
 +
-+static int SWITCH_VideoInit(_THIS)
++/*****************************************************************************/
++/* SDL Video and Display initialization/handling functions                   */
++/*****************************************************************************/
++int
++SWITCH_VideoInit(_THIS)
 +{
-+    SDL_DisplayMode mode;
++    SDL_VideoDisplay display;
++    SDL_DisplayMode current_mode;
++    SDL_DisplayData *data;
++    SDL_DisplayModeData *mdata;
 +
-+    gfxInitResolution(SCREEN_WIDTH, SCREEN_HEIGHT);
-+    gfxInitDefault();
-+    gfxSetMode(GfxMode_TiledDouble);
++    SDL_zero(current_mode);
++    current_mode.w = 1280;
++    current_mode.h = 720;
++    current_mode.refresh_rate = 60;
++    current_mode.format = SDL_PIXELFORMAT_RGBA8888;
++    mdata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
++    mdata->padding = 0;
++    current_mode.driverdata = mdata;
 +
-+    // add default mode (1280x720)
-+    mode.format = SDL_PIXELFORMAT_ABGR8888;
-+    mode.w = SCREEN_WIDTH;
-+    mode.h = SCREEN_HEIGHT;
-+    mode.refresh_rate = 60;
-+    mode.driverdata = NULL;
-+    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
-+        return -1;
++    SDL_zero(display);
++    display.desktop_mode = current_mode;
++    display.current_mode = current_mode;
++
++    /* Allocate display internal data */
++    data = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
++    if (data == NULL) {
++        return SDL_OutOfMemory();
 +    }
-+    SDL_AddDisplayMode(&_this->displays[0], &mode);
++    data->egl_display = EGL_DEFAULT_DISPLAY;
++    display.driverdata = data;
 +
-+    // allow any resolution
-+    mode.w = 0;
-+    mode.h = 0;
-+    SDL_AddDisplayMode(&_this->displays[0], &mode);
++    SDL_AddVideoDisplay(&display);
 +
 +    // init touch
 +    SWITCH_InitTouch();
 +
-+    return 0;
++    return 1;
 +}
 +
-+static void SWITCH_VideoQuit(_THIS)
++void
++SWITCH_VideoQuit(_THIS)
 +{
++    // exit touch
 +    SWITCH_QuitTouch();
-+    gfxExit();
 +}
 +
-+static int SWITCH_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
++void
++SWITCH_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 +{
-+    SDL_SendWindowEvent(display->fullscreen_window,
-+                        SDL_WINDOWEVENT_RESIZED, mode->w, mode->h);
++    SDL_DisplayMode mode;
++    SDL_DisplayModeData *data;
++
++    // 1920x1080 (16/9) 16RGBA8888
++    if (appletGetOperationMode() == AppletOperationMode_Docked) {
++        SDL_zero(mode);
++        mode.w = 1920;
++        mode.h = 1080;
++        mode.refresh_rate = 60;
++        mode.format = SDL_PIXELFORMAT_RGBA8888;
++        data = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
++        data->padding = 0;
++        mode.driverdata = data;
++        SDL_AddDisplayMode(display, &mode);
++    }
++
++    // 1280x720 (16/9) RGBA8888
++    SDL_AddDisplayMode(display, &display->current_mode);
++
++    // 960x540 (16/9) RGBA8888
++    SDL_zero(mode);
++    mode.w = 960;
++    mode.h = 540;
++    mode.refresh_rate = 60;
++    mode.format = SDL_PIXELFORMAT_RGBA8888;
++    data = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
++    data->padding = 0;
++    mode.driverdata = data;
++    SDL_AddDisplayMode(display, &mode);
++
++    // 800x600 (4/3) RGBA8888
++    SDL_zero(mode);
++    mode.w = 800;
++    mode.h = 600;
++    mode.refresh_rate = 60;
++    mode.format = SDL_PIXELFORMAT_RGBA8888;
++    data = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
++    data->padding = (int) ((600.0f * 1.7774f) - 800.0f) / 2;
++    mode.driverdata = data;
++    SDL_AddDisplayMode(display, &mode);
++
++    // 640x480 (4/3) RGBA8888
++    SDL_zero(mode);
++    mode.w = 640;
++    mode.h = 480;
++    mode.refresh_rate = 60;
++    mode.format = SDL_PIXELFORMAT_RGBA8888;
++    data = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
++    data->padding = (int) ((480.0f * 1.7774f) - 640.0f) / 2;
++    mode.driverdata = data;
++    SDL_AddDisplayMode(display, &mode);
++}
++
++int
++SWITCH_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
++{
++    SDL_Renderer *renderer = SDL_GetRenderer(_this->windows);
++    SDL_DisplayModeData *data = (SDL_DisplayModeData *) mode->driverdata;
++
++    if (!data) {
++        return -1;
++    }
++
++    gfxConfigureResolution(mode->w + data->padding * 2, mode->h);
++    display->current_mode = *mode;
++    _this->windows->w = mode->w;
++    _this->windows->h = mode->h;
++    if (renderer) {
++        renderer->UpdateViewport(renderer);
++    }
 +
 +    return 0;
 +}
 +
-+static void SWITCH_PumpEvents(_THIS)
++int
++SWITCH_CreateWindow(_THIS, SDL_Window *window)
++{
++    SDL_WindowData *wdata;
++    //SDL_VideoDisplay *display;
++
++    /* Allocate window internal data */
++    wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
++    if (wdata == NULL) {
++        return SDL_OutOfMemory();
++    }
++
++    window->flags |= SDL_WINDOW_FULLSCREEN;
++
++    if (!_this->egl_data) {
++        return SDL_SetError("SWITCH_CreateWindow: EGL not initialized");
++    }
++    wdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) &wdata->egl_surface);
++
++    if (wdata->egl_surface == EGL_NO_SURFACE) {
++        return SDL_SetError("Could not create GLES window surface");
++    }
++
++    /* Setup driver data for this window */
++    window->driverdata = wdata;
++
++    /* One window, it always has focus */
++    SDL_SetMouseFocus(window);
++    SDL_SetKeyboardFocus(window);
++
++    /* Window has been successfully created */
++    return 0;
++}
++
++void
++SWITCH_DestroyWindow(_THIS, SDL_Window *window)
++{
++    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
++
++    if (data) {
++        if (data->egl_surface != EGL_NO_SURFACE) {
++            SDL_EGL_DestroySurface(_this, data->egl_surface);
++        }
++        SDL_free(data);
++        window->driverdata = NULL;
++    }
++}
++
++int
++SWITCH_CreateWindowFrom(_THIS, SDL_Window *window, const void *data)
++{
++    return -1;
++}
++void
++SWITCH_SetWindowTitle(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon)
++{
++}
++void
++SWITCH_SetWindowPosition(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_SetWindowSize(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_ShowWindow(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_HideWindow(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_RaiseWindow(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_MaximizeWindow(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_MinimizeWindow(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_RestoreWindow(_THIS, SDL_Window *window)
++{
++}
++void
++SWITCH_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed)
++{
++
++}
++
++void
++SWITCH_PumpEvents(_THIS)
 +{
 +    if (!appletMainLoop()) {
 +        SDL_Event ev;
@@ -1851,128 +2238,89 @@ index 000000000..386288354
 +    SWITCH_PollTouch();
 +}
 +
-+static void SWITCH_SetResolution(u32 width, u32 height)
++#endif /* SDL_VIDEO_DRIVER_SWITCH */
+diff --git a/src/video/switch/SDL_switchvideo.h b/src/video/switch/SDL_switchvideo.h
+new file mode 100644
+index 000000000..33e1fd23c
+--- /dev/null
++++ b/src/video/switch/SDL_switchvideo.h
+@@ -0,0 +1,70 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#ifndef __SDL_SWITCHVIDEO_H__
++#define __SDL_SWITCHVIDEO_H__
++
++#if SDL_VIDEO_DRIVER_SWITCH
++
++#include "../../SDL_internal.h"
++#include "../SDL_sysvideo.h"
++
++#include "SDL_egl.h"
++
++typedef struct SDL_DisplayData
 +{
-+    u32 x, y, w, h, i;
-+    u32 *fb;
++    EGLDisplay egl_display;
++} SDL_DisplayData;
 +
-+    // clear framebuffers before switching res
-+    for (i = 0; i < 2; i++) {
-+
-+        fb = (u32 *) gfxGetFramebuffer(&w, &h);
-+
-+        for (y = 0; y < h; y++) {
-+            for (x = 0; x < w; x++) {
-+                fb[gfxGetFramebufferDisplayOffset(x, y)] =
-+                    (u32) RGBA8_MAXALPHA(0, 0, 0);
-+            }
-+        }
-+
-+        gfxFlushBuffers();
-+        gfxSwapBuffers();
-+        gfxWaitForVsync();
-+    }
-+
-+    gfxConfigureResolution(width, height);
-+}
-+
-+static int SWITCH_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
++typedef struct SDL_DisplayModeData
 +{
-+    int bpp;
-+    Uint32 r, g, b, a;
-+    SDL_Surface *surface;
-+    SWITCH_WindowData *data;
++    int padding;
++} SDL_DisplayModeData;
 +
-+    // create sdl surface framebuffer
-+    SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_ABGR8888, &bpp, &r, &g, &b, &a);
-+    surface = SDL_CreateRGBSurface(0, window->w, window->h, bpp, r, g, b, a);
-+    if (!surface) {
-+        return -1;
-+    }
-+
-+    // hold a pointer to our stuff
-+    data = SDL_calloc(1, sizeof(SWITCH_WindowData));
-+    data->surface = surface;
-+
-+    // use switch hardware scaling in fullscreen mode
-+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-+        float scaling = (float) window->h / (float) SCREEN_HEIGHT;
-+        float w = SDL_min(SCREEN_WIDTH, SCREEN_WIDTH * scaling);
-+        // calculate x offset, to respect aspect ratio
-+        // round down to multiple of 4 for faster fb writes
-+        data->x_offset = ((int) (w - window->w) / 2) & ~3;
-+        data->y_offset = 0;
-+        SWITCH_SetResolution((u32) w, (u32) window->h);
-+        printf("gfxConfigureResolution: %i x %i (window: %i x %i, offset: %i x %i)\n",
-+               (int) w, window->h, window->w, window->h, data->x_offset, data->y_offset);
-+    }
-+    else {
-+        data->x_offset = ((SCREEN_WIDTH - window->w) / 2) & ~3;
-+        data->y_offset = (SCREEN_HEIGHT - window->h) / 2;
-+        SWITCH_SetResolution(0, 0);
-+        printf("gfxConfigureResolution: %i x %i (window: %i x %i, offset: %i x %i)\n",
-+               1280, 720, window->w, window->h, data->x_offset, data->y_offset);
-+    }
-+
-+    *format = SDL_PIXELFORMAT_ABGR8888;
-+    *pixels = surface->pixels;
-+    *pitch = surface->pitch;
-+
-+    SDL_SetWindowData(window, SWITCH_DATA, data);
-+
-+    // inform SDL we're ready to accept inputs
-+    SDL_SetKeyboardFocus(window);
-+
-+    return 0;
-+}
-+
-+static int SWITCH_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects, int numrects)
++typedef struct SDL_WindowData
 +{
-+    SWITCH_WindowData *data = (SWITCH_WindowData *) SDL_GetWindowData(window, SWITCH_DATA);
++    EGLSurface egl_surface;
++} SDL_WindowData;
 +
-+    u32 fb_w, fb_h;
-+    int x, y, w = window->w, h = window->h;
-+    u32 *src = (u32 *) data->surface->pixels;
-+    u32 *dst = (u32 *) gfxGetFramebuffer(&fb_w, &fb_h);
-+
-+    // prevent fb overflow in case of resolution change outside SDL
-+    if (data->x_offset + w > fb_w) {
-+        w = fb_w - data->x_offset;
-+    }
-+    if (data->y_offset + h > fb_h) {
-+        h = fb_h - data->y_offset;
-+    }
-+
-+    for (y = 0; y < h; y++) {
-+        for (x = 0; x < w; x += 4) {
-+            *((u128 *) &dst[gfxGetFramebufferDisplayOffset(
-+                (u32) (x + data->x_offset), (u32) (y + data->y_offset))]) =
-+                *((u128 *) &src[y * w + x]);
-+        }
-+    }
-+
-+    gfxFlushBuffers();
-+    gfxSwapBuffers();
-+    // TODO: handle SDL_RENDERER_PRESENTVSYNC (SW_RenderDriver not accepting flags)
-+    gfxWaitForVsync();
-+
-+    return 0;
-+}
-+
-+static void SWITCH_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
-+{
-+    SWITCH_WindowData *data = (SWITCH_WindowData *) SDL_GetWindowData(window, SWITCH_DATA);
-+    SDL_FreeSurface(data->surface);
-+    SDL_free(data);
-+}
++int SWITCH_VideoInit(_THIS);
++void SWITCH_VideoQuit(_THIS);
++void SWITCH_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
++int SWITCH_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
++int SWITCH_CreateWindow(_THIS, SDL_Window *window);
++int SWITCH_CreateWindowFrom(_THIS, SDL_Window *window, const void *data);
++void SWITCH_SetWindowTitle(_THIS, SDL_Window *window);
++void SWITCH_SetWindowIcon(_THIS, SDL_Window *window, SDL_Surface *icon);
++void SWITCH_SetWindowPosition(_THIS, SDL_Window *window);
++void SWITCH_SetWindowSize(_THIS, SDL_Window *window);
++void SWITCH_ShowWindow(_THIS, SDL_Window *window);
++void SWITCH_HideWindow(_THIS, SDL_Window *window);
++void SWITCH_RaiseWindow(_THIS, SDL_Window *window);
++void SWITCH_MaximizeWindow(_THIS, SDL_Window *window);
++void SWITCH_MinimizeWindow(_THIS, SDL_Window *window);
++void SWITCH_RestoreWindow(_THIS, SDL_Window *window);
++void SWITCH_SetWindowGrab(_THIS, SDL_Window *window, SDL_bool grabbed);
++void SWITCH_DestroyWindow(_THIS, SDL_Window *window);
++void SWITCH_PumpEvents(_THIS);
 +
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
++#endif /* __SDL_SWITCHVIDEO_H__ */
++
++/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/test/testswitch.c b/test/testswitch.c
 new file mode 100644
-index 000000000..4c1613d40
+index 000000000..212b1cb1f
 --- /dev/null
 +++ b/test/testswitch.c
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,222 @@
 +/*
 +  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 +
@@ -1989,52 +2337,110 @@ index 000000000..4c1613d40
 +#include <stdio.h>
 +
 +#include <switch.h>
-+#include <video/SDL_sysvideo.h>
 +#include "SDL2/SDL.h"
++
++static SDL_DisplayMode modes[5];
++
++static int mode_count = 0, current_mode = 0;
++
++void print_info(SDL_Window *window, SDL_Renderer *renderer)
++{
++    int w, h;
++    SDL_DisplayMode mode;
++
++    SDL_GetWindowSize(window, &w, &h);
++    SDL_Log("window size: %i x %i\n", w, h);
++    SDL_GetRendererOutputSize(renderer, &w, &h);
++    SDL_Log("renderer size: %i x %i\n", w, h);
++
++    SDL_GetCurrentDisplayMode(0, &mode);
++    SDL_Log("display mode: %i x %i @ %i bpp (%s)",
++            mode.w, mode.h,
++            SDL_BITSPERPIXEL(mode.format),
++            SDL_GetPixelFormatName(mode.format));
++}
++
++void change_mode(SDL_Window *window)
++{
++    current_mode++;
++    if (current_mode == mode_count) {
++        current_mode = 0;
++    }
++
++    SDL_SetWindowDisplayMode(window, &modes[current_mode]);
++}
++
++void draw_rects(SDL_Renderer *renderer, int x, int y)
++{
++    // R
++    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
++    SDL_Rect r = {x, y, 64, 64};
++    SDL_RenderFillRect(renderer, &r);
++
++    // G
++    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
++    SDL_Rect g = {x + 64, y, 64, 64};
++    SDL_RenderFillRect(renderer, &g);
++
++    // B
++    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
++    SDL_Rect b = {x + 128, y, 64, 64};
++    SDL_RenderFillRect(renderer, &b);
++}
 +
 +int main(int argc, char *argv[])
 +{
 +    SDL_Event event;
 +    SDL_Window *window;
 +    SDL_Renderer *renderer;
-+    int done = 0;
-+
-+    // redirect stdout to emulators
-+    consoleDebugInit(debugDevice_SVC);
-+    stdout = stderr;
++    int done = 0, x = 0, w, h;
 +
 +    // mandatory at least on switch, else gfx is not properly closed
 +    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
-+        printf("SDL_Init: %s\n", SDL_GetError());
++        SDL_Log("SDL_Init: %s\n", SDL_GetError());
 +        return -1;
 +    }
 +
-+    // create a 800x600 window for demonstration.
-+    // if SDL_WINDOW_FULLSCREEN flag is passed, it will be hardware scaled (stretched) to fit screen,
-+    // will always be centered and aspect ratio maintained.
-+    // maximum window dimension is currently limited to 1280x720
-+    window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_FULLSCREEN);
++    // create a window (OpenGL always enabled)
++    // available switch SDL2 video modes :
++    // 1920 x 1080 @ 32 bpp (SDL_PIXELFORMAT_RGBA8888) (docked only)
++    // 1280 x 720 @ 32 bpp (SDL_PIXELFORMAT_RGBA8888)
++    // 960 x 540 @ 32 bpp (SDL_PIXELFORMAT_RGBA8888)
++    // 800 x 600 @ 32 bpp (SDL_PIXELFORMAT_RGBA8888)
++    // 640 x 480 @ 32 bpp (SDL_PIXELFORMAT_RGBA8888)
++    window = SDL_CreateWindow("sdl2_gles2", 0, 0, 640, 480, SDL_WINDOW_FULLSCREEN);
 +    if (!window) {
-+        printf("SDL_CreateWindow: %s\n", SDL_GetError());
++        SDL_Log("SDL_CreateWindow: %s\n", SDL_GetError());
 +        SDL_Quit();
 +        return -1;
 +    }
 +
-+    // switch only support software renderer for now
-+    renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_SOFTWARE);
++    // create a renderer (OpenGL ES2)
++    renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 +    if (!renderer) {
-+        printf("SDL_CreateRenderer: %s\n", SDL_GetError());
++        SDL_Log("SDL_CreateRenderer: %s\n", SDL_GetError());
 +        SDL_Quit();
 +        return -1;
++    }
++
++    // pint some info about display/window/renderer
++    print_info(window, renderer);
++
++    // list available display modes
++    mode_count = SDL_GetNumDisplayModes(0);
++    for (int i = 0; i < mode_count; i++) {
++        SDL_DisplayMode mode;
++        SDL_GetDisplayMode(0, i, &mode);
++        modes[i] = mode;
 +    }
 +
 +    // open CONTROLLER_PLAYER_1 and CONTROLLER_PLAYER_2
-+    // when connected, both joycons are mapped to joystick #0,
++    // when railed, both joycons are mapped to joystick #0,
 +    // else joycons are individually mapped to joystick #0, joystick #1, ...
 +    // https://github.com/devkitPro/SDL/blob/switch-sdl2/src/joystick/switch/SDL_sysjoystick.c#L45
 +    for (int i = 0; i < 2; i++) {
 +        if (SDL_JoystickOpen(i) == NULL) {
-+            printf("SDL_JoystickOpen: %s\n", SDL_GetError());
++            SDL_Log("SDL_JoystickOpen: %s\n", SDL_GetError());
 +            SDL_Quit();
 +            return -1;
 +        }
@@ -2047,16 +2453,21 @@ index 000000000..4c1613d40
 +            switch (event.type) {
 +
 +                case SDL_JOYAXISMOTION:
-+                    printf("Joystick %d axis %d value: %d\n",
-+                           event.jaxis.which,
-+                           event.jaxis.axis, event.jaxis.value);
++                    SDL_Log("Joystick %d axis %d value: %d\n",
++                            event.jaxis.which,
++                            event.jaxis.axis, event.jaxis.value);
 +                    break;
 +
 +                case SDL_JOYBUTTONDOWN:
-+                    printf("Joystick %d button %d down\n",
-+                           event.jbutton.which, event.jbutton.button);
++                    SDL_Log("Joystick %d button %d down\n",
++                            event.jbutton.which, event.jbutton.button);
++                    // seek for joystick #0 down (A)
++                    // https://github.com/devkitPro/SDL/blob/switch-sdl2/src/joystick/switch/SDL_sysjoystick.c#L52
++                    if (event.jbutton.which == 0 && event.jbutton.button == 0) {
++                        change_mode(window);
++                        print_info(window, renderer);
++                    }
 +                    // seek for joystick #0 down (B)
-+                    // https://github.com/devkitPro/SDL/blob/switch-sdl2/src/joystick/switch/SDL_sysjoystick.c#L51
 +                    if (event.jbutton.which == 0 && event.jbutton.button == 1) {
 +                        done = 1;
 +                    }
@@ -2067,35 +2478,68 @@ index 000000000..4c1613d40
 +            }
 +        }
 +
-+        for (int i = 0; i < 100; i++) {
++        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
++        SDL_RenderClear(renderer);
 +
-+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-+            SDL_RenderClear(renderer);
++        // Fill renderer bounds
++        SDL_SetRenderDrawColor(renderer, 111, 111, 111, 255);
++        SDL_GetRendererOutputSize(renderer, &w, &h);
++        SDL_Rect f = {0, 0, w, h};
++        SDL_RenderFillRect(renderer, &f);
 +
-+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-+            SDL_Rect bg = {0, 0, window->w, window->h};
-+            SDL_RenderFillRect(renderer, &bg);
-+
-+            // R
-+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-+            SDL_Rect r = {0, 0, 64, 64};
-+            SDL_RenderFillRect(renderer, &r);
-+
-+            // G
-+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-+            SDL_Rect g = {64, 0, 64, 64};
-+            SDL_RenderFillRect(renderer, &g);
-+
-+            // B
-+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-+            SDL_Rect b = {128, 0, 64, 64};
-+            SDL_RenderFillRect(renderer, &b);
-+        }
++        draw_rects(renderer, x, 0);
++        draw_rects(renderer, x, h - 64);
 +
 +        SDL_RenderPresent(renderer);
++
++        x++;
++        if (x > w - 192) {
++            x = 0;
++        }
 +    }
 +
++    SDL_DestroyRenderer(renderer);
++    SDL_DestroyWindow(window);
 +    SDL_Quit();
 +
 +    return 0;
++}
++
++//-----------------------------------------------------------------------------
++// nxlink support
++//-----------------------------------------------------------------------------
++
++#include <unistd.h>
++
++static int s_nxlinkSock = -1;
++
++static void initNxLink()
++{
++    if (R_FAILED(socketInitializeDefault()))
++        return;
++
++    s_nxlinkSock = nxlinkStdio();
++    if (s_nxlinkSock >= 0)
++        printf("printf output now goes to nxlink server\n");
++    else
++        socketExit();
++}
++
++static void deinitNxLink()
++{
++    if (s_nxlinkSock >= 0) {
++        close(s_nxlinkSock);
++        socketExit();
++        s_nxlinkSock = -1;
++    }
++}
++
++void userAppInit()
++{
++    initNxLink();
++}
++
++void userAppExit()
++{
++    deinitNxLink();
 +}
