@@ -15,8 +15,8 @@ makedepends=('devkitpro-pkgbuild-helpers')
 build() {
   cd zlib-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   CHOST=arm-none-eabi \
     ./configure --prefix="${PORTLIBS_PREFIX}" --static
@@ -26,8 +26,8 @@ build() {
 package() {
   cd zlib-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make DESTDIR="$pkgdir" install
   # license

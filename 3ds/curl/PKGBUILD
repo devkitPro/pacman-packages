@@ -22,8 +22,8 @@ sha256sums=('099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
 build() {
   cd curl-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   patch -Np1 -i $srcdir/3ds-curl.patch
 
@@ -39,8 +39,8 @@ build() {
 package() {
   cd curl-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make DESTDIR="$pkgdir" -C lib install
   make DESTDIR="$pkgdir" -C include install

@@ -15,8 +15,8 @@ makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
 build() {
   cd libogg-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static
@@ -27,8 +27,8 @@ build() {
 package() {
   cd libogg-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
   make DESTDIR="$pkgdir" install
 

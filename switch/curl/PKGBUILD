@@ -19,8 +19,8 @@ sha256sums=( '099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
 build() {
   cd curl-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   ./configure --prefix=$PORTLIBS_PREFIX --host=aarch64-none-elf \
     --disable-shared --enable-static --disable-ipv6 --disable-unix-sockets \
@@ -33,8 +33,8 @@ build() {
 package() {
   cd curl-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" -C lib install
   make DESTDIR="$pkgdir" -C include install

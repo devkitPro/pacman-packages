@@ -16,8 +16,8 @@ build() {
 
   cd xz-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
    ./configure --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
       --enable-static --disable-shared --disable-threads \
@@ -32,8 +32,8 @@ package() {
 
   cd xz-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make DESTDIR="$pkgdir" install
   rm -fr "$pkgdir"${PORTLIBS_PREFIX}/bin

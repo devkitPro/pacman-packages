@@ -17,6 +17,6 @@ groups=('nds-dev')
 
 package() {
   rm $srcdir/${pkgname}-${pkgver}.tar.bz2
-  mkdir -p "$pkgdir"/opt/devkitpro/examples/nds
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/nds  
+  mkdir -p "$pkgdir"${DEVKITPRO}/examples/nds
+  cp -R $srcdir/* "$pkgdir"${DEVKITPRO}/examples/nds  
 }

@@ -20,7 +20,7 @@ sha256sums=(
 build() {
   cd SDL2-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   patch -p1 -i $srcdir/SDL2-2.0.8.patch
   ./autogen.sh
@@ -42,7 +42,7 @@ build() {
 package() {
   cd SDL2-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
 

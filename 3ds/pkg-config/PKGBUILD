@@ -10,6 +10,6 @@ source=('pkg-config.in')
 sha256sums=('cd31ea6be05fdc5a4f89bdd0311fcdd6eff13a0c5285686e4be7c8a74bccd5c7')
 
 package() {
-  install -d "$pkgdir"/opt/devkitpro/portlibs/3ds/bin
-  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/3ds/bin/arm-none-eabi-pkg-config
+  install -d "$pkgdir"${DEVKITPRO}/portlibs/3ds/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"${DEVKITPRO}/portlibs/3ds/bin/arm-none-eabi-pkg-config
 }

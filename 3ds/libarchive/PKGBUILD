@@ -21,8 +21,8 @@ depends=('3ds-bzip2' '3ds-zlib' '3ds-liblzma')
 build() {
   cd libarchive-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   patch -Np1 -i "$srcdir"/libarchive-${pkgver}.patch
 
@@ -37,8 +37,8 @@ build() {
 package() {
   cd libarchive-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make DESTDIR="$pkgdir" install
   # license

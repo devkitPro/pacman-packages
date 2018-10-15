@@ -27,8 +27,8 @@ sha256sums=(
 build() {
   cd SDL_mixer-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   sed -i 's,\$(objects)/playwave\$(EXE) \$(objects)/playmus\$(EXE),,g' Makefile.in
 
@@ -44,8 +44,8 @@ build() {
 package() {
   cd SDL_mixer-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make DESTDIR="$pkgdir" install
 

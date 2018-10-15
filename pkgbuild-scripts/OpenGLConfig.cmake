@@ -121,10 +121,10 @@
 # will have to change the cache values of OPENGL_glu_LIBRARY and
 # OPENGL_gl_LIBRARY to use OpenGL with X11 on OSX.
 
-set(OPENGL_egl_LIBRARY "/opt/devkitpro/portlibs/switch/lib/libEGL.a")
-set(OPENGL_gl_LIBRARY "/opt/devkitpro/portlibs/switch/lib/libglapi.a")
-set(OPENGL_EGL_INCLUDE_DIR "/opt/devkitpro/portlibs/switch/include")
-set(OPENGL_INCLUDE_DIR "/opt/devkitpro/portlibs/switch/include")
+set(OPENGL_egl_LIBRARY "${PORTLIBS_PREFIX}/lib/libEGL.a")
+set(OPENGL_gl_LIBRARY "${PORTLIBS_PREFIX}/lib/libglapi.a")
+set(OPENGL_EGL_INCLUDE_DIR "${PORTLIBS_PREFIX}/include")
+set(OPENGL_INCLUDE_DIR "${PORTLIBS_PREFIX}/include")
 
 mark_as_advanced(
   OPENGL_INCLUDE_DIR

@@ -18,8 +18,8 @@ groups=('switch-portlibs')
 build() {
   cd libass-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   ./configure --prefix="$PORTLIBS_PREFIX" --host=aarch64-none-elf \
     --disable-shared --enable-static \
@@ -32,8 +32,8 @@ build() {
 package() {
   cd libass-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
 

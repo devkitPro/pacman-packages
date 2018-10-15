@@ -18,8 +18,8 @@ sha256sums=(
 build() {
   cd SDL-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   patch -p1 -i $srcdir/SDL-1.2.15.patch
   ./autogen.sh
@@ -32,8 +32,8 @@ build() {
 package() {
   cd SDL-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make DESTDIR="$pkgdir" install
 

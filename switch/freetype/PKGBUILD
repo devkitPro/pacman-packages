@@ -21,8 +21,8 @@ sha256sums=('bf380e4d7c4f3b5b1c1a7b2bf3abb967bda5e9ab480d0df656e0e08c5019c5e6')
 build() {
   cd freetype-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static \
@@ -36,8 +36,8 @@ build() {
 package() {
   cd freetype-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
 

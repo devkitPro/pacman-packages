@@ -22,8 +22,8 @@ sha256sums=(
 build() {
   cd libmodplug-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   patch -Np1 -i "$srcdir/libmodplug-${pkgver}.patch"
 

@@ -15,10 +15,10 @@ sha256sums=('9444ba6322267110b4aca61cbe37d5dcab040344b5c97d0b36c119aa61319b0f')
 build() {
   cd tinyxml2-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
-  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
+  cmake -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/devkitarm.cmake \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="$CFLAGS -fno-exceptions -fno-rtti" \
@@ -34,8 +34,8 @@ package() {
 
   cd tinyxml2-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make install DESTDIR="$pkgdir"
 

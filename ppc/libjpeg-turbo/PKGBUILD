@@ -15,10 +15,10 @@ makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
 build() {
   cd libjpeg-turbo-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
-    ./configure --prefix="/opt/devkitpro/portlibs/ppc" --host=powerpc-eabi --disable-shared --enable-static
+    ./configure --prefix="$PORTLIBS_PREFIX" --host=powerpc-eabi --disable-shared --enable-static
 
   make
 
@@ -28,8 +28,8 @@ package() {
   cd libjpeg-turbo-$pkgver
   make DESTDIR="$pkgdir" install
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname
-  cp -v LICENSE.md "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname/
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  cp -v LICENSE.md "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }

@@ -10,6 +10,6 @@ source=('pkg-config.in')
 sha256sums=('5fb722da22c29a50ca7612ae0344ebbfb2364068e26e07392f94e777c3937041')
 
 package() {
-  install -d "$pkgdir"/opt/devkitpro/portlibs/ppc/bin
-  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/ppc/bin/powerpc-eabi-pkg-config
+  install -d "$pkgdir"${DEVKITPRO}/portlibs/ppc/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"${DEVKITPRO}/portlibs/ppc/bin/powerpc-eabi-pkg-config
 }

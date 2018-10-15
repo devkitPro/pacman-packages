@@ -42,11 +42,11 @@ sha256sums=(
 
 package() {
 
-  install -d "$pkgdir"/opt/devkitpro/cmake
-  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
+  install -d "$pkgdir"${DEVKITPRO}/cmake
+  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh "$pkgdir"${DEVKITPRO}
+  install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"${DEVKITPRO}
+  install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh "$pkgdir"${DEVKITPRO}
 
-  install -Dm644 OpenGLConfig.cmake "$pkgdir"/opt/devkitpro/cmake
+  install -Dm644 OpenGLConfig.cmake "$pkgdir"${DEVKITPRO}/cmake
 
 }

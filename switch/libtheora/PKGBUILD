@@ -21,8 +21,8 @@ groups=('switch-portlibs')
 build() {
   cd libtheora-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   cp $srcdir/config.sub $srcdir/config.guess .
 
@@ -36,8 +36,8 @@ build() {
 package() {
   cd libtheora-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
 

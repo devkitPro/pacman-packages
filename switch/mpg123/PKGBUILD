@@ -19,8 +19,8 @@ makedepends=('devkitpro-pkgbuild-helpers' 'switch-pkg-config')
 build() {
   cd mpg123-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch
 
@@ -37,7 +37,7 @@ build() {
 package() {
   cd mpg123-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
+  source ${DEVKITPRO}/devkita64.sh
 
   make DESTDIR="$pkgdir" install
 

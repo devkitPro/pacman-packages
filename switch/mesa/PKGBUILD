@@ -17,7 +17,7 @@ depends=('switch-libdrm_nouveau')
 build() {
   cd $pkgname
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   autoreconf --force --verbose --install
 
@@ -33,7 +33,7 @@ build() {
 package() {
   cd $pkgname
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make -j3 DESTDIR="$pkgdir" install
 }

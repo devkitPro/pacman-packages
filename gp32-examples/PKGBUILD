@@ -17,6 +17,6 @@ groups=('gp32-dev')
 
 package() {
   rm $srcdir/${pkgname}-${pkgver}.tar.bz2
-  mkdir -p "$pkgdir"/opt/devkitpro/examples/gp32
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/gp32  
+  mkdir -p "$pkgdir"${DEVKITPRO}/examples/gp32
+  cp -R $srcdir/* "$pkgdir"${DEVKITPRO}/examples/gp32  
 }

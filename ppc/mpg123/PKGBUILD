@@ -19,8 +19,8 @@ makedepends=('devkitpro-pkgbuild-helpers' 'ppc-pkg-config')
 build() {
   cd mpg123-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
   patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch
 
@@ -37,7 +37,7 @@ build() {
 package() {
   cd mpg123-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
+  source ${DEVKITPRO}/devkitppc.sh
 
   make DESTDIR="$pkgdir" install
 

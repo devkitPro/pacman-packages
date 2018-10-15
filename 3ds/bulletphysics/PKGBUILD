@@ -15,10 +15,10 @@ sha256sums=('438c151c48840fe3f902ec260d9496f8beb26dba4b17769a4a53212903935f95')
 build() {
   cd bullet3-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/devkitarm.cmake \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="$CFLAGS -fno-exceptions -fno-rtti" \
@@ -32,8 +32,8 @@ build() {
 package() {
   cd bullet3-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source ${DEVKITPRO}/devkitarm.sh
+  source ${DEVKITPRO}/3dsvars.sh
 
   make install DESTDIR="$pkgdir"
 

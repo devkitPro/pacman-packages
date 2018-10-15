@@ -10,6 +10,6 @@ source=('pkg-config.in')
 sha256sums=('8ad73e467f6a9b04292dd49e98887c6efd3f3dc0d13c487f823e7d98b6a295b2')
 
 package() {
-  install -d "$pkgdir"/opt/devkitpro/portlibs/armv6k/bin
-  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/armv6k/bin/arm-none-eabi-pkg-config
+  install -d "$pkgdir"${DEVKITPRO}/portlibs/armv6k/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"${DEVKITPRO}/portlibs/armv6k/bin/arm-none-eabi-pkg-config
 }

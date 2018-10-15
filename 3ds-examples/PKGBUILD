@@ -17,6 +17,6 @@ groups=('3ds-dev')
 
 package() {
   rm $srcdir/${pkgname}-${pkgver}.tar.bz2
-  mkdir -p "$pkgdir"/opt/devkitpro/examples/3ds
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/3ds  
+  mkdir -p "$pkgdir"${DEVKITPRO}/examples/3ds
+  cp -R $srcdir/* "$pkgdir"${DEVKITPRO}/examples/3ds
 }

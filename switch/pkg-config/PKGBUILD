@@ -10,6 +10,6 @@ source=('pkg-config.in')
 sha256sums=('3e0f5725ae933f44a65ce97e71ca6a326da369fbb31f1cb08cfbe867e88de7ad')
 
 package() {
-  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/bin
-  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/switch/bin/aarch64-none-elf-pkg-config
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"${PORTLIBS_PREFIX}/bin/aarch64-none-elf-pkg-config
 }

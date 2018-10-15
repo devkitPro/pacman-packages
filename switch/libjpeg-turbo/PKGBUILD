@@ -16,10 +16,10 @@ build() {
 
   cd libjpeg-turbo-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
-    ./configure --prefix="/opt/devkitpro/portlibs/switch" --host=aarch64-none-elf --disable-shared --enable-static
+    ./configure --prefix="$PORTLIBS_PREFIX" --host=aarch64-none-elf --disable-shared --enable-static
 
   make
 
@@ -29,8 +29,8 @@ package() {
   cd libjpeg-turbo-$pkgver
   make DESTDIR="$pkgdir" install
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname
-  cp -v LICENSE.md "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  cp -v LICENSE.md "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }

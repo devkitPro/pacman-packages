@@ -14,11 +14,12 @@ sha256sums=('a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 build() {
+  cd bzip2-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
-  make -C "$srcdir/bzip2-$pkgver" \
+  make \
   CC=${TOOL_PREFIX}gcc \
   AR=${TOOL_PREFIX}ar \
   RANLIB=${TOOL_PREFIX}ranlib \
@@ -28,8 +29,8 @@ build() {
 }
 
 package() {
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   install -Dm 644 "$srcdir/bzip2-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
   install -Dm 644 "$srcdir/bzip2-$pkgver"/bzlib.h -t "${pkgdir}/${PORTLIBS_PREFIX}/include/"

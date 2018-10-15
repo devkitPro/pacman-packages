@@ -15,8 +15,8 @@ makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 
 build() {
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
   make -C "$srcdir/bzip2-$pkgver" \
   CC=${TOOL_PREFIX}gcc \
@@ -28,8 +28,8 @@ build() {
 }
 
 package() {
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
   install -Dm 644 "$srcdir/bzip2-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
   install -Dm 644 "$srcdir/bzip2-$pkgver"/bzlib.h -t "${pkgdir}/${PORTLIBS_PREFIX}/include/"

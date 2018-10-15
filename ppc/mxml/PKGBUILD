@@ -17,8 +17,8 @@ groups=('ppc-portlibs')
 
 build() {
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static --disable-threads
@@ -27,8 +27,8 @@ build() {
 
 package() {
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source ${DEVKITPRO}/devkitppc.sh
+  source ${DEVKITPRO}/ppcvars.sh
 
   make BUILDROOT="$pkgdir" install
 

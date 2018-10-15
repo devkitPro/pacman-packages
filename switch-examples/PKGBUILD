@@ -17,7 +17,7 @@ groups=('switch-dev')
 
 package() {
   rm $srcdir/${pkgname}-${pkgver}.tar.bz2
-  mkdir -p "$pkgdir"/opt/devkitpro/examples/switch
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/switch  
+  mkdir -p "$pkgdir"${DEVKITPRO}/examples/switch
+  cp -R $srcdir/* "$pkgdir"${DEVKITPRO}/examples/switch  
 
 }

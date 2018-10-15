@@ -20,8 +20,8 @@ makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 build() {
   cd libxml2-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   export LIBS=-lnx
   export CFLAGS="${CFLAGS} -D__LINUX_ERRNO_EXTENSIONS__"

@@ -14,8 +14,8 @@ groups=('switch-portlibs')
 build() {
   cd opus-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/devkita64.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   ./configure \
     --prefix="${PORTLIBS_PREFIX}" \

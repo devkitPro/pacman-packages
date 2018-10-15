@@ -16,7 +16,7 @@ build() {
   cd zlib-$pkgver
   CFLAGS="-g -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec" \
   CHOST=aarch64-none-elf \
-    ./configure --prefix="/opt/devkitpro/portlibs/switch" --static
+    ./configure --prefix="$PORTLIBS_PREFIX" --static
   make libz.a # only build library, no programs
 }
 
@@ -25,8 +25,9 @@ package() {
 
   make DESTDIR="$pkgdir" install
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname
-  tail -n 31 README > "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  tail -n 31 README > "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+
 }
