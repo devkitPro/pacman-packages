@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('switch-examples')
-pkgver=20180927
+pkgver=20181027
 pkgrel=1
 pkgdesc="Nintendo Switch example code."
 arch=('any')
@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/switchbrew/switch-examples"
 options=(!strip libtool staticlibs)
 source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('3169b2de5a9537082bd2278825072b2952a2416799ad4a7cba1858ac4d55f24e')
+sha256sums=('f6452bd082b30ba7ec9353e798b3517cc9995fd2d8e7f0c59b8dfc6834b9024a')
 makedepends=('devkitA64')
 
 groups=('switch-dev')
