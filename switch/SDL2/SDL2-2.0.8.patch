@@ -1,9 +1,9 @@
 diff --git a/CMakeLists.switch b/CMakeLists.switch
 new file mode 100644
-index 000000000..f80218eff
+index 000000000..8b6ec2b43
 --- /dev/null
 +++ b/CMakeLists.switch
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,84 @@
 +cmake_minimum_required(VERSION 3.0)
 +#set(CMAKE_VERBOSE_MAKEFILE ON)
 +
@@ -41,6 +41,8 @@ index 000000000..f80218eff
 +        src/joystick
 +        src/joystick/switch
 +        src/joystick/dummy
++        src/loadso
++        src/loadso/dummy
 +        src/libm
 +        src/power
 +        src/render
@@ -87,10 +89,59 @@ index 000000000..f80218eff
 +        DEPENDS ${PROJECT_NAME}.elf
 +        COMMAND elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}.nro)
 diff --git a/configure b/configure
-index 1c7f87eb0..5fef7ee5e 100755
+index 1c7f87eb0..5f6f836a2 100755
 --- a/configure
 +++ b/configure
-@@ -1572,7 +1572,7 @@ Optional Features:
+@@ -745,6 +745,7 @@ infodir
+ docdir
+ oldincludedir
+ includedir
++runstatedir
+ localstatedir
+ sharedstatedir
+ sysconfdir
+@@ -923,6 +924,7 @@ datadir='${datarootdir}'
+ sysconfdir='${prefix}/etc'
+ sharedstatedir='${prefix}/com'
+ localstatedir='${prefix}/var'
++runstatedir='${localstatedir}/run'
+ includedir='${prefix}/include'
+ oldincludedir='/usr/include'
+ docdir='${datarootdir}/doc/${PACKAGE}'
+@@ -1175,6 +1177,15 @@ do
+   | -silent | --silent | --silen | --sile | --sil)
+     silent=yes ;;
+ 
++  -runstatedir | --runstatedir | --runstatedi | --runstated \
++  | --runstate | --runstat | --runsta | --runst | --runs \
++  | --run | --ru | --r)
++    ac_prev=runstatedir ;;
++  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
++  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
++  | --run=* | --ru=* | --r=*)
++    runstatedir=$ac_optarg ;;
++
+   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
+     ac_prev=sbindir ;;
+   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
+@@ -1312,7 +1323,7 @@ fi
+ for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
+ 		datadir sysconfdir sharedstatedir localstatedir includedir \
+ 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
+-		libdir localedir mandir
++		libdir localedir mandir runstatedir
+ do
+   eval ac_val=\$$ac_var
+   # Remove trailing slashes.
+@@ -1465,6 +1476,7 @@ Fine tuning of the installation directories:
+   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
+   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
++  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
+   --libdir=DIR            object code libraries [EPREFIX/lib]
+   --includedir=DIR        C header files [PREFIX/include]
+   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
+@@ -1572,7 +1584,7 @@ Optional Features:
                            QtWayland server support for Wayland video driver
                            [[default=yes]]
    --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
@@ -99,7 +150,7 @@ index 1c7f87eb0..5fef7ee5e 100755
    --enable-mir-shared     dynamically load Mir support [[default=maybe]]
    --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
    --enable-video-x11      use X11 video driver [[default=yes]]
-@@ -19300,7 +19300,7 @@ CheckMir()
+@@ -19300,7 +19312,7 @@ CheckMir()
  if test "${enable_video_mir+set}" = set; then :
    enableval=$enable_video_mir;
  else
@@ -108,25 +159,39 @@ index 1c7f87eb0..5fef7ee5e 100755
  fi
  
  
-@@ -24621,6 +24621,72 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+@@ -24621,6 +24633,86 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
              have_timers=yes
          fi
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
-+        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include -D__SWITCH__=1 -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec"
-+        SDL_LIBS="-march=armv8-a  -fPIC -specs=${DEVKITPRO}/libnx/switch.specs -L${DEVKITPRO}/portlibs/switch/lib $SDL_LIBS  -L${DEVKITPRO}/libnx/lib -lnx"
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -g -O2 $SDL_CFLAGS -fPIC"
++        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec -fPIC"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
++        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lglapi -ldrm_nouveau -lnx"
 +        CheckDeclarationAfterStatement
 +
 +        # Set up files for the video library
 +        if test x$enable_video = xyes; then
++            SOURCES="$SOURCES $srcdir/src/video/switch/*.c"
 +
 +$as_echo "#define SDL_VIDEO_DRIVER_SWITCH 1" >>confdefs.h
 +
-+           SOURCES="$SOURCES $srcdir/src/video/switch/*.c"
-+           SUMMARY_video="${SUMMARY_video} switch"
-+           have_video=yes
++
++$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
++
++
++$as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
++
++
++$as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
++
++
++$as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
++
++            SUMMARY_video="${SUMMARY_video} switch_opengles2"
++            have_video=yes
 +        fi
 +        # Set up files for the audio library
 +        if test x$enable_audio = xyes; then
@@ -1290,10 +1355,10 @@ index 000000000..6a8d20701
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread.c b/src/thread/switch/SDL_systhread.c
 new file mode 100644
-index 000000000..4ea162ae1
+index 000000000..95875012d
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread.c
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,117 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
@@ -1327,7 +1392,7 @@ index 000000000..4ea162ae1
 +#include "SDL_thread.h"
 +#include "../SDL_systhread.h"
 +
-+#define STACK_SIZE 0x5000
++#define STACK_SIZE 0x20000
 +
 +static void
 +SDL_SYS_RunThread(void *data)
@@ -1337,13 +1402,28 @@ index 000000000..4ea162ae1
 +
 +int SDL_SYS_CreateThread(SDL_Thread *thread, void *args)
 +{
-+    Result res = threadCreate(&thread->handle, SDL_SYS_RunThread, args, STACK_SIZE, 0x2C, -2);
-+    if (res != 0) {
++    Result res;
++    u64 core_mask = 0;
++
++    res = svcGetInfo(&core_mask, 0, CUR_PROCESS_HANDLE, 0);
++    if (R_FAILED(res)) {
++        return SDL_SetError("svcGetInfo() failed: 0x%08X", res);
++    }
++
++    res = threadCreate(&thread->handle, SDL_SYS_RunThread, args, STACK_SIZE, 0x2C, -2);
++    if (R_FAILED(res)) {
++        return SDL_SetError("threadCreate() failed: 0x%08X", res);
++    }
++
++    res = svcSetThreadCoreMask(thread->handle.handle, -1, (u32) core_mask);
++    if (R_FAILED(res)) {
++        threadClose(&thread->handle);
 +        return SDL_SetError("threadCreate() failed: 0x%08X", res);
 +    }
 +
 +    res = threadStart(&thread->handle);
-+    if (res != 0) {
++    if (R_FAILED(res)) {
++        threadClose(&thread->handle);
 +        return SDL_SetError("threadStart() failed: 0x%08X", res);
 +    }
 +
@@ -1587,10 +1667,10 @@ index 8cf195d1a..a2df8486a 100644
      }
 diff --git a/src/video/switch/SDL_switchopengles.c b/src/video/switch/SDL_switchopengles.c
 new file mode 100644
-index 000000000..6681eb2cf
+index 000000000..6dd0c2bee
 --- /dev/null
 +++ b/src/video/switch/SDL_switchopengles.c
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,62 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -1649,19 +1729,6 @@ index 000000000..6681eb2cf
 +SDL_EGL_CreateContext_impl(SWITCH)
 +SDL_EGL_MakeCurrent_impl(SWITCH)
 +SDL_EGL_SwapWindow_impl(SWITCH)
-+
-+// for SDL_egl.c compatibility
-+void *
-+SDL_LoadFunction(void *handle, const char *name)
-+{
-+    return NULL;
-+}
-+
-+void
-+SDL_UnloadObject(void *handle)
-+{
-+
-+}
 +
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 +
@@ -2315,6 +2382,59 @@ index 000000000..33e1fd23c
 +#endif /* __SDL_SWITCHVIDEO_H__ */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/test/configure b/test/configure
+index 61c32fba1..d0e04b86e 100755
+--- a/test/configure
++++ b/test/configure
+@@ -637,6 +637,7 @@ infodir
+ docdir
+ oldincludedir
+ includedir
++runstatedir
+ localstatedir
+ sharedstatedir
+ sysconfdir
+@@ -717,6 +718,7 @@ datadir='${datarootdir}'
+ sysconfdir='${prefix}/etc'
+ sharedstatedir='${prefix}/com'
+ localstatedir='${prefix}/var'
++runstatedir='${localstatedir}/run'
+ includedir='${prefix}/include'
+ oldincludedir='/usr/include'
+ docdir='${datarootdir}/doc/${PACKAGE}'
+@@ -969,6 +971,15 @@ do
+   | -silent | --silent | --silen | --sile | --sil)
+     silent=yes ;;
+ 
++  -runstatedir | --runstatedir | --runstatedi | --runstated \
++  | --runstate | --runstat | --runsta | --runst | --runs \
++  | --run | --ru | --r)
++    ac_prev=runstatedir ;;
++  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
++  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
++  | --run=* | --ru=* | --r=*)
++    runstatedir=$ac_optarg ;;
++
+   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
+     ac_prev=sbindir ;;
+   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
+@@ -1106,7 +1117,7 @@ fi
+ for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
+ 		datadir sysconfdir sharedstatedir localstatedir includedir \
+ 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
+-		libdir localedir mandir
++		libdir localedir mandir runstatedir
+ do
+   eval ac_val=\$$ac_var
+   # Remove trailing slashes.
+@@ -1259,6 +1270,7 @@ Fine tuning of the installation directories:
+   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
+   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
++  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
+   --libdir=DIR            object code libraries [EPREFIX/lib]
+   --includedir=DIR        C header files [PREFIX/include]
+   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
 diff --git a/test/testswitch.c b/test/testswitch.c
 new file mode 100644
 index 000000000..212b1cb1f
