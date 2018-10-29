@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-zlib
 pkgver=1.2.11
-pkgrel=1
+pkgrel=2
 pkgdesc='Deflate compression method library (for Nintendo Switch homebrew development)'
 arch=('any')
 url='http://www.zlib.net/'
@@ -13,20 +13,33 @@ sha256sums=('4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066')
 makedepends=('devkitpro-pkgbuild-helpers')
 
 build() {
+  source /opt/devkitpro/switchvars.sh
   cd zlib-$pkgver
   CFLAGS="-g -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec" \
   CHOST=aarch64-none-elf \
     ./configure --prefix="/opt/devkitpro/portlibs/switch" --static
   make libz.a # only build library, no programs
+
+  # libminizip
+  cd contrib/minizip
+  autoreconf --force --verbose --install
+  CFLAGS="${CFLAGS} -DUSE_FILE32API"
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+  make
 }
 
 package() {
+  source /opt/devkitpro/switchvars.sh
   cd zlib-$pkgver
-
+  # zlib
   make DESTDIR="$pkgdir" install
   # license
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname
   tail -n 31 README > "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
   # remove useless stuff
   rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
+  # libminizip
+  cd contrib/minizip
+  make DESTDIR="$pkgdir" install
 }
