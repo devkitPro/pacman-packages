@@ -1,0 +1,32 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=switch-opusfile
+pkgver=0.10
+pkgrel=2
+pkgdesc='Library for opening, seeking, and decoding .opus files'
+arch=('any')
+url='https://opus-codec.org/'
+license=(BSD)
+options=(!strip libtool staticlibs)
+source=("https://downloads.xiph.org/releases/opus/opusfile-$pkgver.tar.gz")
+sha256sums=('48e03526ba87ef9cf5f1c47b5ebe3aa195bd89b912a57060c36184a6cd19412f')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('switch-libogg' 'switch-libopus')
+build() {
+  cd opusfile-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd opusfile-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
