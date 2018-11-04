@@ -2,7 +2,7 @@
 
 pkgname=3ds-opusfile
 pkgver=0.10
-pkgrel=1
+pkgrel=2
 pkgdesc='Library for opening, seeking, and decoding .opus files'
 arch=('any')
 url='https://opus-codec.org/'
@@ -10,7 +10,8 @@ license=(BSD)
 options=(!strip libtool staticlibs)
 source=("https://downloads.xiph.org/releases/opus/opusfile-$pkgver.tar.gz")
 sha256sums=('48e03526ba87ef9cf5f1c47b5ebe3aa195bd89b912a57060c36184a6cd19412f')
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers' '3ds-libogg' '3ds-libopus')
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('3ds-libogg' '3ds-libopus')
 
 build() {
   cd opusfile-$pkgver
