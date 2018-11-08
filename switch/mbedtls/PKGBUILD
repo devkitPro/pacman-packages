@@ -1,0 +1,53 @@
+pkgname=switch-mbedtls
+pkgver=2.13.0
+pkgrel=1
+pkgdesc='lightweight crypto and SSL/TLS library'
+arch=('any')
+url='https://tls.mbed.org/'
+license=(APACHE)
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz")
+groups=("switch-portlibs")
+sha256sums=('593b4e4d2e1629fc407ab4750d69fa309a0ddb66565dc3deb5b60eddbdeb06da')
+
+build() {
+  cd mbedtls-${pkgver}
+
+  echo $PORTLIBS_PREFIX
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
+  ./scripts/config.pl unset MBEDTLS_NET_C
+  ./scripts/config.pl unset MBEDTLS_TIMING_C
+  ./scripts/config.pl unset MBEDTLS_FS_IO
+
+  CC=aarch64-none-elf-gcc \
+  AR=aarch64-none-elf-ar \
+  LD=aarch64-none-elf-ld \
+  CROSS_COMPILE=aarch64-none-elf- \
+  PREFIX=$PORTLIBS_PREFIX \
+  make clean
+
+  CC=aarch64-none-elf-gcc \
+  AR=aarch64-none-elf-ar \
+  LD=aarch64-none-elf-ld \
+  CROSS_COMPILE=aarch64-none-elf- \
+  PREFIX=$PORTLIBS_PREFIX \
+  make lib
+}
+
+package() {
+  cd mbedtls-${pkgver}
+
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+
+  CC=aarch64-none-elf-gcc \
+  AR=aarch64-none-elf-ar \
+  LD=aarch64-none-elf-ld \
+  CROSS_COMPILE=aarch64-none-elf- \
+  make DESTDIR="${pkgdir}${PORTLIBS_PREFIX}" install
+}
