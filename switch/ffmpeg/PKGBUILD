@@ -17,11 +17,9 @@ source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz")
 sha256sums=('605f5c01c60db35d3b617a79cabb2c7032412be243554602eeed1b628125c0ee')
 groups=('switch-portlibs')
 
-
 build() {
   cd ffmpeg-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   ./configure --prefix=$PORTLIBS_PREFIX --disable-shared --enable-static \
@@ -46,7 +44,6 @@ build() {
 package() {
   cd ffmpeg-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install
