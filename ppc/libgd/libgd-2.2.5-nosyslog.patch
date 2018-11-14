@@ -1,0 +1,6 @@
+4,6d3
+< #ifndef _WIN32
+< # include <syslog.h>
+< #else
+24d20
+< #endif
