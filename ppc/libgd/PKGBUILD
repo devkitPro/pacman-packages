@@ -45,5 +45,5 @@ package() {
     # These binaries all end up for PowerPC, so we shouldn't keep them
     rm -rf "$pkgdir/$PORTLIBS_PREFIX/bin"
     # Some build systems depend on doing -lgd
-    ln -s "libgd_static.a" "$pkgdir/$PORTLIBS_PREFIX/lib/libgd.a"
+    cp -a "$pkgdir/$PORTLIBS_PREFIX/lib/libgd_static.a" "$pkgdir/$PORTLIBS_PREFIX/lib/libgd.a"
 }
