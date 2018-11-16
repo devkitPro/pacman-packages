@@ -4,7 +4,7 @@
 
 pkgname=switch-ffmpeg
 pkgver=4.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc='ffmpeg port (for Nintendo Switch homebrew development)'
 arch=('any')
 url='https://ffmpeg.org/'
@@ -13,14 +13,19 @@ options=(!strip staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
          'switch-freetype' 'switch-libtheora')
-source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz")
-sha256sums=('605f5c01c60db35d3b617a79cabb2c7032412be243554602eeed1b628125c0ee')
+source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz" "ffmpeg.patch")
+sha256sums=(
+ '605f5c01c60db35d3b617a79cabb2c7032412be243554602eeed1b628125c0ee'
+ '85b5bb8703a3349be8a2e677cb9881c3d5a18105d6d0210cf44edd8fbd133350'
+)
 groups=('switch-portlibs')
 
 build() {
   cd ffmpeg-$pkgver
 
   source /opt/devkitpro/switchvars.sh
+
+  patch -Np1 -i "$srcdir/ffmpeg.patch"
 
   ./configure --prefix=$PORTLIBS_PREFIX --disable-shared --enable-static \
     --cross-prefix=aarch64-none-elf- --enable-cross-compile \
@@ -30,7 +35,7 @@ build() {
     --extra-ldflags='-fPIE -L${PORTLIBS_PREFIX}/lib -L${DEVKITPRO}/libnx/lib' \
     --disable-runtime-cpudetect --disable-programs --disable-debug --disable-doc \
     --disable-network --disable-hwaccels --disable-encoders \
-    --disable-avfilter --disable-avdevice --enable-swscale --enable-swresample \
+    --disable-avdevice --enable-swscale --enable-swresample \
     --enable-libass --enable-libfreetype --enable-libfribidi --enable-libtheora \
     --enable-filter='rotate,transpose' \
     --disable-protocols --enable-protocol=file \
