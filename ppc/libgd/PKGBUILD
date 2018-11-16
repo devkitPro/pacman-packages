@@ -25,12 +25,8 @@ build() {
 
     source /opt/devkitpro/ppcvars.sh
 
-    cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$PORTLIBS_PREFIX" \
-        -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON \
-        -DENABLE_PNG=ON -DENABLE_JPEG=ON -DENABLE_FREETYPE=ON \
-        -DCMAKE_TOOLCHAIN_FILE="/opt/devkitpro/devkitppc.cmake" \
-        -DCMAKE_SYSTEM_NAME="Generic" -DCMAKE_SYSTEM_PROCESSOR="powerpc" \
-        -DCMAKE_CROSSCOMPILING=1 -DCMAKE_FIND_ROOT_PATH=$PORTLIBS_PREFIX
+   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi --disable-shared --enable-static
+
     make
 }
 
@@ -44,6 +40,4 @@ package() {
 
     # These binaries all end up for PowerPC, so we shouldn't keep them
     rm -rf "$pkgdir/$PORTLIBS_PREFIX/bin"
-    # Some build systems depend on doing -lgd
-    cp -a "$pkgdir/$PORTLIBS_PREFIX/lib/libgd_static.a" "$pkgdir/$PORTLIBS_PREFIX/lib/libgd.a"
 }
