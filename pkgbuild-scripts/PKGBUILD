@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitpro-pkgbuild-helpers
-pkgver=1.2.0
+pkgver=1.2.1
 pkgrel=1
 
 pkgdesc='makepkg helpers for devkitPro portlibs'
@@ -33,7 +33,7 @@ sha256sums=(
 
   '9503f0bdf33f6b2a324ddcb185f6550c4eb815b6891365337ed2b7bb222569bb'
   '5b1036bd0d6eb9e1b893b0018944e3820b10802574fd43171f9183c5c3f9c73d'
-  '4d3a8c5c72648de104a641a2f738147886b62982e9c458dfbc76863584125b4e'
+  '7afe6b1d1d7f798b8ab87930ed396a2537823ec2291626822669b722806a018f'
   '43a26371d4c0d54c5513dd43d634a5955b4e0cdb24504f89e9992c6556a13615'
 
   'e668865e145c1535b741c790d12e50cecea699d7ce3115bf742ee0a1a436b9df'

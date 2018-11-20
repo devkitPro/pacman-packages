@@ -9,5 +9,5 @@ set(CMAKE_MODULE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT}")
 set(CMAKE_FIND_ROOT_PATH /opt/devkitpro/portlibs/switch/)
 set(CMAKE_PREFIX_PATH "/opt/devkitpro/portlibs/switch/")
 
-include(devkita64.cmake)
+include(/opt/devkitpro/devkita64.cmake)
 
