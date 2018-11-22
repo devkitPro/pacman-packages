@@ -10,7 +10,7 @@ url='https://github.com/g-truc/glm'
 license=(MIT)
 options=(!strip libtool staticlibs)
 source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip")
-sha256sums=('SKIP')
+sha256sums=('496e855590b8aa138347429b7fc745d66707303fb82c1545260d1888472e137b')
 makedepends=('devkitpro-pkgbuild-helpers')
 
 build() {
