@@ -37,20 +37,3 @@ diff -Naur wildmidi-wildmidi-0.4.2-orig/src/CMakeLists.txt wildmidi-wildmidi-0.4
  
  # Usage of RPATH for macOS is enabled by default; this just suppresses the CMP0042 warning
  # when building libwildmidi_dynamic.
-
-
-diff --git a/src/internal_midi.c b/src/internal_midi.c
-index 53062da..ad05346 100644
---- a/src/internal_midi.c
-+++ b/src/internal_midi.c
-@@ -1996,6 +1996,10 @@ void _WM_freeMDI(struct _mdi *mdi) {
-     free(mdi->events);
-     _WM_free_reverb(mdi->reverb);
-     free(mdi->mix_buffer);
-+    if (mdi->tmp_info) {
-+        free(mdi->tmp_info->copyright);
-+        free(mdi->tmp_info);
-+    }
-     free(mdi);
- }
-
