@@ -640,10 +640,10 @@ index fdc0b592b..8dcc6ca1d 100644
  
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..a57c662a5
+index 000000000..21e8229fd
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,208 @@
+@@ -0,0 +1,209 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -703,7 +703,8 @@ index 000000000..a57c662a5
 +    KEY_PLUS, KEY_MINUS,
 +    KEY_DLEFT, KEY_DUP, KEY_DRIGHT, KEY_DDOWN,
 +    KEY_LSTICK_LEFT, KEY_LSTICK_UP, KEY_LSTICK_RIGHT, KEY_LSTICK_DOWN,
-+    KEY_RSTICK_LEFT, KEY_RSTICK_UP, KEY_RSTICK_RIGHT, KEY_RSTICK_DOWN
++    KEY_RSTICK_LEFT, KEY_RSTICK_UP, KEY_RSTICK_RIGHT, KEY_RSTICK_DOWN,
++    KEY_SL_LEFT, KEY_SR_LEFT, KEY_SL_RIGHT, KEY_SR_RIGHT
 +};
 +
 +/* Function to scan the system for joysticks.
