@@ -1,4 +1,5 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: oreo639 <oreo6391@gmail.com>
 
 pkgname=3ds-wildmidi
 pkgver=0.4.3
