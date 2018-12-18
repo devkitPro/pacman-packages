@@ -1,0 +1,44 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: oreo639 <oreo6391@gmail.com>
+
+pkgname=3ds-wildmidi
+pkgver=0.4.3
+pkgrel=1
+pkgdesc='Core softsynth library that can be used with other applications.'
+arch=('any')
+url='https://www.mindwerks.net/projects/wildmidi/'
+license=('LGPL')
+options=(!strip libtool staticlibs)
+source=( "https://github.com/Mindwerks/wildmidi/archive/wildmidi-${pkgver}.tar.gz" "wildmidi-0.4.3.patch")
+makedepends=('devkitpro-pkgbuild-helpers')
+sha256sums=(
+'498e5a96455bb4b91b37188ad6dcb070824e92c44f5ed452b90adbaec8eef3c5'
+'2ff10193fe06e908b0658f9035711576a2781314e3f0cfe7969dde590f18b813')
+
+build() {
+  cd wildmidi-wildmidi-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+
+  patch -p1 -i $srcdir/wildmidi-0.4.3.patch
+
+  cmake . -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/3ds.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DWANT_PLAYER=OFF -DWANT_STATIC=ON \
+    -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -G"Unix Makefiles"
+
+  make
+
+}
+
+package() {
+
+  cd wildmidi-wildmidi-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
