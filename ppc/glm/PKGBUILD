@@ -19,10 +19,8 @@ build() {
   cd build
 
   source $DEVKITPRO/ppcvars.sh
-
   cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitppc.cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_SYSTEM_NAME=Generic \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_CXX_FLAGS="$CFLAGS $CPPFLAGS" \
