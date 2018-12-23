@@ -1,7 +1,7 @@
-diff -NBaur mbedtls-2.9.0/include/mbedtls/config.h switch-mbedtls-2.9.0/include/mbedtls/config.h
---- mbedtls-2.9.0/include/mbedtls/config.h	2018-05-01 15:28:18.000000000 +0100
-+++ switch-mbedtls-2.9.0/include/mbedtls/config.h	2018-06-26 18:11:25.725319571 +0100
-@@ -435,7 +435,7 @@
+diff -NBaur mbedtls-2.14.1/include/mbedtls/config.h mbedtls-2.14.1.switch/include/mbedtls/config.h
+--- mbedtls-2.14.1/include/mbedtls/config.h	2018-12-02 13:20:52.000000000 +0000
++++ mbedtls-2.14.1.switch/include/mbedtls/config.h	2018-12-23 18:49:07.178930622 +0000
+@@ -476,7 +476,7 @@
   *
   * Uncomment to use your own hardware entropy collector.
   */
@@ -10,7 +10,7 @@ diff -NBaur mbedtls-2.9.0/include/mbedtls/config.h switch-mbedtls-2.9.0/include/
  
  /**
   * \def MBEDTLS_AES_ROM_TABLES
-@@ -978,7 +978,7 @@
+@@ -1057,7 +1057,7 @@
   *
   * Uncomment this macro to disable the built-in platform entropy functions.
   */
@@ -19,7 +19,7 @@ diff -NBaur mbedtls-2.9.0/include/mbedtls/config.h switch-mbedtls-2.9.0/include/
  
  /**
   * \def MBEDTLS_ENTROPY_FORCE_SHA256
-@@ -1096,7 +1096,7 @@
+@@ -1175,7 +1175,7 @@
   *
   * Enable the checkup functions (*_self_test).
   */
@@ -28,7 +28,7 @@ diff -NBaur mbedtls-2.9.0/include/mbedtls/config.h switch-mbedtls-2.9.0/include/
  
  /**
   * \def MBEDTLS_SHA256_SMALLER
-@@ -2593,7 +2593,7 @@
+@@ -2795,7 +2795,7 @@
   *
   * This module is used by the HAVEGE random number generator.
   */
@@ -37,10 +37,10 @@ diff -NBaur mbedtls-2.9.0/include/mbedtls/config.h switch-mbedtls-2.9.0/include/
  
  /**
   * \def MBEDTLS_VERSION_C
-diff -NBaur mbedtls-2.9.0/library/entropy.c switch-mbedtls-2.9.0/library/entropy.c
---- mbedtls-2.9.0/library/entropy.c	2018-05-01 15:28:18.000000000 +0100
-+++ switch-mbedtls-2.9.0/library/entropy.c	2018-06-26 18:12:19.485719323 +0100
-@@ -123,6 +123,19 @@
+diff -NBaur mbedtls-2.14.1/library/entropy.c mbedtls-2.14.1.switch/library/entropy.c
+--- mbedtls-2.14.1/library/entropy.c	2018-12-02 13:20:52.000000000 +0000
++++ mbedtls-2.14.1.switch/library/entropy.c	2018-12-23 18:49:07.178930622 +0000
+@@ -119,6 +119,19 @@
  #endif /* MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES */
  }
  
@@ -60,36 +60,33 @@ diff -NBaur mbedtls-2.9.0/library/entropy.c switch-mbedtls-2.9.0/library/entropy
  void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
  {
  #if defined(MBEDTLS_HAVEGE_C)
-diff -NBaur mbedtls-2.9.0/library/net_sockets.c switch-mbedtls-2.9.0/library/net_sockets.c
---- mbedtls-2.9.0/library/net_sockets.c	2018-05-01 15:28:18.000000000 +0100
-+++ switch-mbedtls-2.9.0/library/net_sockets.c	2018-06-26 18:11:25.725319571 +0100
-@@ -27,11 +27,6 @@
+diff -NBaur mbedtls-2.14.1/library/net_sockets.c mbedtls-2.14.1.switch/library/net_sockets.c
+--- mbedtls-2.14.1/library/net_sockets.c	2018-12-02 13:20:52.000000000 +0000
++++ mbedtls-2.14.1.switch/library/net_sockets.c	2018-12-23 18:54:12.216006757 +0000
+@@ -34,7 +34,7 @@
  
- #if defined(MBEDTLS_NET_C)
+ #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
+     !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
+-    !defined(__HAIKU__)
++    !defined(__HAIKU__) && !defined(__SWITCH__)
+ #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
+ #endif
  
--#if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
--    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__)
--#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
--#endif
--
- #if defined(MBEDTLS_PLATFORM_C)
- #include "mbedtls/platform.h"
- #else
-@@ -402,7 +397,7 @@
+@@ -409,7 +409,7 @@
  
              memcpy( client_ip, &addr4->sin_addr.s_addr, *ip_len );
          }
 -        else
-+        /* else
++/*        else
          {
              struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
              *ip_len = sizeof( addr6->sin6_addr.s6_addr );
-@@ -411,7 +406,7 @@
-                 return( MBEDTLS_ERR_NET_BUFFER_TOO_SMALL );
+@@ -419,7 +419,7 @@
  
              memcpy( client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
--        }
-+        } */
-     }
+         }
+-    }
++*/    }
  
      return( 0 );
+ }

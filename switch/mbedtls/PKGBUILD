@@ -1,5 +1,5 @@
 pkgname=switch-mbedtls
-pkgver=2.9.0
+pkgver=2.14.1
 pkgrel=1
 pkgdesc='An open source, portable, easy to use, readable and flexible SSL library'
 arch=('any')
@@ -13,14 +13,16 @@ source=(
     'switch-mbedtls.patch'
 )
 
-sha256sums=('a06a9b43e583b7e6707becfeeb13d88ed00f25fee31a5386cb3a3014c454bad8' 'ea211f1fb25f1ce5948ab83827a8cbca3415ed84367491ff5620906a9750ff59')
+sha256sums=(
+ 'f189cbd58c9b1933e4e4460b592664447f3694ad2de882a1332d177e8eedc61d'
+ '2a9db25c89c51f0b779e4e512166a3963e47d20661de96817ad2c8c8c330733c'
+)
 
 build() {
   cd mbedtls-$pkgver
 
   patch -Np1 -i $srcdir/switch-mbedtls.patch
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkita64.cmake \
@@ -39,7 +41,6 @@ package() {
 
   cd mbedtls-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make install DESTDIR="$pkgdir"
