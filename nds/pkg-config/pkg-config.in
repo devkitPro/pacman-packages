@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# reset pkg-config variables to ensure we're not polluted by host libraries
+
+export PKG_CONFIG_DIR=
+export PKG_CONFIG_PATH=
+export PKG_CONFIG_SYSROOT_DIR=
+
+export PKG_CONFIG_LIBDIR=${DEVKITPRO}/portlibs/nds/lib/pkgconfig
+
+exec pkg-config --static "$@"
+

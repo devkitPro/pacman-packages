@@ -1,0 +1,15 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=nds-pkg-config
+pkgver=0.28
+pkgrel=2
+pkgdesc='pkg-config wrapper (for Nintendo DS homebrew development)'
+arch=('any')
+url='http://devkitpro.org/'
+source=('pkg-config.in')
+sha256sums=('922c2d3238038cda6666dffe506e39c33cb1a70d281b50818a288ac6687fa62a')
+
+package() {
+  install -d "$pkgdir"/opt/devkitpro/portlibs/nds/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/nds/bin/arm-none-eabi-pkg-config
+}
