@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitpro-pkgbuild-helpers
 pkgver=1.3.0
-pkgrel=1
+pkgrel=2
 
 pkgdesc='makepkg helpers for devkitPro portlibs'
 
@@ -44,7 +44,7 @@ sha256sums=(
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/cmake
-  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh ndsvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
 
