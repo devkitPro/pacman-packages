@@ -1,0 +1,51 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=nds-freetype
+pkgver=2.9
+pkgrel=1
+pkgdesc='FreeType is a freely available software library to render fonts.'
+arch=('any')
+url='https://www.freetype.org/'
+license=(GPL2+ custom:FreeType)
+options=(!strip libtool staticlibs)
+depends=("nds-bzip2"
+         "nds-libpng"
+         "nds-zlib"
+)
+makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
+sha256sums=('bf380e4d7c4f3b5b1c1a7b2bf3abb967bda5e9ab480d0df656e0e08c5019c5e6')
+groups=("nds-portlibs")
+
+build() {
+  cd freetype-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static \
+    --with-zlib \
+    --with-bzip2 \
+    --with-png
+
+  make
+}
+
+package() {
+  cd freetype-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # patch the config script to always output static libraries when not relying on pkg-config
+  sed 's/\$show_static/yes/' -i "${pkgdir}/${PORTLIBS_PREFIX}/bin/freetype-config"
+
+  # Licenses
+  install -Dm644 "docs/LICENSE.TXT" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
+  install -Dm644 "docs/GPLv2.TXT"   "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
+  install -Dm644 "docs/FTL.TXT"     "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
+
+  # remove useless stuff
+  rm -r "${pkgdir}/${PORTLIBS_PREFIX}/share"
+}
