@@ -1,0 +1,135 @@
+# Maintainer: Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>
+
+pkgname=switch-python
+pkgver=3.5.3
+pkgrel=1
+pkgdesc='Next generation of the python high-level scripting language'
+arch=('any')
+url='https://www.python.org/'
+license=(custom)
+options=(!strip libtool staticlibs)
+depends=('switch-zlib'
+         'libnx')
+makedepends=('switch-pkg-config'
+             'devkitpro-pkgbuild-helpers')
+
+__NXVERS=5baa28b0ce6ab2c8390fd85cfc36e1086f2cede9
+_NXVERS=eef890370950b2dec8be797d1e26113cfe457c2f
+#_IMGUIVERS=179360f82770850f1af2f03c631d01a9ff839b57
+
+source=("https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz"
+        "_nx.zip::https://github.com/nx-python/_nx/archive/$__NXVERS.zip"
+        "nx.zip::https://github.com/nx-python/nx/archive/$_NXVERS.zip"
+        # "imgui.zip::https://github.com/nx-python/imgui-switch/archive/$_IMGUIVERS.zip"
+        "python_config.tar.xz"
+        "python-3.5m.pc")
+sha256sums=('eefe2ad6575855423ab630f5b51a8ef6e5556f774584c06beab4926f930ddbb0'
+            '7906099000cdaee3e429e82d92cbf800819fbe087fbf7751a74e94114892edc5'
+            '682c3b2819303d820abb65aa2e77809e6f1fd17dcff80677827573c0762d0183'
+            # 'e0f5b1fc3d458efc10c4af207d776330a3c6aa09f96d46399a68da4e996f8a28'
+            '6cd611339828efbd2cb2bd1c377c6ccdc7f44916457b1356c48cb1f5e0e09b98'
+            '48a41ee19207f60e4f42234cf211f4f27046428b179837e9ca77b4541b41524b')
+
+prepare() {
+  cd Python-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  sed -i 's/	\*\-\*\-linux\*)/	\*\-\*\-linux\*\|aarch64\-none\-elf)/g' configure
+
+  echo ac_cv_file__dev_ptmx=no > config.site
+  echo ac_cv_file__dev_ptc=no >> config.site
+  echo ac_cv_lib_dl_dlopen=no >> config.site
+
+  sed -i -f - Modules/Setup.dist <<END
+\$a_nx -I\$(srcdir)/Modules/_nx _nx/_nxmodule.c hashtable.c
+s/^[^#].* pwdmodule\.c/#\0/
+s/^#\(array\|cmath\|math\|_struct\|operator\|_random\|_collections\|itertools\|signal\|strop\|unicodedata\|_io\|_csv\|_md5\|_sha\|_sha256\|_sha512\|binascii\|select\|cStringIO\|time\|_functools\|_socket\|datetime\|_bisect\|zlib\)\(.*\)/\1\2/
+s#\\(zlib[^\$$]*\\)\\\$(prefix)\\([^\$$]*\\)\\\$(exec_prefix)\\(.*\\)#\1$DEVKITPRO/portlibs/switch\2$DEVKITPRO/portlibs/switch\3#
+s/_tracemalloc/# _tracemalloc/
+END
+
+  # cat ../imgui-switch-*/setup.txt >> Modules/Setup.dist
+  cp -r ../_nx-*/_nx Modules/
+  # cp -r ../imgui-switch-*/dist/modules/* Modules/
+}
+
+build() {
+  cd Python-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  export CFLAGS='-g -Wall -O2 -ffunction-sections -DDISABLE_TRACEMALLOC -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE  -I/opt/devkitpro/portlibs/switch/include -I/opt/devkitpro/libnx/include -I/home/linkmauve/dev/homebrew/switch/PyNX/python_build/ -DSWITCH'
+  export CPPFLAGS=''
+  export LDFLAGS='-specs=/opt/devkitpro/libnx/switch.specs -g -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -Wl,-Map,.map'
+  export LIBS=''
+
+  ./configure CONFIG_SITE="config.site" --prefix="$PORTLIBS_PREFIX" --disable-shared --with-threads --without-signal-module --disable-ipv6 -host=aarch64-none-elf --build=`./config.guess`
+
+  # See https://bugs.python.org/issue23644
+  cp ../python_config/pyatomic.h Include
+  cp ../python_config/pystate.h Include
+
+  cp ../python_config/pyconfig.h .
+  cp ../python_config/intrcheck.c Parser/
+  cp ../python_config/pytime.c Python/
+  cp ../python_config/random.c Python/
+  cp ../python_config/fileutils.c Python/
+  cp ../python_config/thread.c Python/
+  cp ../python_config/thread_nx.h Python/
+  cp ../python_config/condvar.h Python/
+  cp ../python_config/pylifecycle.c Python/
+  cp ../python_config/ceval_gil.h Python/
+
+  sed -i -f - Modules/posixmodule.c <<END
+s/return utime(path, time)/errno=ENOENT; return -1/g
+s/define LSTAT lstat/define LSTAT stat/
+1s/^/#include <sys\/socket.h>/
+s/access(path->narrow, mode)/1/
+s/\(^[^rt]*time_t atime, mtime;.*\)/return NULL; \1/
+s/\(^[^ri]*int i = (int)umask(mask);.*\)/int i=0; return NULL;/
+s/^\([^#][^#]*#undef HAVE_FSTATVFS.*\)/\#undef HAVE_FSTATVFS \1/
+s/#define HAVE_\(EXECV\|FORK\|GETEGID\|GETEUID\|GETGID\|GETPPID\|GETUID\|KILL\|PIPE\|POPEN\|SYSTEM\|TTYNAME\|SYMLINK\|UTIME_H\|FDATASYNC\).*/#undef HAVE_\1/g
+s/^#define HAVE_\(STATVFS\|SYS_STATVFS_H\|FDATASYNC\|FTIME\|SYMLINK\|EXECV\|FORK\|GETEGID\|GETEUID\|GETGID\|GETPPID\|GETUID\|KILL\|PIPE\|POPEN\|SYSTEM\|TTYNAME\|SYMLINK\|UTIME_H\|FDATASYNC\).*/#undef HAVE_\1/
+END
+
+  sed -i -f - Modules/socketmodule.c <<END
+s/send(s->sock_fd, buf, len, flags);/send(s->sock_fd, buf, len<4096?len:4096, flags);/g
+s/                             sizeof(addr->sa_data)/                             28/g
+END
+
+  sed -i 's/ESHUTDOWN/EPIPE/g' Objects/exceptions.c
+  sed -i 's/CLOCK_MONOTONIC/(clockid_t)4/g' Python/pytime.c
+
+  sed -i -f - Makefile <<END
+s/-Werror=declaration-after-statement//
+/Python\/..DYNLOADFILE/d
+END
+
+  make libpython3.5m.a
+}
+
+package() {
+  cd Python-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  install -dm755 "$pkgdir"/"$PORTLIBS_PREFIX"/include/python3.5m
+  install -dm755 "$pkgdir"/"$PORTLIBS_PREFIX"/lib/python3.5/
+  install -dm755 "$pkgdir"/"$PORTLIBS_PREFIX"/lib/pkgconfig/
+
+  install -Dm644 Include/* "$pkgdir"/"$PORTLIBS_PREFIX"/include/python3.5m/
+  install -Dm644 pyconfig.h "$pkgdir"/"$PORTLIBS_PREFIX"/include/python3.5m/
+  install -Dm644 libpython3.5m.a "$pkgdir"/"$PORTLIBS_PREFIX"/lib/
+
+  # TODO: Let Python’s build system generate that.
+  install -Dm644 ../python-3.5m.pc "$pkgdir"/"$PORTLIBS_PREFIX"/lib/pkgconfig/
+
+  sed -i "s/'getpeername', //g" Lib/socket.py
+  pushd Lib
+  cp -r *.py json/ encodings/ html/ http/ test/ urllib/ collections/ email/ sqlite3/ logging/ xml/ importlib/ asyncio/ "$pkgdir"/"$PORTLIBS_PREFIX"/lib/python3.5/
+  popd
+
+  # License
+  install -Dm644 LICENSE "$pkgdir"/"$PORTLIBS_PREFIX"/licenses/$pkgname/LICENSE
+}
