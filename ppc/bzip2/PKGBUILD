@@ -9,7 +9,7 @@ arch=('any')
 license=('custom')
 url="http://www.bzip.org"
 options=(!strip libtool staticlibs)
-source=(http://www.bzip.org/$pkgver/bzip2-$pkgver.tar.gz)
+source=(http://http.debian.net/debian/pool/main/b/bzip2/bzip2_$pkgver.orig.tar.bz2)
 sha256sums=('a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 
