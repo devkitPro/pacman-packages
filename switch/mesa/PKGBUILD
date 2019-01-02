@@ -2,38 +2,28 @@
 
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
-pkgver=18.2_beta2
+pkgver=18.3
 pkgrel=1
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
 url='https://github.com/devkitPro'
 license=(MIT)
 options=(!strip libtool staticlibs)
-source=("${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.xz")
-sha256sums=('0162f778af8cd758ee008fddd9bc8691827ddd87f67259484a46194165ef43b6')
+source=("${url}/${pkgbasename}/releases/download/switch-${pkgver}/${pkgname}-${pkgver}.tar.xz")
+sha256sums=('d3f4018583fdc76ac09407dcfb2a47dbd5df41f9936770499f41adda0efb2f9f')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-libdrm_nouveau')
 
 build() {
   cd $pkgname
 
-  source /opt/devkitpro/switchvars.sh
-
-  autoreconf --force --verbose --install
-
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static --disable-dri --disable-glx \
-    --enable-egl --disable-gbm --with-dri-drivers=no \
-    --with-platforms=switch --with-gallium-drivers=nouveau \
-    --enable-glx-tls
-
-  make -j3
+  /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build
+  meson configure -Db_ndebug=true build
+  ninja -C build
 }
 
 package() {
   cd $pkgname
 
-  source /opt/devkitpro/switchvars.sh
-
-  make -j3 DESTDIR="$pkgdir" install
+  DESTDIR="$pkgdir" ninja -C build install
 }
