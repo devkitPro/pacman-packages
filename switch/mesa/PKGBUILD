@@ -3,7 +3,7 @@
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
 pkgver=18.3
-pkgrel=1
+pkgrel=2
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
 url='https://github.com/devkitPro'
@@ -17,8 +17,7 @@ depends=('switch-libdrm_nouveau')
 build() {
   cd $pkgname
 
-  /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build
-  meson configure -Db_ndebug=true build
+  /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build -Db_ndebug=true
   ninja -C build
 }
 
