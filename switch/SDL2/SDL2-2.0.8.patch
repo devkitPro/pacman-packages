@@ -884,7 +884,7 @@ index b68f90e91..3af243df7 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/switch/SDL_syscond.c b/src/thread/switch/SDL_syscond.c
 new file mode 100644
-index 000000000..c4e4cea57
+index 000000000..f83771368
 --- /dev/null
 +++ b/src/thread/switch/SDL_syscond.c
 @@ -0,0 +1,171 @@
@@ -1028,8 +1028,8 @@ index 000000000..c4e4cea57
 +        return SDL_SetError("SDL_CondWaitTimeout: passed a NULL cond/mutex");
 +    }
 +
-+    ts.tv_sec = ms / 1000;
-+    ts.tv_nsec = (ms % 1000) * 1000000;
++    clock_gettime(CLOCK_REALTIME, &ts);
++    ts.tv_nsec += (long) (ms * 1E6);
 +    res = cnd_timedwait(&cond->cnd, &mutex->mtx, &ts);
 +    if (res != thrd_success) {
 +        return SDL_SetError("SDL_CondWaitTimeout::cnd_timedwait failed: %i", res);
