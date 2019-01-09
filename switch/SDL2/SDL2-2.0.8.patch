@@ -884,10 +884,10 @@ index b68f90e91..3af243df7 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/switch/SDL_syscond.c b/src/thread/switch/SDL_syscond.c
 new file mode 100644
-index 000000000..f83771368
+index 000000000..7fb3aa7e1
 --- /dev/null
 +++ b/src/thread/switch/SDL_syscond.c
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,173 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
@@ -1031,7 +1031,9 @@ index 000000000..f83771368
 +    clock_gettime(CLOCK_REALTIME, &ts);
 +    ts.tv_nsec += (long) (ms * 1E6);
 +    res = cnd_timedwait(&cond->cnd, &mutex->mtx, &ts);
-+    if (res != thrd_success) {
++    if (res == thrd_timedout) {
++        return SDL_MUTEX_TIMEDOUT;
++    } else if (res != thrd_success) {
 +        return SDL_SetError("SDL_CondWaitTimeout::cnd_timedwait failed: %i", res);
 +    }
 +
