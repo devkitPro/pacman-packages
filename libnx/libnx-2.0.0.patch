@@ -1,0 +1,125 @@
+From f589310ef2e38ec0a4b57f79b619d8f8de02450b Mon Sep 17 00:00:00 2001
+From: XProger <xproger@list.ru>
+Date: Wed, 2 Jan 2019 04:25:03 +0300
+Subject: [PATCH 03/11] fix unusable touch by adding touch identifier into
+ touchPosition
+
+---
+ nx/include/switch/services/hid.h | 1 +
+ nx/source/services/hid.c         | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/nx/include/switch/services/hid.h b/nx/include/switch/services/hid.h
+index b7185af..d2bd8e8 100644
+--- a/nx/include/switch/services/hid.h
++++ b/nx/include/switch/services/hid.h
+@@ -325,6 +325,7 @@ typedef enum
+ 
+ typedef struct touchPosition
+ {
++    u32 id;
+     u32 px;
+     u32 py;
+     u32 dx;
+diff --git a/nx/source/services/hid.c b/nx/source/services/hid.c
+index 2e68893..5d29c92 100644
+--- a/nx/source/services/hid.c
++++ b/nx/source/services/hid.c
+@@ -472,6 +472,7 @@ void hidTouchRead(touchPosition *pos, u32 point_id) {
+             return;
+         }
+ 
++        pos->id = g_touchEntry.touches[point_id].touchIndex;
+         pos->px = g_touchEntry.touches[point_id].x;
+         pos->py = g_touchEntry.touches[point_id].y;
+         pos->dx = g_touchEntry.touches[point_id].diameterX;
+-- 
+2.11.0
+
+From 50baeeaa80be00731a2d0933da4d542affcf3f08 Mon Sep 17 00:00:00 2001
+From: fincs <fincs.alt1@gmail.com>
+Date: Fri, 4 Jan 2019 20:41:05 +0100
+Subject: [PATCH 05/11] nwindowGetDefault: Explicitly initialize dimensions to
+ 1280x720 because 1.x reports a default size of 1x1
+
+---
+ nx/source/display/default_window.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/nx/source/display/default_window.c b/nx/source/display/default_window.c
+index 9d4146e..0855009 100644
+--- a/nx/source/display/default_window.c
++++ b/nx/source/display/default_window.c
+@@ -27,8 +27,11 @@ void __nx_win_init(void)
+             rc = viCreateLayer(&g_viDisplay, &g_viLayer);
+             if (R_SUCCEEDED(rc)) {
+                 rc = viSetLayerScalingMode(&g_viLayer, ViScalingMode_FitToLayer);
+-                if (R_SUCCEEDED(rc))
++                if (R_SUCCEEDED(rc)) {
+                     rc = nwindowCreateFromLayer(&g_defaultWin, &g_viLayer);
++                    if (R_SUCCEEDED(rc))
++                        nwindowSetDimensions(&g_defaultWin, 1280, 720);
++                }
+                 if (R_FAILED(rc))
+                     viCloseLayer(&g_viLayer);
+             }
+-- 
+2.11.0
+
+From 06733c47503d9240e881014560a418f6c5f89669 Mon Sep 17 00:00:00 2001
+From: fincs <fincs.alt1@gmail.com>
+Date: Fri, 4 Jan 2019 22:30:52 +0100
+Subject: [PATCH 06/11] Fix NvColorFormat enum
+
+---
+ nx/include/switch/nvidia/types.h | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/nx/include/switch/nvidia/types.h b/nx/include/switch/nvidia/types.h
+index 4e93adc..cd415e8 100644
+--- a/nx/include/switch/nvidia/types.h
++++ b/nx/include/switch/nvidia/types.h
+@@ -253,8 +253,11 @@ typedef enum {
+ typedef enum {
+     NvColorFormat_Unspecified = 0x0000000000UL,
+     NvColorFormat_NonColor8 = 0x0009200408UL,
+-    NvColorFormat_X4C4 = 0x0009200A10UL,
+-    NvColorFormat_NonColor32 = 0x0100490508UL,
++    NvColorFormat_NonColor16 = 0x0009200A10UL,
++    NvColorFormat_NonColor24 = 0x0009201A18UL,
++    NvColorFormat_NonColor32 = 0x0009201C20UL,
++    NvColorFormat_X4C4 = 0x0009210508UL,
++    NvColorFormat_A4L4 = 0x0100490508UL,
+     NvColorFormat_A8L8 = 0x0100490E10UL,
+     NvColorFormat_Float_A16L16 = 0x0100495D20UL,
+     NvColorFormat_A1B5G5R5 = 0x0100531410UL,
+-- 
+2.11.0
+
+From 855a719728b6dfcb4abb1751f44a1941c2490a17 Mon Sep 17 00:00:00 2001
+From: Cpasjuste <cpasjuste@gmail.com>
+Date: Wed, 9 Jan 2019 13:33:23 +0100
+Subject: [PATCH 11/11] c11-threads: return thrd_timedout on cnd_timedwait
+ timeout (#232)
+
+---
+ nx/source/runtime/c11-threads.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/nx/source/runtime/c11-threads.c b/nx/source/runtime/c11-threads.c
+index d256750..43c3667 100644
+--- a/nx/source/runtime/c11-threads.c
++++ b/nx/source/runtime/c11-threads.c
+@@ -114,6 +114,9 @@ static int __cnd_timedwait(cnd_t *__restrict cond, mtx_t *__restrict mtx, u64 ti
+         mtx->rmutex.counter = 1;
+     }
+ 
++    if (R_VALUE(rc) == KERNELRESULT(TimedOut))
++        return thrd_timedout;
++
+     return R_SUCCEEDED(rc) ? thrd_success : thrd_error;
+ }
+ 
+-- 
+2.11.0
+
