@@ -8,11 +8,11 @@ url='https://www.ogre3d.org/'
 license=('MIT')
 options=(!strip libtool staticlibs)
 source=( "https://github.com/OGRECave/ogre/archive/v${pkgver}.tar.gz" "ogre-switch.patch")
-makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers' 'switch-zlib'
-  'switch-zziplib' 'switch-freetype')
+makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
+depends=('switch-zlib' 'switch-zziplib' 'switch-freetype')
 sha256sums=(
   'a3e73e55908042f00be8892fc75db83e8d814dfeca6ff5c6f30b8a7662c32f85'
-  'fb73380a0b07adec887931baf536cbb9ac36c6c1dc3acf05400f676ac84ed6ee')
+  '389c603a843c31f2bcbeb90145eb68e07dda4e9628fce76cfef3eefccf2eaed7')
 groups=('switch-portlibs')
 build() {
   cd ogre-$pkgver
@@ -21,19 +21,17 @@ build() {
 
   patch -Np1 -i "$srcdir"/ogre-switch.patch
 
-  FREETYPE_DIR=/opt/devkitpro/portlibs/switch cmake -G"Unix Makefiles" \
+  cmake -G"Unix Makefiles" \
     -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS $CPPFLAGS" \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DSWITCH=ON -DOGRE_STATIC=ON -DOGRE_BUILD_DEPENDENCIES=OFF \
     -DOGRE_BUILD_RENDERSYSTEM_GL=OFF \
     -DOGRE_BUILD_RENDERSYSTEM_GL3PLUS=ON \
-    -DZLIB_INCLUDE_DIR=/opt/devkitpro/portlibs/switch/include \
-    -DZLIB_LIBRARY=/opt/devkitpro/portlibs/switch/lib/libz.a \
-    -DZZIP_HOME=/opt/devkitpro/portlibs/switch -DOGRE_BUILD_SAMPLES=OFF \
     -DOGRE_BUILD_TOOLS=OFF -DOGRE_BUILD_TESTS=OFF \
-    -DOPENGL_egl_LIBRARY=/opt/devkitpro/portlibs/switch/lib/libEGL.a \
+    -DOGRE_INSTALL_DOCS=OFF -DOGRE_BUILD_SAMPLES=OFF \
     -DOPENGL_gl_LIBRARY=/opt/devkitpro/portlibs/switch/lib/libglapi.a \
-    -DOPENGL_EGL_INCLUDE_DIR=/opt/devkitpro/portlibs/switch/include \
     -DOPENGL_INCLUDE_DIR=/opt/devkitpro/portlibs/switch/include \
     .
 

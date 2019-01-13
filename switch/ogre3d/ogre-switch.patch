@@ -42,36 +42,19 @@ index 86916a2..d5ee124 100644
  
  # create vcproj.user file for Visual Studio to set debug working directory
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9a2819e..c671195 100644
+index 9a2819e..2bbf2b8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -42,8 +42,25 @@ if (APPLE AND NOT ANDROID)
-   add_definitions(-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0)
- endif ()
+@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.3.0)
  
-+if (SWITCH)
-+  set(CMAKE_SIZEOF_VOID_P 8)
-+
-+  include_directories(SYSTEM
-+    $ENV{DEVKITPRO}/portlibs/switch/include
-+    $ENV{DEVKITPRO}/libnx/include
-+  )
-+
-+  add_definitions(-D__SWITCH__=1)
-+endif ()
-+
- project(OGRE)
+ set(CMAKE_CXX_STANDARD 11)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+-set(CMAKE_CXX_EXTENSIONS OFF)
++set(CMAKE_CXX_EXTENSIONS ON)
  
-+if (SWITCH)
-+  set(SWITCH_FLAGS "-march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE")
-+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SWITCH_FLAGS}")
-+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SWITCH_FLAGS}")
-+endif ()
-+
- # Include necessary submodules
- set(CMAKE_MODULE_PATH
-   "${OGRE_SOURCE_DIR}/CMake"
-@@ -175,7 +192,7 @@ if((CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU") AND NOT OGRE_STATIC)
+ if(CMAKE_VS_PLATFORM_NAME STREQUAL "Tegra-Android")
+ 	set(CMAKE_LINK_LIBRARY_FLAG "")
+@@ -175,7 +175,7 @@ if((CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU") AND NOT OGRE_STATIC)
  endif()
  
  # determine system endianess
@@ -80,7 +63,7 @@ index 9a2819e..c671195 100644
    # This doesn't work on VS 2010
    # MSVC only builds for intel anyway
    # all IOS devices are little endian
-@@ -258,6 +275,8 @@ elseif(EMSCRIPTEN)
+@@ -258,6 +258,8 @@ elseif(EMSCRIPTEN)
    set(OGRE_STATIC TRUE CACHE BOOL "Forcing static build for Emscripten" FORCE)
  
    set(OGRE_CONFIG_THREADS "0" CACHE STRING "Threading is unstable on Emscripten" FORCE)
@@ -89,7 +72,7 @@ index 9a2819e..c671195 100644
  elseif (APPLE AND NOT APPLE_IOS)
  
    set(XCODE_ATTRIBUTE_SDKROOT macosx)
-@@ -312,7 +331,11 @@ include(Dependencies)
+@@ -312,7 +314,11 @@ include(Dependencies)
  
  # Customise what to build
  option(OGRE_STATIC "Static build" FALSE)
@@ -102,22 +85,6 @@ index 9a2819e..c671195 100644
  set(OGRE_RESOURCEMANAGER_STRICT "2" CACHE STRING 
    "Make ResourceManager strict for faster operation. Possible values:
    0 - OFF search in all groups twice - for case sensitive and insensitive lookup [DEPRECATED]
-diff --git a/Docs/CMakeLists.txt b/Docs/CMakeLists.txt
-index b539b4c..d98cebe 100644
---- a/Docs/CMakeLists.txt
-+++ b/Docs/CMakeLists.txt
-@@ -15,8 +15,10 @@
- # Set docs target directory
- if (WIN32 OR APPLE)
-   set(OGRE_DOCS_PATH "Docs")
--elseif (UNIX)
-+elseif (UNIX OR SWITCH)
-   set(OGRE_DOCS_PATH "share/OGRE/docs")
-+else()
-+  message(FATAL_ERROR "Unknown platform!")
- endif ()
- 
- # Build and install API documentation if doxygen is available
 diff --git a/OgreMain/CMakeLists.txt b/OgreMain/CMakeLists.txt
 index b2c63ba..e13b6a9 100644
 --- a/OgreMain/CMakeLists.txt
@@ -217,50 +184,6 @@ index 53b2af5..08446f4 100644
  #   include "OgreSearchOps.h"
  #   include <sys/param.h>
  #endif
-diff --git a/OgreMain/src/OgreRoot.cpp b/OgreMain/src/OgreRoot.cpp
-index d5be1f5..37a5b3e 100644
---- a/OgreMain/src/OgreRoot.cpp
-+++ b/OgreMain/src/OgreRoot.cpp
-@@ -79,6 +79,10 @@ THE SOFTWARE.
- #include "Android/OgreAndroidLogListener.h"
- #endif
- 
-+#if OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
-+#include <switch.h>
-+#endif
-+
- namespace Ogre {
-     //-----------------------------------------------------------------------
-     template<> Root* Singleton<Root>::msSingleton = 0;
-@@ -862,7 +866,11 @@ namespace Ogre {
-         // or break out by calling queueEndRendering()
-         mQueuedEnd = false;
- 
-+#ifdef __SWITCH__
-+        while( !mQueuedEnd && appletMainLoop() )
-+#else
-         while( !mQueuedEnd )
-+#endif
-         {
-             if (!renderOneFrame())
-                 break;
-diff --git a/OgreMain/src/OgreSearchOps.cpp b/OgreMain/src/OgreSearchOps.cpp
-index 48fdc33..1a8dcbd 100644
---- a/OgreMain/src/OgreSearchOps.cpp
-+++ b/OgreMain/src/OgreSearchOps.cpp
-@@ -35,6 +35,12 @@ THE SOFTWARE.
- #include <string.h>
- #include <stdlib.h>
- 
-+#if OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
-+#if !defined(strdup)
-+extern "C" { char* strdup(const char*); }
-+#endif // !defined(strdup)
-+#endif // OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
-+
- /* Win32 directory operations emulation */
- #if OGRE_PLATFORM != OGRE_PLATFORM_WIN32 && OGRE_PLATFORM != OGRE_PLATFORM_WINRT
-     
 diff --git a/OgreMain/src/OgreStringConverter.cpp b/OgreMain/src/OgreStringConverter.cpp
 index 92c8ad0..0aa1ff6 100644
 --- a/OgreMain/src/OgreStringConverter.cpp
@@ -390,10 +313,10 @@ index 0000000..d26129e
 +#endif
 diff --git a/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLWindow.h b/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLWindow.h
 new file mode 100644
-index 0000000..c83bbc7
+index 0000000..1469bb4
 --- /dev/null
 +++ b/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLWindow.h
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,60 @@
 +/*
 +-----------------------------------------------------------------------------
 +This source file is part of OGRE
@@ -431,6 +354,9 @@ index 0000000..c83bbc7
 +namespace Ogre {
 +    class _OgrePrivate SwitchEGLWindow : public EGLWindow
 +    {
++    private:
++        void _updateResolution();
++
 +    protected:
 +        virtual void getLeftAndTopFromNativeWindow(int & left, int & top, uint width, uint height);
 +        virtual void initNativeCreatedWindow(const NameValuePairList *miscParams);
@@ -534,10 +460,10 @@ index 0000000..98227d4
 +}
 diff --git a/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLWindow.cpp b/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLWindow.cpp
 new file mode 100644
-index 0000000..d999fe3
+index 0000000..d9610d3
 --- /dev/null
 +++ b/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLWindow.cpp
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,180 @@
 +/*
 +-----------------------------------------------------------------------------
 +This source file is part of OGRE
@@ -571,6 +497,7 @@ index 0000000..d999fe3
 +
 +#include "OgreSwitchEGLSupport.h"
 +#include "OgreSwitchEGLWindow.h"
++#include "OgreLogManager.h"
 +#include "OgreViewport.h"
 +
 +#include <switch.h>
@@ -606,6 +533,12 @@ index 0000000..d999fe3
 +
 +    void SwitchEGLWindow::windowMovedOrResized()
 +    {
++        _updateResolution();
++
++        // Notify viewports of resize
++        ViewportList::iterator it = mViewportList.begin();
++        while( it != mViewportList.end() )
++            (*it++).second->_updateDimensions();
 +    }
 +
 +    void SwitchEGLWindow::switchFullScreen(bool fullscreen)
@@ -678,13 +611,36 @@ index 0000000..d999fe3
 +            1, &numConfigs);
 +
 +        mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig,
-+            (NWindow*)mWindow, nullptr);
++            mWindow, nullptr);
 +
 +        mContext = createEGLContext();
 +        mContext->setCurrent();
 +
++        // Crop and adjust the window size.
++        _updateResolution();
++
 +        mActive = true;
 +        mVisible = true;
 +        mClosed = false;
++    }
++
++    void SwitchEGLWindow::_updateResolution()
++    {
++        switch(appletGetOperationMode())
++        {
++            default:
++            case AppletOperationMode_Handheld:
++                LogManager::getSingletonPtr()->logMessage("Switched to handheld mode.");
++                mWidth = 1280;
++                mHeight = 720;
++                break;
++            case AppletOperationMode_Docked:
++                LogManager::getSingletonPtr()->logMessage("Switched to docked mode.");
++                mWidth = 1920;
++                mHeight = 1080;
++                break;
++        }
++
++        nwindowSetCrop((NWindow*)mWindow, 0, 1080 - mHeight, mWidth, 1080);
 +    }
 +}
