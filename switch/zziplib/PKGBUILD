@@ -8,14 +8,14 @@ url='https://github.com/gdraheim/zziplib/'
 license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("https://github.com/gdraheim/zziplib/archive/v${pkgver}.tar.gz")
-makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers' 'switch-zlib')
+depends=('switch-zlib')
+makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
 sha256sums=('846246d7cdeee405d8d21e2922c6e97f55f24ecbe3b6dcf5778073a88f120544')
 groups=('switch-portlibs')
 
 build() {
   cd zziplib-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
