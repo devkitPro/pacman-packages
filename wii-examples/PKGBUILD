@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('wii-examples')
-pkgver=20180910
+pkgver=20190201
 pkgrel=1
 pkgdesc="Nintendo Wii example code."
 arch=('any')
@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/devkitpro/wii-examples"
 options=(!strip libtool staticlibs)
 source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('7f0d9bd6be5ec1359ec8eddad5947e9d25e8c293b04bd6b42141542a0d8988d7')
+sha256sums=('d0c43c4e6ac38502641c91d0100a9bffca5a9b6b51307cb5b8b9e96e694c8595')
 depends=('devkitPPC' 'libogc')
 
 groups=('wii-dev')
