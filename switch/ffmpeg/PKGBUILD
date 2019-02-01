@@ -16,7 +16,7 @@ depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
 source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz" "ffmpeg.patch")
 sha256sums=(
  '605f5c01c60db35d3b617a79cabb2c7032412be243554602eeed1b628125c0ee'
- '85b5bb8703a3349be8a2e677cb9881c3d5a18105d6d0210cf44edd8fbd133350'
+ '8c564b84c4476f7f3dc60307af467b9ce671b8dffe05beea31883f614f361e16'
 )
 groups=('switch-portlibs')
 
@@ -29,12 +29,12 @@ build() {
 
   ./configure --prefix=$PORTLIBS_PREFIX --disable-shared --enable-static \
     --cross-prefix=aarch64-none-elf- --enable-cross-compile \
-    --arch=aarch64 --target-os=none --enable-pic --disable-asm \
+    --arch=aarch64 --target-os=horizon --enable-pic --disable-asm \
     --extra-cflags='-D__SWITCH__ -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
     --extra-cxxflags='-D__SWITCH__ -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
     --extra-ldflags='-fPIE -L${PORTLIBS_PREFIX}/lib -L${DEVKITPRO}/libnx/lib' \
     --disable-runtime-cpudetect --disable-programs --disable-debug --disable-doc \
-    --disable-network --disable-hwaccels --disable-encoders \
+    --enable-network --disable-hwaccels --disable-encoders \
     --disable-avdevice --enable-swscale --enable-swresample \
     --enable-libass --enable-libfreetype --enable-libfribidi --enable-libtheora \
     --enable-filter='rotate,transpose' \

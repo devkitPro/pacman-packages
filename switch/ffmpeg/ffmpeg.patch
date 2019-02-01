@@ -1,6 +1,19 @@
-diff -NBaur ffmpeg-4.0.1.orig/libavfilter/vf_drawtext.c ffmpeg-4.0.1/libavfilter/vf_drawtext.c
---- ffmpeg-4.0.1.orig/libavfilter/vf_drawtext.c	2018-04-20 11:02:57.000000000 +0100
-+++ ffmpeg-4.0.1/libavfilter/vf_drawtext.c	2018-11-16 08:53:13.803605049 +0000
+diff -NBaur ffmpeg-4.0.1.old/configure ffmpeg-4.0.1.new/configure
+--- ffmpeg-4.0.1.old/configure	2018-06-16 02:12:16.000000000 +0100
++++ ffmpeg-4.0.1.new/configure	2019-02-01 09:37:02.607342895 +0000
+@@ -5250,6 +5250,9 @@
+         ;;
+     minix)
+         ;;
++    horizon)
++        network_extralibs="-lnx"
++        ;;
+     none)
+         ;;
+     *)
+diff -NBaur ffmpeg-4.0.1.old/libavfilter/vf_drawtext.c ffmpeg-4.0.1.new/libavfilter/vf_drawtext.c
+--- ffmpeg-4.0.1.old/libavfilter/vf_drawtext.c	2018-04-20 11:02:57.000000000 +0100
++++ ffmpeg-4.0.1.new/libavfilter/vf_drawtext.c	2019-02-01 09:31:26.128712790 +0000
 @@ -37,7 +37,9 @@
  #if HAVE_UNISTD_H
  #include <unistd.h>
