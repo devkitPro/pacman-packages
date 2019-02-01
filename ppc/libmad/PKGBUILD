@@ -15,7 +15,7 @@ source=("ftp://ftp.mars.org/pub/mpeg/libmad-${pkgver}.tar.gz"
         "frame_length.patch" "pkg-config.patch" "optimise.diff")
 sha256sums=("bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690"
             "e54439c7efa6fc7272923d8507d79ee2992b115225baed1c47d1704e442e3c24"
-            "1616cddc2b5f0700ad65605fe826c0d21ed3f0892f214e9ff895d947346d1d36"
+            "0d22d5fe2785502ab1a731e185ad7ccbcdd575220337a99a36683aa9aaeb8072"
             "269505f22d700f3f00bcc97706f75889fbc6f7acf99cf068f0939b287bb50966")
 
 prepare() {
@@ -24,15 +24,13 @@ prepare() {
     patch -p1 -i "$srcdir/pkg-config.patch"
     patch -p1 -i "$srcdir/frame_length.patch"
     patch -p1 -i "$srcdir/optimise.diff"
+    autoreconf -fi
+
 }
 
 build() {
     cd libmad-$pkgver
     source /opt/devkitpro/ppcvars.sh
-
-    # We changed configure.ac above
-    touch NEWS AUTHORS ChangeLog
-    autoconf
 
     ./configure --prefix="$PORTLIBS_PREFIX" --host=powerpc-eabi --disable-shared
 
