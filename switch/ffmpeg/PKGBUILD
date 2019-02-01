@@ -1,6 +1,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 # Contributor: Ezekiel Bethel <stary@9net.org>
 # Contributor: carstene1ns <dev f4ke de>
+# Contributor: jakibaki <jakibaki live com>
 
 pkgname=switch-ffmpeg
 pkgver=4.0.1
@@ -20,12 +21,15 @@ sha256sums=(
 )
 groups=('switch-portlibs')
 
+prepare() {
+  cd ffmpeg-$pkgver
+  patch -Np1 -i "$srcdir/ffmpeg.patch"
+}
+
 build() {
   cd ffmpeg-$pkgver
 
   source /opt/devkitpro/switchvars.sh
-
-  patch -Np1 -i "$srcdir/ffmpeg.patch"
 
   ./configure --prefix=$PORTLIBS_PREFIX --disable-shared --enable-static \
     --cross-prefix=aarch64-none-elf- --enable-cross-compile \
@@ -38,8 +42,8 @@ build() {
     --disable-avdevice --enable-swscale --enable-swresample \
     --enable-libass --enable-libfreetype --enable-libfribidi --enable-libtheora \
     --enable-filter='rotate,transpose' \
-    --disable-protocols --enable-protocol=file \
-    --disable-demuxers --enable-demuxer=h264,matroska,mov,ogg \
+    --disable-protocols --enable-protocol=file,tcp,udp,rtmp \
+    --disable-demuxers --enable-demuxer=h264,matroska,mov,ogg,rtsp,mpegts \
     --disable-decoders --enable-decoder=h264,aac,ac3,mp3,theora,ogg,vorbis \
     --disable-parsers --enable-parser=h264,aac
 
