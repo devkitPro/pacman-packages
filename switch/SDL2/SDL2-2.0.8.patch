@@ -89,59 +89,10 @@ index 000000000..8b6ec2b43
 +        DEPENDS ${PROJECT_NAME}.elf
 +        COMMAND elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}.nro)
 diff --git a/configure b/configure
-index 1c7f87eb0..5f6f836a2 100755
+index 1c7f87eb0..52a893bf2 100755
 --- a/configure
 +++ b/configure
-@@ -745,6 +745,7 @@ infodir
- docdir
- oldincludedir
- includedir
-+runstatedir
- localstatedir
- sharedstatedir
- sysconfdir
-@@ -923,6 +924,7 @@ datadir='${datarootdir}'
- sysconfdir='${prefix}/etc'
- sharedstatedir='${prefix}/com'
- localstatedir='${prefix}/var'
-+runstatedir='${localstatedir}/run'
- includedir='${prefix}/include'
- oldincludedir='/usr/include'
- docdir='${datarootdir}/doc/${PACKAGE}'
-@@ -1175,6 +1177,15 @@ do
-   | -silent | --silent | --silen | --sile | --sil)
-     silent=yes ;;
- 
-+  -runstatedir | --runstatedir | --runstatedi | --runstated \
-+  | --runstate | --runstat | --runsta | --runst | --runs \
-+  | --run | --ru | --r)
-+    ac_prev=runstatedir ;;
-+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-+  | --run=* | --ru=* | --r=*)
-+    runstatedir=$ac_optarg ;;
-+
-   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
-     ac_prev=sbindir ;;
-   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
-@@ -1312,7 +1323,7 @@ fi
- for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
- 		datadir sysconfdir sharedstatedir localstatedir includedir \
- 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
--		libdir localedir mandir
-+		libdir localedir mandir runstatedir
- do
-   eval ac_val=\$$ac_var
-   # Remove trailing slashes.
-@@ -1465,6 +1476,7 @@ Fine tuning of the installation directories:
-   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
-   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
-   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
-   --libdir=DIR            object code libraries [EPREFIX/lib]
-   --includedir=DIR        C header files [PREFIX/include]
-   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
-@@ -1572,7 +1584,7 @@ Optional Features:
+@@ -1572,7 +1572,7 @@ Optional Features:
                            QtWayland server support for Wayland video driver
                            [[default=yes]]
    --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
@@ -150,7 +101,7 @@ index 1c7f87eb0..5f6f836a2 100755
    --enable-mir-shared     dynamically load Mir support [[default=maybe]]
    --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
    --enable-video-x11      use X11 video driver [[default=yes]]
-@@ -19300,7 +19312,7 @@ CheckMir()
+@@ -19300,7 +19300,7 @@ CheckMir()
  if test "${enable_video_mir+set}" = set; then :
    enableval=$enable_video_mir;
  else
@@ -159,14 +110,16 @@ index 1c7f87eb0..5f6f836a2 100755
  fi
  
  
-@@ -24621,6 +24633,86 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+@@ -24621,6 +24621,88 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
              have_timers=yes
          fi
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
-+        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec -fPIC"
++        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 \
++            -mtp=soft -ftls-model=local-exec \
++            -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -fPIC"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
 +        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lglapi -ldrm_nouveau -lnx"
@@ -247,17 +200,19 @@ index 1c7f87eb0..5f6f836a2 100755
          as_fn_error $? "
  *** Unsupported host:  Please add to configure.in
 diff --git a/configure.in b/configure.in
-index 1c7e79338..3660e6b57 100644
+index 1c7e79338..3db20e572 100644
 --- a/configure.in
 +++ b/configure.in
-@@ -3905,6 +3905,64 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
+@@ -3905,6 +3905,66 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
              have_timers=yes
          fi
          ;;
 +	aarch64-none-elf*)
 +        ARCH=switch
-+        SDL_CFLAGS="$SDL_CFLAGS -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
-+        EXTRA_CFLAGS="$EXTRA_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec -fPIC"
++        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 \
++            -mtp=soft -ftls-model=local-exec \
++            -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
++        EXTRA_CFLAGS="$EXTRA_CFLAGS -fPIC"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
 +        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lglapi -ldrm_nouveau -lnx"
@@ -402,10 +357,10 @@ index f0e1f3dad..a7e519281 100644
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 000000000..961c2cf0d
+index 000000000..56211a5c7
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,227 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -441,23 +396,25 @@ index 000000000..961c2cf0d
 +
 +#include "SDL_switchaudio.h"
 +
++static const AudioRendererConfig arConfig =
++    {
++        .output_rate     = AudioRendererOutputRate_48kHz,
++        .num_voices      = 24,
++        .num_effects     = 0,
++        .num_sinks       = 1,
++        .num_mix_objs    = 1,
++        .num_mix_buffers = 2,
++    };
++
 +static int
 +SWITCHAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 +{
-+    Result res;
++    static const u8 sink_channels[] = {0, 1};
 +    SDL_bool supported_format = SDL_FALSE;
 +    SDL_AudioFormat test_format;
-+
-+    res = audoutInitialize();
-+    if (res != 0) {
-+        return SDL_SetError("audoutInitialize failed (0x%x)", res);
-+    }
-+
-+    res = audoutStartAudioOut();
-+    if (res != 0) {
-+        audoutExit();
-+        return SDL_SetError("audoutStartAudioOut failed (0x%x)", res);
-+    }
++    Result res;
++    u32 size;
++    int mpid;
 +
 +    this->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(sizeof(*this->hidden));
 +    if (this->hidden == NULL) {
@@ -465,11 +422,24 @@ index 000000000..961c2cf0d
 +    }
 +    SDL_zerop(this->hidden);
 +
++    res = audrenInitialize(&arConfig);
++    if (R_FAILED(res)) {
++        return SDL_SetError("audrenInitialize failed (0x%x)", res);
++    }
++    this->hidden->audr_device = true;
++
++    res = audrvCreate(&this->hidden->driver, &arConfig, 2);
++    if (R_FAILED(res)) {
++        return SDL_SetError("audrvCreate failed (0x%x)", res);
++    }
++    this->hidden->audr_driver = true;
++
 +    test_format = SDL_FirstAudioFormat(this->spec.format);
 +    while ((!supported_format) && (test_format)) {
-+        if (test_format == AUDIO_S16LSB) {
++        if (test_format == AUDIO_S16SYS) {
 +            supported_format = SDL_TRUE;
-+        } else {
++        }
++        else {
 +            test_format = SDL_NextAudioFormat();
 +        }
 +    }
@@ -478,23 +448,42 @@ index 000000000..961c2cf0d
 +    }
 +
 +    this->spec.format = test_format;
-+    this->spec.freq = 48000;
-+    this->spec.channels = 2;
-+
 +    SDL_CalculateAudioSpec(&this->spec);
 +
++    size = (u32) ((this->spec.size * 2) + 0xfff) & ~0xfff;
++    this->hidden->pool = memalign(0x1000, size);
 +    for (int i = 0; i < 2; i++) {
-+        u32 size = (u32) (this->spec.size + 0xfff) & ~0xfff;
-+        this->hidden->buffer[i] = memalign(0x1000, size);
-+        memset(this->hidden->buffer[i], 0, size);
-+        this->hidden->source_buffer[i].next = NULL;
-+        this->hidden->source_buffer[i].buffer = this->hidden->buffer[i];
-+        this->hidden->source_buffer[i].buffer_size =
-+            (u64) this->spec.size / this->spec.channels / 4;
-+        this->hidden->source_buffer[i].data_size = (u64) this->spec.size;
-+        this->hidden->source_buffer[i].data_offset = (u64) 0;
-+        audoutAppendAudioOutBuffer(&this->hidden->source_buffer[i]);
++        this->hidden->buffer[i].data_raw = this->hidden->pool;
++        this->hidden->buffer[i].size = this->spec.size * 2;
++        this->hidden->buffer[i].start_sample_offset = i * this->spec.samples;
++        this->hidden->buffer[i].end_sample_offset = this->hidden->buffer[i].start_sample_offset + this->spec.samples;
++        this->hidden->buffer_tmp = malloc(this->spec.size);
 +    }
++
++    mpid = audrvMemPoolAdd(&this->hidden->driver, this->hidden->pool, size);
++    audrvMemPoolAttach(&this->hidden->driver, mpid);
++
++    audrvDeviceSinkAdd(&this->hidden->driver, AUDREN_DEFAULT_DEVICE_NAME, 2, sink_channels);
++
++    res = audrenStartAudioRenderer();
++    if (R_FAILED(res)) {
++        return SDL_SetError("audrenStartAudioRenderer failed (0x%x)", res);
++    }
++
++    audrvVoiceInit(&this->hidden->driver, 0, this->spec.channels, PcmFormat_Int16, this->spec.freq);
++    audrvVoiceSetDestinationMix(&this->hidden->driver, 0, AUDREN_FINAL_MIX_ID);
++    if (this->spec.channels == 1) {
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 0);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 1);
++    }
++    else {
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 0);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 0.0f, 0, 1);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 0.0f, 1, 0);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 1, 1);
++    }
++
++    audrvVoiceStart(&this->hidden->driver, 0);
 +
 +    return 0;
 +}
@@ -502,36 +491,73 @@ index 000000000..961c2cf0d
 +static void
 +SWITCHAUDIO_PlayDevice(_THIS)
 +{
-+    audoutAppendAudioOutBuffer(this->hidden->released_buffer);
++    int current = -1;
++    for (int i = 0; i < 2; i++) {
++        if (this->hidden->buffer[i].state == AudioDriverWaveBufState_Free
++            || this->hidden->buffer[i].state == AudioDriverWaveBufState_Done) {
++            current = i;
++            break;
++        }
++    }
++
++    if (current >= 0) {
++        Uint8 *ptr = (Uint8 *) (this->hidden->pool + (current * this->spec.size));
++        memcpy(ptr, this->hidden->buffer_tmp, this->spec.size);
++        armDCacheFlush(ptr, this->spec.size);
++        audrvVoiceAddWaveBuf(&this->hidden->driver, 0, &this->hidden->buffer[current]);
++    }
++    else if (!audrvVoiceIsPlaying(&this->hidden->driver, 0)) {
++        audrvVoiceStart(&this->hidden->driver, 0);
++    }
++
++    audrvUpdate(&this->hidden->driver);
++
++    if (current >= 0) {
++        while (this->hidden->buffer[current].state != AudioDriverWaveBufState_Playing) {
++            audrvUpdate(&this->hidden->driver);
++            audrenWaitFrame();
++        }
++    }
++    else {
++        current = -1;
++        for (int i = 0; i < 2; i++) {
++            if (this->hidden->buffer[i].state == AudioDriverWaveBufState_Playing) {
++                current = i;
++                break;
++            }
++        }
++        while (this->hidden->buffer[current].state == AudioDriverWaveBufState_Playing) {
++            audrvUpdate(&this->hidden->driver);
++            audrenWaitFrame();
++        }
++    }
 +}
 +
 +static void
 +SWITCHAUDIO_WaitDevice(_THIS)
 +{
-+
 +}
 +
 +static Uint8
 +*SWITCHAUDIO_GetDeviceBuf(_THIS)
 +{
-+    audoutWaitPlayFinish(&this->hidden->released_buffer,
-+                         &this->hidden->released_count, U64_MAX);
-+
-+    return this->hidden->released_buffer->buffer;
++    return this->hidden->buffer_tmp;
 +}
 +
 +static void
 +SWITCHAUDIO_CloseDevice(_THIS)
 +{
-+    if (this->hidden->buffer[0]) {
-+        free(this->hidden->buffer[0]);
-+    }
-+    if (this->hidden->buffer[1]) {
-+        free(this->hidden->buffer[1]);
++    if (this->hidden->audr_driver) {
++        audrvClose(&this->hidden->driver);
 +    }
 +
-+    audoutStopAudioOut();
-+    audoutExit();
++    if (this->hidden->audr_device) {
++        audrenExit();
++    }
++
++    if (this->hidden->buffer_tmp) {
++        free(this->hidden->buffer_tmp);
++    }
 +
 +    SDL_free(this->hidden);
 +}
@@ -564,10 +590,10 @@ index 000000000..961c2cf0d
 +#endif /* SDL_AUDIO_DRIVER_SWITCH */
 diff --git a/src/audio/switch/SDL_switchaudio.h b/src/audio/switch/SDL_switchaudio.h
 new file mode 100644
-index 000000000..aeada608a
+index 000000000..f5e0340fb
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.h
-@@ -0,0 +1,40 @@
+@@ -0,0 +1,41 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -600,11 +626,12 @@ index 000000000..aeada608a
 +
 +struct SDL_PrivateAudioData
 +{
-+    void *buffer[2];
-+    AudioOutBuffer source_buffer[2];
-+    AudioOutBuffer *released_buffer;
-+    u32 released_count;
-+
++    AudioDriver driver;
++    AudioDriverWaveBuf buffer[2];
++    void *buffer_tmp;
++    void *pool;
++    bool audr_device;
++    bool audr_driver;
 +};
 +
 +#endif /* SDL_switchaudio_h_ */
@@ -1361,7 +1388,7 @@ index 000000000..6a8d20701
 +#endif /* SDL_THREAD_SWITCH */
 diff --git a/src/thread/switch/SDL_systhread.c b/src/thread/switch/SDL_systhread.c
 new file mode 100644
-index 000000000..4814f2a76
+index 000000000..31e4904b1
 --- /dev/null
 +++ b/src/thread/switch/SDL_systhread.c
 @@ -0,0 +1,90 @@
@@ -1440,7 +1467,7 @@ index 000000000..4814f2a76
 +    Result res;
 +
 +    if (priority == SDL_THREAD_PRIORITY_HIGH) {
-+        res = svcSetThreadPriority(CUR_THREAD_HANDLE, 0x1C);
++        res = svcSetThreadPriority(CUR_THREAD_HANDLE, 0x2B);
 +    }
 +    else {
 +        // 0x3B = preemptive threading
@@ -1645,6 +1672,473 @@ index 8cf195d1a..a2df8486a 100644
      if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN)) {
          flags |= SDL_WINDOW_OPENGL;
      }
+diff --git a/src/video/switch/SDL_switchkeyboard.c b/src/video/switch/SDL_switchkeyboard.c
+new file mode 100644
+index 000000000..0d8f7bc6b
+--- /dev/null
++++ b/src/video/switch/SDL_switchkeyboard.c
+@@ -0,0 +1,270 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#if SDL_VIDEO_DRIVER_SWITCH
++
++#include <switch.h>
++
++#include "SDL_events.h"
++#include "SDL_log.h"
++#include "SDL_switchvideo.h"
++#include "SDL_switchkeyboard.h"
++#include "../../events/SDL_keyboard_c.h"
++
++#define NUM_SCANCODES_SWITCH 160
++
++static uint8_t locks = 0;
++static bool keystate[NUM_SCANCODES_SWITCH] = { 0 };
++static const uint8_t switch_scancodes[NUM_SCANCODES_SWITCH] = {
++	KBD_A,
++	KBD_B,
++	KBD_C,
++	KBD_D,
++	KBD_E,
++	KBD_F,
++	KBD_G,
++	KBD_H,
++	KBD_I,
++	KBD_J,
++	KBD_K,
++	KBD_L,
++	KBD_M,
++	KBD_N,
++	KBD_O,
++	KBD_P,
++	KBD_Q,
++	KBD_R,
++	KBD_S,
++	KBD_T,
++	KBD_U,
++	KBD_V,
++	KBD_W,
++	KBD_X,
++	KBD_Y,
++	KBD_Z,
++	KBD_1,
++	KBD_2,
++	KBD_3,
++	KBD_4,
++	KBD_5,
++	KBD_6,
++	KBD_7,
++	KBD_8,
++	KBD_9,
++	KBD_0,
++	KBD_ENTER,
++	KBD_ESC,
++	KBD_BACKSPACE,
++	KBD_TAB,
++	KBD_SPACE,
++	KBD_MINUS,
++	KBD_EQUAL,
++	KBD_LEFTBRACE,
++	KBD_RIGHTBRACE,
++	KBD_BACKSLASH,
++	KBD_HASHTILDE,
++	KBD_SEMICOLON,
++	KBD_APOSTROPHE,
++	KBD_GRAVE,
++	KBD_COMMA,
++	KBD_DOT,
++	KBD_SLASH,
++	KBD_CAPSLOCK,
++	KBD_F1,
++	KBD_F2,
++	KBD_F3,
++	KBD_F4,
++	KBD_F5,
++	KBD_F6,
++	KBD_F7,
++	KBD_F8,
++	KBD_F9,
++	KBD_F10,
++	KBD_F11,
++	KBD_F12,
++	KBD_SYSRQ,
++	KBD_SCROLLLOCK,
++	KBD_PAUSE,
++	KBD_INSERT,
++	KBD_HOME,
++	KBD_PAGEUP,
++	KBD_DELETE,
++	KBD_END,
++	KBD_PAGEDOWN,
++	KBD_RIGHT,
++	KBD_LEFT,
++	KBD_DOWN,
++	KBD_UP,
++	KBD_NUMLOCK,
++	KBD_KPSLASH,
++	KBD_KPASTERISK,
++	KBD_KPMINUS,
++	KBD_KPPLUS,
++	KBD_KPENTER,
++	KBD_KP1,
++	KBD_KP2,
++	KBD_KP3,
++	KBD_KP4,
++	KBD_KP5,
++	KBD_KP6,
++	KBD_KP7,
++	KBD_KP8,
++	KBD_KP9,
++	KBD_KP0,
++	KBD_KPDOT,
++	KBD_102ND,
++	KBD_COMPOSE,
++	KBD_POWER,
++	KBD_KPEQUAL,
++	KBD_F13,
++	KBD_F14,
++	KBD_F15,
++	KBD_F16,
++	KBD_F17,
++	KBD_F18,
++	KBD_F19,
++	KBD_F20,
++	KBD_F21,
++	KBD_F22,
++	KBD_F23,
++	KBD_F24,
++	KBD_OPEN,
++	KBD_HELP,
++	KBD_PROPS,
++	KBD_FRONT,
++	KBD_STOP,
++	KBD_AGAIN,
++	KBD_UNDO,
++	KBD_CUT,
++	KBD_COPY,
++	KBD_PASTE,
++	KBD_FIND,
++	KBD_MUTE,
++	KBD_VOLUMEUP,
++	KBD_VOLUMEDOWN,
++	KBD_CAPSLOCK_ACTIVE,
++	KBD_NUMLOCK_ACTIVE,
++	KBD_SCROLLLOCK_ACTIVE,
++	KBD_KPCOMMA,
++	KBD_KPLEFTPAREN,
++	KBD_KPRIGHTPAREN,
++	KBD_LEFTCTRL,
++	KBD_LEFTSHIFT,
++	KBD_LEFTALT,
++	KBD_LEFTMETA,
++	KBD_RIGHTCTRL,
++	KBD_RIGHTSHIFT,
++	KBD_RIGHTALT,
++	KBD_RIGHTMETA,
++	KBD_MEDIA_PLAYPAUSE,
++	KBD_MEDIA_STOPCD,
++	KBD_MEDIA_PREVIOUSSONG,
++	KBD_MEDIA_NEXTSONG,
++	KBD_MEDIA_EJECTCD,
++	KBD_MEDIA_VOLUMEUP,
++	KBD_MEDIA_VOLUMEDOWN,
++	KBD_MEDIA_MUTE,
++	KBD_MEDIA_WWW,
++	KBD_MEDIA_BACK,
++	KBD_MEDIA_FORWARD,
++	KBD_MEDIA_STOP,
++	KBD_MEDIA_FIND,
++	KBD_MEDIA_SCROLLUP,
++	KBD_MEDIA_SCROLLDOWN,
++	KBD_MEDIA_EDIT,
++	KBD_MEDIA_SLEEP,
++	KBD_MEDIA_COFFEE,
++	KBD_MEDIA_REFRESH,
++	KBD_MEDIA_CALC
++};
++
++void
++SWITCH_InitKeyboard(void)
++{
++}
++
++void
++SWITCH_PollKeyboard(void)
++{
++	// We skip polling keyboard if no window is created
++	if (SDL_GetFocusWindow() == NULL)
++		return;
++
++	for (int i = 0; i < NUM_SCANCODES_SWITCH; i++) {
++
++		int keyCode = switch_scancodes[i];
++
++		if (hidKeyboardHeld(keyCode) && !keystate[i]) {
++			switch (keyCode) {
++				case SDL_SCANCODE_NUMLOCKCLEAR:
++					if (!(locks & 0x1)) {
++						SDL_SendKeyboardKey(SDL_PRESSED, keyCode);
++						locks |= 0x1;
++					} else {
++						SDL_SendKeyboardKey(SDL_RELEASED, keyCode);
++						locks &= ~0x1;
++					}
++					break;
++				case SDL_SCANCODE_CAPSLOCK:
++					if (!(locks & 0x2)) {
++						SDL_SendKeyboardKey(SDL_PRESSED, keyCode);
++						locks |= 0x2;
++					} else {
++						SDL_SendKeyboardKey(SDL_RELEASED, keyCode);
++						locks &= ~0x2;
++					}
++					break;
++				case SDL_SCANCODE_SCROLLLOCK:
++					if (!(locks & 0x4)) {
++						SDL_SendKeyboardKey(SDL_PRESSED, keyCode);
++						locks |= 0x4;
++					} else {
++						SDL_SendKeyboardKey(SDL_RELEASED, keyCode);
++						locks &= ~0x4;
++					}
++					break;
++				default:
++					SDL_SendKeyboardKey(SDL_PRESSED, keyCode);
++			}
++			keystate[i] = true;
++		} else if (!hidKeyboardHeld(keyCode) && keystate[i]) {
++			switch (keyCode) {
++				case SDL_SCANCODE_CAPSLOCK:
++				case SDL_SCANCODE_NUMLOCKCLEAR:
++				case SDL_SCANCODE_SCROLLLOCK:
++					break;
++				default:
++					SDL_SendKeyboardKey(SDL_RELEASED, keyCode);
++			}
++			keystate[i] = false;
++		}
++	}
++}
++
++void
++SWITCH_QuitKeyboard(void)
++{
++}
++
++#endif /* SDL_VIDEO_DRIVER_SWITCH */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/switch/SDL_switchkeyboard.h b/src/video/switch/SDL_switchkeyboard.h
+new file mode 100644
+index 000000000..a8355db78
+--- /dev/null
++++ b/src/video/switch/SDL_switchkeyboard.h
+@@ -0,0 +1,34 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#ifndef _SDL_switchkeyboard_h
++#define _SDL_switchkeyboard_h
++
++#include "../../SDL_internal.h"
++
++/* Keyboard functions */
++extern void SWITCH_InitKeyboard(void);
++extern void SWITCH_PollKeyboard(void);
++extern void SWITCH_QuitKeyboard(void);
++
++#endif /* _SDL_switchkeyboard_h */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/switch/SDL_switchmouse.c b/src/video/switch/SDL_switchmouse.c
+new file mode 100644
+index 000000000..a7369d5f2
+--- /dev/null
++++ b/src/video/switch/SDL_switchmouse.c
+@@ -0,0 +1,105 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#if SDL_VIDEO_DRIVER_SWITCH
++
++#include <switch.h>
++
++#include "SDL_timer.h"
++#include "SDL_events.h"
++#include "SDL_log.h"
++#include "SDL_mouse.h"
++#include "SDL_switchvideo.h"
++#include "SDL_switchmouse_c.h"
++#include "../../events/SDL_mouse_c.h"
++
++static uint64_t prev_buttons = 0;
++static uint64_t last_timestamp = 0;
++const uint64_t mouse_read_interval = 15; // in ms
++
++void 
++SWITCH_InitMouse(void)
++{
++}
++
++void 
++SWITCH_PollMouse(void)
++{
++	SDL_Window *window = SDL_GetFocusWindow();
++	uint64_t buttons;
++	uint64_t changed_buttons;
++	MousePosition mouse_pos;
++	uint64_t timestamp;
++	int dx, dy;
++
++	// We skip polling mouse if no window is created
++	if (window == NULL)
++		return;
++
++	buttons = hidMouseButtonsHeld();
++	changed_buttons = buttons ^ prev_buttons;
++
++	if (changed_buttons & MOUSE_LEFT) {
++		if (prev_buttons & MOUSE_LEFT)
++			SDL_SendMouseButton(window, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
++		else
++			SDL_SendMouseButton(window, 0, SDL_PRESSED, SDL_BUTTON_LEFT);
++	}
++	if (changed_buttons & MOUSE_RIGHT) {
++		if (prev_buttons & MOUSE_RIGHT)
++			SDL_SendMouseButton(window, 0, SDL_RELEASED, SDL_BUTTON_RIGHT);
++		else
++			SDL_SendMouseButton(window, 0, SDL_PRESSED, SDL_BUTTON_RIGHT);
++	}
++	if (changed_buttons & MOUSE_MIDDLE) {
++		if (prev_buttons & MOUSE_MIDDLE)
++			SDL_SendMouseButton(window, 0, SDL_RELEASED, SDL_BUTTON_MIDDLE);
++		else
++			SDL_SendMouseButton(window, 0, SDL_PRESSED, SDL_BUTTON_MIDDLE);
++	}
++
++	prev_buttons = buttons;
++
++	timestamp = SDL_GetTicks();
++
++	if (SDL_TICKS_PASSED(timestamp, last_timestamp + mouse_read_interval)) {
++		hidMouseRead(&mouse_pos);
++		// if hidMouseRead is called once per frame, a factor two on the velocities
++		// results in approximately the same mouse motion as reported by mouse_pos.x and mouse_pos.y
++		// but without the clamping to 1280 x 720
++		dx = mouse_pos.velocityX * 2;
++		dy = mouse_pos.velocityY * 2;
++		if (dx || dy) {
++			SDL_SendMouseMotion(window, 0, 1, dx, dy);
++		}
++		last_timestamp = timestamp;
++	}
++}
++
++void 
++SWITCH_QuitMouse(void)
++{
++}
++
++#endif /* SDL_VIDEO_DRIVER_SWITCH */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/switch/SDL_switchmouse_c.h b/src/video/switch/SDL_switchmouse_c.h
+new file mode 100644
+index 000000000..c2bd2cfc0
+--- /dev/null
++++ b/src/video/switch/SDL_switchmouse_c.h
+@@ -0,0 +1,34 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#ifndef _SDL_switchmouse_h
++#define _SDL_switchmouse_h
++
++#include "../../SDL_internal.h"
++
++/* mouse functions */
++extern void SWITCH_InitMouse(void);
++extern void SWITCH_PollMouse(void);
++extern void SWITCH_QuitMouse(void);
++
++#endif /* _SDL_switchmouse_h */
++
++/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchopengles.c b/src/video/switch/SDL_switchopengles.c
 new file mode 100644
 index 000000000..58834eafa
@@ -1929,10 +2423,10 @@ index 000000000..ac5908e39
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 000000000..e76b022ce
+index 000000000..f10b33306
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
-@@ -0,0 +1,366 @@
+@@ -0,0 +1,378 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -1967,6 +2461,8 @@ index 000000000..e76b022ce
 +#include "SDL_switchvideo.h"
 +#include "SDL_switchopengles.h"
 +#include "SDL_switchtouch.h"
++#include "SDL_switchkeyboard.h"
++#include "SDL_switchmouse_c.h"
 +
 +static int
 +SWITCH_Available(void)
@@ -2092,6 +2588,10 @@ index 000000000..e76b022ce
 +
 +    // init touch
 +    SWITCH_InitTouch();
++    //init keyboard
++    SWITCH_InitKeyboard();
++    //init mouse
++    SWITCH_InitMouse();
 +
 +    return 0;
 +}
@@ -2107,6 +2607,10 @@ index 000000000..e76b022ce
 +
 +    // exit touch
 +    SWITCH_QuitTouch();
++    //exit keyboard
++    SWITCH_QuitKeyboard();
++    //exit mouse
++    SWITCH_QuitMouse();
 +}
 +
 +void
@@ -2296,6 +2800,8 @@ index 000000000..e76b022ce
 +
 +    hidScanInput();
 +    SWITCH_PollTouch();
++    SWITCH_PollKeyboard();
++    SWITCH_PollMouse();
 +}
 +
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
