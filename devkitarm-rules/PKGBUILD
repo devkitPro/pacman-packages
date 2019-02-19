@@ -1,0 +1,28 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('devkitarm-rules')
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="devkitARM build rules."
+arch=('any')
+license=('custom')
+url="http://github.com/devkitpro/devkitarm-rules"
+options=(!strip libtool staticlibs)
+source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.xz)
+sha256sums=('10ad51c68eda70cba4ca6ed4d0bfd938ad33199f254cb0412dff6edabc56fa70')
+
+groups=('gba-dev' 'gp32-dev' 'nds-dev' '3ds-dev')
+
+build() {
+
+  make
+
+}
+
+package() {
+
+  mkdir -p $pkgdir/opt/devkitpro/devkitARM
+  make DESTDIR=$pkgdir install
+
+}
