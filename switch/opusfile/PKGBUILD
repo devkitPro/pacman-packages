@@ -1,15 +1,15 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=switch-opusfile
-pkgver=0.10
-pkgrel=3
+pkgver=0.11
+pkgrel=1
 pkgdesc='Library for opening, seeking, and decoding .opus files'
 arch=('any')
 url='https://opus-codec.org/'
 license=(BSD)
 options=(!strip libtool staticlibs)
 source=("https://downloads.xiph.org/releases/opus/opusfile-$pkgver.tar.gz")
-sha256sums=('48e03526ba87ef9cf5f1c47b5ebe3aa195bd89b912a57060c36184a6cd19412f')
+sha256sums=('74ce9b6cf4da103133e7b5c95df810ceb7195471e1162ed57af415fabf5603bf')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-libogg' 'switch-libopus')
 groups=('switch-portlibs')
