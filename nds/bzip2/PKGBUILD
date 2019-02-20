@@ -3,7 +3,7 @@
 
 pkgname=('nds-bzip2')
 pkgver=1.0.6
-pkgrel=2
+pkgrel=3
 pkgdesc="A high-quality data compression program"
 arch=('any')
 license=('custom')
