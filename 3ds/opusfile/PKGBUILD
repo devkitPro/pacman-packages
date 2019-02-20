@@ -12,6 +12,7 @@ source=("https://downloads.xiph.org/releases/opus/opusfile-$pkgver.tar.gz")
 sha256sums=('74ce9b6cf4da103133e7b5c95df810ceb7195471e1162ed57af415fabf5603bf')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('3ds-libogg' '3ds-libopus')
+groups=('3ds-portlibs')
 
 build() {
   cd opusfile-$pkgver
