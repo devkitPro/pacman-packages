@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libgba')
-pkgver=0.5.1
+pkgver=0.5.2
 pkgrel=1
 pkgdesc="Nintendo GBA library."
 arch=('any')
@@ -10,8 +10,8 @@ license=('LGPL')
 url="http://github.com/devkitpro"
 options=(!strip libtool staticlibs)
 source=(${url}/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
-sha256sums=('937a2dc606cc443f02913b0f4bffad385d8635a280d01396c4d5ca385a744358')
-makedepends=('devkitARM')
+sha256sums=('1eb1289510d3ddc7729ecf977c93b77bde1dff71c135bc2700fa230bd493c388')
+makedepends=('devkitARM' 'devkitarm-rules' 'devkitarm-crtls')
 
 groups=('gba-dev')
 
