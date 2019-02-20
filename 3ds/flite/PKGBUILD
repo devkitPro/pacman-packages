@@ -1,6 +1,6 @@
 pkgname=3ds-flite
 pkgver=2.1
-pkgrel=1
+pkgrel=2
 pkgdesc='A small fast portable speech synthesis system'
 arch=('any')
 url='http://festvox.org/flite/'
@@ -8,6 +8,7 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 depends=()
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('3ds-portlibs')
 
 source=("http://festvox.org/flite/packed/flite-${pkgver}/flite-${pkgver}-release.tar.bz2")
 
