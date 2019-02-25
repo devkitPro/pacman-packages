@@ -10,7 +10,10 @@ arch=('any')
 url='https://xiph.org/flac/'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
+depends=("3ds-libogg")
 makedepends=('devkitpro-pkgbuild-helpers')
+groups=('3ds-portlibs')
+
 source=(
   "https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz"
   "flac-${pkgver}.patch"
