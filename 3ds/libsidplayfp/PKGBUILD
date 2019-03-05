@@ -3,8 +3,8 @@
 
 pkgname=3ds-libsidplayfp
 pkgver=1.8.8
-pkgrel=1.0
-pkgdesc=""
+pkgrel=1
+pkgdesc="Library to play Commodore 64 music files (SID-files) derived from libsidplay2"
 arch=('any')
 url="https://sourceforge.net/projects/sidplay-residfp/"
 license=('GPLv2')
