@@ -1,0 +1,31 @@
+--- src/samples.cpp	Wed May 22 18:38:18 2002
++++ src/samples.cpp	Mon Mar 04 13:21:58 2019
+@@ -75,7 +75,7 @@
+ sampleChannel ch4, ch5;
+ 
+ 
+-const sbyte galwayNoiseTab1[16] =
++const ubyte galwayNoiseTab1[16] =
+ {
+ 	0x80,0x91,0xa2,0xb3,0xc4,0xd5,0xe6,0xf7,
+ 	0x08,0x19,0x2a,0x3b,0x4c,0x5d,0x6e,0x7f
+@@ -84,7 +84,7 @@
+ ubyte galwayNoiseVolTab[16];
+ sbyte galwayNoiseSamTab[16];
+ 
+-const sbyte sampleConvertTab[16] =
++const ubyte sampleConvertTab[16] =
+ {
+ //  0x81,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff,
+ //  0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x7f
+--- scripts/config.sub	Fri Aug 20 12:49:08 2010
++++ scripts/config.sub	Mon Mar 04 21:48:01 2019
+@@ -1293,7 +1293,7 @@
+ 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
+ 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
+ 	      | -chorusos* | -chorusrdb* | -cegcc* \
+-	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
++	      | -cygwin* | -msys* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
+ 	      | -mingw32* | -linux-gnu* | -linux-newlib* | -linux-uclibc* \
+ 	      | -uxpv* | -beos* | -mpeix* | -udk* \
+| -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
