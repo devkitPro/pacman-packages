@@ -14,7 +14,7 @@ source=(
 	"libsidplay-${pkgver}.patch"
 )
 sha256sums=('1729beb5b54e7486e0b2b83dc0e02130e753a8dcd6fe03677217dbe358941396'
-            '202ea2380a2a3e6e6a4fb533f304fe5b7669a1e1fb0e76a25a20f00bb9091dda')
+            'd47be6d24f3f26ab4f91b6f207a81e7ab419e1d98995ca0103109aaa47d44d2c')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('3ds-portlibs')
 
