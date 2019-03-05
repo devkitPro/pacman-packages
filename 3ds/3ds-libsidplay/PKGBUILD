@@ -10,8 +10,8 @@ url="https://github.com/badda71/3ds-libsidplay"
 license=('GPLv2')
 options=(!strip libtool staticlibs)
 source=(
-	"${url}/raw/master/libsidplay-${pkgver}.tar.gz"
-	"${url}/raw/master/libsidplay-${pkgver}.patch"
+	"http://ftp.jaist.ac.jp/pub/Linux/Momonga/development/source/SOURCES/libsidplay-${pkgver}.tar.bz2"
+	"libsidplay-${pkgver}.patch"
 )
 sha256sums=('f7988157a59ca82e64e26f548c95ca9762ceed1c1cfcc109399f04fe74363308'
             '86ecafa790c90cd9433d7ec0483408c01c8504d3f8c95417266cc01731bc6cec')
