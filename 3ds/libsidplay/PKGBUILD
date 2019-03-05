@@ -3,7 +3,7 @@
 
 pkgname=3ds-libsidplay
 pkgver=1.36.60
-pkgrel=1.0
+pkgrel=1
 pkgdesc="SID chip music module playing library"
 arch=('any')
 url="https://github.com/badda71/3ds-libsidplay"
