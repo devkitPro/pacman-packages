@@ -1,3 +1,6 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: badda71 <me@badda.de>
+
 pkgname=3ds-libsidplay
 pkgver=1.36.60
 pkgrel=1.0
