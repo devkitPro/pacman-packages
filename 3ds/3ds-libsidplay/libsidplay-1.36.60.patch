@@ -28,4 +28,4 @@
 +	      | -cygwin* | -msys* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
  	      | -mingw32* | -linux-gnu* | -linux-newlib* | -linux-uclibc* \
  	      | -uxpv* | -beos* | -mpeix* | -udk* \
-| -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
+ 	      | -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
