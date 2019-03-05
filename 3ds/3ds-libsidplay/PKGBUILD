@@ -22,7 +22,7 @@ build() {
   cd libsidplay-$pkgver
   patch -p0 -i ../libsidplay-${pkgver}.patch
   source /opt/devkitpro/3dsvars.sh
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --target=arm-none-eabi --disable-shared --enable-static
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --disable-shared --enable-static
   make
 }
 
