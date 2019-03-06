@@ -1,5 +1,5 @@
 pkgname=switch-mbedtls
-pkgver=2.14.1
+pkgver=2.16.0
 pkgrel=1
 pkgdesc='An open source, portable, easy to use, readable and flexible SSL library'
 arch=('any')
@@ -14,7 +14,7 @@ source=(
 )
 
 sha256sums=(
- 'f189cbd58c9b1933e4e4460b592664447f3694ad2de882a1332d177e8eedc61d'
+ 'e3dab56e9093c790b7d5e0f7eb19451010fe680649d25cf1dcca9d5441669ae2'
  'c0cf5e262788144fb4c4a163334f7c55c8b4c2b93a9fc780e3f7cdf5d236aca0'
 )
 
