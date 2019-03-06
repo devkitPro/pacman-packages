@@ -10,7 +10,7 @@ url="https://sourceforge.net/projects/sidplay-residfp/"
 license=('GPLv2')
 options=(!strip libtool staticlibs)
 source=(
-	"https://netcologne.dl.sourceforge.net/project/sidplay-residfp/libsidplayfp/1.8/libsidplayfp-1.8.8.tar.gz"
+	https://downloads.sourceforge.net/sidplay-residfp/libsidplayfp/${pkgver%.*}/libsidplayfp-${pkgver}.tar.gz
 )
 sha256sums=('d28b0c28ceea62627c137b4194e8bed866c8f2cec65bac97fde63639250a31e0')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
