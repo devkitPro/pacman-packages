@@ -15,13 +15,19 @@ source=(
 
 sha256sums=(
  'f189cbd58c9b1933e4e4460b592664447f3694ad2de882a1332d177e8eedc61d'
- '2a9db25c89c51f0b779e4e512166a3963e47d20661de96817ad2c8c8c330733c'
+ 'c0cf5e262788144fb4c4a163334f7c55c8b4c2b93a9fc780e3f7cdf5d236aca0'
 )
 
 build() {
   cd mbedtls-$pkgver
 
   patch -Np1 -i $srcdir/switch-mbedtls.patch
+
+  ./scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
+  ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
+
+  ./scripts/config.pl unset MBEDTLS_TIMING_C
+  ./scripts/config.pl unset MBEDTLS_SELF_TEST
 
   source /opt/devkitpro/switchvars.sh
 
