@@ -12,7 +12,7 @@ source=(
     "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
     'switch-mbedtls.patch'
 )
-
+groups=('switch-portlibs')
 sha256sums=(
  'e3dab56e9093c790b7d5e0f7eb19451010fe680649d25cf1dcca9d5441669ae2'
  'c0cf5e262788144fb4c4a163334f7c55c8b4c2b93a9fc780e3f7cdf5d236aca0'
