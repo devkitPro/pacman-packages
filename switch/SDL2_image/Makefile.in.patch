@@ -1,0 +1,39 @@
+--- Makefile.in.orig	2019-03-15 21:10:10.111412041 +0000
++++ Makefile.in	2019-03-15 21:11:21.462087882 +0000
+@@ -85,7 +85,6 @@
+ host_triplet = @host@
+ @USE_VERSION_RC_FALSE@libSDL2_image_la_DEPENDENCIES =  \
+ @USE_VERSION_RC_FALSE@	$(am__DEPENDENCIES_1)
+-noinst_PROGRAMS = showimage$(EXEEXT)
+ subdir = .
+ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+ 	$(top_srcdir)/configure $(am__configure_deps) \
+@@ -156,9 +155,6 @@
+ 	$(LIBTOOLFLAGS) --mode=link $(OBJCLD) $(AM_OBJCFLAGS) \
+ 	$(OBJCFLAGS) $(libSDL2_image_la_LDFLAGS) $(LDFLAGS) -o $@
+ PROGRAMS = $(noinst_PROGRAMS)
+-showimage_SOURCES = showimage.c
+-showimage_OBJECTS = showimage.$(OBJEXT)
+-showimage_DEPENDENCIES = libSDL2_image.la
+ AM_V_P = $(am__v_P_@AM_V@)
+ am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
+ am__v_P_0 = false
+@@ -455,7 +451,6 @@
+ @USE_VERSION_RC_TRUE@libSDL2_image_la_DEPENDENCIES = version.o
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = SDL2_image.pc
+-showimage_LDADD = libSDL2_image.la
+ all: all-am
+ 
+ .SUFFIXES:
+@@ -546,10 +541,6 @@
+ 	echo " rm -f" $$list; \
+ 	rm -f $$list
+ 
+-showimage$(EXEEXT): $(showimage_OBJECTS) $(showimage_DEPENDENCIES) $(EXTRA_showimage_DEPENDENCIES) 
+-	@rm -f showimage$(EXEEXT)
+-	$(AM_V_CCLD)$(LINK) $(showimage_OBJECTS) $(showimage_LDADD) $(LIBS)
+-
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT)
+ 

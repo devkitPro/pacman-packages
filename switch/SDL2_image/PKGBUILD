@@ -4,7 +4,7 @@
 
 pkgname=switch-sdl2_image
 pkgver=2.0.3
-pkgrel=3
+pkgrel=4
 pkgdesc="SDL2 image loading library (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org/projects/SDL_image/"
@@ -16,14 +16,19 @@ depends=(
   'switch-libpng'
   'switch-libjpeg-turbo'
 )
-source=("${url}release/SDL2_image-${pkgver}.tar.gz")
-sha256sums=('3510c25da735ffcd8ce3b65073150ff4f7f9493b866e85b83738083b556d2368')
+source=("${url}release/SDL2_image-${pkgver}.tar.gz" "Makefile.in.patch")
+sha256sums=(
+  '3510c25da735ffcd8ce3b65073150ff4f7f9493b866e85b83738083b556d2368'
+  '58b18bccfddf42d44163a461a2e0b36fa66204cc7dc0b57650bb0087aa0a3b1c'
+)
+groups=('switch-portlibs' 'switch-sdl2')
 
 build() {
   cd SDL2_image-$pkgver
 
-  source ${DEVKITPRO}/devkita64.sh
   source ${DEVKITPRO}/switchvars.sh
+
+  patch -Np1 -i "$srcdir"/Makefile.in.patch Makefile.in
 
   ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=aarch64-none-elf --disable-shared --enable-static \
@@ -36,7 +41,6 @@ build() {
 package() {
   cd SDL2_image-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install
