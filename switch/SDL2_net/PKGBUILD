@@ -2,7 +2,7 @@
 
 pkgname=switch-sdl2_net
 pkgver=2.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="SDL2 image loading library (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org/projects/SDL_net/"
@@ -16,6 +16,7 @@ depends=(
 )
 source=("${url}release/SDL2_net-${pkgver}.tar.gz")
 sha256sums=('15ce8a7e5a23dafe8177c8df6e6c79b6749a03fff1e8196742d3571657609d21')
+groups=('switch-portlibs' 'switch-sdl2')
 
 build() {
   cd SDL2_net-$pkgver
