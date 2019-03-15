@@ -2,8 +2,8 @@
 
 pkgname=switch-libconfig
 pkgver=1.7.2
-pkgrel=1
-pkgdesc='C/C++ Configuration File Library (for Nintendo Switch homebrew development)'
+pkgrel=2
+pkgdesc='C/C++ Configuration File Library'
 arch=('any')
 url="https://www.hyperrealm.com/libconfig/libconfig.html"
 license=('LGPL')
