@@ -2,7 +2,7 @@
 
 pkgname=switch-libvorbisidec
 pkgver=1.2.1
-pkgrel=1
+pkgrel=2
 pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for Nintendo Switch homebrew development)'
 arch=('any')
 url="http://xiph.org"
