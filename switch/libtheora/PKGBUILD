@@ -2,7 +2,7 @@
 
 pkgname=switch-libtheora
 pkgver=1.1.1
-pkgrel=1
+pkgrel=2
 pkgdesc='Free and open video compression codec from the Xiph.org Foundation'
 arch=('any')
 url='https://www.theora.org/'
@@ -21,7 +21,6 @@ groups=('switch-portlibs')
 build() {
   cd libtheora-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   cp $srcdir/config.sub $srcdir/config.guess .
@@ -36,7 +35,6 @@ build() {
 package() {
   cd libtheora-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install
