@@ -4,7 +4,7 @@
 
 pkgname=switch-sdl2_ttf
 pkgver=2.0.14
-pkgrel=2
+pkgrel=3
 pkgdesc="SDL2 TrueType font library (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org/projects/SDL_ttf/"
@@ -17,11 +17,11 @@ depends=(
 )
 source=("${url}release/SDL2_ttf-${pkgver}.tar.gz")
 sha256sums=('34db5e20bcf64e7071fe9ae25acaa7d72bdc4f11ab3ce59acc768ab62fe39276')
+groups=('switch-portlibs' 'switch-sdl2')
 
 build() {
   cd SDL2_ttf-$pkgver
 
-  source ${DEVKITPRO}/devkita64.sh
   source ${DEVKITPRO}/switchvars.sh
 
   # patch out compiling showfont and glfont
@@ -37,7 +37,6 @@ build() {
 package() {
   cd SDL2_ttf-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install
