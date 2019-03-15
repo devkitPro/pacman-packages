@@ -18,9 +18,8 @@ build() {
   source /opt/devkitpro/switchvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-     --disable-shared --enable-static --without-nettle --without-openssl \
-     --without-xml2 --without-expat --without-iconv --disable-bsdtar \
-     --disable-bsdcpio --disable-acl --disable-examples
+     --disable-shared --enable-static \
+     --disable-examples
 
   make
 }
