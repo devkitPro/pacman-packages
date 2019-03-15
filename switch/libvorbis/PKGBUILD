@@ -19,7 +19,6 @@ sha256sums=('6efbcecdd3e5dfbf090341b485da9d176eb250d893e3eb378c428a2db38301ce')
 build() {
   cd libvorbis-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
