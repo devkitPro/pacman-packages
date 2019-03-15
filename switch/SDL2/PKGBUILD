@@ -11,7 +11,7 @@ options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-mesa' 'libnx')
 source=("${url}/release/SDL2-${pkgver}.tar.gz" "SDL2-${pkgver}.patch")
-groups=('switch-portlibs')
+groups=('switch-portlibs' 'switch-sdl2')
 sha256sums=(
   'edc77c57308661d576e843344d8638e025a7818bff73f8fbfab09c3c5fd092ec'
   'f9a25b37ffb2cf7f212afcd6d858bc1db4cd1a3aa9d214fe45112229c086c639'
