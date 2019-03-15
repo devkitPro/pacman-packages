@@ -1,7 +1,7 @@
 pkgname=switch-libopus
 pkgver=1.3
-pkgrel=1
-pkgdesc='Reference implementation of the lossy audio codec, Opus'
+pkgrel=2
+pkgdesc='Reference implementation of the lossy audio codec'
 arch=('any')
 url='https://opus-codec.org/'
 license=(BSD)
@@ -14,7 +14,6 @@ groups=('switch-portlibs')
 build() {
   cd opus-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   ./configure \
