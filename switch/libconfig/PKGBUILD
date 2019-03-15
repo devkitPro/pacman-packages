@@ -11,11 +11,10 @@ options=(!strip libtool staticlibs)
 source=("https://hyperrealm.github.io/libconfig/dist/libconfig-${pkgver}.tar.gz")
 sha256sums=('7c3c7a9c73ff3302084386e96f903eb62ce06953bb1666235fac74363a16fad9')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
-
+groups=('switch-portlibs')
 build() {
   cd libconfig-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
@@ -29,7 +28,6 @@ build() {
 package() {
   cd libconfig-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install
