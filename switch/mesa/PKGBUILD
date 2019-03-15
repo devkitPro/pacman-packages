@@ -2,27 +2,34 @@
 
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
-pkgver=18.3
-pkgrel=2
+pkgver=19.0.0
+pkgrel=1
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
-url='https://github.com/devkitPro'
+url='https://mesa.freedesktop.org/archive'
 license=(MIT)
 options=(!strip libtool staticlibs)
-source=("${url}/${pkgbasename}/releases/download/switch-${pkgver}/${pkgname}-${pkgver}.tar.xz")
-sha256sums=('d3f4018583fdc76ac09407dcfb2a47dbd5df41f9936770499f41adda0efb2f9f')
+source=(
+  "${url}/${pkgbasename}-${pkgver}.tar.xz"
+  "${pkgname}-${pkgver}-${pkgrel}.patch"
+)
+sha256sums=(
+  '5a549dfb40ec31e5c36c47aadac04554cb2e2a8d144a046a378fc16da57e38f8'
+  '97c3a4c2bff09f748606670ec66d48591c85fc659ae3506fc0069a8aedffb90d'
+)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-libdrm_nouveau')
 
 build() {
-  cd $pkgname
+  cd ${pkgbasename}-${pkgver}
 
+  patch -p1 -i ${srcdir}/${pkgname}-${pkgver}-${pkgrel}.patch
   /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build -Db_ndebug=true
   ninja -C build
 }
 
 package() {
-  cd $pkgname
+  cd ${pkgbasename}-${pkgver}
 
   DESTDIR="$pkgdir" ninja -C build install
 }
