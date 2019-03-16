@@ -4,8 +4,8 @@
 
 pkgname=switch-sdl2_mixer
 pkgver=2.0.2
-pkgrel=3
-pkgdesc="A sample multi-channel audio mixer library (Nintendo Switch port)."
+pkgrel=4
+pkgdesc="A sample multi-channel audio mixer library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_mixer/"
 license=("zlib")
