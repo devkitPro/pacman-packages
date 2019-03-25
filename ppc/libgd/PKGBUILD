@@ -3,7 +3,7 @@
 
 pkgname=ppc-libgd
 pkgver=2.2.5
-pkgrel=1
+pkgrel=2
 pkgdesc="Library for the dynamic creation of images"
 url="https://libgd.github.io"
 license=("custom")
@@ -15,6 +15,7 @@ source=("https://github.com/libgd/libgd/releases/download/gd-$pkgver/libgd-$pkgv
         "libgd-2.2.5-nosyslog.patch")
 sha256sums=("8c302ccbf467faec732f0741a859eef4ecae22fea2d2ab87467be940842bde51"
             "549027858ef0d2d6dec42232bcc2d66a5966d9f66bfc30518dfd026090a3d2d5")
+groups=('ppc-portlibs')
 
 prepare() {
     patch libgd-$pkgver/src/gd_errors.h < libgd-2.2.5-nosyslog.patch
