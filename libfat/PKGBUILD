@@ -38,7 +38,7 @@ sha256sums=('25f1cbbacaa5bb8215ac8dd5068cf66e6043b6f08d0e722762e08dcbdd085458')
 
 build() {
 
-  make -C $srcdir
+  make -C $srcdir $PLATFORM-release
 
 }
 
