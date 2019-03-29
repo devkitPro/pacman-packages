@@ -1,0 +1,32 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: rsn8887 <raist66676@gmx.de>
+
+pkgname=switch-libtimidity
+pkgver=0.2.6
+pkgrel=1
+pkgdesc='A MIDI to WAVE converter library.'
+arch=('any')
+url='https://sf.net/p/libtimidity/'
+license=('LGPL v2.1')
+options=(!strip libtool staticlibs)
+makedepends=('devkitpro-pkgbuild-helpers')
+source=("https://downloads.sourceforge.net/project/libtimidity/libtimidity/${pkgver}/libtimidity-${pkgver}.tar.gz")
+sha256sums=('d53d688335cc9327747a2a0456904c88ca2270538982dcee0ff11d902ae8575c')
+
+build() {
+  cd libtimidity-${pkgver}
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static --disable-aotest --disable-ao
+  make
+}
+
+package() {
+  cd libtimidity-${pkgver}
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="${pkgdir}" install
+}
