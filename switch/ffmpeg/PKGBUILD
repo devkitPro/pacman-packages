@@ -4,8 +4,8 @@
 # Contributor: jakibaki <jakibaki live com>
 
 pkgname=switch-ffmpeg
-pkgver=4.0.1
-pkgrel=2
+pkgver=4.1.1
+pkgrel=1
 pkgdesc='ffmpeg port (for Nintendo Switch homebrew development)'
 arch=('any')
 url='https://ffmpeg.org/'
@@ -16,8 +16,8 @@ depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
          'switch-freetype' 'switch-libtheora')
 source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz" "ffmpeg.patch")
 sha256sums=(
- '605f5c01c60db35d3b617a79cabb2c7032412be243554602eeed1b628125c0ee'
- '8c564b84c4476f7f3dc60307af467b9ce671b8dffe05beea31883f614f361e16'
+ '373749824dfd334d84e55dff406729edfd1606575ee44dd485d97d45ea4d2d86'
+ 'a1cd32e822c9b027b061ffc8cd2f85c429554f2f7a974caff12518a19545700b'
 )
 groups=('switch-portlibs')
 
@@ -34,17 +34,16 @@ build() {
   ./configure --prefix=$PORTLIBS_PREFIX --disable-shared --enable-static \
     --cross-prefix=aarch64-none-elf- --enable-cross-compile \
     --arch=aarch64 --target-os=horizon --enable-pic --disable-asm \
-    --extra-cflags='-D__SWITCH__ -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
-    --extra-cxxflags='-D__SWITCH__ -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
+    --extra-cflags='-D__SWITCH__ -D_GNU_SOURCE -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
+    --extra-cxxflags='-D__SWITCH__ -D_GNU_SOURCE -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
     --extra-ldflags='-fPIE -L${PORTLIBS_PREFIX}/lib -L${DEVKITPRO}/libnx/lib' \
     --disable-runtime-cpudetect --disable-programs --disable-debug --disable-doc \
     --enable-network --disable-hwaccels --disable-encoders \
     --disable-avdevice --enable-swscale --enable-swresample \
     --enable-libass --enable-libfreetype --enable-libfribidi --enable-libtheora \
     --enable-filter='rotate,transpose' \
-    --disable-protocols --enable-protocol=file,tcp,udp,rtmp \
+    --disable-protocols --enable-protocol=file,http,ftp,tcp,udp,rtmp \
     --disable-demuxers --enable-demuxer=h264,matroska,mov,ogg,rtsp,mpegts \
-    --disable-decoders --enable-decoder=h264,aac,ac3,mp3,theora,ogg,vorbis \
     --disable-parsers --enable-parser=h264,aac
 
   make

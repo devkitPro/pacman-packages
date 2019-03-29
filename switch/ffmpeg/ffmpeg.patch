@@ -1,7 +1,7 @@
-diff -NBaur ffmpeg-4.0.1.old/configure ffmpeg-4.0.1.new/configure
---- ffmpeg-4.0.1.old/configure	2018-06-16 02:12:16.000000000 +0100
-+++ ffmpeg-4.0.1.new/configure	2019-02-01 09:37:02.607342895 +0000
-@@ -5250,6 +5250,9 @@
+diff -NBaur ffmpeg-4.1.1.old/configure ffmpeg-4.1.1.new/configure
+--- ffmpeg-4.1.1.old/configure	2019-02-09 20:56:07.000000000 +0000
++++ ffmpeg-4.1.1.new/configure	2019-03-26 13:45:58.627473027 +0000
+@@ -5347,6 +5347,9 @@
          ;;
      minix)
          ;;
@@ -11,9 +11,18 @@ diff -NBaur ffmpeg-4.0.1.old/configure ffmpeg-4.0.1.new/configure
      none)
          ;;
      *)
-diff -NBaur ffmpeg-4.0.1.old/libavfilter/vf_drawtext.c ffmpeg-4.0.1.new/libavfilter/vf_drawtext.c
---- ffmpeg-4.0.1.old/libavfilter/vf_drawtext.c	2018-04-20 11:02:57.000000000 +0100
-+++ ffmpeg-4.0.1.new/libavfilter/vf_drawtext.c	2019-02-01 09:31:26.128712790 +0000
+@@ -6337,7 +6340,7 @@
+ if check_struct sys/soundcard.h audio_buf_info bytes; then
+     enable_sanitized sys/soundcard.h
+ else
+-    test_cc -D__BSD_VISIBLE -D__XSI_VISIBLE <<EOF && add_cppflags -D__BSD_VISIBLE -D__XSI_VISIBLE && enable_sanitized sys/soundcard.h
++    test_cc -D__BSD_VISIBLE=1 -D__XSI_VISIBLE <<EOF && add_cppflags -D__BSD_VISIBLE -D__XSI_VISIBLE && enable_sanitized sys/soundcard.h
+     #include <sys/soundcard.h>
+     audio_buf_info abc;
+ EOF
+diff -NBaur ffmpeg-4.1.1.old/libavfilter/vf_drawtext.c ffmpeg-4.1.1.new/libavfilter/vf_drawtext.c
+--- ffmpeg-4.1.1.old/libavfilter/vf_drawtext.c	2019-02-09 20:56:02.000000000 +0000
++++ ffmpeg-4.1.1.new/libavfilter/vf_drawtext.c	2019-03-26 13:45:01.216438970 +0000
 @@ -37,7 +37,9 @@
  #if HAVE_UNISTD_H
  #include <unistd.h>
@@ -24,7 +33,7 @@ diff -NBaur ffmpeg-4.0.1.old/libavfilter/vf_drawtext.c ffmpeg-4.0.1.new/libavfil
  
  #if CONFIG_LIBFONTCONFIG
  #include <fontconfig/fontconfig.h>
-@@ -1038,12 +1040,16 @@
+@@ -1046,12 +1048,16 @@
          }
      }
  
