@@ -1,8 +1,8 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-freetype
-pkgver=2.9
-pkgrel=3
+pkgver=2.9.1
+pkgrel=1
 pkgdesc='FreeType is a freely available software library to render fonts.'
 arch=('any')
 url='https://www.freetype.org/'
@@ -14,7 +14,7 @@ depends=("ppc-bzip2"
 )
 makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
-sha256sums=('bf380e4d7c4f3b5b1c1a7b2bf3abb967bda5e9ab480d0df656e0e08c5019c5e6')
+sha256sums=('ec391504e55498adceb30baceebd147a6e963f636eb617424bcfc47a169898ce')
 
 build() {
   cd freetype-$pkgver
@@ -23,6 +23,7 @@ build() {
   source /opt/devkitpro/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --enable-freetype-config \
     --disable-shared --enable-static \
     --with-zlib \
     --with-bzip2 \
