@@ -19,7 +19,6 @@ sha256sums=('ec391504e55498adceb30baceebd147a6e963f636eb617424bcfc47a169898ce')
 build() {
   cd freetype-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
@@ -35,7 +34,6 @@ build() {
 package() {
   cd freetype-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   make DESTDIR="$pkgdir" install
