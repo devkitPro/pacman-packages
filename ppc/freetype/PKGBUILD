@@ -8,6 +8,7 @@ arch=('any')
 url='https://www.freetype.org/'
 license=(GPL2+ custom:FreeType)
 options=(!strip libtool staticlibs)
+groups=('ppc-portlibs')
 depends=("ppc-bzip2"
          "ppc-libpng"
          "ppc-zlib"
