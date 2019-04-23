@@ -1,0 +1,46 @@
+# Maintainer:  fincs <fincs.alt1@gmail.com>
+
+pkgbasename=glfw
+pkgname=switch-$pkgbasename
+pkgver=3.3
+pkgrel=1
+pkgdesc='Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop'
+arch=('any')
+url='https://github.com/glfw/glfw'
+license=(MIT)
+options=(!strip libtool staticlibs)
+source=(
+  "${url}/releases/download/${pkgver}/${pkgbasename}-${pkgver}.zip"
+  "${pkgname}-${pkgver}.patch"
+)
+sha256sums=(
+  '36fda4cb173e3eb2928c976b0e9b5014e2e5d12b9b787efa0aa29ffc41c37c4a'
+  '861a7c740a0b6493f321264dc7e5c8a3a84d3b18a247f317b129b4673ffa7f3f'
+)
+depends=('switch-mesa')
+makedepends=('devkitpro-pkgbuild-helpers')
+
+build() {
+
+  cd ${pkgbasename}-${pkgver}
+  patch -p1 -i ${srcdir}/${pkgname}-${pkgver}.patch
+
+  source /opt/devkitpro/switchvars.sh
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
+    -DGLFW_BUILD_EXAMPLES:BOOL=OFF -DGLFW_BUILD_TESTS:BOOL=OFF -DGLFW_BUILD_DOCS:BOOL=OFF \
+    -DGLFW_VULKAN_STATIC:BOOL=ON -DGLFW_EGL_STATIC:BOOL=ON \
+    .
+
+  make
+
+}
+
+package() {
+  cd ${pkgbasename}-${pkgver}
+
+  make install DESTDIR="$pkgdir"
+}
