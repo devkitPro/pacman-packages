@@ -1,6 +1,6 @@
 diff -Naur flac-1.3.2-stock/include/share/compat.h flac-1.3.2/include/share/compat.h
---- flac-1.3.2-stock/include/share/compat.h	2016-12-07 21:10:26.218454157 +0100
-+++ flac-1.3.2/include/share/compat.h	2018-03-30 11:00:35.571965899 +0200
+--- flac-1.3.2-stock/include/share/compat.h
++++ flac-1.3.2/include/share/compat.h
 @@ -167,8 +167,14 @@
  #define flac_vfprintf vfprintf
  
@@ -17,13 +17,31 @@ diff -Naur flac-1.3.2-stock/include/share/compat.h flac-1.3.2/include/share/comp
  #define flac_rename rename
  #define flac_stat stat
 diff -Naur flac-1.3.2-stock/src/Makefile.in flac-1.3.2/src/Makefile.in 
---- flac-1.3.2-stock/src/Makefile.in	2017-01-01 04:46:49.385728167 +0100
-+++ flac-1.3.2/src/Makefile.in	2018-03-30 18:14:01.036543045 +0200
-@@ -365,18 +365,7 @@
- @FLaC__HAS_XMMS_TRUE@XMMS_DIRS = plugin_common plugin_xmms
- @FLaC__WITH_CPPLIBS_TRUE@CPPLIBS_DIRS = libFLAC++ test_libFLAC++
+--- flac-1.3.2-stock/src/Makefile.in
++++ flac-1.3.2/src/Makefile.in
+@@ -116,8 +116,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/add_cflags.m4 \
+ 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+ 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+ 	$(top_srcdir)/m4/ogg.m4 $(top_srcdir)/m4/really_gcc.m4 \
+-	$(top_srcdir)/m4/stack_protect.m4 $(top_srcdir)/m4/xmms.m4 \
+-	$(top_srcdir)/configure.ac
++	$(top_srcdir)/m4/xmms.m4 $(top_srcdir)/configure.ac
+ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
+ 	$(ACLOCAL_M4)
+ DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
+diff -Naur flac-1.3.2-stock/src/Makefile.am flac-1.3.2/src/Makefile.am
+--- flac-1.3.2-stock/src/Makefile.am
++++ flac-1.3.2/src/Makefile.am
+@@ -21,21 +21,11 @@
+ endif
+ 
+ if FLaC__WITH_CPPLIBS
+-CPPLIBS_DIRS = libFLAC++ test_libFLAC++
++CPPLIBS_DIRS = libFLAC++
+ endif
+ 
  SUBDIRS = \
--	libFLAC \
+ 	libFLAC \
 -	share \
 -	flac \
 -	metaflac \
@@ -34,8 +52,6 @@ diff -Naur flac-1.3.2-stock/src/Makefile.in flac-1.3.2/src/Makefile.in
 -	test_seeking \
 -	test_streams \
 -	utils \
--	$(CPPLIBS_DIRS)
-+	libFLAC
+ 	$(CPPLIBS_DIRS)
  
  EXTRA_DIST = \
- 	Makefile.lite
