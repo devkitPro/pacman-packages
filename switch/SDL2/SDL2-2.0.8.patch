@@ -2141,10 +2141,10 @@ index 000000000..c2bd2cfc0
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchopengles.c b/src/video/switch/SDL_switchopengles.c
 new file mode 100644
-index 000000000..58834eafa
+index 000000000..efed92328
 --- /dev/null
 +++ b/src/video/switch/SDL_switchopengles.c
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,53 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -2189,13 +2189,6 @@ index 000000000..58834eafa
 +SWITCH_GLES_LoadLibrary(_THIS, const char *path)
 +{
 +    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
-+}
-+
-+void
-+SWITCH_GLES_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
-+{
-+    *w = 1920;
-+    *h = 1080;
 +}
 +
 +SDL_EGL_CreateContext_impl(SWITCH)
@@ -2423,10 +2416,10 @@ index 000000000..ac5908e39
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 000000000..f10b33306
+index 000000000..7e6518f46
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
-@@ -0,0 +1,378 @@
+@@ -0,0 +1,377 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -2526,7 +2519,6 @@ index 000000000..f10b33306
 +    device->GL_SwapWindow = SWITCH_GLES_SwapWindow;
 +    device->GL_DeleteContext = SWITCH_GLES_DeleteContext;
 +    device->GL_DefaultProfileConfig = SWITCH_GLES_DefaultProfileConfig;
-+    device->GL_GetDrawableSize = SWITCH_GLES_GetDrawableSize;
 +
 +    device->PumpEvents = SWITCH_PumpEvents;
 +
@@ -2649,7 +2641,7 @@ index 000000000..f10b33306
 +        data = (SDL_WindowData *) SDL_GetFocusWindow()->driverdata;
 +    }
 +
-+    rc = nwindowSetCrop(&data->nWindow, 0, 0, mode->w, mode->h);
++    rc = nwindowSetCrop(&data->nWindow, 0, 1080 - mode->h, mode->w, 1080);
 +    if (rc) {
 +        return SDL_SetError("Could not set NWindow crop: 0x%x", rc);
 +    }
@@ -2695,7 +2687,7 @@ index 000000000..f10b33306
 +        return SDL_SetError("Could not set NWindow dimensions: 0x%x", rc);
 +    }
 +
-+    rc = nwindowSetCrop(&wdata->nWindow, 0, 0, window->w, window->h);
++    rc = nwindowSetCrop(&wdata->nWindow, 0, 1080 - window->h, window->w, 1080);
 +    if (R_FAILED(rc)) {
 +        nwindowClose(&wdata->nWindow);
 +        viCloseLayer(&wdata->viLayer);
@@ -2757,7 +2749,7 @@ index 000000000..f10b33306
 +SWITCH_SetWindowSize(_THIS, SDL_Window *window)
 +{
 +    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+    nwindowSetCrop(&data->nWindow, 0, 0, window->w, window->h);
++    nwindowSetCrop(&data->nWindow, 0, 1080 - window->h, window->w, 1080);
 +}
 +void
 +SWITCH_ShowWindow(_THIS, SDL_Window *window)
