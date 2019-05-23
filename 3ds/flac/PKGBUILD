@@ -34,7 +34,7 @@ build() {
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
     --disable-shared --enable-static --disable-examples \
     --disable-xmms-plugin --disable-doxygen-docs \
-    --disable-sse --enable-debug
+    --disable-sse
 
   make -C src/libFLAC
 }
