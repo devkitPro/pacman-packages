@@ -20,7 +20,7 @@ source=(
 )
 sha256sums=(
   '91cfc3ed61dc40f47f050a109b08610667d73477af6ef36dcad31c31a4a8d53f'
-  'SKIP'
+  '1c568fbf19d60d0b77c02dc2af539e15ba9da89955b8a0bc7cf39b22597bd8fb'
 )
 
 build() {
@@ -30,7 +30,6 @@ build() {
 
   patch -Np1 -i "$srcdir/flac-${pkgver}.patch"
 
-  CFLAGS="${CFLAGS} -D_3DS " \
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
     --disable-shared --enable-static --disable-examples \
     --disable-xmms-plugin --disable-doxygen-docs \
