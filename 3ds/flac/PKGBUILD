@@ -43,6 +43,5 @@ package() {
   cd flac-$pkgver
 
   make DESTDIR="$pkgdir" install
-  rm -r $pkgdir/opt/devkitpro/portlibs/3ds/bin
 }
 
