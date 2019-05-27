@@ -4,7 +4,7 @@
 
 pkgname=switch-sdl2_image
 pkgver=2.0.3
-pkgrel=4
+pkgrel=5
 pkgdesc="SDL2 image loading library (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org/projects/SDL_image/"
@@ -15,6 +15,7 @@ depends=(
   'switch-sdl2'
   'switch-libpng'
   'switch-libjpeg-turbo'
+  'switch-libwebp'
 )
 source=("${url}release/SDL2_image-${pkgver}.tar.gz" "Makefile.in.patch")
 sha256sums=(
@@ -46,7 +47,7 @@ package() {
   make DESTDIR="$pkgdir" install
 
   # add our static libs
-  echo "Requires.private: libpng libjpeg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_image.pc"
+  echo "Requires.private: libpng libjpeg libwebp" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_image.pc"
 
   # License
   install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
