@@ -22,7 +22,7 @@ sha256sums=(
   '3510c25da735ffcd8ce3b65073150ff4f7f9493b866e85b83738083b556d2368'
   '58b18bccfddf42d44163a461a2e0b36fa66204cc7dc0b57650bb0087aa0a3b1c'
 )
-groups=('switch-portlibs' 'switch-sdl2')
+groups=('switch-portlibs' 'switch-sdl2-libs')
 
 build() {
   cd SDL2_image-$pkgver
