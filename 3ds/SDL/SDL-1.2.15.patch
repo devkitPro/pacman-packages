@@ -1350,10 +1350,10 @@ index 000000000..4f9f893c5
 +}
 diff --git a/src/thread/n3ds/SDL_systhread.c b/src/thread/n3ds/SDL_systhread.c
 new file mode 100644
-index 000000000..afbda60e6
+index 000000000..526370a35
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_systhread.c
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,95 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -1429,10 +1429,12 @@ index 000000000..afbda60e6
 +{
 +	//Incompatible with SDL API, this function will NOT return
 +	//a valid thread ID when called from the main thread.
++	u32 threadID=0;
 +	Thread current = threadGetCurrent();
-+	Handle handle = threadGetHandle(current);
-+	u32 threadID;
-+	svcGetThreadId(&threadID, handle);
++	if (current) {
++		Handle handle = threadGetHandle(current);
++		svcGetThreadId(&threadID, handle);
++	}
 +
 +	return threadID;
 +}
