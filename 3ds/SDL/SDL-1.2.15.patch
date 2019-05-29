@@ -1916,7 +1916,7 @@ index 000000000..cdbdd17ce
 +/* Functions to be exported */
 diff --git a/src/video/n3ds/SDL_n3dsvideo.c b/src/video/n3ds/SDL_n3dsvideo.c
 new file mode 100644
-index 000000000..e8aaa6973
+index 000000000..e0e14fcf1
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.c
 @@ -0,0 +1,759 @@
@@ -2382,7 +2382,7 @@ index 000000000..e8aaa6973
 +
 +	// Setup the textures
 +	C3D_TexInit(&spritesheet_tex, hw, hh, this->hidden->mode);
-+	C3D_TexSetFilter(&spritesheet_tex, GPU_LINEAR, GPU_NEAREST);
++	C3D_TexSetFilter(&spritesheet_tex, this->hidden->fitscreen ? GPU_LINEAR : GPU_NEAREST , GPU_NEAREST);
 +//	C3D_TexBind(0, &spritesheet_tex);
 +	
 +	runThread = true;
