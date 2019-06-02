@@ -5,7 +5,7 @@
 
 pkgname=switch-ffmpeg
 pkgver=4.1.1
-pkgrel=1
+pkgrel=2
 pkgdesc='ffmpeg port (for Nintendo Switch homebrew development)'
 arch=('any')
 url='https://ffmpeg.org/'
@@ -13,7 +13,7 @@ license=('LGPL' 'GPL')
 options=(!strip staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
-         'switch-freetype' 'switch-libtheora')
+         'switch-freetype' 'switch-libopus' 'switch-libtheora' 'switch-libvpx')
 source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz" "ffmpeg.patch")
 sha256sums=(
  '373749824dfd334d84e55dff406729edfd1606575ee44dd485d97d45ea4d2d86'
@@ -40,7 +40,7 @@ build() {
     --disable-runtime-cpudetect --disable-programs --disable-debug --disable-doc \
     --enable-network --disable-hwaccels --disable-encoders \
     --disable-avdevice --enable-swscale --enable-swresample \
-    --enable-libass --enable-libfreetype --enable-libfribidi --enable-libtheora \
+    --enable-libass --enable-libfreetype --enable-libfribidi --enable-libopus --enable-libtheora --enable-libvpx \
     --enable-filter='rotate,transpose' \
     --disable-protocols --enable-protocol=file,http,ftp,tcp,udp,rtmp \
     --disable-demuxers --enable-demuxer=h264,matroska,mov,ogg,rtsp,mpegts \
