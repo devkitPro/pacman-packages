@@ -10,7 +10,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("http://miniupnp.free.fr/files/download.php?file=miniupnpc-${pkgver}.tar.gz" "miniupnpc.patch")
 
-sha256sums=('a0c46bcf6065d6351a8fa6a0a18dc57d10a16908dbb470908fd2e423511514ec' 'SKIP')
+sha256sums=('a0c46bcf6065d6351a8fa6a0a18dc57d10a16908dbb470908fd2e423511514ec' 'b6b7e16cfd1e78069d352b22defed7e2e23924562da8ab17dd0988a13f0f22c5')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 build() {
@@ -25,7 +25,7 @@ build() {
   patch -p1 -i $srcdir/miniupnpc.patch
 
   export OVERRIDE_OS_NAME=Switch
-  export OVERRIDE_OS_VERSION=0
+  export OVERRIDE_OS_VERSION=1.0
   HAVE_IPV6=no make
 }
 
