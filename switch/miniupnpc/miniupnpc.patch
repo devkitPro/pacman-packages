@@ -201,3 +201,25 @@ diff -Naur miniupnpc-2.1.20190408/miniwget.c miniupnpc-2.1.20190408-patched/mini
  			char tmp[IF_NAMESIZE];
  			int l;
  			scope++;
+diff -Naur miniupnpc-2.1.20190408/updateminiupnpcstrings.sh miniupnpc-2.1.20190408-patched/updateminiupnpcstrings.sh
+--- miniupnpc-2.1.20190408/updateminiupnpcstrings.sh	2011-01-27 17:50:40.000000000 +0000
++++ miniupnpc-2.1.20190408-patched/updateminiupnpcstrings.sh	2019-06-16 06:02:22.028909343 +0100
+@@ -7,6 +7,7 @@
+ TMPFILE=miniupnpcstrings.h.tmp
+ TEMPLATE_FILE=${FILE}.in
+ 
++if [ -z $OVERRIDE_OS_NAME ]; then
+ # detecting the OS name and version
+ OS_NAME=`uname -s`
+ OS_VERSION=`uname -r`
+@@ -35,6 +36,10 @@
+ 		OS_VERSION=`uname -v`
+ 	fi
+ fi
++else
++OS_NAME=$OVERRIDE_OS_NAME
++OS_VERSION=$OVERRIDE_OS_VERSION
++fi
+ 
+ echo "Detected OS [$OS_NAME] version [$OS_VERSION]"
+ MINIUPNPC_VERSION=`cat VERSION`

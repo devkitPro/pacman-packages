@@ -24,6 +24,8 @@ build() {
 
   patch -p1 -i $srcdir/miniupnpc.patch
 
+  export OVERRIDE_OS_NAME=Switch
+  export OVERRIDE_OS_VERSION=0
   HAVE_IPV6=no make
 }
 
