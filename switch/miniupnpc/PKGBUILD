@@ -1,0 +1,36 @@
+# Contributor: Ezekiel Bethel <zek@9net.org>
+
+pkgname=switch-miniupnpc
+pkgver=2.1.20190408
+pkgrel=2
+pkgdesc='UPNP support library (for Nintendo Switch homebrew development)'
+arch=('any')
+url="http://miniupnp.free.fr/"
+license=('LGPL')
+options=(!strip libtool staticlibs)
+source=("http://miniupnp.free.fr/files/download.php?file=miniupnpc-${pkgver}.tar.gz" "miniupnpc.patch")
+
+sha256sums=('a0c46bcf6065d6351a8fa6a0a18dc57d10a16908dbb470908fd2e423511514ec' 'SKIP')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+build() {
+  cd miniupnpc-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+  export CC=aarch64-none-elf-gcc
+  export CXX=aarch64-none-elf-g++
+  export LD=aarch64-none-elf-gcc
+  export LDLIBS=$LIBS
+
+  patch -p1 -i $srcdir/miniupnpc.patch
+
+  make
+}
+
+package() {
+  cd miniupnpc-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+}

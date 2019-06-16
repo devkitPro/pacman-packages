@@ -1,0 +1,119 @@
+diff -Naur miniupnpc-2.1.20190408/Makefile miniupnpc-2.1.20190408-patched/Makefile
+--- miniupnpc-2.1.20190408/Makefile	2018-04-06 11:53:30.000000000 +0100
++++ miniupnpc-2.1.20190408-patched/Makefile	2019-06-16 05:05:50.393323874 +0100
+@@ -85,11 +85,13 @@
+           connecthostport.o portlistingparse.o receivedata.o upnpdev.o
+ 
+ ifeq (, $(findstring amiga, $(OS)))
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ ifeq (, $(findstring mingw, $(OS))$(findstring cygwin, $(OS))$(findstring msys, $(OS)))
+ CFLAGS := -fPIC $(CFLAGS)
+ endif
+ LIBOBJS := $(LIBOBJS) minissdpc.o
+ endif
++endif
+ 
+ OBJS = $(patsubst %.c,%.o,$(SRCS))
+ 
+@@ -116,6 +118,7 @@
+ endif
+ endif
+ 
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ EXECUTABLES = upnpc-static listdevices
+ EXECUTABLES_ADDTESTS = testminixml minixmlvalid testupnpreplyparse \
+ 			  testigddescparse testminiwget testportlistingparse
+@@ -132,12 +135,15 @@
+                    miniupnpc.o miniwget.o upnpcommands.o upnpreplyparse.o \
+                    minisoap.o connecthostport.o receivedata.o \
+                    portlistingparse.o
++endif
+ 
+ ifeq (, $(findstring amiga, $(OS)))
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ EXECUTABLES := $(EXECUTABLES) upnpc-shared
+ TESTMINIWGETOBJS := $(TESTMINIWGETOBJS) minissdpc.o
+ TESTIGDDESCPARSE := $(TESTIGDDESCPARSE) minissdpc.o
+ endif
++endif
+ 
+ LIBDIR ?= lib
+ # install directories
+@@ -154,8 +160,12 @@
+ 
+ FILESTOINSTALL = $(LIBRARY) $(EXECUTABLES)
+ ifeq (, $(findstring amiga, $(OS)))
++ifneq (, $(findstring aarch64-none-elf, $(OS)))
++FILESTOINSTALL := $(FILESTOINSTALL) miniupnpc.pc
++else
+ FILESTOINSTALL := $(FILESTOINSTALL) $(SHAREDLIBRARY) miniupnpc.pc
+ endif
++endif
+ 
+ 
+ .PHONY:	install clean depend all check test everything \
+@@ -237,11 +247,14 @@
+ 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRLIB)
+ 	$(INSTALL) -m 644 $(LIBRARY) $(DESTDIR)$(INSTALLDIRLIB)
+ ifeq (, $(findstring amiga, $(OS)))
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ 	$(INSTALL) -m 644 $(SHAREDLIBRARY) $(DESTDIR)$(INSTALLDIRLIB)/$(SONAME)
+ 	ln -fs $(SONAME) $(DESTDIR)$(INSTALLDIRLIB)/$(SHAREDLIBRARY)
++endif
+ 	$(INSTALL) -d $(DESTDIR)$(PKGCONFIGDIR)
+ 	$(INSTALL) -m 644 miniupnpc.pc $(DESTDIR)$(PKGCONFIGDIR)
+ endif
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRBIN)
+ ifneq (, $(findstring amiga, $(OS)))
+ 	$(INSTALL) -m 755 upnpc-static $(DESTDIR)$(INSTALLDIRBIN)/upnpc
+@@ -256,6 +269,7 @@
+ 	gzip -f $(DESTDIR)$(INSTALLDIRMAN)/man3/miniupnpc.3
+ endif
+ endif
++endif
+ 
+ install-static:	updateversion $(FILESTOINSTALL)
+ 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRINC)
+diff -Naur miniupnpc-2.1.20190408/miniupnpc.c miniupnpc-2.1.20190408-patched/miniupnpc.c
+--- miniupnpc-2.1.20190408/miniupnpc.c	2019-02-10 12:30:19.000000000 +0000
++++ miniupnpc-2.1.20190408-patched/miniupnpc.c	2019-06-16 04:49:59.237609698 +0100
+@@ -420,7 +420,7 @@
+ 	char * s;
+ 	const char * base;
+ 	char * p;
+-#if defined(IF_NAMESIZE) && !defined(_WIN32)
++#if defined(IF_NAMESIZE) && !defined(_WIN32) && !defined(__SWITCH__)
+ 	char ifname[IF_NAMESIZE];
+ #else /* defined(IF_NAMESIZE) && !defined(_WIN32) */
+ 	char scope_str[8];
+@@ -445,7 +445,7 @@
+ 	if(url[0] != '/')
+ 		l++;
+ 	if(scope_id != 0) {
+-#if defined(IF_NAMESIZE) && !defined(_WIN32)
++#if defined(IF_NAMESIZE) && !defined(_WIN32) && !defined(__SWITCH__)
+ 		if(if_indextoname(scope_id, ifname)) {
+ 			l += 3 + strlen(ifname);	/* 3 == strlen(%25) */
+ 		}
+@@ -464,7 +464,7 @@
+ 			p = strchr(s, ']');
+ 			if(p) {
+ 				/* insert %25<scope> into URL */
+-#if defined(IF_NAMESIZE) && !defined(_WIN32)
++#if defined(IF_NAMESIZE) && !defined(_WIN32) && !defined(__SWITCH__)
+ 				memmove(p + 3 + strlen(ifname), p, strlen(p) + 1);
+ 				memcpy(p, "%25", 3);
+ 				memcpy(p + 3, ifname, strlen(ifname));
+diff -Naur miniupnpc-2.1.20190408/miniwget.c miniupnpc-2.1.20190408-patched/miniwget.c
+--- miniupnpc-2.1.20190408/miniwget.c	2019-02-10 13:25:00.000000000 +0000
++++ miniupnpc-2.1.20190408-patched/miniwget.c	2019-06-16 04:50:29.031017514 +0100
+@@ -540,7 +540,7 @@
+ 		p2 = strchr(p1, ']');
+ 		if(p2 && scope && scope < p2 && scope_id) {
+ 			/* parse scope */
+-#ifdef IF_NAMESIZE
++#if defined(IF_NAMESIZE) && !defined(__SWITCH__)
+ 			char tmp[IF_NAMESIZE];
+ 			int l;
+ 			scope++;
