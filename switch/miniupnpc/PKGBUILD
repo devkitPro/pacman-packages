@@ -10,7 +10,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("http://miniupnp.free.fr/files/download.php?file=miniupnpc-${pkgver}.tar.gz" "miniupnpc.patch")
 
-sha256sums=('a0c46bcf6065d6351a8fa6a0a18dc57d10a16908dbb470908fd2e423511514ec' 'SKIP')
+sha256sums=('a0c46bcf6065d6351a8fa6a0a18dc57d10a16908dbb470908fd2e423511514ec' 'ea30fcf464f0d04fc435b6373cff64a21190336dd03ab4221f18162f954c42e8')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 build() {
