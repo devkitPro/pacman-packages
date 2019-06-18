@@ -2,7 +2,7 @@
 
 pkgname="3ds-freetype"
 pkgver=2.9
-pkgrel=1
+pkgrel=2
 pkgdesc="TrueType font rendering library (mingw-w64)"
 arch=('any')
 url="https://www.freetype.org/"
@@ -14,11 +14,10 @@ makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 options=('!strip' '!libtool' 'staticlibs')
 source=(https://downloads.sourceforge.net/sourceforge/freetype/freetype-${pkgver}.tar.bz2)
 sha256sums=('e6ffba3c8cef93f557d1f767d7bc3dee860ac7a3aaff588a521e081bc36f4c8a')
-
+groups=('3ds-portlibs')
 
 build() {
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   cd freetype-${pkgver}
@@ -38,7 +37,6 @@ build() {
 
 package () {
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   cd freetype-${pkgver}
