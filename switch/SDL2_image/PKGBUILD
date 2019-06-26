@@ -3,8 +3,8 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=switch-sdl2_image
-pkgver=2.0.3
-pkgrel=5
+pkgver=2.0.4
+pkgrel=1
 pkgdesc="SDL2 image loading library (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org/projects/SDL_image/"
@@ -19,8 +19,8 @@ depends=(
 )
 source=("${url}release/SDL2_image-${pkgver}.tar.gz" "Makefile.in.patch")
 sha256sums=(
-  '3510c25da735ffcd8ce3b65073150ff4f7f9493b866e85b83738083b556d2368'
-  '58b18bccfddf42d44163a461a2e0b36fa66204cc7dc0b57650bb0087aa0a3b1c'
+  'e74ec49c2402eb242fbfa16f2f43a19582a74c2eabfbfb873f00d4250038ceac'
+  'c15da8e087e7ca4ceef3dcce8501b21cbe6569563c345cf2a1591f20316d8d86'
 )
 groups=('switch-portlibs' 'switch-sdl2-libs')
 
