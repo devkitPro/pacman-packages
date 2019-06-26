@@ -3,8 +3,8 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=switch-sdl2_ttf
-pkgver=2.0.14
-pkgrel=3
+pkgver=2.0.15
+pkgrel=1
 pkgdesc="SDL2 TrueType font library (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org/projects/SDL_ttf/"
@@ -16,7 +16,7 @@ depends=(
   'switch-freetype'
 )
 source=("${url}release/SDL2_ttf-${pkgver}.tar.gz")
-sha256sums=('34db5e20bcf64e7071fe9ae25acaa7d72bdc4f11ab3ce59acc768ab62fe39276')
+sha256sums=('a9eceb1ad88c1f1545cd7bd28e7cbc0b2c14191d40238f531a15b01b1b22cd33')
 groups=('switch-portlibs' 'switch-sdl2')
 
 build() {
