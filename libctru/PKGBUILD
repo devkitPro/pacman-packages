@@ -2,29 +2,29 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libctru')
-pkgver=1.5.1
-pkgrel=4
+pkgver=1.6.0
+pkgrel=1
 pkgdesc="Nintendo 3DS userland library."
 arch=('any')
 license=('custom')
 url="http://github.com/smealum"
 options=(!strip libtool staticlibs)
-source=(${url}/ctrulib/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2 libctru-1.5.1.patch)
-sha256sums=('f82e170fd3f36148ae3219eb3568d7dbfaaa32726487fc6e648c1f6db1d1ef02' '4640034f6ca62c1e96b77cd3c633d1effd263eae091a170aa684273ce4394d4c')
-depends=('devkitARM' 'devkitarm-rules' 'devkitarm-crtls')
+source=(${url}/ctrulib/archive/v${pkgver}.tar.gz)
+sha256sums=('f981e42aba7ccd7c3cfd3e5e8d6429b718b2156923bc4bc3b944e07eff16edad')
+depends=('devkitARM')
 
 groups=('3ds-dev')
 
 build() {
 
-  #make -C $srcdir
-  patch -p2 -i $srcdir/libctru-1.5.1.patch
-  make
+  cd ${srcdir}/ctrulib-${pkgver}/libctru
+  make -j
 
 }
 
 package() {
 
-  make -C $srcdir DESTDIR=$pkgdir install
+  cd ${srcdir}/ctrulib-${pkgver}/libctru
+  make -j DESTDIR=$pkgdir install
 
 }
