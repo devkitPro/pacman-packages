@@ -4,7 +4,7 @@
 
 pkgname=switch-sdl2_mixer
 pkgver=2.0.4
-pkgrel=1
+pkgrel=2
 pkgdesc="A sample multi-channel audio mixer library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_mixer/"
@@ -48,7 +48,7 @@ package() {
   make DESTDIR="$pkgdir" install
 
   # add our static libs
-  echo "Requires.private: vorbisidec libmodplug libmpg123" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_mixer.pc"
+  echo "Requires.private: vorbisidec libmodplug libmpg123 opusfile" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_mixer.pc"
 
   # License
   install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
