@@ -16,7 +16,6 @@ sha256sums=('5f8dec765048efac5d919aded51b26a32a05397ea207aa769ff6b53c7027d2c9')
 build() {
   cd jansson-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
@@ -27,7 +26,6 @@ build() {
 package() {
   cd jansson-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   make DESTDIR="$pkgdir" install
