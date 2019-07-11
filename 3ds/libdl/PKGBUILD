@@ -9,7 +9,7 @@ arch=('any')
 options=(!strip)
 makedepends=('devkitpro-pkgbuild-helpers')
 source=('dlfcn.c' 'dlfcn.h')
-sha256sums=('2ae71d569bcd33d0cd23f84966aea05c2666760f051c688c72c19551c756fd74' '37c16bc645be27cad69904a53973a8862c37890f7327f6b26998794c62527336')
+sha256sums=('561e4031eab33c95eceae4fea7b617fc4c2f7d39606e910d077830b36ef4963d' '37c16bc645be27cad69904a53973a8862c37890f7327f6b26998794c62527336')
 groups=('3ds-portlibs')
 
 build() {

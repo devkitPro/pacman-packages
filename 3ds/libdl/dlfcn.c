@@ -2,10 +2,10 @@
 
 #include <stddef.h>
 
-static dl_open g_open = NULL;
-static dl_error g_error = NULL;
-static dl_sym g_sym = NULL;
-static dl_close g_close = NULL;
+static dl_open g_open;
+static dl_error g_error;
+static dl_sym g_sym;
+static dl_close g_close;
 
 void dl_setfn(dl_open new_open, dl_error new_error, dl_sym new_sym, dl_close new_close)
 {
