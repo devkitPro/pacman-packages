@@ -2,35 +2,35 @@
 
 #include <stddef.h>
 
-static dl_open open = NULL;
-static dl_error error = NULL;
-static dl_sym sym = NULL;
-static dl_close close = NULL;
+static dl_open g_open = NULL;
+static dl_error g_error = NULL;
+static dl_sym g_sym = NULL;
+static dl_close g_close = NULL;
 
 void dl_setfn(dl_open new_open, dl_error new_error, dl_sym new_sym, dl_close new_close)
 {
-  open = new_open;
-  error = new_error;
-  sym = new_sym;
-  close = new_close;
+  g_open = new_open;
+  g_error = new_error;
+  g_sym = new_sym;
+  g_close = new_close;
 }
 
 void *dlopen(const char *module, int flag)
 {
-  return open ? (*open)(module, flag) : NULL;
+  return g_open ? g_open(module, flag) : NULL;
 }
 
 char *dlerror(void)
 {
-  return error ? (*error)() : "";
+  return g_error ? g_error() : "";
 }
 
 void *dlsym(void *handle, const char *name)
 {
-  return sym ? (*sym)(handle, name) : NULL;
+  return g_sym ? g_sym(handle, name) : NULL;
 }
 
 int dlclose(void *handle)
 {
-  return close ? (*close)(handle) : 0;
+  return g_close ? g_close(handle) : 0;
 }
