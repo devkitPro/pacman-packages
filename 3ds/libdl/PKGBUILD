@@ -1,0 +1,27 @@
+# Contributor: Teddy Astie <TSnake@Outlook.fr>
+# Maintainer:
+
+pkgname=3ds-libdl
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='Extensible libdl library for projects that needs it.'
+arch=('any')
+options=(!strip)
+makedepends=('devkitpro-pkgbuild-helpers')
+source=('dlfcn.c' 'dlfcn.h')
+sha256sums=('9c84be0ef4365a3b2ed3948426ecfbdf8116611d63d5ec42d4af8a551c20ef72' '37c16bc645be27cad69904a53973a8862c37890f7327f6b26998794c62527336')
+groups=('3ds-portlibs')
+
+build() {
+  source /opt/devkitpro/3dsvars.sh
+  
+  arm-none-eabi-gcc $CFLAGS -c -o dlfcn.o dlfcn.c
+  arm-none-eabi-ar rcu libdl.a dlfcn.o
+}
+
+package() {
+  source /opt/devkitpro/3dsvars.sh
+  mkdir -p $pkgdir$PORTLIBS_PREFIX/lib/ $pkgdir$PORTLIBS_PREFIX/include
+  cp libdl.a $pkgdir$PORTLIBS_PREFIX/lib/
+  cp dlfcn.h $pkgdir$PORTLIBS_PREFIX/include/
+}
