@@ -1,0 +1,36 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: rsn8887 <raist66676@gmx.de>
+
+pkgname=switch-libsodium
+pkgver=1.0.18
+pkgrel=1
+pkgdesc='A modern and easy-to-use crypto library.'
+arch=('any')
+url='http://libsodium.org'
+license=('custom')
+options=(!strip libtool staticlibs)
+makedepends=('devkitpro-pkgbuild-helpers')
+source=("https://download.libsodium.org/libsodium/releases/libsodium-$pkgver-stable.tar.gz")
+sha256sums=('4f3130e5511f94dbd2312312755a50be91cece6ad1c99f9fda9c4634613b227a')
+groups=('switch-portlibs')
+
+build() {
+  cd libsodium-stable
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd libsodium-stable
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+  
+  # license
+  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+}
