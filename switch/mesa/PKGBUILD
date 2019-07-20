@@ -2,7 +2,7 @@
 
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
-pkgver=19.0.0
+pkgver=19.0.8
 pkgrel=1
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
@@ -14,7 +14,7 @@ source=(
   "${pkgname}-${pkgver}-${pkgrel}.patch"
 )
 sha256sums=(
-  '5a549dfb40ec31e5c36c47aadac04554cb2e2a8d144a046a378fc16da57e38f8'
+  'd017eb53a810c32dabeedf6ca2238ae1e897ce9090e470e9ce1d6c9e3f1b0862'
   '97c3a4c2bff09f748606670ec66d48591c85fc659ae3506fc0069a8aedffb90d'
 )
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
