@@ -1,0 +1,33 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: badda71 <me@badda.de>
+
+pkgname=3ds-libsidplay
+pkgver=1.36.60
+pkgrel=1
+pkgdesc="SID chip music module playing library"
+arch=('any')
+url="http://web.archive.org/web/20061202103201/http://www.geocities.com/SiliconValley/Lakes/5147/sidplay/"
+license=('GPLv2')
+options=(!strip libtool staticlibs)
+source=(
+	"http://ftp.jaist.ac.jp/pub/Linux/Momonga/development/source/SOURCES/libsidplay-${pkgver}.tar.bz2"
+	"libsidplay-${pkgver}.patch"
+)
+sha256sums=('1729beb5b54e7486e0b2b83dc0e02130e753a8dcd6fe03677217dbe358941396'
+            'd47be6d24f3f26ab4f91b6f207a81e7ab419e1d98995ca0103109aaa47d44d2c')
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('3ds-portlibs')
+
+build() {
+  cd libsidplay-$pkgver
+  patch -p0 -i ../libsidplay-${pkgver}.patch
+  source /opt/devkitpro/3dsvars.sh
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd libsidplay-$pkgver
+  source /opt/devkitpro/3dsvars.sh
+  make DESTDIR="$pkgdir" install
+}
