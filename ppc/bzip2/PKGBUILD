@@ -3,19 +3,19 @@
 
 pkgname=('ppc-bzip2')
 pkgver=1.0.6
-pkgrel=1
+pkgrel=2
 pkgdesc="A high-quality data compression program"
 arch=('any')
 license=('custom')
 url="http://www.bzip.org"
 options=(!strip libtool staticlibs)
-source=(http://www.bzip.org/$pkgver/bzip2-$pkgver.tar.gz)
-sha256sums=('a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd')
+source=(http://http.debian.net/debian/pool/main/b/bzip2/bzip2_$pkgver.orig.tar.bz2)
+sha256sums=('d70a9ccd8bdf47e302d96c69fecd54925f45d9c7b966bb4ef5f56b770960afa7')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('ppc-portlibs')
 
 build() {
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   make -C "$srcdir/bzip2-$pkgver" \
@@ -28,7 +28,6 @@ build() {
 }
 
 package() {
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   install -Dm 644 "$srcdir/bzip2-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"

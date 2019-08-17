@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-tinyxml2
 pkgver=6.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc='A simple, small, efficient, C++ XML parser that can be easily integrated into other programs (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='http://leethomason.github.io/tinyxml2/'
@@ -11,19 +11,20 @@ options=(!strip libtool staticlibs)
 source=( "https://github.com/leethomason/tinyxml2/archive/${pkgver}.tar.gz" )
 makedepends=('devkitpro-pkgbuild-helpers')
 sha256sums=('9444ba6322267110b4aca61cbe37d5dcab040344b5c97d0b36c119aa61319b0f')
+groups=('3ds-portlibs')
 
 build() {
   cd tinyxml2-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
-  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
+  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/3ds.cmake \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="$CFLAGS -fno-exceptions -fno-rtti" \
     -DCMAKE_AR="$DEVKITARM/bin/arm-none-eabi-gcc-ar" \
     -DBUILD_TESTS:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_STATIC_LIBS:BOOL=ON \
+    -G"Unix Makefiles" \
     .
 
   make

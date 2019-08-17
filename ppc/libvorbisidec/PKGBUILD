@@ -2,7 +2,7 @@
 
 pkgname=ppc-libvorbisidec
 pkgver=1.2.1
-pkgrel=1
+pkgrel=2
 pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for Nintendo Gamecube/wii homebrew development)'
 arch=('any')
 url="http://xiph.org"
@@ -12,10 +12,10 @@ source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver
 sha256sums=('1afbc18e0104ca8c9e9943cfcfa995ea0100bf246c425962770d455d4ad03c65')
 makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('ppc-libogg')
+groups=('ppc-portlibs')
 build() {
   cd libvorbisidec-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi 
@@ -26,7 +26,6 @@ build() {
 package() {
   cd libvorbisidec-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   make DESTDIR="$pkgdir" install

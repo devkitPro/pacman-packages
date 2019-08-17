@@ -1,0 +1,45 @@
+
+# Maintainer: davidgfnet <david@davidgf.net>
+pkgname=switch-ode
+pkgver=0.16
+pkgrel=1
+pkgdesc='High performance library for simulating rigid body dynamics'
+arch=('any')
+url='http://ode.org/'
+license=('BSD')
+options=(!strip libtool staticlibs)
+source=("https://bitbucket.org/odedevs/ode/downloads/ode-${pkgver}.tar.gz"
+        "threading.patch")
+makedepends=('devkitpro-pkgbuild-helpers')
+sha256sums=('4ba3b76f9c1314160de483b3db92b0569242a07452cbb25b368e75deb3cabf27'
+            '6f74df19aa2dfc9cd25fd8692e6a931594392a6afcdc768f2aca704224ddfe3d')
+groups=('switch-portlibs')
+
+prepare() {
+  cd ode-$pkgver
+  patch -Np1 < ../threading.patch
+}
+
+build() {
+  cd ode-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  # Demos depend on GL and X11, disable since they are not useful to us.
+  # Disable threading for now, since pthreads is not usable out of the box for switch.
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+              --disable-demos --enable-static
+
+}
+
+package() {
+
+  cd ode-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make install DESTDIR="$pkgdir"
+
+}
+
+

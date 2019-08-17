@@ -2,7 +2,7 @@
 
 pkgname=ppc-mpg123
 pkgver=1.25.10
-pkgrel=1
+pkgrel=2
 pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
 arch=('any')
 url="http://sourceforge.net/projects/mpg123"
@@ -13,13 +13,12 @@ source=(
  "https://downloads.devkitpro.org/packages/sources/mpg123-1.25.10.patch"
 )
 sha256sums=('6c1337aee2e4bf993299851c70b7db11faec785303cfca3a5c3eb5f329ba7023'
-            '57cd203fdd92d4441eb5639859c50efe9018e3e5d10ee240a6e06fd9a24ae508')
-makedepends=('devkitpro-pkgbuild-helpers' 'ppc-pkg-config')
+            '444e46951f6270d926698718b3e52ec548088f1374f56bcd766d5b9783a41051')
+makedepends=('devkitpro-pkgbuild-helpers' 'ppc-pkg-config' 'devkitPPC')
 
 build() {
   cd mpg123-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch

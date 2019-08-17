@@ -1,0 +1,37 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=nds-libpng
+pkgver=1.6.34
+pkgrel=1
+pkgdesc='PNG format graphic files library (for Nintendo NDS homebrew development)'
+arch=('any')
+url='http://www.libpng.org'
+license=('custom')
+options=(!strip libtool staticlibs)
+depends=('nds-zlib')
+makedepends=('nds-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("http://downloads.devkitpro.org/packages/sources/libpng-$pkgver.tar.xz")
+sha256sums=('55952766b5db751efc7c5aa4157c6342783561b44040cfeef91961ab1dfca310')
+groups=('nds-portlibs')
+
+build() {
+  cd libpng-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd libpng-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  make LN_S=cp DESTDIR="$pkgdir" install
+  # license
+  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+  # remove useless stuff
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+}

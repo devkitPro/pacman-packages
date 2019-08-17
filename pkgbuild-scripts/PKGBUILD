@@ -1,38 +1,59 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitpro-pkgbuild-helpers
-pkgver=1.0.3
+pkgver=1.4.1
 pkgrel=1
+
 pkgdesc='makepkg helpers for devkitPro portlibs'
+
 arch=('any')
 url='http://devkitpro.org/'
-source=(
-'devkitarm.sh' 'devkitarm.cmake' '3dsvars.sh'
-'devkitppc.sh' 'devkitppc.cmake' 'ppcvars.sh'
-'devkita64.sh' 'devkita64.cmake' 'switchvars.sh'
 
+source=(
+'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh' 'ndsvars.sh'
+'devkitppc.sh' 'devkitppc.cmake' 'gamecube.cmake' 'wii.cmake' 'ppcvars.sh'
+'devkita64.sh' 'devkita64.cmake' 'switch.cmake' 'switchvars.sh'
+'meson-cross.sh' 'meson-toolchain.sh' 'portlibs_prefix.sh'
+
+'OpenGLConfig.cmake'
 )
+
 options=(!strip)
+
 sha256sums=(
 
-  'c46175fdd7e757a1d3c5a9aaf38db0b8ae4df0e0f568eb51047523e2ae838483'
-  '58298fb49cd18c789191b770642b44d0ba0fecf1bea0445e63b82e613d4d953f'
-  'ff17de68a304f5fb3db86959829af9ead12e5f28ef2b152eb9e9e49349c943e6'
+  '55f781d1f1c0aad9edd5b7547aa2b9d33b36e727ae4cc969e36bdae92671f116'
+  '938153ad485f200d79e0b4dcc2fea9671e52626f8f04b9305dd308d86a76ef2e'
+  '94a2d85bbbab0229481ecb5f1b1f142f58a09f643cbde144072e2c5d83823726'
+  '4ce7e4332497871fe92e1aedc0100cd717658412b5e411171e6f39314ea32cd2'
+  '84a6c7a8cc78137655f47b36f8f34556123a4fd30e62242b615548cc7b70f2d0'
 
-  '88deee00bcf787b455bd1428fb0f41c12204db93145200d0d1831b10f7845d57'
-  'cde5f36d2d7f673c173ac6cce4daa70547597eb7727cea65c3aa77cc5e1dc136'
-  '3b98f407c7a688b735c4688597053ba9a439cd83a98444cc139adf391a9dc1d3'
+  '95ca2a35f2026d1c47a5609c35273ff346e6b57989aa1e0b29fe3431a61ee3e1'
+  'eae3882d869a8e5087dec63874a7079094ac5bbeb81ec09c0be9ea75a358a458'
+  '3a84948ebe6ab23b3e992831abbb7dfeda206528b8f85ccd897cd349922a96c7'
+  'dcb4c8bd5598dd345d05760bddc39a7839a526bac1666b6a04baec69ccf17257'
+  'ab86dc586cbe1c6e652226deae9cc1e3e8135062c59d76adb9987a0928515e53'
 
-  '94a26f5181b3dbe07c1ad2e0be209b5bc5f83ff431730474ada2fa28acf8f172'
-  'b3adffeb58a39630ef619dfe29a9934c9338e76f35ce57038b99ee28cf588f41'
-  '41a4f216025cb0818d3ccdf062efec533e29023646c9a67e84c6261c4c1c9d61'
+  '9503f0bdf33f6b2a324ddcb185f6550c4eb815b6891365337ed2b7bb222569bb'
+  '67af8239de6618b7c3e10459df52dadc002627d9695d42d8018f2d96188561be'
+  'bb3a62286f7a10f16c1ee368320d588b4e5042aacc5f94a6f9f5dc3f75df7430'
+  '2d317f117737926f0db1db87e0c6fe3b0248da3a3e44e99eb78dcd14a9f2bcad'
+
+  'a6732e0c564c6b0955569433fd345a6b3e7e98d83542840d45e7ecf9dd9c7355'
+  '3f28ad3ad7144169d1b6a13378d17098c79b5ca513a9f7edc80a0b82cd8d4ee1'
+  'ea4776bcbd859a3f6913ab428676e546d20febc7200ff136cb6cd41fdbfe5331'
+
+  'e668865e145c1535b741c790d12e50cecea699d7ce3115bf742ee0a1a436b9df'
 
 )
 
 package() {
 
-  install -d "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitarm.sh devkitarm.cmake 3dsvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkita64.sh devkita64.cmake switchvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitppc.sh devkitppc.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh ndsvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm755 meson-cross.sh meson-toolchain.sh portlibs_prefix.sh "$pkgdir"/opt/devkitpro
+
+  install -Dm644 OpenGLConfig.cmake "$pkgdir"/opt/devkitpro/cmake
 
 }

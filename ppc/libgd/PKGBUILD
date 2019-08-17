@@ -1,0 +1,44 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+# Contributor: Ash Logan <ash [at] heyquark [dot] com>
+
+pkgname=ppc-libgd
+pkgver=2.2.5
+pkgrel=2
+pkgdesc="Library for the dynamic creation of images"
+url="https://libgd.github.io"
+license=("custom")
+arch=("any")
+depends=("devkitPPC" "ppc-libjpeg-turbo" "ppc-libpng" "ppc-freetype")
+makedepends=("ppc-pkg-config" "devkitpro-pkgbuild-helpers")
+options=("!buildflags" "staticlibs" "libtool" "!strip")
+source=("https://github.com/libgd/libgd/releases/download/gd-$pkgver/libgd-$pkgver.tar.xz"
+        "libgd-2.2.5-nosyslog.patch")
+sha256sums=("8c302ccbf467faec732f0741a859eef4ecae22fea2d2ab87467be940842bde51"
+            "549027858ef0d2d6dec42232bcc2d66a5966d9f66bfc30518dfd026090a3d2d5")
+groups=('ppc-portlibs')
+
+prepare() {
+    patch libgd-$pkgver/src/gd_errors.h < libgd-2.2.5-nosyslog.patch
+}
+
+build() {
+    cd libgd-$pkgver
+
+    source /opt/devkitpro/ppcvars.sh
+
+   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi --disable-shared --enable-static
+
+    make
+}
+
+package() {
+    cd libgd-$pkgver
+
+    source /opt/devkitpro/ppcvars.sh
+
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/$PORTLIBS_PREFIX/licenses/$pkgname/COPYING"
+
+    # These binaries all end up for PowerPC, so we shouldn't keep them
+    rm -rf "$pkgdir/$PORTLIBS_PREFIX/bin"
+}

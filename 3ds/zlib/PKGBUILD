@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-zlib
 pkgver=1.2.11
-pkgrel=1
+pkgrel=2
 pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='http://www.zlib.net/'
@@ -11,22 +11,29 @@ options=(!strip libtool staticlibs)
 source=("http://downloads.devkitpro.org/packages/sources/zlib-$pkgver.tar.xz")
 sha256sums=('4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066')
 makedepends=('devkitpro-pkgbuild-helpers')
+groups=('3ds-portlibs')
 
 build() {
   cd zlib-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   CHOST=arm-none-eabi \
     ./configure --prefix="${PORTLIBS_PREFIX}" --static
   make libz.a # only build library, no programs
+
+  # libminizip
+  cd contrib/minizip
+  autoreconf --force --verbose --install
+  CFLAGS="${CFLAGS} -DUSE_FILE32API"
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static
+  make
 }
 
 package() {
   cd zlib-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   make DESTDIR="$pkgdir" install
@@ -35,4 +42,8 @@ package() {
   tail -n 31 README > "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
   rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+
+  # libminizip
+  cd contrib/minizip
+  make DESTDIR="$pkgdir" install
 }

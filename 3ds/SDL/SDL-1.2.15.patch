@@ -225,8 +225,8 @@ index f9c4e0702..d184221da 100644
 +#define SDL_DUALSCR		0x00300000	/**< N3DS Top+Bottom Screen mode */
 +#define SDL_FITWIDTH	0x00400000	/**> Render a resized surface to fit systen screen width */
 +#define SDL_FITHEIGHT	0x00800000	/**> Render a resized surface to fit systen screen height */
-+#define SDL_CONSOLETOP	0x00040000	/**> Enable console output on Top screen */
-+#define SDL_CONSOLEBOTTOM	0x00080000	/**> Enable console output on Bottom screen */
++#define SDL_CONSOLETOP	0x00040000	/**> Enale console output on Top screen */
++#define SDL_CONSOLEBOTTOM	0x00080000	/**> Enale console output on Bottom screen */
 +#endif
  /*@}*/
  
@@ -261,10 +261,10 @@ index 74ac21df0..2cba86dae 100644
  #endif
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.c b/src/audio/n3ds/SDL_n3dsaudio.c
 new file mode 100644
-index 000000000..581c54162
+index 000000000..6815755f1
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.c
-@@ -0,0 +1,256 @@
+@@ -0,0 +1,358 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -301,11 +301,15 @@ index 000000000..581c54162
 +#include "SDL_n3dsaudio.h"
 +
 +#include <3ds.h>
++#include <assert.h>
 +
 +//extern volatile bool app_pause;
 +extern volatile bool app_exiting;
 +
-+size_t stream_offset = 0;
++static Handle wbufDoneEvent;
++static aptHookCookie aptCookie;
++
++static const u64 EventTimeout = 1000LL * 1000LL * 100LL;	// 100 ms
 +
 +/* The tag name used by N3DS audio */
 +#define N3DSAUD_DRIVER_NAME         "n3ds"
@@ -323,16 +327,41 @@ index 000000000..581c54162
 +	return(1);
 +}
 +
++static inline void contextLock(_THIS)
++{
++	LightLock_Lock(&this->hidden->lock);
++}
++
++static inline void contextUnlock(_THIS)
++{
++	LightLock_Unlock(&this->hidden->lock);
++}
++
++static void N3DSAUD_LockAudio(_THIS)
++{
++	contextLock(this);
++}
++
++static void N3DSAUD_UnlockAudio(_THIS)
++{
++	contextUnlock(this);
++}
++
 +static void N3DSAUD_DeleteDevice(SDL_AudioDevice *device)
 +{
 +	if ( device->hidden->mixbuf != NULL ) {
 +		SDL_FreeAudioMem(device->hidden->mixbuf);
 +		device->hidden->mixbuf = NULL;
 +	}
-+	if 	( device->hidden->waveBuf!= NULL )
-+		linearFree(device->hidden->waveBuf);
++	if 	( device->hidden->waveBuf[0].data_vaddr!= NULL ) {
++		linearFree(device->hidden->waveBuf[0].data_vaddr);
++		device->hidden->waveBuf[0].data_vaddr = NULL;
++	}
++
 +	ndspExit();
++
 +	SDL_free(device->hidden);
++
 +	SDL_free(device);
 +}
 +
@@ -362,7 +391,8 @@ index 000000000..581c54162
 +	this->PlayAudio = N3DSAUD_PlayAudio;
 +	this->GetAudioBuf = N3DSAUD_GetAudioBuf;
 +	this->CloseAudio = N3DSAUD_CloseAudio;
-+//    this->ThreadInit = N3DSAUD_ThreadInit;
++	this->LockAudio = N3DSAUD_LockAudio;
++	this->UnlockAudio = N3DSAUD_UnlockAudio;
 +	this->free = N3DSAUD_DeleteDevice;
 +
 +	return this;
@@ -373,35 +403,88 @@ index 000000000..581c54162
 +	N3DSAUD_Available, N3DSAUD_CreateDevice
 +};
 +
-+/* This function waits until it is possible to write a full sound buffer */
++
++static void aptCallback(APT_HookType hook, void* param)
++{
++	switch (hook)
++	{
++		case APTHOOK_ONEXIT:
++			app_exiting = true;
++			svcSignalEvent(wbufDoneEvent);
++			break;
++		default:
++			break;
++	}
++}
++
++/* called by ndsp thread on each audio frame */
++static void audioFrameFinished(void *context)
++{
++	SDL_AudioDevice *this = (SDL_AudioDevice *) context;
++
++	contextLock(this);
++	bool done = this->hidden->waveBuf[this->hidden->nextbuf].status == NDSP_WBUF_DONE;
++	contextUnlock(this);
++
++	if (done)
++	{
++		svcSignalEvent(wbufDoneEvent);
++	}
++}
++
++/* This function blocks until it is possible to write a full sound buffer */
 +static void N3DSAUD_WaitAudio(_THIS)
 +{
-+		if (app_exiting) {
-+			SDL_Delay(5); 
-+		} else
-+		while(this->hidden->waveBuf[this->hidden->nextbuf].status != NDSP_WBUF_DONE && !app_exiting){
-+			SDL_Delay(5);//Give other thread 5ms of execution time.
++	bool not_done;
++	size_t wait_index;
++
++	contextLock(this);
++	wait_index = this->hidden->nextbuf;
++
++retry:
++			
++	not_done = this->hidden->waveBuf[wait_index].status != NDSP_WBUF_DONE;
++	contextUnlock(this);
++
++	if (not_done)
++	{
++		svcWaitSynchronization(wbufDoneEvent, EventTimeout);
++		
++		if (app_exiting)
++		{
++			return;
 +		}
++
++		contextLock(this);
++		goto retry;
++	}
 +}
 +
 +static void N3DSAUD_PlayAudio(_THIS)
 +{
-+	if (app_exiting) return; 
++	if (app_exiting) return;
++
++	contextLock(this);
++
++	size_t nextbuf = this->hidden->nextbuf;
++	size_t sampleLen = this->hidden->mixlen;
++
++	assert(this->hidden->waveBuf[nextbuf].status == NDSP_WBUF_DONE);
++
++	this->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;
++	contextUnlock(this);
 +
 +	if (this->hidden->format==NDSP_FORMAT_STEREO_PCM8 || this->hidden->format==NDSP_FORMAT_MONO_PCM8) {
-+			memcpy(this->hidden->waveBuf[this->hidden->nextbuf].data_pcm8,this->hidden->mixbuf,this->hidden->mixlen);
-+		DSP_FlushDataCache(this->hidden->waveBuf[this->hidden->nextbuf].data_pcm8,
-+							this->hidden->mixlen);
++		memcpy(this->hidden->waveBuf[nextbuf].data_pcm8,this->hidden->mixbuf,sampleLen);
++		DSP_FlushDataCache(this->hidden->waveBuf[nextbuf].data_pcm8,sampleLen);
 +	} else {
-+		memcpy(this->hidden->waveBuf[this->hidden->nextbuf].data_pcm16,this->hidden->mixbuf,this->hidden->mixlen);
-+		DSP_FlushDataCache(this->hidden->waveBuf[this->hidden->nextbuf].data_pcm16,
-+							this->hidden->mixlen);
++		memcpy(this->hidden->waveBuf[nextbuf].data_pcm16,this->hidden->mixbuf,sampleLen);
++		DSP_FlushDataCache(this->hidden->waveBuf[nextbuf].data_pcm16,sampleLen);
 +	}
-+	this->hidden->waveBuf[this->hidden->nextbuf].offset=0;
-+	this->hidden->waveBuf[this->hidden->nextbuf].status=NDSP_WBUF_QUEUED;
-+	ndspChnWaveBufAdd(0, &this->hidden->waveBuf[this->hidden->nextbuf]);
 +
-+	this->hidden->nextbuf = (this->hidden->nextbuf+1)%2;
++	this->hidden->waveBuf[nextbuf].offset=0;
++	this->hidden->waveBuf[nextbuf].status=NDSP_WBUF_QUEUED;
++	ndspChnWaveBufAdd(0, &this->hidden->waveBuf[nextbuf]);
 +}
 +
 +static Uint8 *N3DSAUD_GetAudioBuf(_THIS)
@@ -411,27 +494,32 @@ index 000000000..581c54162
 +
 +static void N3DSAUD_CloseAudio(_THIS)
 +{
++	contextLock(this);
++
 +	if ( this->hidden->mixbuf != NULL ) {
 +		SDL_FreeAudioMem(this->hidden->mixbuf);
 +		this->hidden->mixbuf = NULL;
 +	}
-+	if 	( this->hidden->waveBuf!= NULL )
-+		linearFree(this->hidden->waveBuf);
-+}
++	if ( this->hidden->waveBuf[0].data_vaddr!= NULL ) {
++		linearFree(this->hidden->waveBuf[0].data_vaddr);
++		this->hidden->waveBuf[0].data_vaddr = NULL;
++	}
 +
-+/*
-+static void N3DSAUD_ThreadInit(SDL_AudioDevice *thisdevice)
-+{
-+	;
++	contextUnlock(this);
 +}
-+*/
 +
 +static int N3DSAUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
-+{	
++{
 +   //start 3ds DSP init
-+	if(ndspInit()) return (-1);
++	Result rc = ndspInit();
++	if (R_FAILED(rc)) {
++		if ((R_SUMMARY(rc) == RS_NOTFOUND) && (R_MODULE(rc) == RM_DSP))
++			SDL_SetError("DSP init failed: dspfirm.cdc missing!");
++		else
++			SDL_SetError("DSP init failed. Error code: 0x%X", rc);
++		return -1;
++	}
 +
-+	int format = 0;
 +	if(spec->channels > 2)
 +		spec->channels = 2;
 +
@@ -440,17 +528,17 @@ index 000000000..581c54162
 +    while ((!valid_datatype) && (test_format)) {
 +        spec->format = test_format;
 +        switch (test_format) {
-+ 
++
 +			case AUDIO_S8:
 +				/* Signed 8-bit audio supported */
-+				this->hidden->format=(spec->channels==2)?format=NDSP_FORMAT_STEREO_PCM8:NDSP_FORMAT_MONO_PCM8;
++				this->hidden->format=(spec->channels==2)?NDSP_FORMAT_STEREO_PCM8:NDSP_FORMAT_MONO_PCM8;
 +				this->hidden->isSigned=1;
 +				this->hidden->bytePerSample = (spec->channels);
 +				   valid_datatype = 1;
 +				break;
 +			case AUDIO_S16:
 +				/* Signed 16-bit audio supported */
-+				this->hidden->format=(spec->channels==2)?format=NDSP_FORMAT_STEREO_PCM16:NDSP_FORMAT_MONO_PCM16;
++				this->hidden->format=(spec->channels==2)?NDSP_FORMAT_STEREO_PCM16:NDSP_FORMAT_MONO_PCM16;
 +				this->hidden->isSigned=1;
 +				this->hidden->bytePerSample = (spec->channels) * 2;
 +				   valid_datatype = 1;
@@ -471,25 +559,37 @@ index 000000000..581c54162
 +	SDL_CalculateAudioSpec(spec);
 +
 +	/* Allocate mixing buffer */
++	if (spec->size >= UINT32_MAX/2)
++	{
++		ndspExit();
++		return(-1);
++	}
 +	this->hidden->mixlen = spec->size;
-+	this->hidden->mixbuf = (Uint8 *) SDL_malloc(spec->size); 
++	this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(spec->size); 
 +	if ( this->hidden->mixbuf == NULL ) {
 +		ndspExit();
 +		return(-1);
 +	}
 +	SDL_memset(this->hidden->mixbuf, spec->silence, spec->size);
-+	
-+	Uint8 * temp = (Uint8 *) linearAlloc(this->hidden->mixlen*2); 
-+	memset(temp,0,this->hidden->mixlen*2);
-+	DSP_FlushDataCache(temp,this->hidden->mixlen*2);
-+	
++
++	Uint8 * temp = (Uint8 *) linearAlloc(this->hidden->mixlen*NUM_BUFFERS);
++	if (temp == NULL ) {
++		SDL_free(this->hidden->mixbuf);
++		ndspExit();
++		return(-1);
++	}
++	memset(temp,0,this->hidden->mixlen*NUM_BUFFERS);
++	DSP_FlushDataCache(temp,this->hidden->mixlen*NUM_BUFFERS);
++
 +	this->hidden->nextbuf = 0;
 +	this->hidden->channels = spec->channels;
 +	this->hidden->samplerate = spec->freq;
 +
++	LightLock_Init(&this->hidden->lock);
++
 +	ndspChnWaveBufClear(0);
 + 	ndspChnReset(0);
-+	
++
 +	ndspSetOutputMode((this->hidden->channels==2)?NDSP_OUTPUT_STEREO:NDSP_OUTPUT_MONO);
 +
 +	ndspChnSetInterp(0, NDSP_INTERP_LINEAR);
@@ -501,8 +601,8 @@ index 000000000..581c54162
 +	mix[0] = 1.0;
 +	mix[1] = 1.0;
 +	ndspChnSetMix(0, mix);
-+	
-+	memset(this->hidden->waveBuf,0,sizeof(ndspWaveBuf)*2);
++
++	memset(this->hidden->waveBuf,0,sizeof(ndspWaveBuf)*NUM_BUFFERS);
 +
 +	this->hidden->waveBuf[0].data_vaddr = temp;
 +	this->hidden->waveBuf[0].nsamples = this->hidden->mixlen / this->hidden->bytePerSample;
@@ -512,9 +612,11 @@ index 000000000..581c54162
 +	this->hidden->waveBuf[1].nsamples = this->hidden->mixlen / this->hidden->bytePerSample;
 +	this->hidden->waveBuf[1].status = NDSP_WBUF_DONE;
 +
-+	DSP_FlushDataCache(this->hidden->waveBuf,sizeof(ndspWaveBuf)*2);
++	/* Setup callback */
++	svcCreateEvent(&wbufDoneEvent, RESET_ONESHOT);
++	ndspSetCallback(audioFrameFinished, this);
 +
-+	stream_offset += this->hidden->mixlen;
++	aptHook(&aptCookie, aptCallback, NULL);
 +
 +    // end 3ds DSP init
 +
@@ -523,10 +625,10 @@ index 000000000..581c54162
 +}
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.h b/src/audio/n3ds/SDL_n3dsaudio.h
 new file mode 100644
-index 000000000..a8e076478
+index 000000000..9ec0c6e50
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.h
-@@ -0,0 +1,47 @@
+@@ -0,0 +1,48 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -565,12 +667,13 @@ index 000000000..a8e076478
 +	Uint8 *mixbuf;
 +	Uint32 mixlen;
 +	Uint32 format;
-+    Uint32 samplerate;
++	Uint32 samplerate;
 +	Uint32 channels;
-+    Uint8  bytePerSample;
++	Uint8  bytePerSample;
 +	Uint32 isSigned;
 +	Uint32 nextbuf;
 +	ndspWaveBuf waveBuf[NUM_BUFFERS];
++	LightLock lock;
 +};
 +
 +#endif /* _SDL_n3dsaudio_h */
@@ -1247,10 +1350,10 @@ index 000000000..4f9f893c5
 +}
 diff --git a/src/thread/n3ds/SDL_systhread.c b/src/thread/n3ds/SDL_systhread.c
 new file mode 100644
-index 000000000..a37e5557b
+index 000000000..526370a35
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_systhread.c
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,95 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -1285,7 +1388,7 @@ index 000000000..a37e5557b
 +#include <3ds.h>
 +
 +#define CURRENT_KTHREAD 0xFFFF8000
-+#define STACKSIZE       (4 * 1024)
++#define STACKSIZE       (32 * 1024)
 +#define APPCORE_CPUID   0
 +
 +void ThreadEntry(void *arg)
@@ -1326,10 +1429,12 @@ index 000000000..a37e5557b
 +{
 +	//Incompatible with SDL API, this function will NOT return
 +	//a valid thread ID when called from the main thread.
++	u32 threadID=0;
 +	Thread current = threadGetCurrent();
-+	Handle handle = threadGetHandle(current);
-+	u32 threadID;
-+	svcGetThreadId(&threadID, handle);
++	if (current) {
++		Handle handle = threadGetHandle(current);
++		svcGetThreadId(&threadID, handle);
++	}
 +
 +	return threadID;
 +}
@@ -1376,7 +1481,7 @@ index 000000000..1baf0d721
 +typedef Thread SYS_ThreadHandle;
 diff --git a/src/timer/n3ds/SDL_systimer.c b/src/timer/n3ds/SDL_systimer.c
 new file mode 100644
-index 000000000..ce6d349fd
+index 000000000..e0958dba9
 --- /dev/null
 +++ b/src/timer/n3ds/SDL_systimer.c
 @@ -0,0 +1,74 @@
@@ -1410,7 +1515,7 @@ index 000000000..ce6d349fd
 +
 +void SDL_Delay (Uint32 ms) {
 +#ifdef SDL_THREAD_N3DS
-+	if (threadGetCurrent != NULL)
++	if (threadGetCurrent() != NULL)
 +		svcSleepThread((Uint64)ms * 1000000);
 +	else {
 +#endif
@@ -1813,10 +1918,10 @@ index 000000000..cdbdd17ce
 +/* Functions to be exported */
 diff --git a/src/video/n3ds/SDL_n3dsvideo.c b/src/video/n3ds/SDL_n3dsvideo.c
 new file mode 100644
-index 000000000..9dcbf9c50
+index 000000000..e0e14fcf1
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.c
-@@ -0,0 +1,757 @@
+@@ -0,0 +1,759 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -2279,7 +2384,7 @@ index 000000000..9dcbf9c50
 +
 +	// Setup the textures
 +	C3D_TexInit(&spritesheet_tex, hw, hh, this->hidden->mode);
-+	C3D_TexSetFilter(&spritesheet_tex, GPU_LINEAR, GPU_NEAREST);
++	C3D_TexSetFilter(&spritesheet_tex, this->hidden->fitscreen ? GPU_LINEAR : GPU_NEAREST , GPU_NEAREST);
 +//	C3D_TexBind(0, &spritesheet_tex);
 +	
 +	runThread = true;
@@ -2313,6 +2418,8 @@ index 000000000..9dcbf9c50
 +	return;
 +}
 +
++static unsigned int RenderClearColor;
++
 +static void videoThread(void* data)
 +{
 +    _THIS = (SDL_VideoDevice *) data;
@@ -2322,11 +2429,13 @@ index 000000000..9dcbf9c50
 +//			if (C3D_FrameBegin(C3D_FRAME_SYNCDRAW)){ 
 +			if (C3D_FrameBegin(C3D_FRAME_NONBLOCK)){ 
 +				if (this->hidden->screens & SDL_TOPSCR) {
++					C3D_RenderTargetClear(VideoSurface1, C3D_CLEAR_ALL, RenderClearColor, 0);
 +					C3D_FrameDrawOn(VideoSurface1);
 +					C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
 +					drawTexture((400-this->hidden->w1*this->hidden->scalex)/2,(240-this->hidden->h1*this->hidden->scaley)/2, this->hidden->w1*this->hidden->scalex, this->hidden->h1*this->hidden->scaley, this->hidden->l1, this->hidden->r1, this->hidden->t1, this->hidden->b1);  
 +				}
 +				if (this->hidden->screens & SDL_BOTTOMSCR) {
++					C3D_RenderTargetClear(VideoSurface2, C3D_CLEAR_ALL, RenderClearColor, 0);
 +					C3D_FrameDrawOn(VideoSurface2);
 +					C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection2);
 +					if (this->hidden->fitscreen & SDL_FITWIDTH)
@@ -2352,8 +2461,7 @@ index 000000000..9dcbf9c50
 +	
 +		GSPGPU_FlushDataCache(this->hidden->buffer, this->hidden->w*this->hidden->h*this->hidden->byteperpixel);
 +
-+		C3D_SafeDisplayTransfer ((u32*)this->hidden->buffer, GX_BUFFER_DIM(this->hidden->w, this->hidden->h), (u32*)spritesheet_tex.data, GX_BUFFER_DIM(this->hidden->w, this->hidden->h), textureTranferFlags[this->hidden->mode]);
-+		gspWaitForPPF();
++		C3D_SyncDisplayTransfer ((u32*)this->hidden->buffer, GX_BUFFER_DIM(this->hidden->w, this->hidden->h), (u32*)spritesheet_tex.data, GX_BUFFER_DIM(this->hidden->w, this->hidden->h), textureTranferFlags[this->hidden->mode]);
 +
 +		GSPGPU_FlushDataCache(spritesheet_tex.data, this->hidden->w*this->hidden->h*this->hidden->byteperpixel);
 +
@@ -2361,9 +2469,9 @@ index 000000000..9dcbf9c50
 +		// Configure the first fragment shading substage to just pass through the texture color
 +		// See https://www.opengl.org/sdk/docs/man2/xhtml/glTexEnv.xml for more insight
 +		C3D_TexEnv* env = C3D_GetTexEnv(0);
++		C3D_TexEnvInit(env);
 +		C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, 0, 0);
 +		
-+		C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
 +		C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 +
 +		gspWaitForVBlank();
@@ -2517,13 +2625,13 @@ index 000000000..9dcbf9c50
 +		gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
 +	}
 +
++	RenderClearColor = clearcolors[mode];
 +
 +	// Initialize the top screen render target
 +	if (scale)
 +		VideoSurface1 = C3D_RenderTargetCreate(240*2, 400*2, mode, GPU_RB_DEPTH24_STENCIL8);
 +	else
 +		VideoSurface1 = C3D_RenderTargetCreate(240, 400, mode, GPU_RB_DEPTH24_STENCIL8);
-+	C3D_RenderTargetSetClear(VideoSurface1, C3D_CLEAR_ALL, clearcolors[mode], 0);
 +	if(scale)	
 +		C3D_RenderTargetSetOutput(VideoSurface1, GFX_TOP, GFX_LEFT, displayTranferFlags[mode] | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_XY));
 +	else
@@ -2534,7 +2642,6 @@ index 000000000..9dcbf9c50
 +		VideoSurface2 = C3D_RenderTargetCreate(240*2, 320*2, mode, GPU_RB_DEPTH24_STENCIL8);
 +	else
 +		VideoSurface2 = C3D_RenderTargetCreate(240, 320, mode, GPU_RB_DEPTH24_STENCIL8);
-+	C3D_RenderTargetSetClear(VideoSurface2, C3D_CLEAR_ALL, clearcolors[mode], 0);
 +	if (scale)	
 +		C3D_RenderTargetSetOutput(VideoSurface2, GFX_BOTTOM, GFX_LEFT, displayTranferFlags[mode] | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_XY));
 +	else

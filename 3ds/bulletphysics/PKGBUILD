@@ -2,23 +2,28 @@
 # Maintainer: fincs <fincs.alt1@gmail.com>
 pkgname=3ds-bulletphysics
 pkgver=2.87
-pkgrel=2
+pkgrel=3
 pkgdesc='Bullet Physics SDK: real-time collision detection and multi-physics simulation for VR, games, visual effects, robotics, machine learning etc. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='http://bulletphysics.org/'
 license=('apache')
 options=(!strip libtool staticlibs)
-source=( "https://github.com/bulletphysics/bullet3/archive/${pkgver}.tar.gz" )
-makedepends=('devkitpro-pkgbuild-helpers')
-sha256sums=('438c151c48840fe3f902ec260d9496f8beb26dba4b17769a4a53212903935f95')
+source=( "https://github.com/bulletphysics/bullet3/archive/${pkgver}.tar.gz" "bulletphysics.patch")
+makedepends=('devkitARM' 'devkitpro-pkgbuild-helpers')
+sha256sums=(
+  '438c151c48840fe3f902ec260d9496f8beb26dba4b17769a4a53212903935f95'
+  '9028def91db84c88c37e8ce8e347c806746a0fcc66c7fd97019afe83c976f450'
+)
+groups=('3ds-portlibs')
 
 build() {
   cd bullet3-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
+  patch -Np1 -i "$srcdir"/bulletphysics.patch
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/3ds.cmake \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="$CFLAGS -fno-exceptions -fno-rtti" \
@@ -32,7 +37,6 @@ build() {
 package() {
   cd bullet3-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   make install DESTDIR="$pkgdir"

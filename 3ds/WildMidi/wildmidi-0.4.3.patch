@@ -1,0 +1,39 @@
+diff -Naur wildmidi-wildmidi-0.4.2-orig/src/CMakeLists.txt wildmidi-wildmidi-0.4.2/src/CMakeLists.txt
+--- wildmidi-wildmidi-0.4.2-orig/src/CMakeLists.txt	2018-02-23 21:47:25.644089430 +0100
++++ wildmidi-wildmidi-0.4.2/src/CMakeLists.txt	2018-02-23 21:47:50.067439452 +0100
+@@ -248,7 +248,6 @@
+ CONFIGURE_FILE("wildmidi.pc.in" "${CMAKE_BINARY_DIR}/wildmidi.pc" @ONLY)
+ 
+ # install target (*nix OSes)
+-IF (UNIX AND NOT APPLE)
+     # install our libraries
+     IF (WANT_STATIC)
+         INSTALL(TARGETS libwildmidi_static DESTINATION ${WILDMIDILIB_INSTALLDIR})
+@@ -274,8 +273,6 @@
+ 
+     # install supporting man pages and headers
+     INSTALL(FILES ${CMAKE_SOURCE_DIR}/include/wildmidi_lib.h DESTINATION include)
+-    INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/docs/man/ DESTINATION share/man)
+-ENDIF (UNIX AND NOT APPLE)
+ 
+ # install target (Windows: MinGW or MinGW-w64)
+ IF (WIN32 AND CMAKE_COMPILER_IS_MINGW)
+
+
+--- a/CMakeLists.txt	2018-10-04 06:56:52.000000000 -0700
++++ b/CMakeLists.txt	2018-11-14 16:40:18.567465492 -0800
+@@ -56,14 +56,12 @@
+ 
+ 
+ # Platform specific defines
+-IF (UNIX)
+     # allow 'large' files in 32 bit builds
+     ADD_DEFINITIONS(
+             -D_LARGEFILE_SOURCE
+             -D_FILE_OFFSET_BITS=64
+             -D_LARGE_FILES
+     )
+-ENDIF (UNIX)
+ 
+ # Usage of RPATH for macOS is enabled by default; this just suppresses the CMP0042 warning
+ # when building libwildmidi_dynamic.

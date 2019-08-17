@@ -1,0 +1,31 @@
+pkgname=switch-libopus
+pkgver=1.3
+pkgrel=2
+pkgdesc='Reference implementation of the lossy audio codec'
+arch=('any')
+url='https://opus-codec.org/'
+license=(BSD)
+options=(!strip libtool staticlibs)
+source=("https://archive.mozilla.org/pub/opus/opus-$pkgver.tar.gz")
+sha256sums=('4f3d69aefdf2dbaf9825408e452a8a414ffc60494c70633560700398820dc550')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+
+build() {
+  cd opus-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure \
+    --prefix="${PORTLIBS_PREFIX}" \
+    --host="aarch64-none-elf" \
+    --disable-shared --enable-static 
+
+  make
+}
+
+package() {
+  cd opus-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}

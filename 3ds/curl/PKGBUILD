@@ -2,8 +2,8 @@
 # Contributor: Elouan Martinet <exa@elou.world>
 
 pkgname=3ds-curl
-pkgver=7.59.0
-pkgrel=2
+pkgver=7.65.0
+pkgrel=1
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://curl.haxx.se'
@@ -16,13 +16,13 @@ source=("https://curl.haxx.se/download/curl-${pkgver}.tar.gz"
         '3ds-curl.patch'
 )
 
-sha256sums=('099d9c32dc7b8958ca592597c9fabccdf4c08cfb7c114ff1afbbc4c6f13c9e9e'
+sha256sums=('2a65f4f858a1fa949c79f926ddc2204c2be353ccbad014e95cd322d4a87d82ad'
             '937dc6fc621ce29cb14bf1083b232dd1c795618ad2a5c4b53ad399be189ef873')
+groups=('3ds-portlibs')
 
 build() {
   cd curl-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   patch -Np1 -i $srcdir/3ds-curl.patch
@@ -39,11 +39,11 @@ build() {
 package() {
   cd curl-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   make DESTDIR="$pkgdir" -C lib install
   make DESTDIR="$pkgdir" -C include install
+  make DESTDIR="$pkgdir" install-binSCRIPTS
 
   install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
 }

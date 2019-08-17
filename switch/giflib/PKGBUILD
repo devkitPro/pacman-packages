@@ -1,0 +1,32 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Colin969 <colinb969@gmail.com>
+pkgname=switch-giflib
+pkgver=5.1.4
+pkgrel=1
+pkgdesc='A library for reading and writing gif images'
+arch=('any')
+url='http://sourceforge.net/projects/giflib'
+license=('MIT')
+options=(!strip libtool staticlibs)
+source=("http://downloads.sourceforge.net/sourceforge/giflib/giflib-${pkgver}.tar.bz2")
+sha256sums=('df27ec3ff24671f80b29e6ab1c4971059c14ac3db95406884fc26574631ba8d5')
+makedepends=('devkitpro-pkgbuild-helpers')
+
+build() {
+  source /opt/devkitpro/switchvars.sh
+
+  cd giflib-$pkgver
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf
+  make
+}
+
+package() {
+  cd giflib-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="${pkgdir}" install
+  # MIT License
+  install -Dm644 COPYING "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING"  
+}

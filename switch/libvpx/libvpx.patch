@@ -1,0 +1,49 @@
+diff -burN libvpx-1.8.0.orig/vp8/common/generic/systemdependent.c libvpx-1.8.0/vp8/common/generic/systemdependent.c
+--- libvpx-1.8.0.orig/vp8/common/generic/systemdependent.c	2019-02-04 11:02:33.000000000 -0600
++++ libvpx-1.8.0/vp8/common/generic/systemdependent.c	2019-06-02 09:16:46.000000000 -0500
+@@ -38,11 +38,15 @@
+   int core_count = 16;
+ 
+ #if HAVE_UNISTD_H && !defined(__OS2__)
++#if 1
++  core_count = 4;
++#else
+ #if defined(_SC_NPROCESSORS_ONLN)
+   core_count = (int)sysconf(_SC_NPROCESSORS_ONLN);
+ #elif defined(_SC_NPROC_ONLN)
+   core_count = (int)sysconf(_SC_NPROC_ONLN);
+ #endif
++#endif
+ #elif defined(_WIN32)
+   {
+ #if _WIN32_WINNT >= 0x0501
+diff -burN libvpx-1.8.0.orig/vpx_util/vpx_thread.c libvpx-1.8.0/vpx_util/vpx_thread.c
+--- libvpx-1.8.0.orig/vpx_util/vpx_thread.c	2019-02-04 11:02:33.000000000 -0600
++++ libvpx-1.8.0/vpx_util/vpx_thread.c	2019-06-01 23:37:12.000000000 -0500
+@@ -81,7 +81,7 @@
+   worker->status_ = NOT_OK;
+ }
+ 
+-static int sync(VPxWorker *const worker) {
++static int _sync(VPxWorker *const worker) {
+ #if CONFIG_MULTITHREAD
+   change_state(worker, OK);
+ #endif
+@@ -121,7 +121,7 @@
+     worker->status_ = OK;
+ #endif
+   } else if (worker->status_ > OK) {
+-    ok = sync(worker);
++    ok = _sync(worker);
+   }
+   assert(!ok || (worker->status_ == OK));
+   return ok;
+@@ -160,7 +160,7 @@
+ 
+ //------------------------------------------------------------------------------
+ 
+-static VPxWorkerInterface g_worker_interface = { init,   reset,   sync,
++static VPxWorkerInterface g_worker_interface = { init,   reset,   _sync,
+                                                  launch, execute, end };
+ 
+ int vpx_set_worker_interface(const VPxWorkerInterface *const winterface) {

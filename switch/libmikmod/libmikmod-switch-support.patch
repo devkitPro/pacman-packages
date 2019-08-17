@@ -1,17 +1,17 @@
-From 924ff6ec7bc4e3417f904f62a0deef11e83c1175 Mon Sep 17 00:00:00 2001
-From: Carsten Teibes <dev@f4ke.de>
-Date: Mon, 7 May 2018 23:27:07 +0200
+From a996ed8f575be672cbaa2d377ca696a0010b445f Mon Sep 17 00:00:00 2001
+From: libjared <libjared@users.noreply.github.com>
+Date: Sat, 29 Sep 2018 01:24:04 -0500
 Subject: [PATCH] Add Nintendo Switch Port
 
 ---
  Makefile.am                |   1 +
- configure.ac               |  54 +++++++++++-
+ configure.ac               |  54 ++++++++-
  drivers/Makefile.am        |   1 +
- drivers/drv_switch.c       | 205 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/drv_switch.c       | 218 +++++++++++++++++++++++++++++++++++++
  include/mikmod.h           |   1 +
- include/mikmod_internals.h |  11 +++
- playercode/mdriver.c       |   6 ++
- 7 files changed, 278 insertions(+), 1 deletion(-)
+ include/mikmod_internals.h |  11 ++
+ playercode/mdriver.c       |   6 +
+ 7 files changed, 291 insertions(+), 1 deletion(-)
  create mode 100644 drivers/drv_switch.c
 
 diff --git a/Makefile.am b/Makefile.am
@@ -161,10 +161,10 @@ index fee4fb4..2fe22c3 100644
  	     drv_win.c    \
 diff --git a/drivers/drv_switch.c b/drivers/drv_switch.c
 new file mode 100644
-index 0000000..12d1f10
+index 0000000..bf4d755
 --- /dev/null
 +++ b/drivers/drv_switch.c
-@@ -0,0 +1,205 @@
+@@ -0,0 +1,218 @@
 +/*	MikMod sound library
 +	(c) 1998-2014 Miodrag Vallat and others - see file AUTHORS for
 +	complete list.
@@ -205,25 +205,38 @@ index 0000000..12d1f10
 +#define FRAMERATE (1000 / 30)
 +#define SAMPLECOUNT (SAMPLERATE / FRAMERATE) * 2
 +#define BYTESPERSAMPLE 4
++#define BUFFERSCOUNT 2
 +
-+AudioOutBuffer out_buf;
-+AudioOutBuffer *audout_released_buf;
++AudioOutBuffer out_buf[BUFFERSCOUNT];
 +u32 data_size = (SAMPLECOUNT * CHANNELCOUNT * BYTESPERSAMPLE);
 +u32 buffer_size;
-+u32 released_count;
 +
 +static volatile int audio_ready = 0;
 +static volatile int audio_terminate = 0;
 +static volatile int playing = 0;
++static volatile u32 current_buffer = 0;
++static volatile u32 initial_buffers = 0;
 +
 +static void SWITCH_Update(void) {
 +	if (!audio_terminate) {
 +		if (audio_ready) {
 +			// play
-+			audoutWaitPlayFinish(&audout_released_buf, &released_count, U64_MAX);
++			if (!initial_buffers) {
++				AudioOutBuffer *audout_released_buf = NULL;
++				u32 released_count = 0;
++				audoutGetReleasedAudioOutBuffer(&audout_released_buf, &released_count);
++				if (!audout_released_buf) {
++					return;
++				}
++			} else {
++				initial_buffers--;
++			}
++
++			// select the next buffer to fill with samples
++			current_buffer = (current_buffer + 1) % BUFFERSCOUNT;
 +		}
 +
-+		void *bufptr = audout_released_buf->buffer;
++		void *bufptr = out_buf[current_buffer].buffer;
 +
 +		MUTEX_LOCK(vars);
 +		if (playing) {
@@ -236,7 +249,7 @@ index 0000000..12d1f10
 +		MUTEX_UNLOCK(vars);
 +
 +		if (audio_ready) {
-+			audoutAppendAudioOutBuffer(audout_released_buf);
++			audoutAppendAudioOutBuffer(&out_buf[current_buffer]);
 +		}
 +	}
 +}
@@ -251,27 +264,28 @@ index 0000000..12d1f10
 +	if (VC_Init())
 +		return 1;
 +
++	md_mixfreq = SAMPLERATE;
++
 +	audio_terminate = 0;
 +	audio_ready = 0;
 +
 +	// alignment
 +	buffer_size = (data_size + 0xfff) & ~0xfff;
 +
-+	out_buf.buffer = memalign(0x1000, buffer_size);
-+	if (out_buf.buffer == NULL) {
-+		printf("Failed to allocate sample data buffers\n");
-+		return 1;
++	for (u32 i = 0; i < BUFFERSCOUNT; i++) {
++		out_buf[i].buffer = memalign(0x1000, buffer_size);
++		if (out_buf[i].buffer == NULL) {
++			printf("Failed to allocate sample data buffers\n");
++			return 1;
++		}
++		out_buf[i].buffer_size = buffer_size;
++		out_buf[i].data_size = data_size;
++		out_buf[i].next = NULL;
++		out_buf[i].data_offset = 0;
++
++		// clear
++		memset(out_buf[i].buffer, 0, buffer_size);
 +	}
-+	out_buf.buffer_size = buffer_size;
-+	out_buf.data_size = data_size;
-+	out_buf.next = NULL;
-+	out_buf.data_offset = 0;
-+
-+	// clear
-+	memset(out_buf.buffer, 0, buffer_size);
-+
-+	audout_released_buf = NULL;
-+	released_count = 0;
 +
 +	// init hardware
 +	rc = audoutInitialize();
@@ -284,15 +298,15 @@ index 0000000..12d1f10
 +		return 1;
 +	}
 +
-+	// start playback with a bit of silence
-+	audoutAppendAudioOutBuffer(&out_buf);
++	// when starting playback, fill each buffer without waiting
++	initial_buffers = BUFFERSCOUNT;
++	current_buffer = 0;
 +
 +	audio_ready = 1;
 +	return 0;
 +}
 +
-+static void SWITCH_Exit(void)
-+{
++static void SWITCH_Exit(void) {
 +	audio_ready = 0;
 +	audio_terminate = 1;
 +
@@ -303,27 +317,26 @@ index 0000000..12d1f10
 +	audoutExit();
 +
 +	// cleanup
-+	if (out_buf.buffer) {
-+		free(out_buf.buffer);
-+		out_buf.buffer = NULL;
++	for (int i = 0; i < BUFFERSCOUNT; i++) {
++		if (out_buf[i].buffer) {
++			free(out_buf[i].buffer);
++			out_buf[i].buffer = NULL;
++		}
 +	}
 +}
 +
-+static int SWITCH_Reset(void)
-+{
++static int SWITCH_Reset(void) {
 +	VC_Exit();
 +	return VC_Init();
 +}
 +
-+static int SWITCH_PlayStart(void)
-+{
++static int SWITCH_PlayStart(void) {
 +	VC_PlayStart();
 +	playing = 1;
 +	return 0;
 +}
 +
-+static void SWITCH_PlayStop(void)
-+{
++static void SWITCH_PlayStop(void) {
 +	playing = 0;
 +	VC_PlayStop();
 +}
@@ -331,7 +344,7 @@ index 0000000..12d1f10
 +MIKMODAPI MDRIVER drv_switch = {
 +	NULL,
 +	"Switch Audio",
-+	"Switch Output Driver v1.0 - by carstene1ns",
++	"Switch Output Driver v1.1 - by carstene1ns and libjared",
 +	0, 255,
 +	"switch",
 +	NULL,
@@ -371,7 +384,7 @@ index 0000000..12d1f10
 +
 +#endif
 diff --git a/include/mikmod.h b/include/mikmod.h
-index 7822a74..8913f69 100644
+index 9218529..46b98b6 100644
 --- a/include/mikmod.h
 +++ b/include/mikmod.h
 @@ -833,6 +833,7 @@ MIKMODAPI extern struct MDRIVER drv_osx;    /* MacOS X CoreAudio Driver */
@@ -383,7 +396,7 @@ index 7822a74..8913f69 100644
  MIKMODAPI extern struct MDRIVER drv_wss;    /* DOS WSS driver */
  MIKMODAPI extern struct MDRIVER drv_sb;     /* DOS S/B driver */
 diff --git a/include/mikmod_internals.h b/include/mikmod_internals.h
-index cb92c79..8282f88 100644
+index 1622a2d..f5e21e9 100644
 --- a/include/mikmod_internals.h
 +++ b/include/mikmod_internals.h
 @@ -117,6 +117,17 @@ extern MikMod_handler_t _mm_errorhandler;
@@ -405,7 +418,7 @@ index cb92c79..8282f88 100644
  #define DECLARE_MUTEX(name) \
          extern void *_mm_mutex_##name
 diff --git a/playercode/mdriver.c b/playercode/mdriver.c
-index 6f15711..1307812 100644
+index b3d3d4a..880e621 100644
 --- a/playercode/mdriver.c
 +++ b/playercode/mdriver.c
 @@ -835,6 +835,10 @@ MIKMODAPI long MikMod_GetVersion(void)
@@ -428,3 +441,5 @@ index 6f15711..1307812 100644
  #endif
  	}
  	return result;
+--
+2.18.0

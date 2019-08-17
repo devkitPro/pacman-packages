@@ -4,7 +4,7 @@
 
 pkgname=ppc-mxml
 pkgver=2.11
-pkgrel=1
+pkgrel=2
 pkgdesc='XML parsing library (for Nintendo Gamecube/Wii homebrew development)'
 arch=('any')
 url='https://github.com/michaelrsweet/mxml'
@@ -17,7 +17,6 @@ groups=('ppc-portlibs')
 
 build() {
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
@@ -27,7 +26,6 @@ build() {
 
 package() {
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
   make BUILDROOT="$pkgdir" install

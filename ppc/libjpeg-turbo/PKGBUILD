@@ -2,29 +2,35 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=ppc-libjpeg-turbo
 pkgver=1.5.3
-pkgrel=1
+pkgrel=4
 pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression (for wii/gamecube homebrew development)'
 arch=('any')
 url='https://sourceforge.net/projects/libjpeg-turbo'
 license=('IJG')
 options=(!strip libtool staticlibs)
-source=("http://downloads.devkitpro.org/packages/sources/libjpeg-turbo-$pkgver.tar.xz")
-sha256sums=('7c650554cc7742db41ebb014e183ee69d5a1b2f010fbf8a4de11cf783319a42c')
-makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("https://sourceforge.net/projects/libjpeg-turbo/files/$pkgver/libjpeg-turbo-$pkgver.tar.gz")
+sha256sums=('b24890e2bb46e12e72a79f7e965f409f4e16466d00e1dd15d93d73ee6b592523')
+makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers' 'devkitPPC')
+groups=('ppc-portlibs')
 
 build() {
-  cd libjpeg-turbo-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
-    ./configure --prefix="/opt/devkitpro/portlibs/ppc" --host=powerpc-eabi --disable-shared --enable-static
+  cd libjpeg-turbo-$pkgver
+
+  sed '/^SUBDIRS/ s/md5//' -i Makefile.in
+
+  ./configure --prefix="/opt/devkitpro/portlibs/ppc" --host=powerpc-eabi --disable-shared --enable-static
 
   make
 
 }
 
 package() {
+
+  source /opt/devkitpro/ppcvars.sh
+
   cd libjpeg-turbo-$pkgver
   make DESTDIR="$pkgdir" install
   # license
@@ -32,4 +38,6 @@ package() {
   cp -v LICENSE.md "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname/
   # remove useless stuff
   rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/share
+  rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/bin
+
 }

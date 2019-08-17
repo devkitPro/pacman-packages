@@ -3,15 +3,15 @@
 
 pkgname=('libtonc')
 pkgver=1.4.3
-pkgrel=1
+pkgrel=3
 pkgdesc="Nintendo GBA library ."
 arch=('any')
 license=('zlib')
 url="http://www.coranac.com/projects/#tonc"
 options=(!strip libtool staticlibs)
 source=(https://github.com/devkitpro/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
-sha256sums=('4ae30b45d8ef079119a3719b025766f242addd3df69a9b1c0066145a671a657f')
-makedepends=('devkitARM')
+sha256sums=('6a696d19a2f1bb0e456d241c2a438a96c791fa8daf753a87906a14cc7ae8cabd')
+depends=('devkitARM' 'devkitarm-rules' 'devkitarm-crtls')
 
 groups=('gba-dev')
 

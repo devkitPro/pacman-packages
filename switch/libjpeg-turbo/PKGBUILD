@@ -2,8 +2,8 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-libjpeg-turbo
 pkgver=1.5.3
-pkgrel=1
-pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression (for Nintendo Switch homebrew development)'
+pkgrel=2
+pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression'
 arch=('any')
 url='https://sourceforge.net/projects/libjpeg-turbo'
 license=('IJG')
@@ -11,12 +11,12 @@ options=(!strip libtool staticlibs)
 source=("http://downloads.devkitpro.org/packages/sources/libjpeg-turbo-$pkgver.tar.xz")
 sha256sums=('7c650554cc7742db41ebb014e183ee69d5a1b2f010fbf8a4de11cf783319a42c')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
 
 build() {
 
   cd libjpeg-turbo-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
     ./configure --prefix="/opt/devkitpro/portlibs/switch" --host=aarch64-none-elf --disable-shared --enable-static

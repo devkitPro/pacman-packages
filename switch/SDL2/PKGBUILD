@@ -2,27 +2,27 @@
 
 pkgname=switch-sdl2
 pkgver=2.0.8
-pkgrel=8
+pkgrel=20
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard (Nintendo Switch port)"
 arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
 options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
-source=("${url}/release/SDL2-${pkgver}.tar.gz" "SDL2-2.0.8.patch")
+depends=('switch-mesa' 'libnx')
+source=("${url}/release/SDL2-${pkgver}.tar.gz" "SDL2-${pkgver}.patch")
+groups=('switch-portlibs' 'switch-sdl2')
 sha256sums=(
-'edc77c57308661d576e843344d8638e025a7818bff73f8fbfab09c3c5fd092ec'
-'6ce0d5a2ea3d87480fa2317278e8e1b9f3d26662faa57c7bdb90c00f35709c8f'
+  'edc77c57308661d576e843344d8638e025a7818bff73f8fbfab09c3c5fd092ec'
+  '305dc661b2d250ecd53330c1c0e58ceea0bfb330c221ac0e6fa9611e42245168'
 )
 
 build() {
   cd SDL2-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   patch -p1 -i $srcdir/SDL2-2.0.8.patch
-  ./autogen.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
   --disable-shared --enable-static \
@@ -41,7 +41,6 @@ build() {
 package() {
   cd SDL2-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install

@@ -1,0 +1,2803 @@
+diff --git a/include/EGL/eglplatform.h b/include/EGL/eglplatform.h
+index b0541d52ae..e1220e8f9d 100644
+--- a/include/EGL/eglplatform.h
++++ b/include/EGL/eglplatform.h
+@@ -138,6 +138,12 @@ typedef void              *EGLNativeDisplayType;
+ typedef khronos_uintptr_t  EGLNativePixmapType;
+ typedef khronos_uintptr_t  EGLNativeWindowType;
+ 
++#elif defined(__SWITCH__)
++
++typedef void            *EGLNativeDisplayType;
++typedef khronos_uint8_t *EGLNativePixmapType;
++typedef void            *EGLNativeWindowType;
++
+ #else
+ #error "Platform not recognized"
+ #endif
+diff --git a/include/c11/threads.h b/include/c11/threads.h
+index 3c3f23a8ab..b512521535 100644
+--- a/include/c11/threads.h
++++ b/include/c11/threads.h
+@@ -37,6 +37,32 @@
+ 
+ #include "c99_compat.h" /* for `inline` */
+ 
++#ifdef _ISOC11_SOURCE
++#include <threads.h>
++#include <limits.h>
++
++/*-------------------- 7.25.7 Time functions --------------------*/
++// 7.25.6.1
++#ifndef HAVE_TIMESPEC_GET
++#include <sys/time.h>
++
++static inline int
++timespec_get(struct timespec *ts, int base)
++{
++    if (!ts) return 0;
++    if (base == TIME_UTC) {
++        struct timeval tv;
++        gettimeofday(&tv, NULL);
++        ts->tv_sec = tv.tv_sec;
++        ts->tv_nsec = tv.tv_usec * 1000;
++        return base;
++    }
++    return 0;
++}
++#endif
++
++#else
++
+ /*---------------------------- types ----------------------------*/
+ typedef void (*tss_dtor_t)(void*);
+ typedef int (*thrd_start_t)(void*);
+@@ -68,6 +94,6 @@ enum {
+ #error Not supported on this platform.
+ #endif
+ 
+-
++#endif
+ 
+ #endif /* EMULATED_THREADS_H_INCLUDED_ */
+diff --git a/include/c99_alloca.h b/include/c99_alloca.h
+index 5a3b8c19ab..5c4b6510e8 100644
+--- a/include/c99_alloca.h
++++ b/include/c99_alloca.h
+@@ -35,7 +35,7 @@
+ 
+ #  define alloca _alloca
+ 
+-#elif defined(__sun) || defined(__CYGWIN__)
++#elif defined(__sun) || defined(__CYGWIN__) || defined(_GNU_SOURCE)
+ 
+ #  include <alloca.h>
+ 
+diff --git a/meson.build b/meson.build
+index 9272590201..0478cddcd6 100644
+--- a/meson.build
++++ b/meson.build
+@@ -103,7 +103,7 @@ if _drivers.contains('auto')
+       error('Unknown architecture @0@. Please pass -Ddri-drivers to set driver options. Patches gladly accepted to fix this.'.format(
+             host_machine.cpu_family()))
+     endif
+-  elif ['darwin', 'windows', 'cygwin', 'haiku'].contains(host_machine.system())
++  elif ['darwin', 'windows', 'cygwin', 'haiku', 'horizon'].contains(host_machine.system())
+     # only swrast would make sense here, but gallium swrast is a much better default
+     _drivers = []
+   else
+@@ -138,6 +138,8 @@ if _drivers.contains('auto')
+       error('Unknown architecture @0@. Please pass -Dgallium-drivers to set driver options. Patches gladly accepted to fix this.'.format(
+             host_machine.cpu_family()))
+     endif
++  elif ['horizon'].contains(host_machine.system())
++    _drivers = ['nouveau']
+   elif ['darwin', 'windows', 'cygwin', 'haiku'].contains(host_machine.system())
+     _drivers = ['swrast']
+   else
+@@ -190,7 +192,7 @@ if _vulkan_drivers.contains('auto')
+       error('Unknown architecture @0@. Please pass -Dvulkan-drivers to set driver options. Patches gladly accepted to fix this.'.format(
+             host_machine.cpu_family()))
+     endif
+-  elif ['darwin', 'windows', 'cygwin', 'haiku'].contains(host_machine.system())
++  elif ['darwin', 'windows', 'cygwin', 'haiku', 'horizon'].contains(host_machine.system())
+     # No vulkan driver supports windows or macOS currently
+     _vulkan_drivers = []
+   else
+@@ -237,6 +239,8 @@ if _platforms.contains('auto')
+     _platforms = ['x11', 'surfaceless']
+   elif ['haiku'].contains(host_machine.system())
+     _platforms = ['haiku']
++  elif ['horizon'].contains(host_machine.system())
++    _platforms = ['switch']
+   else
+     error('Unknown OS @0@. Please pass -Dplatforms to set platforms. Patches gladly accepted to fix this.'.format(
+           host_machine.system()))
+@@ -248,6 +252,7 @@ with_platform_x11 = _platforms.contains('x11')
+ with_platform_wayland = _platforms.contains('wayland')
+ with_platform_drm = _platforms.contains('drm')
+ with_platform_haiku = _platforms.contains('haiku')
++with_platform_switch = _platforms.contains('switch')
+ with_platform_surfaceless = _platforms.contains('surfaceless')
+ 
+ with_platforms = false
+@@ -267,7 +272,7 @@ with_glx = get_option('glx')
+ if with_glx == 'auto'
+   if with_dri
+     with_glx = 'dri'
+-  elif with_platform_haiku
++  elif with_platform_haiku or with_platform_switch
+     with_glx = 'disabled'
+   elif with_gallium
+     # Even when building just gallium drivers the user probably wants dri
+@@ -308,11 +313,11 @@ _egl = get_option('egl')
+ if _egl == 'auto'
+   with_egl = (
+     not ['darwin', 'windows'].contains(host_machine.system()) and
+-    with_dri and with_shared_glapi and with_platforms
++    (with_dri or with_platform_switch) and with_shared_glapi and with_platforms
+   )
+ elif _egl == 'true'
+-  if not with_dri
+-    error('EGL requires dri')
++  if not (with_dri or with_platform_switch)
++    error('EGL requires dri or -Dplatforms=switch')
+   elif not with_shared_glapi
+     error('EGL requires shared-glapi')
+   elif not with_platforms
+@@ -719,6 +724,9 @@ endif
+ if with_platform_haiku
+   pre_args += '-DHAVE_HAIKU_PLATFORM'
+ endif
++if with_platform_switch
++  pre_args += '-DHAVE_SWITCH_PLATFORM'
++endif
+ 
+ prog_python = import('python3').find_python()
+ has_mako = run_command(
+@@ -741,7 +749,7 @@ if get_option('buildtype') == 'debug'
+   pre_args += '-DDEBUG'
+ endif
+ 
+-if get_option('shader-cache')
++if get_option('shader-cache') and host_machine.system() != 'horizon'
+   pre_args += '-DENABLE_SHADER_CACHE'
+ elif with_amd_vk
+   error('Radv requires shader cache support')
+@@ -792,10 +800,14 @@ if cc.compiles('int foo(void) __attribute__((__noreturn__));',
+ endif
+ 
+ # TODO: this is very incomplete
+-if ['linux', 'cygwin', 'gnu'].contains(host_machine.system())
++if ['linux', 'cygwin', 'gnu', 'horizon'].contains(host_machine.system())
+   pre_args += '-D_GNU_SOURCE'
+ endif
+ 
++if ['horizon'].contains(host_machine.system())
++  pre_args += '-D_ISOC11_SOURCE'
++endif
++
+ # Check for generic C arguments
+ c_args = []
+ foreach a : ['-Werror=implicit-function-declaration',
+@@ -1059,7 +1071,7 @@ if build_machine.system() != 'darwin'
+ endif
+ 
+ # check for dl support
+-if cc.has_function('dlopen')
++if cc.has_function('dlopen') or host_machine.system() == 'horizon'
+   dep_dl = null_dep
+ else
+   dep_dl = cc.find_library('dl')
+@@ -1084,21 +1096,27 @@ else
+   dep_clock = cc.find_library('rt')
+ endif
+ 
+-# TODO: some of these may be conditional
+-dep_zlib = dependency('zlib', version : '>= 1.2.3')
+-pre_args += '-DHAVE_ZLIB'
+-dep_thread = dependency('threads')
+-if dep_thread.found() and host_machine.system() != 'windows'
+-  pre_args += '-DHAVE_PTHREAD'
+-  if cc.has_function(
+-      'pthread_setaffinity_np',
+-      dependencies : dep_thread,
+-      prefix : '#include <pthread.h>',
+-      args : '-D_GNU_SOURCE')
+-    pre_args += '-DHAVE_PTHREAD_SETAFFINITY'
++if host_machine.system() != 'horizon'
++  # TODO: some of these may be conditional
++  dep_zlib = dependency('zlib', version : '>= 1.2.3')
++  pre_args += '-DHAVE_ZLIB'
++  dep_thread = dependency('threads')
++  if dep_thread.found() and host_machine.system() != 'windows'
++    pre_args += '-DHAVE_PTHREAD'
++    if cc.has_function(
++        'pthread_setaffinity_np',
++        dependencies : dep_thread,
++        prefix : '#include <pthread.h>',
++        args : '-D_GNU_SOURCE')
++      pre_args += '-DHAVE_PTHREAD_SETAFFINITY'
++    endif
+   endif
++  dep_expat = dependency('expat')
++else
++  dep_zlib = null_dep
++  dep_thread = null_dep
++  dep_expat = null_dep
+ endif
+-dep_expat = dependency('expat')
+ # this only exists on linux so either this is linux and it will be found, or
+ # its not linux and and wont
+ dep_m = cc.find_library('m', required : false)
+@@ -1202,7 +1220,7 @@ _shared_llvm = get_option('shared-llvm')
+ _llvm = get_option('llvm')
+ dep_llvm = null_dep
+ with_llvm = false
+-if _llvm != 'false'
++if _llvm != 'false' and not ['horizon'].contains(host_machine.system())
+   dep_llvm = dependency(
+     'llvm',
+     version : _llvm_version,
+diff --git a/meson_options.txt b/meson_options.txt
+index ccf70659ff..6517898d41 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -23,7 +23,7 @@ option(
+   type : 'array',
+   value : ['auto'],
+   choices : [
+-    '', 'auto', 'x11', 'wayland', 'drm', 'surfaceless', 'haiku', 'android',
++    '', 'auto', 'x11', 'wayland', 'drm', 'surfaceless', 'haiku', 'switch', 'android',
+   ],
+   description : 'window systems to support. If this is set to `auto`, all platforms applicable will be enabled.'
+ )
+diff --git a/src/compiler/glsl/glsl_lexer.ll b/src/compiler/glsl/glsl_lexer.ll
+index 224418ed7c..c1f4a476ca 100644
+--- a/src/compiler/glsl/glsl_lexer.ll
++++ b/src/compiler/glsl/glsl_lexer.ll
+@@ -21,6 +21,7 @@
+  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  * DEALINGS IN THE SOFTWARE.
+  */
++
+ #include <ctype.h>
+ #include <limits.h>
+ #include "util/strtod.h"
+@@ -172,7 +173,7 @@ literal_integer(char *text, int len, struct _mesa_glsl_parse_state *state,
+    else
+       lval->n = (int)value;
+ 
+-   if (is_long && !is_uint && base == 10 && value > (uint64_t)LLONG_MAX + 1) {
++   if (is_long && !is_uint && base == 10 && value > (uint64_t)INT64_MAX + 1) {
+       /* Tries to catch unintentionally providing a negative value. */
+       _mesa_glsl_warning(lloc, state,
+                          "signed literal value `%s' is interpreted as %lld",
+diff --git a/src/egl/drivers/switch/egl_switch.c b/src/egl/drivers/switch/egl_switch.c
+new file mode 100644
+index 0000000000..1bd08834b2
+--- /dev/null
++++ b/src/egl/drivers/switch/egl_switch.c
+@@ -0,0 +1,750 @@
++/*
++ * Mesa 3-D graphics library
++ *
++ * Copyright (C) 2014 Adrián Arroyo Calle <adrian.arroyocalle@gmail.com>
++ * Copyright (C) 2018 Jules Blok
++ * Copyright (C) 2018-2019 fincs
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included
++ * in all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#include <errno.h>
++#include <stdint.h>
++#include <stdio.h>
++
++#include "eglconfig.h"
++#include "eglcontext.h"
++#include "egldisplay.h"
++#include "egldriver.h"
++#include "eglcurrent.h"
++#include "egllog.h"
++#include "eglsurface.h"
++#include "eglimage.h"
++#include "egltypedefs.h"
++
++#include <switch.h>
++
++#include "target-helpers/inline_debug_helper.h"
++
++#include "nouveau/switch/nouveau_switch_public.h"
++
++#include "pipe/p_context.h"
++#include "pipe/p_screen.h"
++#include "pipe/p_state.h"
++
++#include "util/u_atomic.h"
++#include "util/u_box.h"
++#include "util/u_debug.h"
++#include "util/u_format.h"
++#include "util/u_inlines.h"
++#include "util/u_memory.h"
++
++#include "state_tracker/st_api.h"
++#include "state_tracker/st_gl_api.h"
++#include "state_tracker/drm_driver.h"
++
++#include "mapi/glapi/glapi.h"
++
++#define NUM_BUFFERS 3
++
++#ifdef DEBUG
++#	define TRACE(x...) _eglLog(_EGL_DEBUG, "egl_switch: " x)
++#	define CALLED() TRACE("CALLED: %s\n", __PRETTY_FUNCTION__)
++#else
++#	define TRACE(x...)
++#  define CALLED()
++#endif
++#define ERROR(x...) _eglLog(_EGL_FATAL, "egl_switch: " x)
++
++_EGL_DRIVER_STANDARD_TYPECASTS(switch_egl)
++
++struct switch_egl_display
++{
++    struct st_manager *stmgr;
++    struct st_api *stapi;
++};
++
++struct switch_egl_config
++{
++    _EGLConfig base;
++    struct st_visual stvis;
++};
++
++struct switch_egl_context
++{
++    _EGLContext base;
++    struct st_context_iface *stctx;
++};
++
++struct switch_egl_surface
++{
++    _EGLSurface base;
++    struct st_framebuffer_iface *stfbi;
++    struct pipe_resource *attachments[ST_ATTACHMENT_COUNT];
++
++    NWindow* nw;
++    s32 cur_slot;
++    struct pipe_resource *buffers[NUM_BUFFERS];
++    NvFence fences[NUM_BUFFERS];
++};
++
++struct switch_framebuffer
++{
++   struct st_framebuffer_iface base;
++   struct switch_egl_display* display;
++   struct switch_egl_surface* surface;
++   struct pipe_resource template;
++};
++
++static inline struct switch_framebuffer *
++switch_framebuffer(struct st_framebuffer_iface *stfbi)
++{
++    return (struct switch_framebuffer *)stfbi;
++}
++
++//-----------------------------------------------------------------------------
++// switch_framebuffer methods
++//-----------------------------------------------------------------------------
++
++static uint32_t drifb_ID = 0;
++
++// Called via st_manager_flush_frontbuffer. Users of this function include:
++// - st_context_flush with ST_FLUSH_FRONT
++// - glFlush
++// - glFinish
++// We don't support rendering to the front buffer, so our implementation is dummy.
++static boolean
++switch_st_framebuffer_flush_front(struct st_context_iface *stctx, struct st_framebuffer_iface *stfbi, enum st_attachment_type statt)
++{
++    return TRUE;
++}
++
++// Called via st_framebuffer_validate.
++static boolean
++switch_st_framebuffer_validate(struct st_context_iface *stctx, struct st_framebuffer_iface *stfbi,
++                   const enum st_attachment_type *statts, unsigned count, struct pipe_resource **out)
++{
++    struct switch_framebuffer *fb = switch_framebuffer(stfbi);
++    struct switch_egl_surface *surface = fb->surface;
++    struct pipe_screen *screen = stfbi->state_manager->screen;
++    enum st_attachment_type i;
++    CALLED();
++
++    for (i = 0; i < count; i++)
++    {
++        struct pipe_resource* res = surface->attachments[statts[i]];
++        if (!res)
++        {
++            switch (statts[i])
++            {
++                case ST_ATTACHMENT_BACK_LEFT:
++                {
++                    Result rc = nwindowDequeueBuffer(surface->nw, &surface->cur_slot, NULL);
++                    if (R_FAILED(rc)) fatalSimple(rc);
++
++                    // Use the dequeued buffer as the back buffer
++                    res = surface->buffers[surface->cur_slot];
++                    break;
++                }
++                case ST_ATTACHMENT_DEPTH_STENCIL:
++                case ST_ATTACHMENT_ACCUM:
++                {
++                    // Configure format/bind parameters
++                    if (statts[i] == ST_ATTACHMENT_DEPTH_STENCIL)
++                    {
++                        fb->template.format = stfbi->visual->depth_stencil_format;
++                        fb->template.bind = PIPE_BIND_DEPTH_STENCIL;
++                    } else if (statts[i] == ST_ATTACHMENT_ACCUM)
++                    {
++                        fb->template.format = stfbi->visual->accum_format;
++                        fb->template.bind = PIPE_BIND_RENDER_TARGET;
++                    }
++
++                    // Create the requested resource
++                    res = screen->resource_create(screen, &fb->template);
++                    break;
++                }
++                default:
++                    break;
++            }
++
++            // Register the attachment for future calls
++            surface->attachments[statts[i]] = res;
++        }
++        pipe_resource_reference(&out[i], res);
++    }
++
++    return TRUE;
++}
++
++// Called via st_manager_flush_swapbuffers, which itself is only used during glFinish.
++// We don't actually want to swap the buffers during glFinish, so our implementation is dummy.
++static boolean
++switch_st_framebuffer_flush_swapbuffers(struct st_context_iface *stctx, struct st_framebuffer_iface *stfbi)
++{
++    return TRUE;
++}
++
++//-----------------------------------------------------------------------------
++// EGL driver methods
++//-----------------------------------------------------------------------------
++
++static void
++switch_egl_surface_cleanup(struct switch_egl_surface *surface)
++{
++    u32 i;
++
++    for (i = 0; i < ST_ATTACHMENT_COUNT; i ++)
++    {
++        if (i == ST_ATTACHMENT_FRONT_LEFT || i == ST_ATTACHMENT_BACK_LEFT)
++            continue;
++        pipe_resource_reference(&surface->attachments[i], NULL);
++    }
++
++    if (surface->nw)
++    {
++        if (surface->cur_slot >= 0)
++            nwindowCancelBuffer(surface->nw, surface->cur_slot, NULL);
++        nwindowReleaseBuffers(surface->nw);
++    }
++
++    for (i = 0; i < NUM_BUFFERS; i ++)
++        pipe_resource_reference(&surface->buffers[i], NULL);
++
++    if (surface->stfbi)
++        free(surface->stfbi);
++
++    free(surface);
++}
++
++// Called via eglCreateWindowSurface(), drv->API.CreateWindowSurface().
++static _EGLSurface *
++switch_create_window_surface(_EGLDriver *drv, _EGLDisplay *dpy,
++    _EGLConfig *conf, void *native_window, const EGLint *attrib_list)
++{
++    struct switch_egl_surface *surface;
++    struct switch_framebuffer *fb;
++    struct switch_egl_display *display = switch_egl_display(dpy);
++    struct switch_egl_config *config = switch_egl_config(conf);
++    u32 width, height, i;
++    CALLED();
++
++    surface = (struct switch_egl_surface*) calloc(1, sizeof (*surface));
++    if (!surface)
++    {
++        _eglError(EGL_BAD_ALLOC, "switch_create_window_surface: failed to allocate switch_egl_surface");
++        return NULL;
++    }
++
++    if (!_eglInitSurface(&surface->base, dpy, EGL_WINDOW_BIT, conf, attrib_list))
++        goto cleanup;
++
++    fb = (struct switch_framebuffer *) calloc(1, sizeof (*fb));
++    if (!fb)
++    {
++        _eglError(EGL_BAD_ALLOC, "switch_create_window_surface: failed to allocate switch_framebuffer");
++        goto cleanup;
++    }
++
++    // Use the specified native window, and check its validity
++    surface->nw = (NWindow*)native_window;
++    if (!nwindowIsValid(surface->nw))
++    {
++        _eglError(EGL_BAD_NATIVE_WINDOW, "switch_create_window_surface: not a valid native window reference");
++        goto cleanup;
++    }
++
++    // Allocate framebuffers and attach them to the native window
++    nwindowGetDimensions(surface->nw, &width, &height);
++    fb->display = display;
++    fb->surface = surface;
++    fb->template.target = PIPE_TEXTURE_RECT;
++    fb->template.format = config->stvis.color_format;
++    fb->template.width0 = (u16)width;
++    fb->template.height0 = (u16)height;
++    fb->template.depth0 = 1;
++    fb->template.array_size = 1;
++    fb->template.usage = PIPE_USAGE_DEFAULT;
++    fb->template.bind = PIPE_BIND_RENDER_TARGET;
++    for (i = 0; i < NUM_BUFFERS; i ++)
++    {
++        // Allocate a framebuffer
++        surface->fences[i].id = UINT32_MAX;
++        surface->buffers[i] = display->stmgr->screen->resource_create(display->stmgr->screen, &fb->template);
++        if (!surface->buffers[i])
++        {
++            _eglError(EGL_BAD_ALLOC, "switch_create_window_surface: failed to allocate framebuffers");
++            goto cleanup;
++        }
++
++        // Retrieve the native graphic buffer struct associated with this framebuffer
++        NvGraphicBuffer grbuf;
++        int err = nouveau_switch_resource_get_buffer(surface->buffers[i], &grbuf);
++        if (err != 0)
++        {
++            _eglError(EGL_BAD_ALLOC, "switch_create_window_surface: nouveau_switch_resource_get_buffer failed");
++            goto cleanup;
++        }
++
++        // Attach the framebuffer to the native window
++        Result rc = nwindowConfigureBuffer(surface->nw, i, &grbuf);
++        if (R_FAILED(rc)) fatalSimple(rc);
++    }
++
++    surface->stfbi = &fb->base;
++    surface->cur_slot = -1;
++
++    // Setup the st_framebuffer_iface
++    fb->base.visual = &config->stvis;
++    fb->base.flush_front = switch_st_framebuffer_flush_front;
++    fb->base.validate = switch_st_framebuffer_validate;
++    fb->base.flush_swapbuffers = switch_st_framebuffer_flush_swapbuffers;
++    p_atomic_set(&fb->base.stamp, 0);
++    fb->base.ID = p_atomic_inc_return(&drifb_ID);
++    fb->base.state_manager = display->stmgr;
++
++    return &surface->base;
++
++cleanup:
++    switch_egl_surface_cleanup(surface);
++    return NULL;
++}
++
++
++static _EGLSurface *
++switch_create_pixmap_surface(_EGLDriver *drv, _EGLDisplay *disp,
++    _EGLConfig *conf, void *native_pixmap, const EGLint *attrib_list)
++{
++    CALLED();
++    return NULL;
++}
++
++
++static _EGLSurface *
++switch_create_pbuffer_surface(_EGLDriver *drv, _EGLDisplay *disp,
++    _EGLConfig *conf, const EGLint *attrib_list)
++{
++    CALLED();
++    return NULL;
++}
++
++
++static EGLBoolean
++switch_destroy_surface(_EGLDriver *drv, _EGLDisplay *disp, _EGLSurface *surf)
++{
++    struct switch_egl_surface* surface = switch_egl_surface(surf);
++    CALLED();
++
++    if (_eglPutSurface(surf))
++        switch_egl_surface_cleanup(surface);
++
++    return EGL_TRUE;
++}
++
++
++static EGLBoolean
++switch_add_config(_EGLDisplay *dpy, EGLint *id, enum pipe_format colorfmt, enum pipe_format depthfmt)
++{
++    CALLED();
++
++    struct switch_egl_config* conf;
++    conf = (struct switch_egl_config*) calloc(1, sizeof (*conf));
++    if (!conf)
++        return _eglError(EGL_BAD_ALLOC, "switch_add_config failed to alloc");
++
++    TRACE("Initializing config\n");
++    _eglInitConfig(&conf->base, dpy, ++*id);
++
++    // General configuration
++    conf->base.NativeRenderable = EGL_TRUE;
++    conf->base.SurfaceType = EGL_WINDOW_BIT; // we only support creating window surfaces
++    conf->base.RenderableType = EGL_OPENGL_BIT | EGL_OPENGL_ES_BIT | EGL_OPENGL_ES2_BIT | EGL_OPENGL_ES3_BIT_KHR;
++    conf->base.Conformant = conf->base.RenderableType;
++    conf->base.MinSwapInterval = 0;
++    conf->base.MaxSwapInterval = INT32_MAX;
++
++    // Color buffer configuration
++    conf->base.RedSize    = util_format_get_component_bits(colorfmt, UTIL_FORMAT_COLORSPACE_RGB, 0);
++    conf->base.GreenSize  = util_format_get_component_bits(colorfmt, UTIL_FORMAT_COLORSPACE_RGB, 1);
++    conf->base.BlueSize   = util_format_get_component_bits(colorfmt, UTIL_FORMAT_COLORSPACE_RGB, 2);
++    conf->base.AlphaSize  = util_format_get_component_bits(colorfmt, UTIL_FORMAT_COLORSPACE_RGB, 3);
++    conf->base.BufferSize = conf->base.RedSize+conf->base.GreenSize+conf->base.BlueSize+conf->base.AlphaSize;
++
++    // Depth/stencil buffer configuration
++    if (depthfmt != PIPE_FORMAT_NONE) {
++        conf->base.DepthSize   = util_format_get_component_bits(depthfmt, UTIL_FORMAT_COLORSPACE_ZS, 0);
++        conf->base.StencilSize = util_format_get_component_bits(depthfmt, UTIL_FORMAT_COLORSPACE_ZS, 1);
++    }
++
++    // Visual
++    conf->stvis.buffer_mask = ST_ATTACHMENT_FRONT_LEFT_MASK | ST_ATTACHMENT_BACK_LEFT_MASK;
++    conf->stvis.color_format = colorfmt;
++    conf->stvis.depth_stencil_format = depthfmt;
++    conf->stvis.accum_format = PIPE_FORMAT_R16G16B16A16_FLOAT;
++    conf->stvis.render_buffer = ST_ATTACHMENT_BACK_LEFT_MASK;
++
++    if (!_eglValidateConfig(&conf->base, EGL_FALSE)) {
++        _eglLog(_EGL_DEBUG, "Switch: failed to validate config");
++        free(conf);
++        return EGL_FALSE;
++    }
++
++    _eglLinkConfig(&conf->base);
++    return EGL_TRUE;
++}
++
++
++static EGLBoolean
++switch_add_configs_for_visuals(_EGLDisplay *dpy)
++{
++    CALLED();
++
++    // List of supported color buffer formats
++    static const enum pipe_format colorfmts[] = {
++        PIPE_FORMAT_R8G8B8A8_UNORM,
++        //PIPE_FORMAT_R8G8B8X8_UNORM,
++        //PIPE_FORMAT_B5G6R5_UNORM,
++    };
++
++    // List of supported depth buffer formats
++    static const enum pipe_format depthfmts[] = {
++        PIPE_FORMAT_NONE,
++        PIPE_FORMAT_S8_UINT,
++        PIPE_FORMAT_Z16_UNORM,
++        PIPE_FORMAT_Z24X8_UNORM,
++        PIPE_FORMAT_Z24_UNORM_S8_UINT,
++        PIPE_FORMAT_Z32_FLOAT,
++        PIPE_FORMAT_Z32_FLOAT_S8X24_UINT,
++    };
++
++    // Add all combinations of color/depth buffer formats
++    EGLint config_id = 0;
++    EGLint i, j;
++    for (i = 0; i < sizeof(colorfmts)/sizeof(colorfmts[0]); i ++) {
++        for (j = 0; j < sizeof(depthfmts)/sizeof(depthfmts[0]); j ++) {
++            EGLBoolean rc = switch_add_config(dpy, &config_id, colorfmts[i], depthfmts[j]);
++            if (!rc)
++                return rc;
++        }
++    }
++
++    return EGL_TRUE;
++}
++
++// Called from st_api_create_context. This is only ever used for detecting
++// whether the ST_MANAGER_BROKEN_INVALIDATE workaround is required.
++static int
++switch_st_get_param(struct st_manager *stmgr, enum st_manager_param param)
++{
++    return 0;
++}
++
++static EGLBoolean
++switch_initialize(_EGLDriver *drv, _EGLDisplay *dpy)
++{
++    struct switch_egl_display *display;
++    struct st_manager *stmgr;
++    struct pipe_screen *screen;
++    CALLED();
++
++    if (!switch_add_configs_for_visuals(dpy))
++        return EGL_FALSE;
++
++    display = (struct switch_egl_display*) calloc(1, sizeof (*display));
++    if (!display) {
++        _eglError(EGL_BAD_ALLOC, "switch_initialize");
++        return EGL_FALSE;
++    }
++    dpy->DriverData = display;
++    dpy->Version = 14;
++
++    dpy->ClientAPIs = 0;
++    if (_eglIsApiValid(EGL_OPENGL_API))
++        dpy->ClientAPIs |= EGL_OPENGL_BIT;
++    if (_eglIsApiValid(EGL_OPENGL_ES_API))
++        dpy->ClientAPIs |= EGL_OPENGL_ES_BIT | EGL_OPENGL_ES2_BIT | EGL_OPENGL_ES3_BIT_KHR;
++
++    dpy->Extensions.KHR_create_context = EGL_TRUE;
++    dpy->Extensions.KHR_surfaceless_context = EGL_TRUE;
++
++    stmgr = CALLOC_STRUCT(st_manager);
++    if (!stmgr) {
++        _eglError(EGL_BAD_ALLOC, "switch_initialize");
++        return EGL_FALSE;
++    }
++
++    stmgr->get_param = switch_st_get_param;
++
++    // Create nouveau screen
++    TRACE("Creating nouveau screen\n");
++    screen = nouveau_switch_screen_create();
++    if (!screen)
++    {
++        TRACE("Failed to create nouveau screen\n");
++        return EGL_FALSE;
++    }
++
++    // Inject optional trace/debug/etc wrappers
++    TRACE("Wrapping screen\n");
++    stmgr->screen = debug_screen_wrap(screen);
++
++    display->stmgr = stmgr;
++    display->stapi = st_gl_api_create();
++    return EGL_TRUE;
++}
++
++
++static EGLBoolean
++switch_terminate(_EGLDriver* drv, _EGLDisplay* dpy)
++{
++    struct switch_egl_display *display = switch_egl_display(dpy);
++    CALLED();
++
++    // Release all non-current Context/Surfaces
++    _eglReleaseDisplayResources(drv, dpy);
++
++    _eglCleanupDisplay(dpy);
++
++    display->stapi->destroy(display->stapi);
++
++    display->stmgr->screen->destroy(display->stmgr->screen);
++    free(display->stmgr);
++    free(display);
++
++    return EGL_TRUE;
++}
++
++
++static _EGLContext*
++switch_create_context(_EGLDriver *drv, _EGLDisplay *dpy, _EGLConfig *conf,
++    _EGLContext *share_list, const EGLint *attrib_list)
++{
++    struct switch_egl_context *context;
++    struct switch_egl_display *display = switch_egl_display(dpy);
++    struct switch_egl_config *config = switch_egl_config(conf);
++    CALLED();
++
++    context = (struct switch_egl_context*) calloc(1, sizeof (*context));
++    if (!context) {
++        _eglError(EGL_BAD_ALLOC, "switch_create_context");
++        return NULL;
++    }
++
++    if (!_eglInitContext(&context->base, dpy, conf, attrib_list))
++        goto cleanup;
++
++    struct st_context_attribs attribs;
++    memset(&attribs, 0, sizeof(attribs));
++
++    attribs.major = context->base.ClientMajorVersion;
++    attribs.minor = context->base.ClientMinorVersion;
++    attribs.visual = config->stvis;
++
++    switch (eglQueryAPI()) {
++        case EGL_OPENGL_API:
++            switch (context->base.Profile) {
++                case EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR:
++                    /* There are no profiles before OpenGL 3.2.  The
++                     * EGL_KHR_create_context spec says:
++                     *
++                     *     "If the requested OpenGL version is less than 3.2,
++                     *      EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR is ignored and the functionality
++                     *      of the context is determined solely by the requested version.."
++                     */
++
++                    if (attribs.major > 3 || (attribs.major == 3 && attribs.minor >= 2)) {
++                        attribs.profile = ST_PROFILE_OPENGL_CORE;
++                        break;
++                    }
++                    /* fall-through */
++                case EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR:
++                    attribs.profile = ST_PROFILE_DEFAULT;
++                    break;
++                default:
++                    _eglError(EGL_BAD_CONFIG, "switch_create_context");
++                    goto cleanup;
++            }
++            break;
++        case EGL_OPENGL_ES_API:
++            switch (context->base.ClientMajorVersion) {
++            case 1:
++                attribs.profile = ST_PROFILE_OPENGL_ES1;
++                break;
++            case 2:
++            case 3: // ST_PROFILE_OPENGL_ES2 is used for OpenGL ES 3.x too
++                attribs.profile = ST_PROFILE_OPENGL_ES2;
++                break;
++            default:
++                _eglError(EGL_BAD_CONFIG, "switch_create_context");
++                goto cleanup;
++            }
++            break;
++        default:
++            _eglError(EGL_BAD_CONFIG, "switch_create_context");
++            goto cleanup;
++    }
++
++    enum st_context_error error;
++    context->stctx = display->stapi->create_context(display->stapi, display->stmgr, &attribs, &error, NULL);
++    if (error != ST_CONTEXT_SUCCESS) {
++        _eglError(EGL_BAD_MATCH, "switch_create_context");
++        goto cleanup;
++    }
++
++    return &context->base;
++
++cleanup:
++    free(context);
++    return NULL;
++}
++
++
++static EGLBoolean
++switch_destroy_context(_EGLDriver* drv, _EGLDisplay *disp, _EGLContext* ctx)
++{
++    struct switch_egl_context* context = switch_egl_context(ctx);
++    CALLED();
++
++    if (_eglPutContext(ctx))
++    {
++        context->stctx->destroy(context->stctx);
++        free(context);
++        ctx = NULL;
++    }
++    return EGL_TRUE;
++}
++
++
++static EGLBoolean
++switch_make_current(_EGLDriver* drv, _EGLDisplay* dpy, _EGLSurface *dsurf,
++    _EGLSurface *rsurf, _EGLContext *ctx)
++{
++    struct switch_egl_display* disp = switch_egl_display(dpy);
++    struct switch_egl_context* cont = switch_egl_context(ctx);
++    struct switch_egl_surface* draw_surf = switch_egl_surface(dsurf);
++    struct switch_egl_surface* read_surf = switch_egl_surface(rsurf);
++    CALLED();
++
++    _EGLContext *old_ctx;
++    _EGLSurface *old_dsurf, *old_rsurf;
++
++    if (!_eglBindContext(ctx, dsurf, rsurf, &old_ctx, &old_dsurf, &old_rsurf))
++        return EGL_FALSE;
++
++    EGLBoolean ret = disp->stapi->make_current(disp->stapi, cont ? cont->stctx : NULL,
++        draw_surf ? draw_surf->stfbi : NULL, read_surf ? read_surf->stfbi : NULL);
++
++    if (old_ctx) {
++        if (old_dsurf) {
++            switch_destroy_surface(drv, dpy, old_dsurf);
++        }
++        if (old_rsurf) {
++            switch_destroy_surface(drv, dpy, old_rsurf);
++        }
++        switch_destroy_context(drv, dpy, old_ctx);
++    }
++
++    return ret;
++}
++
++
++static EGLBoolean
++switch_swap_interval(_EGLDriver *drv, _EGLDisplay *dpy, _EGLSurface *surf, EGLint interval)
++{
++    CALLED();
++    struct switch_egl_surface* surface = switch_egl_surface(surf);
++
++    nwindowSetSwapInterval(surface->nw, interval);
++    return EGL_TRUE;
++}
++
++
++static EGLBoolean
++switch_swap_buffers(_EGLDriver *drv, _EGLDisplay *dpy, _EGLSurface *surf)
++{
++    CALLED();
++    struct switch_egl_surface* surface = switch_egl_surface(surf);
++    struct switch_egl_context* context = switch_egl_context(surface->base.CurrentContext);
++
++    if (surface->cur_slot < 0) {
++        TRACE("Nothing to do\n");
++        return EGL_TRUE;
++    }
++
++    TRACE("Flushing context\n");
++    context->stctx->flush(context->stctx, ST_FLUSH_END_OF_FRAME, NULL);
++
++    NvMultiFence mf = {0};
++    NvFence fence;
++    struct pipe_resource *old_back = surface->attachments[ST_ATTACHMENT_BACK_LEFT];
++    fence.id = nouveau_switch_resource_get_syncpoint(old_back, &fence.value);
++    if ((int)fence.id >= 0) {
++        NvFence* surf_fence = &surface->fences[surface->cur_slot];
++        if (surf_fence->id != fence.id || surf_fence->value != fence.value) {
++            TRACE("Using fence: {%d,%u}\n", (int)fence.id, fence.value);
++            *surf_fence = fence;
++            nvMultiFenceCreate(&mf, &fence);
++        }
++    }
++
++    TRACE("Queuing buffer\n");
++    Result rc = nwindowQueueBuffer(surface->nw, surface->cur_slot, &mf);
++    if (R_FAILED(rc)) fatalSimple(rc);
++
++    // Update framebuffer state
++    surface->cur_slot = -1;
++    surface->attachments[ST_ATTACHMENT_BACK_LEFT] = NULL;
++    surface->attachments[ST_ATTACHMENT_FRONT_LEFT] = old_back;
++    p_atomic_inc(&surface->stfbi->stamp);
++    return EGL_TRUE;
++}
++
++
++/*
++ * Called from eglGetProcAddress() via drv->API.GetProcAddress().
++ */
++static _EGLProc
++switch_get_proc_address(_EGLDriver *drv, const char *procname)
++{
++    return _glapi_get_proc_address(procname);
++}
++
++
++/**
++ * This is the main entrypoint into the driver, called by libEGL.
++ * Create a new _EGLDriver object and init its dispatch table.
++ */
++void
++_eglInitDriver(_EGLDriver *driver)
++{
++    CALLED();
++
++    driver->API.Initialize = switch_initialize;
++    driver->API.Terminate = switch_terminate;
++    driver->API.CreateContext = switch_create_context;
++    driver->API.DestroyContext = switch_destroy_context;
++    driver->API.MakeCurrent = switch_make_current;
++    driver->API.CreateWindowSurface = switch_create_window_surface;
++    driver->API.CreatePixmapSurface = switch_create_pixmap_surface;
++    driver->API.CreatePbufferSurface = switch_create_pbuffer_surface;
++    driver->API.DestroySurface = switch_destroy_surface;
++    driver->API.SwapInterval = switch_swap_interval;
++    driver->API.SwapBuffers = switch_swap_buffers;
++    driver->API.GetProcAddress = switch_get_proc_address;
++}
+diff --git a/src/egl/main/eglcurrent.c b/src/egl/main/eglcurrent.c
+index 479f231fb8..18b3b9d2fe 100644
+--- a/src/egl/main/eglcurrent.c
++++ b/src/egl/main/eglcurrent.c
+@@ -39,21 +39,23 @@
+ 
+ /* a fallback thread info to guarantee that every thread always has one */
+ static _EGLThreadInfo dummy_thread;
+-static mtx_t _egl_TSDMutex = _MTX_INITIALIZER_NP;
+-static EGLBoolean _egl_TSDInitialized;
+-static tss_t _egl_TSD;
+-static void (*_egl_FreeTSD)(_EGLThreadInfo *);
+ 
+ #ifdef GLX_USE_TLS
+ static __thread const _EGLThreadInfo *_egl_TLS
+    __attribute__ ((tls_model("initial-exec")));
++#else
++static mtx_t _egl_TSDMutex = _MTX_INITIALIZER_NP;
++static EGLBoolean _egl_TSDInitialized;
++static tss_t _egl_TSD;
++static void (*_egl_FreeTSD)(_EGLThreadInfo *);
+ #endif
+ 
+ static inline void _eglSetTSD(const _EGLThreadInfo *t)
+ {
+-   tss_set(_egl_TSD, (void *) t);
+ #ifdef GLX_USE_TLS
+    _egl_TLS = t;
++#else
++   tss_set(_egl_TSD, (void *) t);
+ #endif
+ }
+ 
+@@ -68,6 +70,7 @@ static inline _EGLThreadInfo *_eglGetTSD(void)
+ 
+ static inline void _eglFiniTSD(void)
+ {
++#ifndef GLX_USE_TLS
+    mtx_lock(&_egl_TSDMutex);
+    if (_egl_TSDInitialized) {
+       _EGLThreadInfo *t = _eglGetTSD();
+@@ -78,10 +81,12 @@ static inline void _eglFiniTSD(void)
+       tss_delete(_egl_TSD);
+    }
+    mtx_unlock(&_egl_TSDMutex);
++#endif
+ }
+ 
+ static inline EGLBoolean _eglInitTSD(void (*dtor)(_EGLThreadInfo *))
+ {
++#ifndef GLX_USE_TLS
+    if (!_egl_TSDInitialized) {
+       mtx_lock(&_egl_TSDMutex);
+ 
+@@ -98,7 +103,7 @@ static inline EGLBoolean _eglInitTSD(void (*dtor)(_EGLThreadInfo *))
+ 
+       mtx_unlock(&_egl_TSDMutex);
+    }
+-
++#endif
+    return EGL_TRUE;
+ }
+ 
+diff --git a/src/egl/main/egldevice.c b/src/egl/main/egldevice.c
+index c5c9a21273..856e55a534 100644
+--- a/src/egl/main/egldevice.c
++++ b/src/egl/main/egldevice.c
+@@ -25,6 +25,7 @@
+  *
+  **************************************************************************/
+ 
++#include <stdlib.h>
+ #ifdef HAVE_LIBDRM
+ #include <xf86drm.h>
+ #endif
+diff --git a/src/egl/main/egldisplay.c b/src/egl/main/egldisplay.c
+index 387df6a66d..379ed1d48e 100644
+--- a/src/egl/main/egldisplay.c
++++ b/src/egl/main/egldisplay.c
+@@ -70,6 +70,7 @@ static const struct {
+    { _EGL_PLATFORM_ANDROID, "android" },
+    { _EGL_PLATFORM_HAIKU, "haiku" },
+    { _EGL_PLATFORM_SURFACELESS, "surfaceless" },
++   { _EGL_PLATFORM_SWITCH, "switch" },
+ };
+ 
+ 
+@@ -136,6 +137,10 @@ _eglNativePlatformDetectNativeDisplay(void *nativeDisplay)
+ #ifdef HAVE_HAIKU_PLATFORM
+       return _EGL_PLATFORM_HAIKU;
+ #endif
++
++#ifdef HAVE_SWITCH_PLATFORM
++      return _EGL_PLATFORM_SWITCH;
++#endif
+    }
+ 
+    return _EGL_INVALID_PLATFORM;
+@@ -238,7 +243,7 @@ _eglFindDisplay(_EGLPlatformType plat, void *plat_dpy)
+          dpy->Platform = plat;
+          dpy->PlatformDisplay = plat_dpy;
+ 
+-         /* add to the display list */ 
++         /* add to the display list */
+          dpy->Next = _eglGlobal.DisplayList;
+          _eglGlobal.DisplayList = dpy;
+       }
+diff --git a/src/egl/main/egldisplay.h b/src/egl/main/egldisplay.h
+index 5cc503734b..271521f5a5 100644
+--- a/src/egl/main/egldisplay.h
++++ b/src/egl/main/egldisplay.h
+@@ -50,6 +50,7 @@ enum _egl_platform_type {
+    _EGL_PLATFORM_ANDROID,
+    _EGL_PLATFORM_HAIKU,
+    _EGL_PLATFORM_SURFACELESS,
++   _EGL_PLATFORM_SWITCH,
+ 
+    _EGL_NUM_PLATFORMS,
+    _EGL_INVALID_PLATFORM = -1
+diff --git a/src/egl/main/eglglobals.h b/src/egl/main/eglglobals.h
+index 63bea4ebc3..45311efd01 100644
+--- a/src/egl/main/eglglobals.h
++++ b/src/egl/main/eglglobals.h
+@@ -31,6 +31,7 @@
+ #ifndef EGLGLOBALS_INCLUDED
+ #define EGLGLOBALS_INCLUDED
+ 
++#include <assert.h>
+ #include <stdbool.h>
+ #include "c11/threads.h"
+ 
+diff --git a/src/egl/main/egllog.c b/src/egl/main/egllog.c
+index c223f49b0f..833e6dec94 100644
+--- a/src/egl/main/egllog.c
++++ b/src/egl/main/egllog.c
+@@ -55,6 +55,10 @@
+ 
+ #endif /* HAVE_ANDROID_PLATFORM */
+ 
++#ifdef HAVE_SWITCH_PLATFORM
++#include <switch/kernel/svc.h>
++#endif
++
+ #define MAXSTRING 1000
+ #define FALLBACK_LOG_LEVEL _EGL_WARNING
+ 
+@@ -84,7 +88,7 @@ static const char *level_strings[] = {
+ static void
+ _eglDefaultLogger(EGLint level, const char *msg)
+ {
+-#ifdef HAVE_ANDROID_PLATFORM
++#if defined(HAVE_ANDROID_PLATFORM)
+    static const int egl2alog[] = {
+       [_EGL_FATAL] = ANDROID_LOG_ERROR,
+       [_EGL_WARNING]  = ANDROID_LOG_WARN,
+@@ -93,6 +97,9 @@ _eglDefaultLogger(EGLint level, const char *msg)
+    };
+    LOG_PRI(egl2alog[level], LOG_TAG, "%s", msg);
+ #else
++#if defined(HAVE_SWITCH_PLATFORM)
++   svcOutputDebugString(msg, strlen(msg) + 1);
++#endif
+    fprintf(stderr, "libEGL %s: %s\n", level_strings[level], msg);
+ #endif /* HAVE_ANDROID_PLATFORM */
+ }
+diff --git a/src/egl/meson.build b/src/egl/meson.build
+index b7ff09e9fe..56db13d34e 100644
+--- a/src/egl/meson.build
++++ b/src/egl/meson.build
+@@ -22,6 +22,7 @@ inc_egl = include_directories('.', 'main')
+ inc_egl_dri2 = include_directories('drivers/dri2')
+ 
+ c_args_for_egl = []
++objs_for_egl = []
+ link_for_egl = []
+ deps_for_egl = []
+ incs_for_egl = [inc_include, inc_drm_uapi, inc_src, inc_egl]
+@@ -136,6 +137,20 @@ elif with_platform_haiku
+   files_egl += files('drivers/haiku/egl_haiku.cpp')
+   link_for_egl += libgl
+   deps_for_egl += cpp.find_library('be')
++elif with_platform_switch
++  incs_for_egl += [inc_gallium, inc_gallium_aux, inc_gallium_winsys, inc_mesa]
++  files_egl += files('drivers/switch/egl_switch.c')
++  objs_for_egl += [
++    libmesa_gallium.extract_all_objects(),
++    libglsl.extract_all_objects(),
++    libglcpp.extract_all_objects(),
++    libmesa_util.extract_all_objects(),
++    libcompiler.extract_all_objects(),
++    libgallium.extract_all_objects(),
++    libgalliumvl_stub.extract_all_objects(),
++    libnouveauwinsys.extract_all_objects(),
++    libnouveau.extract_all_objects()
++  ]
+ endif
+ 
+ if cc.has_function('mincore')
+@@ -156,7 +171,11 @@ else
+   )
+ endif
+ 
+-libegl = shared_library(
++if not with_platform_switch
++  link_for_egl += libmesa_util
++endif
++
++libegl = library(
+   egl_lib_name,
+   files_egl,
+   c_args : [
+@@ -165,7 +184,8 @@ libegl = shared_library(
+     '-D_EGL_NATIVE_PLATFORM=_EGL_PLATFORM_@0@'.format(egl_native_platform.to_upper()),
+   ],
+   include_directories : incs_for_egl,
+-  link_with : [link_for_egl, libglapi, libmesa_util],
++  objects : objs_for_egl,
++  link_with : [link_for_egl, libglapi],
+   link_args : [ld_args_bsymbolic, ld_args_gc_sections],
+   dependencies : [deps_for_egl, dep_dl, dep_libdrm, dep_clock, dep_thread],
+   install : true,
+diff --git a/src/gallium/auxiliary/driver_ddebug/dd_util.h b/src/gallium/auxiliary/driver_ddebug/dd_util.h
+index 20aca94cc6..d3e52fbbd2 100644
+--- a/src/gallium/auxiliary/driver_ddebug/dd_util.h
++++ b/src/gallium/auxiliary/driver_ddebug/dd_util.h
+@@ -38,7 +38,7 @@
+ #include "util/u_string.h"
+ 
+ #include "pipe/p_config.h"
+-#if defined(PIPE_OS_UNIX)
++#if defined(PIPE_OS_UNIX) || defined(PIPE_OS_SWITCH)
+ #include <unistd.h>
+ #include <sys/stat.h>
+ #elif defined(PIPE_OS_WINDOWS)
+diff --git a/src/gallium/auxiliary/hud/hud_context.c b/src/gallium/auxiliary/hud/hud_context.c
+index 9f9db850a7..dc2260479e 100644
+--- a/src/gallium/auxiliary/hud/hud_context.c
++++ b/src/gallium/auxiliary/hud/hud_context.c
+@@ -1012,7 +1012,7 @@ static void strcat_without_spaces(char *dst, const char *src)
+ }
+ 
+ 
+-#ifdef PIPE_OS_WINDOWS
++#if defined(PIPE_OS_WINDOWS) || defined(PIPE_OS_SWITCH)
+ #define W_OK 0
+ static int
+ access(const char *pathname, int mode)
+@@ -1020,6 +1020,9 @@ access(const char *pathname, int mode)
+    /* no-op */
+    return 0;
+ }
++#endif
++
++#if defined(PIPE_OS_WINDOWS)
+ 
+ #define PATH_SEP "\\"
+ 
+diff --git a/src/gallium/auxiliary/os/os_thread.h b/src/gallium/auxiliary/os/os_thread.h
+index f2629c5ffe..7f5718e567 100644
+--- a/src/gallium/auxiliary/os/os_thread.h
++++ b/src/gallium/auxiliary/os/os_thread.h
+@@ -117,6 +117,8 @@ pipe_semaphore_wait(pipe_semaphore *sema)
+  * Thread-specific data.
+  */
+ 
++#if !defined(GLX_USE_TLS)
++
+ typedef struct {
+    tss_t key;
+    int initMagic;
+@@ -155,7 +157,7 @@ pipe_tsd_set(pipe_tsd *tsd, void *value)
+    }
+ }
+ 
+-
++#endif
+ 
+ /*
+  * Thread statistics.
+diff --git a/src/gallium/auxiliary/util/u_network.c b/src/gallium/auxiliary/util/u_network.c
+index 89395f54ea..51769463a5 100644
+--- a/src/gallium/auxiliary/util/u_network.c
++++ b/src/gallium/auxiliary/util/u_network.c
+@@ -9,7 +9,7 @@
+ #  include <winsock2.h>
+ #  include <windows.h>
+ #  include <ws2tcpip.h>
+-#elif defined(PIPE_OS_UNIX)
++#elif defined(PIPE_OS_UNIX) || defined(PIPE_OS_SWITCH)
+ #  include <sys/socket.h>
+ #  include <netinet/in.h>
+ #  include <unistd.h>
+diff --git a/src/gallium/auxiliary/util/u_tests.c b/src/gallium/auxiliary/util/u_tests.c
+index 365d4fa8f1..1d8f08ef25 100644
+--- a/src/gallium/auxiliary/util/u_tests.c
++++ b/src/gallium/auxiliary/util/u_tests.c
+@@ -586,7 +586,7 @@ test_sync_file_fences(struct pipe_context *ctx)
+    pass = pass && screen->fence_finish(screen, NULL, final_fence, 0);
+ 
+    /* Cleanup. */
+-#ifndef PIPE_OS_WINDOWS
++#if !defined(PIPE_OS_WINDOWS) && !defined(PIPE_OS_SWITCH)
+    if (buf_fd >= 0)
+       close(buf_fd);
+    if (tex_fd >= 0)
+diff --git a/src/gallium/drivers/nouveau/codegen/nv50_ir_target.cpp b/src/gallium/drivers/nouveau/codegen/nv50_ir_target.cpp
+index 5c6d0570ae..c2c2fce169 100644
+--- a/src/gallium/drivers/nouveau/codegen/nv50_ir_target.cpp
++++ b/src/gallium/drivers/nouveau/codegen/nv50_ir_target.cpp
+@@ -153,6 +153,7 @@ Target *Target::create(unsigned int chipset)
+    case 0x120:
+    case 0x130:
+       return getTargetGM107(chipset);
++#ifndef __SWITCH__
+    case 0xc0:
+    case 0xd0:
+    case 0xe0:
+@@ -164,6 +165,7 @@ Target *Target::create(unsigned int chipset)
+    case 0x90:
+    case 0xa0:
+       return getTargetNV50(chipset);
++#endif
+    default:
+       ERROR("unsupported target: NV%x\n", chipset);
+       return 0;
+diff --git a/src/gallium/drivers/nouveau/nouveau_debug.h b/src/gallium/drivers/nouveau/nouveau_debug.h
+index 546a4ad0af..9bd2046914 100644
+--- a/src/gallium/drivers/nouveau/nouveau_debug.h
++++ b/src/gallium/drivers/nouveau/nouveau_debug.h
+@@ -16,7 +16,7 @@
+ #define NOUVEAU_DEBUG 0
+ 
+ #define NOUVEAU_ERR(fmt, args...)                                 \
+-   fprintf(stderr, "%s:%d - " fmt, __FUNCTION__, __LINE__, ##args)
++   debug_printf("%s:%d - " fmt, __FUNCTION__, __LINE__, ##args)
+ 
+ #define NOUVEAU_DBG(ch, args...)           \
+    if ((NOUVEAU_DEBUG) & (NOUVEAU_DEBUG_##ch))        \
+diff --git a/src/gallium/drivers/nouveau/nouveau_screen.c b/src/gallium/drivers/nouveau/nouveau_screen.c
+index e9fe04bddf..9bd60bea23 100644
+--- a/src/gallium/drivers/nouveau/nouveau_screen.c
++++ b/src/gallium/drivers/nouveau/nouveau_screen.c
+@@ -90,18 +90,12 @@ nouveau_screen_fence_finish(struct pipe_screen *screen,
+ struct nouveau_bo *
+ nouveau_screen_bo_from_handle(struct pipe_screen *pscreen,
+                               struct winsys_handle *whandle,
+-                              unsigned *out_stride)
++                              unsigned *out_stride, unsigned *out_offset)
+ {
+    struct nouveau_device *dev = nouveau_screen(pscreen)->device;
+    struct nouveau_bo *bo = 0;
+    int ret;
+ 
+-   if (whandle->offset != 0) {
+-      debug_printf("%s: attempt to import unsupported winsys offset %d\n",
+-                   __FUNCTION__, whandle->offset);
+-      return NULL;
+-   }
+-
+    if (whandle->type != WINSYS_HANDLE_TYPE_SHARED &&
+        whandle->type != WINSYS_HANDLE_TYPE_FD) {
+       debug_printf("%s: attempt to import unsupported handle type %d\n",
+@@ -121,6 +115,7 @@ nouveau_screen_bo_from_handle(struct pipe_screen *pscreen,
+    }
+ 
+    *out_stride = whandle->stride;
++   *out_offset = whandle->offset;
+    return bo;
+ }
+ 
+@@ -129,9 +124,11 @@ bool
+ nouveau_screen_bo_get_handle(struct pipe_screen *pscreen,
+                              struct nouveau_bo *bo,
+                              unsigned stride,
++                             unsigned offset,
+                              struct winsys_handle *whandle)
+ {
+    whandle->stride = stride;
++   whandle->offset = offset;
+ 
+    if (whandle->type == WINSYS_HANDLE_TYPE_SHARED) {
+       return nouveau_bo_name_get(bo, &whandle->handle) == 0;
+@@ -212,17 +209,23 @@ nouveau_screen_init(struct nouveau_screen *screen, struct nouveau_device *dev)
+ 
+    ret = nouveau_object_new(&dev->object, 0, NOUVEAU_FIFO_CHANNEL_CLASS,
+                             data, size, &screen->channel);
+-   if (ret)
++   if (ret) {
++      debug_printf("nouveau_object_new: failed with %d\n", ret);
+       return ret;
++   }
+ 
+    ret = nouveau_client_new(screen->device, &screen->client);
+-   if (ret)
++   if (ret) {
++      debug_printf("nouveau_client_new: failed with %d\n", ret);
+       return ret;
++   }
+    ret = nouveau_pushbuf_new(screen->client, screen->channel,
+                              4, 512 * 1024, 1,
+                              &screen->pushbuf);
+-   if (ret)
++   if (ret) {
++      debug_printf("nouveau_pushbuf_new: failed with %d\n", ret);
+       return ret;
++   }
+ 
+    /* getting CPU time first appears to be more accurate */
+    screen->cpu_gpu_time_delta = os_time_get();
+@@ -269,8 +272,6 @@ nouveau_screen_init(struct nouveau_screen *screen, struct nouveau_device *dev)
+ void
+ nouveau_screen_fini(struct nouveau_screen *screen)
+ {
+-   int fd = screen->drm->fd;
+-
+    nouveau_mm_destroy(screen->mm_GART);
+    nouveau_mm_destroy(screen->mm_VRAM);
+ 
+@@ -281,7 +282,6 @@ nouveau_screen_fini(struct nouveau_screen *screen)
+ 
+    nouveau_device_del(&screen->device);
+    nouveau_drm_del(&screen->drm);
+-   close(fd);
+ 
+    disk_cache_destroy(screen->disk_shader_cache);
+ }
+diff --git a/src/gallium/drivers/nouveau/nouveau_screen.h b/src/gallium/drivers/nouveau/nouveau_screen.h
+index b714f0a2aa..3a8fba4488 100644
+--- a/src/gallium/drivers/nouveau/nouveau_screen.h
++++ b/src/gallium/drivers/nouveau/nouveau_screen.h
+@@ -131,11 +131,12 @@ bool
+ nouveau_screen_bo_get_handle(struct pipe_screen *pscreen,
+                              struct nouveau_bo *bo,
+                              unsigned stride,
++                             unsigned offset,
+                              struct winsys_handle *whandle);
+ struct nouveau_bo *
+ nouveau_screen_bo_from_handle(struct pipe_screen *pscreen,
+                               struct winsys_handle *whandle,
+-                              unsigned *out_stride);
++                              unsigned *out_stride, unsigned *out_offset);
+ 
+ 
+ int nouveau_screen_init(struct nouveau_screen *, struct nouveau_device *);
+diff --git a/src/gallium/drivers/nouveau/nouveau_vp3_video.c b/src/gallium/drivers/nouveau/nouveau_vp3_video.c
+index e7a63181de..8b67e34949 100644
+--- a/src/gallium/drivers/nouveau/nouveau_vp3_video.c
++++ b/src/gallium/drivers/nouveau/nouveau_vp3_video.c
+@@ -20,10 +20,10 @@
+  * OTHER DEALINGS IN THE SOFTWARE.
+  */
+ 
+-#include <sys/mman.h>
+ #include <sys/stat.h>
+ #include <stdio.h>
+ #include <fcntl.h>
++#include <unistd.h>
+ 
+ #include <nvif/class.h>
+ 
+@@ -294,7 +294,7 @@ nouveau_vp3_load_firmware(struct nouveau_vp3_decoder *dec,
+    if (nouveau_bo_map(dec->fw_bo, NOUVEAU_BO_WR, dec->client))
+       return 1;
+ 
+-   fd = open(path, O_RDONLY | O_CLOEXEC);
++   fd = open(path, O_RDONLY);
+    if (fd < 0) {
+       fprintf(stderr, "opening firmware file %s failed: %m\n", path);
+       return 1;
+@@ -348,8 +348,7 @@ nouveau_vp3_load_firmware(struct nouveau_vp3_decoder *dec,
+       default:
+          return 1;
+    }
+-   munmap(dec->fw_bo->map, dec->fw_bo->size);
+-   dec->fw_bo->map = NULL;
++   nouveau_bo_unmap(dec->fw_bo);
+    return 0;
+ }
+ 
+diff --git a/src/gallium/drivers/nouveau/nouveau_winsys.h b/src/gallium/drivers/nouveau/nouveau_winsys.h
+index f13988ea52..3a686bd8f6 100644
+--- a/src/gallium/drivers/nouveau/nouveau_winsys.h
++++ b/src/gallium/drivers/nouveau/nouveau_winsys.h
+@@ -6,7 +6,6 @@
+ 
+ #include "pipe/p_defines.h"
+ 
+-#include <drm.h>
+ #include <nouveau.h>
+ 
+ #ifndef NV04_PFIFO_MAX_PACKET_LEN
+diff --git a/src/gallium/drivers/nouveau/nv30/nv30_miptree.c b/src/gallium/drivers/nouveau/nv30/nv30_miptree.c
+index 4c8558bdf5..0c9bac7397 100644
+--- a/src/gallium/drivers/nouveau/nv30/nv30_miptree.c
++++ b/src/gallium/drivers/nouveau/nv30/nv30_miptree.c
+@@ -52,14 +52,15 @@ nv30_miptree_get_handle(struct pipe_screen *pscreen,
+                         struct winsys_handle *handle)
+ {
+    struct nv30_miptree *mt = nv30_miptree(pt);
+-   unsigned stride;
++   unsigned stride, offset;
+ 
+    if (!mt || !mt->base.bo)
+       return false;
+ 
+    stride = mt->level[0].pitch;
++   offset = mt->level[0].offset;
+ 
+-   return nouveau_screen_bo_get_handle(pscreen, mt->base.bo, stride, handle);
++   return nouveau_screen_bo_get_handle(pscreen, mt->base.bo, stride, offset, handle);
+ }
+ 
+ static void
+@@ -513,7 +514,7 @@ nv30_miptree_from_handle(struct pipe_screen *pscreen,
+                          struct winsys_handle *handle)
+ {
+    struct nv30_miptree *mt;
+-   unsigned stride;
++   unsigned stride, offset;
+ 
+    /* only supports 2D, non-mipmapped textures for the moment */
+    if ((tmpl->target != PIPE_TEXTURE_2D &&
+@@ -527,7 +528,7 @@ nv30_miptree_from_handle(struct pipe_screen *pscreen,
+    if (!mt)
+       return NULL;
+ 
+-   mt->base.bo = nouveau_screen_bo_from_handle(pscreen, handle, &stride);
++   mt->base.bo = nouveau_screen_bo_from_handle(pscreen, handle, &stride, &offset);
+    if (mt->base.bo == NULL) {
+       FREE(mt);
+       return NULL;
+@@ -539,7 +540,7 @@ nv30_miptree_from_handle(struct pipe_screen *pscreen,
+    mt->base.base.screen = pscreen;
+    mt->uniform_pitch = stride;
+    mt->level[0].pitch = mt->uniform_pitch;
+-   mt->level[0].offset = 0;
++   mt->level[0].offset = offset;
+ 
+    /* no need to adjust bo reference count */
+    return &mt->base.base;
+diff --git a/src/gallium/drivers/nouveau/nv30/nv30_screen.c b/src/gallium/drivers/nouveau/nv30/nv30_screen.c
+index 53551ebc03..69ed4b2cda 100644
+--- a/src/gallium/drivers/nouveau/nv30/nv30_screen.c
++++ b/src/gallium/drivers/nouveau/nv30/nv30_screen.c
+@@ -23,7 +23,6 @@
+  *
+  */
+ 
+-#include <xf86drm.h>
+ #include <nouveau_drm.h>
+ #include "util/u_format.h"
+ #include "util/u_format_s3tc.h"
+diff --git a/src/gallium/drivers/nouveau/nv50/nv50_miptree.c b/src/gallium/drivers/nouveau/nv50/nv50_miptree.c
+index f2e304fde6..1393872df2 100644
+--- a/src/gallium/drivers/nouveau/nv50/nv50_miptree.c
++++ b/src/gallium/drivers/nouveau/nv50/nv50_miptree.c
+@@ -184,16 +184,18 @@ nv50_miptree_get_handle(struct pipe_screen *pscreen,
+                         struct winsys_handle *whandle)
+ {
+    struct nv50_miptree *mt = nv50_miptree(pt);
+-   unsigned stride;
++   unsigned stride, offset;
+ 
+    if (!mt || !mt->base.bo)
+       return false;
+ 
+    stride = mt->level[0].pitch;
++   offset = mt->level[0].offset;
+ 
+    return nouveau_screen_bo_get_handle(pscreen,
+                                        mt->base.bo,
+                                        stride,
++                                       offset,
+                                        whandle);
+ }
+ 
+@@ -403,7 +405,7 @@ nv50_miptree_from_handle(struct pipe_screen *pscreen,
+                          struct winsys_handle *whandle)
+ {
+    struct nv50_miptree *mt;
+-   unsigned stride;
++   unsigned stride, offset;
+ 
+    /* only supports 2D, non-mipmapped textures for the moment */
+    if ((templ->target != PIPE_TEXTURE_2D &&
+@@ -417,7 +419,7 @@ nv50_miptree_from_handle(struct pipe_screen *pscreen,
+    if (!mt)
+       return NULL;
+ 
+-   mt->base.bo = nouveau_screen_bo_from_handle(pscreen, whandle, &stride);
++   mt->base.bo = nouveau_screen_bo_from_handle(pscreen, whandle, &stride, &offset);
+    if (mt->base.bo == NULL) {
+       FREE(mt);
+       return NULL;
+@@ -430,7 +432,7 @@ nv50_miptree_from_handle(struct pipe_screen *pscreen,
+    pipe_reference_init(&mt->base.base.reference, 1);
+    mt->base.base.screen = pscreen;
+    mt->level[0].pitch = stride;
+-   mt->level[0].offset = 0;
++   mt->level[0].offset = offset;
+    mt->level[0].tile_mode = mt->base.bo->config.nv50.tile_mode;
+ 
+    NOUVEAU_DRV_STAT(nouveau_screen(pscreen), tex_obj_current_count, 1);
+diff --git a/src/gallium/drivers/nouveau/nv50/nv50_screen.c b/src/gallium/drivers/nouveau/nv50/nv50_screen.c
+index 8e65eaf50b..d96eefbc52 100644
+--- a/src/gallium/drivers/nouveau/nv50/nv50_screen.c
++++ b/src/gallium/drivers/nouveau/nv50/nv50_screen.c
+@@ -21,7 +21,6 @@
+  */
+ 
+ #include <errno.h>
+-#include <xf86drm.h>
+ #include <nouveau_drm.h>
+ #include "util/u_format.h"
+ #include "util/u_format_s3tc.h"
+diff --git a/src/gallium/drivers/nouveau/nv50/nv84_video.c b/src/gallium/drivers/nouveau/nv50/nv84_video.c
+index 409c40d632..f73b8b907c 100644
+--- a/src/gallium/drivers/nouveau/nv50/nv84_video.c
++++ b/src/gallium/drivers/nouveau/nv50/nv84_video.c
+@@ -20,7 +20,6 @@
+  * OTHER DEALINGS IN THE SOFTWARE.
+  */
+ 
+-#include <sys/mman.h>
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <fcntl.h>
+@@ -34,7 +33,7 @@
+ static int
+ nv84_copy_firmware(const char *path, void *dest, ssize_t len)
+ {
+-   int fd = open(path, O_RDONLY | O_CLOEXEC);
++   int fd = open(path, O_RDONLY);
+    ssize_t r;
+    if (fd < 0) {
+       fprintf(stderr, "opening firmware file %s failed: %m\n", path);
+@@ -88,8 +87,7 @@ nv84_load_firmwares(struct nouveau_device *dev, struct nv84_decoder *dec,
+    ret = nv84_copy_firmware(fw1, fw->map, size1);
+    if (fw2 && !ret)
+       ret = nv84_copy_firmware(fw2, fw->map + dec->vp_fw2_offset, size2);
+-   munmap(fw->map, fw->size);
+-   fw->map = NULL;
++   nouveau_bo_unmap(fw);
+    if (!ret)
+       return fw;
+ error:
+diff --git a/src/gallium/drivers/nouveau/nv50/nv98_video_vp.c b/src/gallium/drivers/nouveau/nv50/nv98_video_vp.c
+index f1cdf168ed..eb09bbc5ca 100644
+--- a/src/gallium/drivers/nouveau/nv50/nv98_video_vp.c
++++ b/src/gallium/drivers/nouveau/nv50/nv98_video_vp.c
+@@ -21,7 +21,6 @@
+  */
+ 
+ #include "nv50/nv98_video.h"
+-#include <sys/mman.h>
+ 
+ #if NOUVEAU_VP3_DEBUG_FENCE
+ static void dump_comm_vp(struct nouveau_vp3_decoder *dec, struct comm *comm, u32 comm_seq,
+@@ -50,8 +49,7 @@ static void dump_comm_vp(struct nouveau_vp3_decoder *dec, struct comm *comm, u32
+       for (i = 0; i < comm->byte_ofs + slice_size; i += 0x10) {
+          debug_printf("%05x: %08x %08x %08x %08x\n", i, map[i/4], map[i/4+1], map[i/4+2], map[i/4+3]);
+       }
+-      munmap(inter_bo->map, inter_bo->size);
+-      inter_bo->map = NULL;
++      nouveau_bo_unmap(inter_bo);
+    }
+    assert((comm->pvp_stage & 0xff) == 0xff);
+ }
+diff --git a/src/gallium/drivers/nouveau/nvc0/nvc0_screen.c b/src/gallium/drivers/nouveau/nvc0/nvc0_screen.c
+index 553fe324bc..5e34aec7c6 100644
+--- a/src/gallium/drivers/nouveau/nvc0/nvc0_screen.c
++++ b/src/gallium/drivers/nouveau/nvc0/nvc0_screen.c
+@@ -20,7 +20,6 @@
+  * OTHER DEALINGS IN THE SOFTWARE.
+  */
+ 
+-#include <xf86drm.h>
+ #include <nouveau_drm.h>
+ #include <nvif/class.h>
+ #include "util/u_format.h"
+@@ -927,6 +926,7 @@ nvc0_screen_create(struct nouveau_device *dev)
+    ret = nouveau_screen_init(&screen->base, dev);
+    if (ret)
+       FAIL_SCREEN_INIT("Base screen init failed: %d\n", ret);
++
+    chan = screen->base.channel;
+    push = screen->base.pushbuf;
+    push->user_priv = screen;
+@@ -976,8 +976,7 @@ nvc0_screen_create(struct nouveau_device *dev)
+    screen->fence.map = screen->fence.bo->map;
+    screen->base.fence.emit = nvc0_screen_fence_emit;
+    screen->base.fence.update = nvc0_screen_fence_update;
+-
+-
++#if 0 // TODO: Support queries
+    ret = nouveau_object_new(chan, (dev->chipset < 0xe0) ? 0x1f906e : 0x906e,
+                             NVIF_CLASS_SW_GF100, NULL, 0, &screen->nvsw);
+    if (ret)
+@@ -985,7 +984,7 @@ nvc0_screen_create(struct nouveau_device *dev)
+ 
+    BEGIN_NVC0(push, SUBC_SW(NV01_SUBCHAN_OBJECT), 1);
+    PUSH_DATA (push, screen->nvsw->handle);
+-
++#endif
+    switch (dev->chipset & ~0xf) {
+    case 0x130:
+    case 0x120:
+@@ -1008,9 +1007,9 @@ nvc0_screen_create(struct nouveau_device *dev)
+ 
+    BEGIN_NVC0(push, SUBC_M2MF(NV01_SUBCHAN_OBJECT), 1);
+    PUSH_DATA (push, screen->m2mf->oclass);
+-   if (screen->m2mf->oclass == NVE4_P2MF_CLASS) {
++   if (screen->m2mf->oclass >= NVE4_P2MF_CLASS) {
+       BEGIN_NVC0(push, SUBC_COPY(NV01_SUBCHAN_OBJECT), 1);
+-      PUSH_DATA (push, 0xa0b5);
++      PUSH_DATA (push, screen->m2mf->oclass >= NVF0_P2MF_CLASS ? 0xb0b5 : 0xa0b5);
+    }
+ 
+    ret = nouveau_object_new(chan, 0xbeef902d, NVC0_2D_CLASS, NULL, 0,
+diff --git a/src/gallium/drivers/nouveau/nvc0/nvc0_video_vp.c b/src/gallium/drivers/nouveau/nvc0/nvc0_video_vp.c
+index 3de4ec1486..8b481f0a64 100644
+--- a/src/gallium/drivers/nouveau/nvc0/nvc0_video_vp.c
++++ b/src/gallium/drivers/nouveau/nvc0/nvc0_video_vp.c
+@@ -21,7 +21,6 @@
+  */
+ 
+ #include "nvc0/nvc0_video.h"
+-#include <sys/mman.h>
+ 
+ #if NOUVEAU_VP3_DEBUG_FENCE
+ static void dump_comm_vp(struct nouveau_vp3_decoder *dec, struct comm *comm, u32 comm_seq,
+@@ -50,8 +49,7 @@ static void dump_comm_vp(struct nouveau_vp3_decoder *dec, struct comm *comm, u32
+       for (i = 0; i < comm->byte_ofs + slice_size; i += 0x10) {
+          debug_printf("%05x: %08x %08x %08x %08x\n", i, map[i/4], map[i/4+1], map[i/4+2], map[i/4+3]);
+       }
+-      munmap(inter_bo->map, inter_bo->size);
+-      inter_bo->map = NULL;
++      nouveau_bo_unmap(inter_bo);
+    }
+    assert((comm->pvp_stage & 0xff) == 0xff);
+ }
+diff --git a/src/gallium/include/pipe/p_config.h b/src/gallium/include/pipe/p_config.h
+index 3fa43ed797..4c07d59685 100644
+--- a/src/gallium/include/pipe/p_config.h
++++ b/src/gallium/include/pipe/p_config.h
+@@ -160,6 +160,10 @@
+ #define PIPE_OS_ANDROID
+ #endif
+ 
++#if defined(HAVE_SWITCH_PLATFORM)
++#define PIPE_OS_SWITCH
++#endif
++
+ #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+ #define PIPE_OS_FREEBSD
+ #define PIPE_OS_BSD
+diff --git a/src/gallium/meson.build b/src/gallium/meson.build
+index 5e311217cf..6d3932d317 100644
+--- a/src/gallium/meson.build
++++ b/src/gallium/meson.build
+@@ -72,7 +72,11 @@ else
+   driver_radeonsi = declare_dependency()
+ endif
+ if with_gallium_nouveau
+-  subdir('winsys/nouveau/drm')
++  if with_dri
++    subdir('winsys/nouveau/drm')
++  elif with_platform_switch
++    subdir('winsys/nouveau/switch')
++  endif
+   subdir('drivers/nouveau')
+ else
+   driver_nouveau = declare_dependency()
+diff --git a/src/gallium/winsys/nouveau/switch/meson.build b/src/gallium/winsys/nouveau/switch/meson.build
+new file mode 100644
+index 0000000000..22c4528136
+--- /dev/null
++++ b/src/gallium/winsys/nouveau/switch/meson.build
+@@ -0,0 +1,29 @@
++# Copyright © 2019 fincs
++
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++# SOFTWARE.
++
++libnouveauwinsys = static_library(
++  'nouveauwinsys',
++  files('nouveau_switch_public.h', 'nouveau_switch_winsys.c'),
++  include_directories : [
++    inc_src, inc_include, inc_gallium, inc_gallium_aux, inc_gallium_drivers,
++  ],
++  c_args : [c_vis_args],
++  dependencies : [dep_libdrm_nouveau],
++)
+diff --git a/src/gallium/winsys/nouveau/switch/nouveau_switch_public.h b/src/gallium/winsys/nouveau/switch/nouveau_switch_public.h
+new file mode 100644
+index 0000000000..33b3588581
+--- /dev/null
++++ b/src/gallium/winsys/nouveau/switch/nouveau_switch_public.h
+@@ -0,0 +1,13 @@
++
++#ifndef __NOUVEAU_SWITCH_PUBLIC_H__
++#define __NOUVEAU_SWITCH_PUBLIC_H__
++#include <switch.h>
++
++struct pipe_screen;
++struct pipe_resource;
++
++struct pipe_screen *nouveau_switch_screen_create(void);
++int nouveau_switch_resource_get_syncpoint(struct pipe_resource *resource, unsigned int *out_threshold);
++int nouveau_switch_resource_get_buffer(struct pipe_resource *resource, NvGraphicBuffer *buffer);
++
++#endif
+diff --git a/src/gallium/winsys/nouveau/switch/nouveau_switch_winsys.c b/src/gallium/winsys/nouveau/switch/nouveau_switch_winsys.c
+new file mode 100644
+index 0000000000..9b51a4de5d
+--- /dev/null
++++ b/src/gallium/winsys/nouveau/switch/nouveau_switch_winsys.c
+@@ -0,0 +1,206 @@
++#include <stdint.h>
++#include "pipe/p_context.h"
++#include "pipe/p_state.h"
++#include "pipe/p_screen.h"
++#include "util/u_format.h"
++#include "util/u_memory.h"
++#include "util/u_inlines.h"
++#include "util/u_hash_table.h"
++#include "os/os_thread.h"
++
++#include "state_tracker/drm_driver.h"
++#include "drm-uapi/drm_fourcc.h"
++
++#include "nouveau_switch_public.h"
++
++#include "nouveau/nouveau_winsys.h"
++#include "nouveau/nouveau_screen.h"
++#include "nouveau/nouveau_buffer.h"
++
++#include <nvif/class.h>
++#include <nvif/cl0080.h>
++
++static mtx_t nouveau_screen_mutex = _MTX_INITIALIZER_NP;
++
++bool nouveau_drm_screen_unref(struct nouveau_screen *screen)
++{
++	int ret;
++	if (screen->refcount == -1)
++		return true;
++
++	mtx_lock(&nouveau_screen_mutex);
++	ret = --screen->refcount;
++	assert(ret >= 0);
++	mtx_unlock(&nouveau_screen_mutex);
++	return ret == 0;
++}
++
++PUBLIC struct pipe_screen *
++nouveau_switch_screen_create(void)
++{
++	struct nouveau_drm *drm = NULL;
++	struct nouveau_device *dev = NULL;
++	struct nouveau_screen *(*init)(struct nouveau_device *);
++	struct nouveau_screen *screen = NULL;
++	int ret;
++
++	mtx_lock(&nouveau_screen_mutex);
++
++	ret = nouveau_drm_new(0, &drm);
++	if (ret)
++		goto err;
++
++	ret = nouveau_device_new(&drm->client, NV_DEVICE,
++				 &(struct nv_device_v0) {
++					.device = ~0ULL,
++				 }, sizeof(struct nv_device_v0), &dev);
++	if (ret)
++		goto err;
++
++	switch (dev->chipset & ~0xf) {
++#if 0
++	case 0x30:
++	case 0x40:
++	case 0x60:
++		init = nv30_screen_create;
++		break;
++	case 0x50:
++	case 0x80:
++	case 0x90:
++	case 0xa0:
++		init = nv50_screen_create;
++		break;
++#endif
++	case 0xc0:
++	case 0xd0:
++	case 0xe0:
++	case 0xf0:
++	case 0x100:
++	case 0x110:
++	case 0x120:
++	case 0x130:
++		init = nvc0_screen_create;
++		break;
++	default:
++		debug_printf("%s: unknown chipset nv%02x\n", __func__,
++			     dev->chipset);
++		goto err;
++	}
++
++	screen = init(dev);
++	if (!screen || !screen->base.context_create)
++		goto err;
++
++	screen->refcount = 1;
++	mtx_unlock(&nouveau_screen_mutex);
++	return &screen->base;
++
++err:
++	if (screen) {
++		screen->base.destroy(&screen->base);
++	} else {
++		nouveau_device_del(&dev);
++		nouveau_drm_del(&drm);
++	}
++	mtx_unlock(&nouveau_screen_mutex);
++	return NULL;
++}
++
++PUBLIC int
++nouveau_switch_resource_get_syncpoint(struct pipe_resource *resource, unsigned int *out_threshold)
++{
++	struct nv04_resource* priv = nv04_resource(resource);
++	return nouveau_bo_get_syncpoint(priv->bo, out_threshold);
++}
++
++PUBLIC int
++nouveau_switch_resource_get_buffer(struct pipe_resource *resource, NvGraphicBuffer *buffer)
++{
++	struct winsys_handle whandle = {0};
++
++	if ((resource->target != PIPE_TEXTURE_2D && resource->target != PIPE_TEXTURE_RECT) || resource->last_level != 0 || resource->depth0 != 1 || resource->array_size > 1) {
++		debug_printf("%s: unsupported resource type\n", __func__);
++		return -1;
++	}
++
++	whandle.type = WINSYS_HANDLE_TYPE_SHARED;
++	if (!resource->screen->resource_get_handle(resource->screen, NULL, resource, &whandle, 0)) {
++		debug_printf("%s: resource_get_handle failed\n", __func__);
++		return -2;
++	}
++
++	u32 block_height_log2;
++	switch (whandle.modifier) {
++		case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK_ONE_GOB:
++			block_height_log2 = 0;
++			break;
++		case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK_TWO_GOB:
++			block_height_log2 = 1;
++			break;
++		case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK_FOUR_GOB:
++			block_height_log2 = 2;
++			break;
++		case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK_EIGHT_GOB:
++			block_height_log2 = 3;
++			break;
++		case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK_SIXTEEN_GOB:
++			block_height_log2 = 4;
++			break;
++		case DRM_FORMAT_MOD_NVIDIA_16BX2_BLOCK_THIRTYTWO_GOB:
++			block_height_log2 = 5;
++			break;
++		default:
++			debug_printf("%s: unsupported resource layout\n", __func__);
++			return -3;
++	}
++
++	u32 format;
++	NvColorFormat colorfmt;
++	switch (resource->format) {
++		case PIPE_FORMAT_R8G8B8A8_UNORM:
++			format = PIXEL_FORMAT_RGBA_8888;
++			colorfmt = NvColorFormat_A8B8G8R8;
++			break;
++		case PIPE_FORMAT_R8G8B8X8_UNORM:
++			format = PIXEL_FORMAT_RGBX_8888;
++			colorfmt = NvColorFormat_X8B8G8R8;
++			break;
++		case PIPE_FORMAT_B5G6R5_UNORM:
++			format = PIXEL_FORMAT_RGB_565;
++			colorfmt = NvColorFormat_R5G6B5;
++			break;
++		default:
++			debug_printf("%s: unsupported resource format\n", __func__);
++			return -4;
++	}
++
++	const u32 bytes_per_pixel = ((u64)colorfmt >> 3) & 0x1F;
++	const u32 block_height = 8 * (1U << block_height_log2);
++	const u32 width_aligned = whandle.stride / bytes_per_pixel;
++	const u32 height_aligned = (resource->height0 + block_height - 1) &~ (block_height - 1);
++	const u32 fb_size = whandle.stride*height_aligned;
++
++	memset(buffer, 0, sizeof(*buffer));
++	buffer->header.num_ints = (sizeof(NvGraphicBuffer) - sizeof(NativeHandle)) / 4;
++	buffer->unk0 = -1;
++	buffer->nvmap_id = whandle.handle;
++	buffer->magic = 0xDAFFCAFF;
++	buffer->pid = 42;
++	buffer->usage = GRALLOC_USAGE_HW_COMPOSER | GRALLOC_USAGE_HW_RENDER | GRALLOC_USAGE_HW_TEXTURE;
++	buffer->format = format;
++	buffer->ext_format = format;
++	buffer->stride = width_aligned;
++	buffer->total_size = fb_size;
++	buffer->num_planes = 1;
++	buffer->planes[0].width = resource->width0;
++	buffer->planes[0].height = resource->height0;
++	buffer->planes[0].color_format = colorfmt;
++	buffer->planes[0].layout = NvLayout_BlockLinear;
++	buffer->planes[0].pitch = whandle.stride;
++	buffer->planes[0].offset = whandle.offset;
++	buffer->planes[0].kind = NvKind_Generic_16BX2;
++	buffer->planes[0].block_height_log2 = block_height_log2;
++	buffer->planes[0].size = fb_size;
++
++	return 0;
++}
+diff --git a/src/loader/loader.c b/src/loader/loader.c
+index 0f799c14fd..41eb2cce0b 100644
+--- a/src/loader/loader.c
++++ b/src/loader/loader.c
+@@ -26,7 +26,9 @@
+  *    Rob Clark <robclark@freedesktop.org>
+  */
+ 
++#ifdef HAVE_DLFCN_H
+ #include <dlfcn.h>
++#endif
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <sys/stat.h>
+@@ -513,6 +515,7 @@ loader_get_extensions_name(const char *driver_name)
+    return name;
+ }
+ 
++#ifdef HAVE_DLFCN_H
+ /**
+  * Opens a DRI driver using its driver name, returning the __DRIextension
+  * entrypoints.
+@@ -600,3 +603,4 @@ loader_open_driver(const char *driver_name,
+    *out_driver_handle = driver;
+    return extensions;
+ }
++#endif
+diff --git a/src/mapi/es1api/meson.build b/src/mapi/es1api/meson.build
+index b0416e705a..af7113a3a5 100644
+--- a/src/mapi/es1api/meson.build
++++ b/src/mapi/es1api/meson.build
+@@ -27,7 +27,7 @@ es1_glapi_mapi_tmp_h = custom_target(
+   capture : true,
+ )
+ 
+-libglesv1_cm = shared_library(
++libglesv1_cm = library(
+   'GLESv1_CM',
+   ['../entry.c', es1_glapi_mapi_tmp_h],
+   c_args : [
+diff --git a/src/mapi/es2api/meson.build b/src/mapi/es2api/meson.build
+index a7f0904b69..e79028d478 100644
+--- a/src/mapi/es2api/meson.build
++++ b/src/mapi/es2api/meson.build
+@@ -27,7 +27,7 @@ es2_glapi_mapi_tmp_h = custom_target(
+   capture : true,
+ )
+ 
+-libgles2 = shared_library(
++libgles2 = library(
+   'GLESv2',
+   ['../entry.c', es2_glapi_mapi_tmp_h],
+   c_args : [
+diff --git a/src/mapi/shared-glapi/meson.build b/src/mapi/shared-glapi/meson.build
+index 828d14bfd4..ce0a40ca10 100644
+--- a/src/mapi/shared-glapi/meson.build
++++ b/src/mapi/shared-glapi/meson.build
+@@ -36,7 +36,7 @@ shared_glapi_mapi_tmp_h = custom_target(
+   capture : true,
+ )
+ 
+-libglapi = shared_library(
++libglapi = library(
+   'glapi',
+   [files_mapi_glapi, files_mapi_util, shared_glapi_mapi_tmp_h],
+   c_args : [
+@@ -50,6 +50,15 @@ libglapi = shared_library(
+   install : true,
+ )
+ 
++pkg.generate(
++  name : 'glapi',
++  filebase : 'glapi',
++  description : 'Mesa OpenGL shared library',
++  version : meson.project_version(),
++  libraries : libglapi,
++  libraries_private : gl_priv_libs,
++)
++
+ if with_any_opengl and with_tests
+   test(
+     'shared-glapi-test',
+diff --git a/src/mesa/main/context.c b/src/mesa/main/context.c
+index 492f01de95..068c89d3a9 100644
+--- a/src/mesa/main/context.c
++++ b/src/mesa/main/context.c
+@@ -1222,7 +1222,7 @@ _mesa_initialize_context(struct gl_context *ctx,
+     * has errors so don't enable it for setuid processes.
+     */
+    if (env_var_as_boolean("MESA_NO_ERROR", false)) {
+-#if !defined(_WIN32)
++#if !defined(_WIN32) && !defined(__SWITCH__)
+       if (geteuid() == getuid())
+ #endif
+          ctx->Const.ContextFlags |= GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR;
+diff --git a/src/mesa/main/errors.c b/src/mesa/main/errors.c
+index a968791362..3047e0bdf5 100644
+--- a/src/mesa/main/errors.c
++++ b/src/mesa/main/errors.c
+@@ -36,6 +36,10 @@
+ #include "context.h"
+ #include "debug_output.h"
+ 
++#if defined(__SWITCH__)
++#include <switch/kernel/svc.h>
++#endif
++
+ 
+ static FILE *LogFile = NULL;
+ 
+@@ -81,13 +85,17 @@ output_if_debug(const char *prefixString, const char *outputString,
+          fprintf(LogFile, "\n");
+       fflush(LogFile);
+ 
+-#if defined(_WIN32)
+-      /* stderr from windows applications without console is not usually 
+-       * visible, so communicate with the debugger instead */ 
++#if defined(_WIN32) || defined(__SWITCH__)
++      /* stderr from windows applications without console is not usually
++       * visible, so communicate with the debugger instead */
+       {
+          char buf[4096];
+          _mesa_snprintf(buf, sizeof(buf), "%s: %s%s", prefixString, outputString, newline ? "\n" : "");
++#ifdef __SWITCH__
++         svcOutputDebugString(buf, sizeof(buf));
++#else
+          OutputDebugStringA(buf);
++#endif
+       }
+ #endif
+    }
+diff --git a/src/mesa/main/glspirv.c b/src/mesa/main/glspirv.c
+index 227971091e..a6a66e1169 100644
+--- a/src/mesa/main/glspirv.c
++++ b/src/mesa/main/glspirv.c
+@@ -284,6 +284,7 @@ _mesa_SpecializeShaderARB(GLuint shader,
+       return;
+    }
+ 
++#ifndef __SWITCH__
+    sh = _mesa_lookup_shader_err(ctx, shader, "glSpecializeShaderARB");
+    if (!sh)
+       return;
+@@ -376,4 +377,5 @@ _mesa_SpecializeShaderARB(GLuint shader,
+ 
+  end:
+    free(spec_entries);
++#endif
+ }
+diff --git a/src/mesa/main/imports.c b/src/mesa/main/imports.c
+index 566aac1d38..c12bec3cd6 100644
+--- a/src/mesa/main/imports.c
++++ b/src/mesa/main/imports.c
+@@ -82,7 +82,9 @@ extern int vsnprintf(char *str, size_t count, const char *fmt, va_list arg);
+ void *
+ _mesa_align_malloc(size_t bytes, unsigned long alignment)
+ {
+-#if defined(HAVE_POSIX_MEMALIGN)
++#if defined(_ISOC11_SOURCE)
++   return aligned_alloc(alignment, (bytes + alignment - 1) &~ (alignment - 1));
++#elif defined(HAVE_POSIX_MEMALIGN)
+    void *mem;
+    int err = posix_memalign(& mem, alignment, bytes);
+    if (err)
+@@ -121,7 +123,7 @@ _mesa_align_malloc(size_t bytes, unsigned long alignment)
+ void *
+ _mesa_align_calloc(size_t bytes, unsigned long alignment)
+ {
+-#if defined(HAVE_POSIX_MEMALIGN)
++#if defined(_ISOC11_SOURCE) || defined(HAVE_POSIX_MEMALIGN)
+    void *mem;
+    
+    mem = _mesa_align_malloc(bytes, alignment);
+@@ -175,7 +177,7 @@ _mesa_align_calloc(size_t bytes, unsigned long alignment)
+ void
+ _mesa_align_free(void *ptr)
+ {
+-#if defined(HAVE_POSIX_MEMALIGN)
++#if defined(_ISOC11_SOURCE) || defined(HAVE_POSIX_MEMALIGN)
+    free(ptr);
+ #elif defined(_WIN32)
+    _aligned_free(ptr);
+diff --git a/src/mesa/state_tracker/st_cb_memoryobjects.c b/src/mesa/state_tracker/st_cb_memoryobjects.c
+index 39174bc9f7..82c1c2d53b 100644
+--- a/src/mesa/state_tracker/st_cb_memoryobjects.c
++++ b/src/mesa/state_tracker/st_cb_memoryobjects.c
+@@ -75,7 +75,7 @@ st_import_memoryobj_fd(struct gl_context *ctx,
+                                                       &whandle,
+                                                       obj->Dedicated);
+ 
+-#if !defined(_WIN32)
++#if !defined(_WIN32) && !defined(__SWITCH__)
+    /* We own fd, but we no longer need it. So get rid of it */
+    close(fd);
+ #endif
+diff --git a/src/mesa/state_tracker/st_cb_semaphoreobjects.c b/src/mesa/state_tracker/st_cb_semaphoreobjects.c
+index 4a3faf5753..85d9270fb4 100644
+--- a/src/mesa/state_tracker/st_cb_semaphoreobjects.c
++++ b/src/mesa/state_tracker/st_cb_semaphoreobjects.c
+@@ -67,7 +67,7 @@ st_import_semaphoreobj_fd(struct gl_context *ctx,
+ 
+    pipe->create_fence_fd(pipe, &st_obj->fence, fd, PIPE_FD_TYPE_SYNCOBJ);
+ 
+-#if !defined(_WIN32)
++#if !defined(_WIN32) && !defined(__SWITCH__)
+    /* We own fd, but we no longer need it. So get rid of it */
+    close(fd);
+ #endif
+diff --git a/src/mesa/state_tracker/st_glsl_to_tgsi.cpp b/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
+index 2102b7a57d..fa6b24f319 100644
+--- a/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
++++ b/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
+@@ -7305,9 +7305,13 @@ st_link_shader(struct gl_context *ctx, struct gl_shader_program *prog)
+ {
+    struct pipe_screen *pscreen = ctx->st->pipe->screen;
+ 
++#ifndef __SWITCH__
+    enum pipe_shader_ir preferred_ir = (enum pipe_shader_ir)
+       pscreen->get_shader_param(pscreen, PIPE_SHADER_VERTEX,
+                                 PIPE_SHADER_CAP_PREFERRED_IR);
++#else
++   const enum pipe_shader_ir preferred_ir = PIPE_SHADER_IR_TGSI;
++#endif
+    bool use_nir = preferred_ir == PIPE_SHADER_IR_NIR;
+ 
+    /* Return early if we are loading the shader from on-disk cache */
+diff --git a/src/mesa/state_tracker/st_glsl_to_tgsi_array_merge.cpp b/src/mesa/state_tracker/st_glsl_to_tgsi_array_merge.cpp
+index e54bb7b9f4..5db79283a1 100644
+--- a/src/mesa/state_tracker/st_glsl_to_tgsi_array_merge.cpp
++++ b/src/mesa/state_tracker/st_glsl_to_tgsi_array_merge.cpp
+@@ -126,11 +126,13 @@
+ 
+ #include "program/prog_instruction.h"
+ #include "util/u_math.h"
+-#include <ostream>
+ #include <cassert>
+ #include <algorithm>
+ 
++#ifndef NDEBUG
++#include <ostream>
+ #include <iostream>
++#endif
+ 
+ #include "st_glsl_to_tgsi_array_merge.h"
+ 
+@@ -302,6 +304,7 @@ void array_live_range::set_target(array_live_range  *target)
+    target_array = target;
+ }
+ 
++#ifndef NDEBUG
+ void array_live_range::print(std::ostream& os) const
+ {
+    os << "[id:" << id
+@@ -312,6 +315,7 @@ void array_live_range::print(std::ostream& os) const
+       << ", nc:" << (int)used_component_count
+       << "]";
+ }
++#endif
+ 
+ bool array_live_range::time_doesnt_overlap(const array_live_range& other) const
+ {
+@@ -388,6 +392,7 @@ uint16_t array_remapping::map_swizzles(uint16_t old_swizzle) const
+    return out_swizzle;
+ }
+ 
++#ifndef NDEBUG
+ void array_remapping::print(std::ostream& os) const
+ {
+    if (is_valid()) {
+@@ -399,6 +404,7 @@ void array_remapping::print(std::ostream& os) const
+       os << "[unused]";
+    }
+ }
++#endif
+ 
+ /* Required by the unit tests */
+ bool operator == (const array_remapping& lhs, const array_remapping& rhs)
+diff --git a/src/mesa/state_tracker/st_glsl_to_tgsi_private.cpp b/src/mesa/state_tracker/st_glsl_to_tgsi_private.cpp
+index fd3941b3cc..bd9eaebd5e 100644
+--- a/src/mesa/state_tracker/st_glsl_to_tgsi_private.cpp
++++ b/src/mesa/state_tracker/st_glsl_to_tgsi_private.cpp
+@@ -28,6 +28,10 @@
+ #include <mesa/program/prog_instruction.h>
+ #include <mesa/program/prog_print.h>
+ 
++#ifndef NDEBUG
++#include <ostream>
++#endif
++
+ static int swizzle_for_type(const glsl_type *type, int component = 0)
+ {
+    unsigned num_elements = 4;
+@@ -223,6 +227,7 @@ bool operator == (const st_src_reg& lhs, const st_src_reg& rhs)
+ 
+ static const char swz_txt[] = "xyzw";
+ 
++#ifndef NDEBUG
+ std::ostream& operator << (std::ostream& os, const st_src_reg& reg)
+ {
+    if (reg.negate)
+@@ -258,6 +263,7 @@ std::ostream& operator << (std::ostream& os, const st_src_reg& reg)
+       os << "|";
+    return os;
+ }
++#endif
+ 
+ st_dst_reg::st_dst_reg(st_src_reg reg)
+ {
+@@ -363,6 +369,7 @@ bool operator == (const st_dst_reg& lhs, const st_dst_reg& rhs)
+    return result;
+ }
+ 
++#ifndef NDEBUG
+ std::ostream& operator << (std::ostream& os, const st_dst_reg& reg)
+ {
+    os << _mesa_register_file_name(reg.file);
+@@ -421,3 +428,4 @@ void glsl_to_tgsi_instruction::print(std::ostream& os) const
+       }
+    }
+ }
++#endif
+diff --git a/src/mesa/state_tracker/st_glsl_to_tgsi_private.h b/src/mesa/state_tracker/st_glsl_to_tgsi_private.h
+index 6b5d827802..f40420cec3 100644
+--- a/src/mesa/state_tracker/st_glsl_to_tgsi_private.h
++++ b/src/mesa/state_tracker/st_glsl_to_tgsi_private.h
+@@ -31,7 +31,7 @@
+ #include "compiler/glsl_types.h"
+ #include "compiler/glsl/ir.h"
+ #include "tgsi/tgsi_info.h"
+-#include <ostream>
++#include <iosfwd>
+ 
+ int swizzle_for_size(int size);
+ 
+diff --git a/src/mesa/state_tracker/st_program.c b/src/mesa/state_tracker/st_program.c
+index 422b7b2a59..bd44b66caf 100644
+--- a/src/mesa/state_tracker/st_program.c
++++ b/src/mesa/state_tracker/st_program.c
+@@ -554,6 +554,7 @@ st_create_vp_variant(struct st_context *st,
+    vpv->tgsi.stream_output = stvp->tgsi.stream_output;
+    vpv->num_inputs = stvp->num_inputs;
+ 
++#ifndef __SWITCH__
+    if (stvp->tgsi.type == PIPE_SHADER_IR_NIR) {
+       vpv->tgsi.type = PIPE_SHADER_IR_NIR;
+       vpv->tgsi.ir.nir = nir_shader_clone(NULL, stvp->tgsi.ir.nir);
+@@ -572,6 +573,7 @@ st_create_vp_variant(struct st_context *st,
+       vpv->tgsi.ir.nir = NULL;
+       return vpv;
+    }
++#endif
+ 
+    vpv->tgsi.tokens = tgsi_dup_tokens(stvp->tgsi.tokens);
+ 
+@@ -649,11 +651,13 @@ bool
+ st_translate_fragment_program(struct st_context *st,
+                               struct st_fragment_program *stfp)
+ {
++#ifndef __SWITCH__
+    /* We have already compiled to NIR so just return */
+    if (stfp->shader_program) {
+       st_store_ir_in_disk_cache(st, &stfp->Base, true);
+       return true;
+    }
++#endif
+ 
+    ubyte outputMapping[2 * FRAG_RESULT_MAX];
+    ubyte inputMapping[VARYING_SLOT_MAX];
+@@ -1027,6 +1031,7 @@ st_create_fp_variant(struct st_context *st,
+    if (!variant)
+       return NULL;
+ 
++#ifndef __SWITCH__
+    if (stfp->tgsi.type == PIPE_SHADER_IR_NIR) {
+       tgsi.type = PIPE_SHADER_IR_NIR;
+       tgsi.ir.nir = nir_shader_clone(NULL, stfp->tgsi.ir.nir);
+@@ -1112,6 +1117,7 @@ st_create_fp_variant(struct st_context *st,
+ 
+       return variant;
+    }
++#endif
+ 
+    tgsi.tokens = stfp->tgsi.tokens;
+ 
+@@ -1479,6 +1485,7 @@ st_translate_geometry_program(struct st_context *st,
+ {
+    struct ureg_program *ureg;
+ 
++#ifndef __SWITCH__
+    /* We have already compiled to NIR so just return */
+    if (stgp->shader_program) {
+       /* No variants */
+@@ -1488,6 +1495,7 @@ st_translate_geometry_program(struct st_context *st,
+       st_store_ir_in_disk_cache(st, &stgp->Base, true);
+       return true;
+    }
++#endif
+ 
+    ureg = ureg_create_with_screen(PIPE_SHADER_GEOMETRY, st->pipe->screen);
+    if (ureg == NULL)
+@@ -1539,9 +1547,11 @@ st_get_basic_variant(struct st_context *st,
+       if (v) {
+ 
+ 	 if (prog->tgsi.type == PIPE_SHADER_IR_NIR) {
++#ifndef __SWITCH__
+ 	    tgsi.type = PIPE_SHADER_IR_NIR;
+ 	    tgsi.ir.nir = nir_shader_clone(NULL, prog->tgsi.ir.nir);
+             tgsi.stream_output = prog->tgsi.stream_output;
++#endif
+ 	 } else
+ 	    tgsi = prog->tgsi;
+          /* fill in new variant */
+@@ -1582,6 +1592,7 @@ st_translate_tessctrl_program(struct st_context *st,
+ {
+    struct ureg_program *ureg;
+ 
++#ifndef __SWITCH__
+    /* We have already compiled to NIR so just return */
+    if (sttcp->shader_program) {
+       /* No variants */
+@@ -1590,6 +1601,7 @@ st_translate_tessctrl_program(struct st_context *st,
+       st_store_ir_in_disk_cache(st, &sttcp->Base, true);
+       return true;
+    }
++#endif
+ 
+    ureg = ureg_create_with_screen(PIPE_SHADER_TESS_CTRL, st->pipe->screen);
+    if (ureg == NULL)
+@@ -1616,6 +1628,7 @@ st_translate_tesseval_program(struct st_context *st,
+ {
+    struct ureg_program *ureg;
+ 
++#ifndef __SWITCH__
+    /* We have already compiled to NIR so just return */
+    if (sttep->shader_program) {
+       /* No variants */
+@@ -1625,6 +1638,7 @@ st_translate_tesseval_program(struct st_context *st,
+       st_store_ir_in_disk_cache(st, &sttep->Base, true);
+       return true;
+    }
++#endif
+ 
+    ureg = ureg_create_with_screen(PIPE_SHADER_TESS_EVAL, st->pipe->screen);
+    if (ureg == NULL)
+@@ -1671,6 +1685,7 @@ st_translate_compute_program(struct st_context *st,
+ 
+    stcp->tgsi.req_local_mem = stcp->Base.info.cs.shared_size;
+ 
++#ifndef __SWITCH__
+    if (stcp->shader_program) {
+       /* no compute variants: */
+       st_finalize_nir(st, &stcp->Base, stcp->shader_program,
+@@ -1678,6 +1693,7 @@ st_translate_compute_program(struct st_context *st,
+       st_store_ir_in_disk_cache(st, &stcp->Base, true);
+       return true;
+    }
++#endif
+ 
+    ureg = ureg_create_with_screen(PIPE_SHADER_COMPUTE, st->pipe->screen);
+    if (ureg == NULL)
+@@ -1724,8 +1740,10 @@ st_get_cp_variant(struct st_context *st,
+       if (v) {
+          /* fill in new variant */
+          struct pipe_compute_state cs = *tgsi;
++#ifndef __SWITCH__
+          if (tgsi->ir_type == PIPE_SHADER_IR_NIR)
+             cs.prog = nir_shader_clone(NULL, tgsi->prog);
++#endif
+          v->driver_shader = pipe->create_compute_state(pipe, &cs);
+          v->key = key;
+ 
+diff --git a/src/mesa/state_tracker/st_shader_cache.c b/src/mesa/state_tracker/st_shader_cache.c
+index c82ce3eaa2..9ea99c1819 100644
+--- a/src/mesa/state_tracker/st_shader_cache.c
++++ b/src/mesa/state_tracker/st_shader_cache.c
+@@ -80,6 +80,10 @@ st_serialise_ir_program(struct gl_context *ctx, struct gl_program *prog,
+    struct blob blob;
+    blob_init(&blob);
+ 
++#ifdef __SWITCH__
++   nir = false;
++#endif
++
+    switch (prog->info.stage) {
+    case MESA_SHADER_VERTEX: {
+       struct st_vertex_program *stvp = (struct st_vertex_program *) prog;
+@@ -199,6 +203,10 @@ st_deserialise_ir_program(struct gl_context *ctx,
+ 
+    assert(prog->driver_cache_blob && prog->driver_cache_blob_size > 0);
+ 
++#ifdef __SWITCH__
++   nir = false;
++#endif
++
+    struct blob_reader blob_reader;
+    blob_reader_init(&blob_reader, buffer, size);
+ 
+diff --git a/src/meson.build b/src/meson.build
+index ae094fccf6..44358910c9 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -25,6 +25,7 @@ inc_mapi = include_directories('mapi')
+ inc_src = include_directories('.')
+ inc_gallium = include_directories('gallium/include')
+ inc_gallium_aux = include_directories('gallium/auxiliary')
++inc_gallium_winsys = include_directories('gallium/winsys')
+ inc_amd_common = include_directories('amd/common')
+ 
+ libglsl_util = static_library(
+@@ -82,9 +83,6 @@ if with_gbm
+ else
+   inc_gbm = []
+ endif
+-if with_egl
+-  subdir('egl')
+-endif
+ if with_gallium
+   subdir('gallium')
+   # This has to be here since it requires libgallium, and subdir cannot
+@@ -93,6 +91,9 @@ if with_gallium
+     subdir('mesa/state_tracker/tests')
+   endif
+ endif
++if with_egl
++  subdir('egl')
++endif
+ 
+ # This must be after at least mesa, glx, and gallium, since libgl will be
+ # defined in one of those subdirs depending on the glx provider.
+diff --git a/src/util/disk_cache.h b/src/util/disk_cache.h
+index 2a147cba61..5b4b83c7ce 100644
+--- a/src/util/disk_cache.h
++++ b/src/util/disk_cache.h
+@@ -91,10 +91,10 @@ disk_cache_format_hex_id(char *buf, const uint8_t *hex_id, unsigned size)
+    return buf;
+ }
+ 
+-#ifdef HAVE_DLFCN_H
+ static inline bool
+ disk_cache_get_function_timestamp(void *ptr, uint32_t* timestamp)
+ {
++#ifdef HAVE_DLFCN_H
+    Dl_info info;
+    struct stat st;
+    if (!dladdr(ptr, &info) || !info.dli_fname) {
+@@ -131,8 +131,16 @@ disk_cache_get_function_identifier(void *ptr, struct mesa_sha1 *ctx)
+    } else
+       return false;
+    return true;
++#else
++   return false;
+ }
++
++static inline bool
++disk_cache_get_function_identifier(void *ptr, struct mesa_sha1 *ctx)
++{
++   return false;
+ #endif
++}
+ 
+ /* Provide inlined stub functions if the shader cache is disabled. */
+ 
+diff --git a/src/util/macros.h b/src/util/macros.h
+index c47bbb6dfc..0e0f1a8ef0 100644
+--- a/src/util/macros.h
++++ b/src/util/macros.h
+@@ -151,11 +151,13 @@ do {                       \
+ /* Used to optionally mark structures with misaligned elements or size as
+  * packed, to trade off performance for space.
+  */
++#ifndef PACKED
+ #ifdef HAVE_FUNC_ATTRIBUTE_PACKED
+ #define PACKED __attribute__((__packed__))
+ #else
+ #define PACKED
+ #endif
++#endif
+ 
+ /* Attribute pure is used for functions that have no effects other than their
+  * return value.  As a result, calls to it can be dead code eliminated.
+diff --git a/src/util/os_memory_stdc.h b/src/util/os_memory_stdc.h
+index c9fde06d8a..8a4c8391cb 100644
+--- a/src/util/os_memory_stdc.h
++++ b/src/util/os_memory_stdc.h
+@@ -48,7 +48,17 @@
+    realloc(_old_ptr, _new_size + 0*(_old_size))
+ 
+ 
+-#if defined(HAVE_POSIX_MEMALIGN)
++#if defined(_ISOC11_SOURCE)
++
++static inline void *
++os_malloc_aligned(size_t size, size_t alignment)
++{
++   return aligned_alloc(alignment, (size + alignment - 1) &~ (alignment - 1));
++}
++
++#define os_free_aligned(_ptr) free(_ptr)
++
++#elif defined(HAVE_POSIX_MEMALIGN)
+ 
+ static inline void *
+ os_malloc_aligned(size_t size, size_t alignment)
+diff --git a/src/util/os_misc.c b/src/util/os_misc.c
+index 09d4400e08..285c996f8a 100644
+--- a/src/util/os_misc.c
++++ b/src/util/os_misc.c
+@@ -55,6 +55,8 @@
+ #  include <kernel/OS.h>
+ #elif defined(PIPE_OS_WINDOWS)
+ #  include <windows.h>
++#elif defined(PIPE_OS_SWITCH)
++#  include <switch.h>
+ #else
+ #error unexpected platform in os_sysinfo.c
+ #endif
+@@ -100,6 +102,9 @@ os_log_message(const char *message)
+       fflush(fout);
+    }
+ #else /* !PIPE_SUBSYSTEM_WINDOWS */
++#if defined(PIPE_OS_SWITCH)
++      svcOutputDebugString(message, strlen(message) + 1);
++#endif
+    fflush(stdout);
+    fputs(message, fout);
+    fflush(fout);
+@@ -169,6 +174,8 @@ os_get_total_physical_memory(uint64_t *size)
+    ret = GlobalMemoryStatusEx(&status);
+    *size = status.ullTotalPhys;
+    return (ret == TRUE);
++#elif defined(PIPE_OS_SWITCH)
++   return R_SUCCEEDED(svcGetInfo(size, 6, CUR_PROCESS_HANDLE, 0));
+ #else
+ #error unexpected platform in os_sysinfo.c
+    return false;
+diff --git a/src/util/os_time.c b/src/util/os_time.c
+index ac488b2287..9eca78b120 100644
+--- a/src/util/os_time.c
++++ b/src/util/os_time.c
+@@ -28,7 +28,7 @@
+ /**
+  * @file
+  * OS independent time-manipulation functions.
+- * 
++ *
+  * @author Jose Fonseca <jfonseca@vmware.com>
+  */
+ 
+@@ -38,8 +38,9 @@
+ #include "gallium/include/pipe/p_config.h"
+ 
+ #include "util/u_atomic.h"
++#include "c11/threads.h"
+ 
+-#if defined(PIPE_OS_UNIX)
++#if defined(PIPE_OS_UNIX) || defined(PIPE_OS_SWITCH)
+ #  include <unistd.h> /* usleep */
+ #  include <time.h> /* timeval */
+ #  include <sys/time.h> /* timeval */
+@@ -51,6 +52,10 @@
+ #  error Unsupported OS
+ #endif
+ 
++#if defined(PIPE_OS_SWITCH)
++#  include <switch/kernel/svc.h>
++#endif
++
+ 
+ int64_t
+ os_time_get_nano(void)
+@@ -61,7 +66,7 @@ os_time_get_nano(void)
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return tv.tv_nsec + tv.tv_sec*INT64_C(1000000000);
+ 
+-#elif defined(PIPE_OS_UNIX)
++#elif defined(PIPE_OS_UNIX) || defined(PIPE_OS_SWITCH)
+ 
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+@@ -110,6 +115,8 @@ os_time_sleep(int64_t usecs)
+    if (dwMilliseconds) {
+       Sleep(dwMilliseconds);
+    }
++#elif defined(PIPE_OS_SWITCH)
++   svcSleepThread((u64)usecs * 1000);
+ #else
+ #  error Unsupported OS
+ #endif
+@@ -148,9 +155,7 @@ os_wait_until_zero(volatile int *var, uint64_t timeout)
+ 
+    if (timeout == OS_TIMEOUT_INFINITE) {
+       while (p_atomic_read(var)) {
+-#if defined(PIPE_OS_UNIX)
+-         sched_yield();
+-#endif
++         thrd_yield();
+       }
+       return true;
+    }
+@@ -162,9 +167,7 @@ os_wait_until_zero(volatile int *var, uint64_t timeout)
+          if (os_time_timeout(start_time, end_time, os_time_get_nano()))
+             return false;
+ 
+-#if defined(PIPE_OS_UNIX)
+-         sched_yield();
+-#endif
++         thrd_yield();
+       }
+       return true;
+    }
+@@ -184,9 +187,7 @@ os_wait_until_zero_abs_timeout(volatile int *var, int64_t timeout)
+       if (os_time_get_nano() >= timeout)
+          return false;
+ 
+-#if defined(PIPE_OS_UNIX)
+-      sched_yield();
+-#endif
++      thrd_yield();
+    }
+    return true;
+ }
+diff --git a/src/util/slab.c b/src/util/slab.c
+index 5477c75d44..888a0265ab 100644
+--- a/src/util/slab.c
++++ b/src/util/slab.c
+@@ -27,6 +27,7 @@
+ #include <stdint.h>
+ #include <stdbool.h>
+ #include <string.h>
++#include <stdlib.h>
+ 
+ #define SLAB_MAGIC_ALLOCATED 0xcafe4321
+ #define SLAB_MAGIC_FREE 0x7ee01234

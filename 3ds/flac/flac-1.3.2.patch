@@ -1,0 +1,56 @@
+diff -Naur flac-1.3.2-stock/include/share/compat.h flac-1.3.2/include/share/compat.h
+--- flac-1.3.2-stock/include/share/compat.h
++++ flac-1.3.2/include/share/compat.h
+@@ -167,8 +167,14 @@
+ #define flac_vfprintf vfprintf
+ 
+ #define flac_fopen fopen
++#ifdef _3DS
++#define flac_chmod(a, b) printf("flac_chmod: not implemented\n")
++#define flac_utime(a, b) printf("flac_utime: not implemented\n")
++#define chown(a, b, c) printf("flac_chown: not implemented\n")
++#else
+ #define flac_chmod chmod
+ #define flac_utime utime
++#endif
+ #define flac_unlink unlink
+ #define flac_rename rename
+ #define flac_stat stat
+
+diff -NBaur flac-1.3.2.orig/Makefile.in flac-1.3.2/Makefile.in
+--- flac-1.3.2.orig/Makefile.in	2017-01-01 03:46:48.833726273 +0000
++++ flac-1.3.2/Makefile.in	2019-05-24 01:17:05.264899302 +0100
+@@ -397,7 +397,7 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = doc include m4 man src examples test build objs microbench
++SUBDIRS = include m4 src build objs
+ EXTRA_DIST = \
+ 	COPYING.FDL \
+ 	COPYING.GPL \
+
+diff -NBaur flac-1.3.2.orig/src/Makefile.in flac-1.3.2/src/Makefile.in
+--- flac-1.3.2.orig/src/Makefile.in	2017-01-01 03:46:49.385728167 +0000
++++ flac-1.3.2/src/Makefile.in	2019-05-24 01:18:39.497280352 +0100
+@@ -363,19 +363,11 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ @FLaC__HAS_XMMS_TRUE@XMMS_DIRS = plugin_common plugin_xmms
+-@FLaC__WITH_CPPLIBS_TRUE@CPPLIBS_DIRS = libFLAC++ test_libFLAC++
++@FLaC__WITH_CPPLIBS_TRUE@CPPLIBS_DIRS = libFLAC++
+ SUBDIRS = \
+ 	libFLAC \
+ 	share \
+-	flac \
+-	metaflac \
+ 	$(XMMS_DIRS) \
+-	test_grabbag \
+-	test_libs_common \
+-	test_libFLAC \
+-	test_seeking \
+-	test_streams \
+-	utils \
+ 	$(CPPLIBS_DIRS)
+ 
+ EXTRA_DIST = \

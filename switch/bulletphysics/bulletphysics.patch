@@ -1,0 +1,25 @@
+diff -Naur bullet3-2.88/CMakeLists.txt bullet3-2.88-switch/CMakeLists.txt
+--- bullet3-2.88/CMakeLists.txt	2018-12-31 20:42:41.000000000 +0000
++++ bullet3-2.88-switch/CMakeLists.txt	2019-01-17 19:29:06.146027271 +0000
+@@ -285,15 +285,17 @@
+ # This is the shortcut to finding GLU, GLUT and OpenGL if they are properly installed on your system
+ # This should be the case.
+ 
+-FIND_PACKAGE(OpenGL)
+-IF (OPENGL_FOUND)
++IF(NOT SWITCH_LIBNX)
++  FIND_PACKAGE(OpenGL)
++  IF (OPENGL_FOUND)
+ 	MESSAGE("OPENGL FOUND")
+ 	MESSAGE(${OPENGL_LIBRARIES})
+-ELSE (OPENGL_FOUND)
++  ELSE (OPENGL_FOUND)
+ 	MESSAGE("OPENGL NOT FOUND")
+ 	SET(OPENGL_gl_LIBRARY opengl32)
+ 	SET(OPENGL_glu_LIBRARY glu32)
+-ENDIF (OPENGL_FOUND)
++  ENDIF (OPENGL_FOUND)
++ENDIF(NOT SWITCH_LIBNX)
+ 
+ 
+ #FIND_PACKAGE(GLU)

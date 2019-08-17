@@ -2,25 +2,23 @@
 
 pkgname=switch-sdl2_net
 pkgver=2.0.1
-pkgrel=1
-pkgdesc="SDL2 image loading library (Nintendo Switch port)."
+pkgrel=3
+pkgdesc="A small sample cross-platform networking library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_net/"
-license=("zlib")
+license=("MIT")
 options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=(
   'switch-sdl2'
-  'switch-libpng'
-  'switch-libjpeg-turbo'
 )
 source=("${url}release/SDL2_net-${pkgver}.tar.gz")
 sha256sums=('15ce8a7e5a23dafe8177c8df6e6c79b6749a03fff1e8196742d3571657609d21')
+groups=('switch-portlibs' 'switch-sdl2-libs')
 
 build() {
   cd SDL2_net-$pkgver
 
-  source ${DEVKITPRO}/devkita64.sh
   source ${DEVKITPRO}/switchvars.sh
 
   sed '/^noinst_PROGRAMS/d' -i Makefile.in
@@ -36,7 +34,6 @@ build() {
 package() {
   cd SDL2_net-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install

@@ -3,7 +3,7 @@
 
 pkgname=switch-libmikmod
 pkgver=3.3.11.1
-pkgrel=1
+pkgrel=2
 pkgdesc='A portable sound library supporting many tracker formats (Nintendo Switch port)'
 arch=('any')
 url="http://mikmod.sourceforge.net/"
@@ -13,7 +13,7 @@ makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=("https://sourceforge.net/projects/mikmod/files/libmikmod/$pkgver/libmikmod-$pkgver.tar.gz"
         "libmikmod-switch-support.patch")
 sha256sums=('ad9d64dfc8f83684876419ea7cd4ff4a41d8bcd8c23ef37ecb3a200a16b46d19'
-            '624350141cfcae38301622c7bc8df0d0d698282d7aca3033c5083c701e7bb20f')
+            '2d2059ac16713812b4b1f75d6a2106cd6800747d1008497de5711aa424c693ed')
 
 groups=('switch-portlibs')
 

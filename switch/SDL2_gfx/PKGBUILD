@@ -3,7 +3,7 @@
 
 pkgname=switch-sdl2_gfx
 pkgver=1.0.4
-pkgrel=1
+pkgrel=2
 pkgdesc="SDL2 graphics drawing primitives (Nintendo Switch port)."
 arch=('any')
 url="https://libsdl.org"
@@ -17,6 +17,7 @@ sha256sums=(
  '72e02ea93447038f8ced24f296b31e0f397bbcc6b32abdcf9b38c80f153433fd'
  'fbc2337aa59a204f5d74743b82c8be7aab8b39853b4e54a888008f70430c4305'
 )
+groups=('switch-portlibs' 'switch-sdl2')
 
 build() {
   cp config.sub SDL2_gfx-$pkgver
@@ -26,7 +27,6 @@ build() {
 
   ./autogen.sh
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
   
   ./configure --prefix="${PORTLIBS_PREFIX}" \
@@ -41,7 +41,6 @@ build() {
 package() {
   cd SDL2_gfx-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install

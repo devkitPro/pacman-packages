@@ -2,16 +2,18 @@
 
 pkgname=3ds-libvorbisidec
 pkgver=1.2.1
-pkgrel=1
+pkgrel=3
 pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for Nintendo 3DS homebrew development)'
 arch=('any')
 url="http://xiph.org"
 license=('LGPL')
 options=(!strip libtool staticlibs)
-source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.bz2")
-sha256sums=('1afbc18e0104ca8c9e9943cfcfa995ea0100bf246c425962770d455d4ad03c65')
+source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.xz")
+sha256sums=('6ae33489ed40b54ab4a1cd0cf349e9b3b1d5c68d722485704d951f4bf80c64c6')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('3ds-libogg')
+groups=('3ds-portlibs')
+
 build() {
   cd libvorbisidec-$pkgver
 

@@ -1,0 +1,52 @@
+diff -NBaur ffmpeg-4.1.1.old/configure ffmpeg-4.1.1.new/configure
+--- ffmpeg-4.1.1.old/configure	2019-02-09 20:56:07.000000000 +0000
++++ ffmpeg-4.1.1.new/configure	2019-03-26 13:45:58.627473027 +0000
+@@ -5347,6 +5347,9 @@
+         ;;
+     minix)
+         ;;
++    horizon)
++        network_extralibs="-lnx"
++        ;;
+     none)
+         ;;
+     *)
+@@ -6337,7 +6340,7 @@
+ if check_struct sys/soundcard.h audio_buf_info bytes; then
+     enable_sanitized sys/soundcard.h
+ else
+-    test_cc -D__BSD_VISIBLE -D__XSI_VISIBLE <<EOF && add_cppflags -D__BSD_VISIBLE -D__XSI_VISIBLE && enable_sanitized sys/soundcard.h
++    test_cc -D__BSD_VISIBLE=1 -D__XSI_VISIBLE <<EOF && add_cppflags -D__BSD_VISIBLE -D__XSI_VISIBLE && enable_sanitized sys/soundcard.h
+     #include <sys/soundcard.h>
+     audio_buf_info abc;
+ EOF
+diff -NBaur ffmpeg-4.1.1.old/libavfilter/vf_drawtext.c ffmpeg-4.1.1.new/libavfilter/vf_drawtext.c
+--- ffmpeg-4.1.1.old/libavfilter/vf_drawtext.c	2019-02-09 20:56:02.000000000 +0000
++++ ffmpeg-4.1.1.new/libavfilter/vf_drawtext.c	2019-03-26 13:45:01.216438970 +0000
+@@ -37,7 +37,9 @@
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+ #endif
++#ifndef __SWITCH__
+ #include <fenv.h>
++#endif
+ 
+ #if CONFIG_LIBFONTCONFIG
+ #include <fontconfig/fontconfig.h>
+@@ -1046,12 +1048,16 @@
+         }
+     }
+ 
++#ifndef __SWITCH__
+     feclearexcept(FE_ALL_EXCEPT);
++#endif
+     intval = res;
++#ifndef __SWITCH__
+     if ((ret = fetestexcept(FE_INVALID|FE_OVERFLOW|FE_UNDERFLOW))) {
+         av_log(ctx, AV_LOG_ERROR, "Conversion of floating-point result to int failed. Control register: 0x%08x. Conversion result: %d\n", ret, intval);
+         return AVERROR(EINVAL);
+     }
++#endif
+ 
+     if (argc == 3)
+         av_strlcatf(fmt_str, sizeof(fmt_str), "0%u", positions);

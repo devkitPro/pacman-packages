@@ -1,0 +1,34 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: rsn8887 <raist66676@gmx.de>
+
+pkgname=switch-liblzma
+pkgver=5.2.4
+pkgrel=1
+pkgdesc='A compression library with an API similar to that of zlib'
+arch=('any')
+url='https://tukaani.org/xz/'
+license=('public domain')
+options=(!strip libtool staticlibs)
+makedepends=('devkitpro-pkgbuild-helpers')
+source=("https://tukaani.org/xz/xz-${pkgver}.tar.gz")
+sha256sums=('b512f3b726d3b37b6dc4c8570e137b9311e7552e8ccbab4d39d47ce5f4177145')
+
+build() {
+  cd xz-${pkgver}
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static
+  cd src/liblzma
+  make
+}
+
+package() {
+  cd xz-${pkgver}
+
+  source /opt/devkitpro/switchvars.sh
+
+  cd src/liblzma
+  make DESTDIR="${pkgdir}" install
+}
