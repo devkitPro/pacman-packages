@@ -1,8 +1,8 @@
 # Contributor: Ezekiel Bethel <zek@9net.org>
 
 pkgname=switch-miniupnpc
-pkgver=2.1.20190408
-pkgrel=2
+pkgver=2.1.20190824
+pkgrel=1
 pkgdesc='UPNP support library (for Nintendo Switch homebrew development)'
 arch=('any')
 url="http://miniupnp.free.fr/"
@@ -10,7 +10,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("http://miniupnp.free.fr/files/download.php?file=miniupnpc-${pkgver}.tar.gz" "miniupnpc.patch")
 
-sha256sums=('a0c46bcf6065d6351a8fa6a0a18dc57d10a16908dbb470908fd2e423511514ec' 'b6b7e16cfd1e78069d352b22defed7e2e23924562da8ab17dd0988a13f0f22c5')
+sha256sums=('1fadefea0ecdceb3e35bb5d901f0db880c826740e93148ddfb087b4b4389e165' 'b6b7e16cfd1e78069d352b22defed7e2e23924562da8ab17dd0988a13f0f22c5')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 build() {
