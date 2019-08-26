@@ -6,7 +6,7 @@ pkgrel=1
 pkgdesc='UPNP support library (for Nintendo Switch homebrew development)'
 arch=('any')
 url="http://miniupnp.free.fr/"
-license=('LGPL')
+license=('BSD')
 options=(!strip libtool staticlibs)
 source=("http://miniupnp.free.fr/files/download.php?file=miniupnpc-${pkgver}.tar.gz" "miniupnpc.patch")
 
