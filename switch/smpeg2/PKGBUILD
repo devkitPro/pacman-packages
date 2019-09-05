@@ -1,0 +1,51 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: uyjulian <uyjulian@gmail.com>
+
+pkgname=switch-smpeg2
+pkgver=2.0.0
+pkgrel=1
+pkgdesc="SDL2 MPEG Player Library"
+arch=('any')
+url="https://icculus.org/smpeg/"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('switch-sdl2')
+source=("https://www.libsdl.org/projects/smpeg/release/smpeg2-${pkgver}.tar.gz" "smpeg2-${pkgver}.patch" "config.sub" "config.guess")
+sha256sums=(
+ '979a65b211744a44fa641a9b6e4d64e64a12ff703ae776bafe3c4c4cd85494b3'
+ 'a5bff7b522640160cfb8bac5b8ab029ef1881fd0a9fb85b1ac98b6916b6c4318'
+ '72e02ea93447038f8ced24f296b31e0f397bbcc6b32abdcf9b38c80f153433fd'
+ 'fbc2337aa59a204f5d74743b82c8be7aab8b39853b4e54a888008f70430c4305'
+)
+groups=('switch-portlibs' 'switch-sdl2')
+
+build() {
+  cp config.sub smpeg2-$pkgver
+  cp config.guess smpeg2-$pkgver
+
+  cd smpeg2-$pkgver
+
+  patch -p1 -i $srcdir/smpeg2-$pkgver.patch
+
+  ./autogen.sh
+
+  source /opt/devkitpro/switchvars.sh
+  
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=aarch64-none-elf \
+    --enable-mmx=no \
+    --disable-shared --enable-static \
+    --disable-sdltest \
+    --with-sdl-prefix="${PORTLIBS_PREFIX}"
+
+  make
+}
+
+package() {
+  cd smpeg2-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
