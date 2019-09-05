@@ -1918,10 +1918,10 @@ index 000000000..cdbdd17ce
 +/* Functions to be exported */
 diff --git a/src/video/n3ds/SDL_n3dsvideo.c b/src/video/n3ds/SDL_n3dsvideo.c
 new file mode 100644
-index 000000000..e0e14fcf1
+index 000000000..7f3560dd1
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.c
-@@ -0,0 +1,759 @@
+@@ -0,0 +1,765 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -1962,8 +1962,6 @@ index 000000000..e0e14fcf1
 +#include "SDL_n3dsmouse_c.h"
 +
 +#define N3DSVID_DRIVER_NAME "n3ds"
-+
-+static Uint32 n3ds_palette[256] = {0};
 +
 +/* Low level N3ds */
 +
@@ -2207,9 +2205,9 @@ index 000000000..e0e14fcf1
 +				int width, int height, int bpp, Uint32 flags)
 +{
 +
-+Uint32 Rmask, Gmask, Bmask, Amask; 
-+int hw = next_pow2(width);
-+int hh= next_pow2(height);
++	Uint32 Rmask, Gmask, Bmask, Amask; 
++	int hw = next_pow2(width);
++	int hh= next_pow2(height);
 +
 +	setVideoModecount++;
 +
@@ -2333,7 +2331,7 @@ index 000000000..e0e14fcf1
 +		this->hidden->console = SDL_CONSOLEBOTTOM;
 +	}
 +	/* Set up the new mode framebuffer */
-+	current->flags =  SDL_HWSURFACE | SDL_DOUBLEBUF;
++	current->flags =  SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_HWPALETTE;
 +	this->hidden->w = hw;
 +	this->hidden->h = hh;
 +
@@ -2485,12 +2483,15 @@ index 000000000..e0e14fcf1
 +
 +	if( this->hidden->bpp == 8) {
 +/*
++		// update only changed rects
 +		int i;
 +		for(i=0; i< numrects; i++) {
 +			SDL_Rect *rect = &rects[i];
 +			Uint8 *src_addr, *dst_addr, *src_baseaddr, *dst_baseaddr;
++			Uint32 *palette;
 +			int cols, rows;
 +			int x,y;
++			palette = this->hidden->palette;
 +			src_baseaddr = this->hidden->palettedbuffer;
 +			dst_baseaddr = this->hidden->buffer;
 +			cols = (rect->x + rect->w > this->info.current_w) ? this->info.current_w - rect->x : rect->w;
@@ -2500,26 +2501,27 @@ index 000000000..e0e14fcf1
 +			  src_addr = src_baseaddr + rect->x + x + (rect->y + y) * this->info.current_w;
 +			  dst_addr = dst_baseaddr + (rect->x + x + (rect->y + y) * this->hidden->w) * 4;
 +			  for(;x<cols;x++) {
-+				*(u32*)dst_addr=n3ds_palette[*(Uint8 *)src_addr];
++				*(u32*)dst_addr=palette[*(Uint8 *)src_addr];
 +				src_addr++;
 +				dst_addr += 4;
 +}
 +			}
 +		} 
 +*/
-+		Uint8 *src_addr, *dst_addr, *dst_baseaddr;
++		// update whole screen
++		Uint8 *src_addr;
++		Uint32 *palette, *dst_baseaddr, *dst_addr;
++		palette = this->hidden->palette;
 +		src_addr = this->hidden->palettedbuffer;
 +		dst_baseaddr = this->hidden->buffer;
-+		int x,y;
-+		for(y=0;y<this->info.current_h;y++) {
-+  		  dst_addr = dst_baseaddr + y*this->hidden->w*4;
-+		  for(x=0;x<this->info.current_w;x++) {
-+			*(u32*)dst_addr=n3ds_palette[*(Uint8 *)src_addr];
-+			src_addr++;
-+			dst_addr += 4;
-+		  }
++
++		int x, y;
++		for(y = 0; y < this->info.current_h; y++) {
++			dst_addr = dst_baseaddr + y * this->hidden->w;
++			for(x = 0; x < this->info.current_w; x++) {
++				*dst_addr++ = palette[*src_addr++];
++			}
 +		}
-+	
 +	}
 +
 +	drawBuffers(this);
@@ -2530,8 +2532,11 @@ index 000000000..e0e14fcf1
 +static int N3DS_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 +{
 +	int i;
-+	for ( i = firstcolor; i < firstcolor + ncolors; ++i )
-+		n3ds_palette[i] = N3DS_MAP_RGB(colors[i].r, colors[i].g, colors[i].b);
++	Uint32* palette = this->hidden->palette;
++
++	for (i = firstcolor; i < firstcolor + ncolors; i++)
++		palette[i] = N3DS_MAP_RGB(colors[i].r, colors[i].g, colors[i].b);
++
 +	return(1);
 +}
 +
@@ -2539,18 +2544,19 @@ index 000000000..e0e14fcf1
 +
 +	if(app_pause || app_exiting) return(0); //Block video output on quitting
 +
-+	if( this->hidden->bpp == 8) {
-+		Uint8 *src_addr, *dst_addr, *dst_baseaddr;
++	if(this->hidden->bpp == 8) {
++		Uint8 *src_addr;
++		Uint32 *palette, *dst_baseaddr, *dst_addr;
++		palette = this->hidden->palette;
 +		src_addr = this->hidden->palettedbuffer;
 +		dst_baseaddr = this->hidden->buffer;
-+		int x,y;
-+		for(y=0;y<this->info.current_h;y++) {
-+  		  dst_addr = dst_baseaddr + y*this->hidden->w*4;
-+		  for(x=0;x<this->info.current_w;x++) {
-+			*(u32*)dst_addr=n3ds_palette[*(Uint8 *)src_addr];
-+			src_addr++;
-+			dst_addr += 4;
-+		  }
++
++		int x, y;
++		for(y = 0; y < this->info.current_h; y++) {
++			dst_addr = dst_baseaddr + y * this->hidden->w;
++			for(x = 0; x < this->info.current_w; x++) {
++				*dst_addr++ = palette[*src_addr++];
++			}
 +		}
 +	}
 +
@@ -2683,7 +2689,7 @@ index 000000000..e0e14fcf1
 +}
 diff --git a/src/video/n3ds/SDL_n3dsvideo.h b/src/video/n3ds/SDL_n3dsvideo.h
 new file mode 100644
-index 000000000..23749ff94
+index 000000000..02c91bc3f
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.h
 @@ -0,0 +1,63 @@
@@ -2717,7 +2723,6 @@ index 000000000..23749ff94
 +
 +#include <3ds.h>
 +
-+
 +/* Hidden "this" pointer for the video functions */
 +#define _THIS	SDL_VideoDevice *this
 +
@@ -2725,17 +2730,18 @@ index 000000000..23749ff94
 +
 +struct SDL_PrivateVideoData {
 +//GPU drawing specific
-+	int x1,y1,w1,h1; // drawing window for top screen          width and height of top screen part of the video buffer 
-+	int x2,y2,w2,h2; //drawing window for bottom screen  and height of bottom part of the video buffer
++	int x1,y1,w1,h1; // drawing window for top screen; width and height of top screen part of the video buffer 
++	int x2,y2,w2,h2; // drawing window for bottom screen; width and height of bottom part of the video buffer
 +	float l1,r1,t1,b1; // GPU source window for the top part of the video buffer
 +	float l2,r2,t2,b2; // GPU source window for the bottom part of the video buffer
 +	float scalex,scaley; // scaling factors
 +	float scalex2,scaley2; // scaling factors
 +
 +// framebuffer data
-+    int w, h; // width and height of the video buffer
-+    void *buffer;
++	int w, h; // width and height of the video buffer
++	void *buffer;
 +	Uint8 *palettedbuffer;
++	Uint32 palette[256];
 +	GSPGPU_FramebufferFormats mode;
 +	unsigned int flags; // backup of create device flags
 +	unsigned int screens; // SDL_TOPSCR, SDL_BOTTOMSCR, SDL_DUALSCR
