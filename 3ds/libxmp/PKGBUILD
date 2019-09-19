@@ -7,12 +7,12 @@ arch=('any')
 url="http://xmp.sourceforge.net/"
 license=('GPL')
 options=(!strip libtool staticlibs)
-source=("http://download.sourceforge.net/project/xmp/$pkgname/$pkgver/$pkgname-$pkgver.tar.gz")
-sha256sums=('172fbed9154f6aa6765924771ab7b27582bc5fd3')
+source=("http://download.sourceforge.net/project/xmp/libxmp/$pkgver/libxmp-$pkgver.tar.gz")
+sha256sums=('353535cc84c8cddae8decec4e65fa4c51fc64f22eb0891bc3dae6eaf25f9cccf')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
  
 build() {
-    cd "$pkgname-$pkgver"
+    cd "libxmp-$pkgver"
         source /opt/devkitpro/3dsvars.sh
         ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
                     --disable-shared --enable-static
@@ -20,7 +20,7 @@ build() {
 }
  
 package() {
-        cd "$pkgname-$pkgver"
+        cd "libxmp-$pkgver"
         source /opt/devkitpro/3dsvars.sh
         make DESTDIR="$pkgdir/" install
 }
