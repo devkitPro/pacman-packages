@@ -1,0 +1,26 @@
+# Maintainer: Chromaryu <knight.ryu12@gmail.com>
+pkgname=3ds-libxmp
+pkgver=4.4.1
+pkgrel=1
+pkgdesc="Library that supports over 90 module formats"
+arch=('any')
+url="http://xmp.sourceforge.net/"
+license=('GPL')
+options=(!strip libtool staticlibs)
+source=("http://download.sourceforge.net/project/xmp/$pkgname/$pkgver/$pkgname-$pkgver.tar.gz")
+sha256sums=('172fbed9154f6aa6765924771ab7b27582bc5fd3')
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+ 
+build() {
+    cd "$pkgname-$pkgver"
+        source /opt/devkitpro/3dsvars.sh
+        ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+                    --disable-shared --enable-static
+        make
+}
+ 
+package() {
+        cd "$pkgname-$pkgver"
+        source /opt/devkitpro/3dsvars.sh
+        make DESTDIR="$pkgdir/" install
+}
