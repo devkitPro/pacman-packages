@@ -1,0 +1,14 @@
+diff --git a/libntfs-3g/ioctl.c b/libntfs-3g/ioctl.c
+index 2eef5a5..b3e3801 100644
+--- a/libntfs-3g/ioctl.c
++++ b/libntfs-3g/ioctl.c
+@@ -48,7 +48,9 @@
+ #ifdef HAVE_LIMITS_H
+ #include <limits.h>
+ #endif
++#ifdef HAVE_SYSLOG_H
+ #include <syslog.h>
++#endif
+ #ifdef HAVE_SYS_TYPES_H
+ #include <sys/types.h>
+ #endif

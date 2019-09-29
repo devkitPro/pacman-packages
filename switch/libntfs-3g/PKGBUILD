@@ -14,7 +14,11 @@ makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 
 prepare() {
-  cd .
+  cd ntfs-3g_ntfsprogs-$pkgver
+  patch -Np1 -i "$srcdir/../ntfs-3g_ntfsprogs-2017.3.23-fix_syslog_include.patch"
+  patch -Np1 -i "$srcdir/../ntfs-3g_ntfsprogs-2017.3.23-timespec_already_defined.patch"
+  patch -Np1 -i "$srcdir/../ntfs-3g_ntfsprogs-2017.3.23-define_dev_major_minor.patch"
+  patch -Np1 -i "$srcdir/../ntfs-3g_ntfsprogs-2017.3.23-remove_install_exec_hook_target.patch"
 }
 
 build() {
@@ -25,7 +29,7 @@ build() {
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static --disable-device-default-io-ops \
     --disable-ntfs-3g --disable-ntfsprogs --disable-plugins --disable-crypto \
-    --without-uuid --without-hd  
+    --without-uuid --without-hd
 
   make
 }
@@ -34,4 +38,7 @@ package() {
   cd ntfs-3g_ntfsprogs-$pkgver
 
   make DESTDIR="$pkgdir" install
+  
+  install -Dm644 COPYING.LIB "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/COPYING
+  rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
 }
