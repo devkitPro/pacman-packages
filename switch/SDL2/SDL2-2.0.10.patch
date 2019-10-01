@@ -1,8 +1,6 @@
-diff --git a/CMakeLists.switch b/CMakeLists.switch
-new file mode 100644
-index 000000000..8b6ec2b43
---- /dev/null
-+++ b/CMakeLists.switch
+diff -r bc90ce38f1e2 CMakeLists.switch
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/CMakeLists.switch	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,84 @@
 +cmake_minimum_required(VERSION 3.0)
 +#set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -88,29 +86,10 @@ index 000000000..8b6ec2b43
 +add_custom_target(${PROJECT_NAME}.nro
 +        DEPENDS ${PROJECT_NAME}.elf
 +        COMMAND elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}.nro)
-diff --git a/configure b/configure
-index 1c7f87eb0..52a893bf2 100755
---- a/configure
-+++ b/configure
-@@ -1572,7 +1572,7 @@ Optional Features:
-                           QtWayland server support for Wayland video driver
-                           [[default=yes]]
-   --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
--  --enable-video-mir      use Mir video driver [[default=yes]]
-+  --enable-video-mir      use Mir video driver [[default=no]]
-   --enable-mir-shared     dynamically load Mir support [[default=maybe]]
-   --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
-   --enable-video-x11      use X11 video driver [[default=yes]]
-@@ -19300,7 +19300,7 @@ CheckMir()
- if test "${enable_video_mir+set}" = set; then :
-   enableval=$enable_video_mir;
- else
--  enable_video_mir=yes
-+  enable_video_mir=no
- fi
- 
- 
-@@ -24621,6 +24621,88 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+diff -r bc90ce38f1e2 configure
+--- a/configure	Tue Jul 23 14:41:00 2019 -0500
++++ b/configure	Tue Oct 01 12:02:58 2019 -0500
+@@ -25219,6 +25219,88 @@
              have_timers=yes
          fi
          ;;
@@ -198,16 +177,15 @@ index 1c7f87eb0..52a893bf2 100755
 +        ;;
      *)
          as_fn_error $? "
- *** Unsupported host:  Please add to configure.in
-diff --git a/configure.in b/configure.in
-index 1c7e79338..3db20e572 100644
---- a/configure.in
-+++ b/configure.in
-@@ -3905,6 +3905,66 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
+ *** Unsupported host:  Please add to configure.ac
+diff -r bc90ce38f1e2 configure.ac
+--- a/configure.ac	Tue Jul 23 14:41:00 2019 -0500
++++ b/configure.ac	Tue Oct 01 12:02:58 2019 -0500
+@@ -3960,6 +3960,66 @@
              have_timers=yes
          fi
          ;;
-+	aarch64-none-elf*)
++    aarch64-none-elf*)
 +        ARCH=switch
 +        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 \
 +            -mtp=soft -ftls-model=local-exec \
@@ -269,12 +247,11 @@ index 1c7e79338..3db20e572 100644
 +        ;;
      *)
          AC_MSG_ERROR([
- *** Unsupported host:  Please add to configure.in
-diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index 422f47f78..9cc4de52f 100644
---- a/include/SDL_config.h.in
-+++ b/include/SDL_config.h.in
-@@ -262,6 +262,7 @@
+ *** Unsupported host:  Please add to configure.ac
+diff -r bc90ce38f1e2 include/SDL_config.h.in
+--- a/include/SDL_config.h.in	Tue Jul 23 14:41:00 2019 -0500
++++ b/include/SDL_config.h.in	Tue Oct 01 12:02:58 2019 -0500
+@@ -269,6 +269,7 @@
  #undef SDL_AUDIO_DRIVER_SUNAUDIO
  #undef SDL_AUDIO_DRIVER_WASAPI
  #undef SDL_AUDIO_DRIVER_WINMM
@@ -282,15 +259,15 @@ index 422f47f78..9cc4de52f 100644
  
  /* Enable various input drivers */
  #undef SDL_INPUT_LINUXEV
-@@ -278,6 +279,7 @@
- #undef SDL_JOYSTICK_USBHID
+@@ -286,6 +287,7 @@
  #undef SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H
+ #undef SDL_JOYSTICK_HIDAPI
  #undef SDL_JOYSTICK_EMSCRIPTEN
 +#undef SDL_JOYSTICK_SWITCH
  #undef SDL_HAPTIC_DUMMY
  #undef SDL_HAPTIC_ANDROID
  #undef SDL_HAPTIC_LINUX
-@@ -296,12 +298,14 @@
+@@ -308,12 +310,14 @@
  #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
  #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
  #undef SDL_THREAD_WINDOWS
@@ -305,7 +282,7 @@ index 422f47f78..9cc4de52f 100644
  
  /* Enable various video drivers */
  #undef SDL_VIDEO_DRIVER_HAIKU
-@@ -350,6 +354,7 @@
+@@ -359,6 +363,7 @@
  #undef SDL_VIDEO_DRIVER_VIVANTE
  #undef SDL_VIDEO_DRIVER_VIVANTE_VDK
  #undef SDL_VIDEO_DRIVER_QNX
@@ -313,7 +290,7 @@ index 422f47f78..9cc4de52f 100644
  
  #undef SDL_VIDEO_RENDER_D3D
  #undef SDL_VIDEO_RENDER_D3D11
-@@ -382,6 +387,7 @@
+@@ -391,6 +396,7 @@
  #undef SDL_POWER_ANDROID
  #undef SDL_POWER_EMSCRIPTEN
  #undef SDL_POWER_HARDWIRED
@@ -321,7 +298,7 @@ index 422f47f78..9cc4de52f 100644
  
  /* Enable system filesystem support */
  #undef SDL_FILESYSTEM_HAIKU
-@@ -392,6 +398,7 @@
+@@ -401,6 +407,7 @@
  #undef SDL_FILESYSTEM_NACL
  #undef SDL_FILESYSTEM_ANDROID
  #undef SDL_FILESYSTEM_EMSCRIPTEN
@@ -329,11 +306,10 @@ index 422f47f78..9cc4de52f 100644
  
  /* Enable assembly routines */
  #undef SDL_ASSEMBLY_ROUTINES
-diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index dcaebea6d..6d930adc1 100644
---- a/src/audio/SDL_audio.c
-+++ b/src/audio/SDL_audio.c
-@@ -98,6 +98,9 @@ static const AudioBootStrap *const bootstrap[] = {
+diff -r bc90ce38f1e2 src/audio/SDL_audio.c
+--- a/src/audio/SDL_audio.c	Tue Jul 23 14:41:00 2019 -0500
++++ b/src/audio/SDL_audio.c	Tue Oct 01 12:02:58 2019 -0500
+@@ -101,6 +101,9 @@
  #if SDL_AUDIO_DRIVER_EMSCRIPTEN
      &EMSCRIPTENAUDIO_bootstrap,
  #endif
@@ -343,11 +319,10 @@ index dcaebea6d..6d930adc1 100644
  #if SDL_AUDIO_DRIVER_JACK
      &JACK_bootstrap,
  #endif
-diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index f0e1f3dad..a7e519281 100644
---- a/src/audio/SDL_sysaudio.h
-+++ b/src/audio/SDL_sysaudio.h
-@@ -205,6 +205,7 @@ extern AudioBootStrap FUSIONSOUND_bootstrap;
+diff -r bc90ce38f1e2 src/audio/SDL_sysaudio.h
+--- a/src/audio/SDL_sysaudio.h	Tue Jul 23 14:41:00 2019 -0500
++++ b/src/audio/SDL_sysaudio.h	Tue Oct 01 12:02:58 2019 -0500
+@@ -207,6 +207,7 @@
  extern AudioBootStrap ANDROIDAUDIO_bootstrap;
  extern AudioBootStrap PSPAUDIO_bootstrap;
  extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
@@ -355,11 +330,9 @@ index f0e1f3dad..a7e519281 100644
  
  #endif /* SDL_sysaudio_h_ */
  
-diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
-new file mode 100644
-index 000000000..56211a5c7
---- /dev/null
-+++ b/src/audio/switch/SDL_switchaudio.c
+diff -r bc90ce38f1e2 src/audio/switch/SDL_switchaudio.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/audio/switch/SDL_switchaudio.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,227 @@
 +/*
 +  Simple DirectMedia Layer
@@ -588,11 +561,9 @@ index 000000000..56211a5c7
 +};
 +
 +#endif /* SDL_AUDIO_DRIVER_SWITCH */
-diff --git a/src/audio/switch/SDL_switchaudio.h b/src/audio/switch/SDL_switchaudio.h
-new file mode 100644
-index 000000000..f5e0340fb
---- /dev/null
-+++ b/src/audio/switch/SDL_switchaudio.h
+diff -r bc90ce38f1e2 src/audio/switch/SDL_switchaudio.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/audio/switch/SDL_switchaudio.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,41 @@
 +/*
 +  Simple DirectMedia Layer
@@ -635,10 +606,9 @@ index 000000000..f5e0340fb
 +};
 +
 +#endif /* SDL_switchaudio_h_ */
-diff --git a/src/dynapi/SDL_dynapi.h b/src/dynapi/SDL_dynapi.h
-index 73316f1f8..81021e9e9 100644
---- a/src/dynapi/SDL_dynapi.h
-+++ b/src/dynapi/SDL_dynapi.h
+diff -r bc90ce38f1e2 src/dynapi/SDL_dynapi.h
+--- a/src/dynapi/SDL_dynapi.h	Tue Jul 23 14:41:00 2019 -0500
++++ b/src/dynapi/SDL_dynapi.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -55,6 +55,8 @@
  #define SDL_DYNAMIC_API 0
  #elif defined(__clang_analyzer__)
@@ -648,28 +618,22 @@ index 73316f1f8..81021e9e9 100644
  #endif
  
  /* everyone else. This is where we turn on the API if nothing forced it off. */
-diff --git a/src/filesystem/switch/dummy.c b/src/filesystem/switch/dummy.c
-new file mode 100644
-index 000000000..e69de29bb
-diff --git a/src/joystick/SDL_gamecontrollerdb.h b/src/joystick/SDL_gamecontrollerdb.h
-index fdc0b592b..8dcc6ca1d 100644
---- a/src/joystick/SDL_gamecontrollerdb.h
-+++ b/src/joystick/SDL_gamecontrollerdb.h
-@@ -226,6 +226,9 @@ static const char *s_ControllerMappings [] =
+diff -r bc90ce38f1e2 src/joystick/SDL_gamecontrollerdb.h
+--- a/src/joystick/SDL_gamecontrollerdb.h	Tue Jul 23 14:41:00 2019 -0500
++++ b/src/joystick/SDL_gamecontrollerdb.h	Tue Oct 01 12:02:58 2019 -0500
+@@ -603,6 +603,9 @@
  #if defined(SDL_JOYSTICK_EMSCRIPTEN)
-     "emscripten,Standard Gamepad,a:b0,b:b1,back:b8,dpdown:b13,dpleft:b14,dpright:b15,dpup:b12,guide:b16,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
+     "default,Standard Gamepad,a:b0,b:b1,back:b8,dpdown:b13,dpleft:b14,dpright:b15,dpup:b12,guide:b16,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
  #endif
 +#if defined(SDL_JOYSTICK_SWITCH)
 +    "53776974636820436F6E74726F6C6C65,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
 +#endif
+     "hidapi,*,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
      NULL
  };
- 
-diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
-new file mode 100644
-index 000000000..21e8229fd
---- /dev/null
-+++ b/src/joystick/switch/SDL_sysjoystick.c
+diff -r bc90ce38f1e2 src/joystick/switch/SDL_sysjoystick.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/joystick/switch/SDL_sysjoystick.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,209 @@
 +/*
 +  Simple DirectMedia Layer
@@ -880,26 +844,9 @@ index 000000000..21e8229fd
 +#endif /* SDL_JOYSTICK_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/power/switch/dummy.c b/src/power/switch/dummy.c
-new file mode 100644
-index 000000000..e69de29bb
-diff --git a/src/render/opengles2/SDL_render_gles2.c b/src/render/opengles2/SDL_render_gles2.c
-index 0cd388c37..e6f22a30a 100644
---- a/src/render/opengles2/SDL_render_gles2.c
-+++ b/src/render/opengles2/SDL_render_gles2.c
-@@ -43,7 +43,7 @@
- #endif
- 
- /* To prevent unnecessary window recreation,
-- * these should match the defaults selected in SDL_GL_ResetAttributes 
-+ * these should match the defaults selected in SDL_GL_ResetAttributes
-  */
- #define RENDERER_CONTEXT_MAJOR 2
- #define RENDERER_CONTEXT_MINOR 0
-diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index b68f90e91..3af243df7 100644
---- a/src/thread/SDL_thread_c.h
-+++ b/src/thread/SDL_thread_c.h
+diff -r bc90ce38f1e2 src/thread/SDL_thread_c.h
+--- a/src/thread/SDL_thread_c.h	Tue Jul 23 14:41:00 2019 -0500
++++ b/src/thread/SDL_thread_c.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -36,6 +36,8 @@
  #include "psp/SDL_systhread_c.h"
  #elif SDL_THREAD_STDCPP
@@ -909,11 +856,9 @@ index b68f90e91..3af243df7 100644
  #else
  #error Need thread implementation for this platform
  #include "generic/SDL_systhread_c.h"
-diff --git a/src/thread/switch/SDL_syscond.c b/src/thread/switch/SDL_syscond.c
-new file mode 100644
-index 000000000..7fb3aa7e1
---- /dev/null
-+++ b/src/thread/switch/SDL_syscond.c
+diff -r bc90ce38f1e2 src/thread/switch/SDL_syscond.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/thread/switch/SDL_syscond.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,173 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1088,11 +1033,9 @@ index 000000000..7fb3aa7e1
 +#endif /* SDL_THREAD_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/thread/switch/SDL_sysmutex.c b/src/thread/switch/SDL_sysmutex.c
-new file mode 100644
-index 000000000..ad61e8c35
---- /dev/null
-+++ b/src/thread/switch/SDL_sysmutex.c
+diff -r bc90ce38f1e2 src/thread/switch/SDL_sysmutex.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/thread/switch/SDL_sysmutex.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,86 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1180,11 +1123,9 @@ index 000000000..ad61e8c35
 +}
 +
 +#endif /* SDL_THREAD_SWITCH */
-diff --git a/src/thread/switch/SDL_sysmutex_c.h b/src/thread/switch/SDL_sysmutex_c.h
-new file mode 100644
-index 000000000..307537fc9
---- /dev/null
-+++ b/src/thread/switch/SDL_sysmutex_c.h
+diff -r bc90ce38f1e2 src/thread/switch/SDL_sysmutex_c.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/thread/switch/SDL_sysmutex_c.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,22 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1208,11 +1149,9 @@ index 000000000..307537fc9
 +*/
 +
 +#include "../../SDL_internal.h"
-diff --git a/src/thread/switch/SDL_syssem.c b/src/thread/switch/SDL_syssem.c
-new file mode 100644
-index 000000000..6a8d20701
---- /dev/null
-+++ b/src/thread/switch/SDL_syssem.c
+diff -r bc90ce38f1e2 src/thread/switch/SDL_syssem.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/thread/switch/SDL_syssem.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,172 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1386,11 +1325,9 @@ index 000000000..6a8d20701
 +}
 +
 +#endif /* SDL_THREAD_SWITCH */
-diff --git a/src/thread/switch/SDL_systhread.c b/src/thread/switch/SDL_systhread.c
-new file mode 100644
-index 000000000..31e4904b1
---- /dev/null
-+++ b/src/thread/switch/SDL_systhread.c
+diff -r bc90ce38f1e2 src/thread/switch/SDL_systhread.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/thread/switch/SDL_systhread.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,90 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1482,11 +1419,9 @@ index 000000000..31e4904b1
 +}
 +
 +#endif /* SDL_THREAD_SWITCH */
-diff --git a/src/thread/switch/SDL_systhread_c.h b/src/thread/switch/SDL_systhread_c.h
-new file mode 100644
-index 000000000..892186e2c
---- /dev/null
-+++ b/src/thread/switch/SDL_systhread_c.h
+diff -r bc90ce38f1e2 src/thread/switch/SDL_systhread_c.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/thread/switch/SDL_systhread_c.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,25 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1513,11 +1448,9 @@ index 000000000..892186e2c
 +#include <threads.h>
 +
 +typedef thrd_t SYS_ThreadHandle;
-diff --git a/src/thread/switch/SDL_systls.c b/src/thread/switch/SDL_systls.c
-new file mode 100644
-index 000000000..2472fbd60
---- /dev/null
-+++ b/src/thread/switch/SDL_systls.c
+diff -r bc90ce38f1e2 src/thread/switch/SDL_systls.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/thread/switch/SDL_systls.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,34 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1553,11 +1486,9 @@ index 000000000..2472fbd60
 +{
 +    return SDL_Generic_SetTLSData(data);
 +}
-diff --git a/src/timer/switch/SDL_systimer.c b/src/timer/switch/SDL_systimer.c
-new file mode 100644
-index 000000000..5c5d209e0
---- /dev/null
-+++ b/src/timer/switch/SDL_systimer.c
+diff -r bc90ce38f1e2 src/timer/switch/SDL_systimer.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/timer/switch/SDL_systimer.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,78 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1637,11 +1568,10 @@ index 000000000..5c5d209e0
 +}
 +
 +#endif /* SDL_TIMER_SWITCH */
-diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index 9df71c9aa..c37bb012f 100644
---- a/src/video/SDL_sysvideo.h
-+++ b/src/video/SDL_sysvideo.h
-@@ -418,6 +418,7 @@ extern VideoBootStrap NACL_bootstrap;
+diff -r bc90ce38f1e2 src/video/SDL_sysvideo.h
+--- a/src/video/SDL_sysvideo.h	Tue Jul 23 14:41:00 2019 -0500
++++ b/src/video/SDL_sysvideo.h	Tue Oct 01 12:02:58 2019 -0500
+@@ -421,6 +421,7 @@
  extern VideoBootStrap VIVANTE_bootstrap;
  extern VideoBootStrap Emscripten_bootstrap;
  extern VideoBootStrap QNX_bootstrap;
@@ -1649,11 +1579,10 @@ index 9df71c9aa..c37bb012f 100644
  
  extern SDL_VideoDevice *SDL_GetVideoDevice(void);
  extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
-diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 8cf195d1a..a2df8486a 100644
---- a/src/video/SDL_video.c
-+++ b/src/video/SDL_video.c
-@@ -112,6 +112,9 @@ static VideoBootStrap *bootstrap[] = {
+diff -r bc90ce38f1e2 src/video/SDL_video.c
+--- a/src/video/SDL_video.c	Tue Jul 23 14:41:00 2019 -0500
++++ b/src/video/SDL_video.c	Tue Oct 01 12:02:58 2019 -0500
+@@ -109,6 +109,9 @@
  #if SDL_VIDEO_DRIVER_QNX
      &QNX_bootstrap,
  #endif
@@ -1663,7 +1592,7 @@ index 8cf195d1a..a2df8486a 100644
  #if SDL_VIDEO_DRIVER_DUMMY
      &DUMMY_bootstrap,
  #endif
-@@ -1376,7 +1379,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
+@@ -1433,7 +1436,7 @@
      }
  
      /* Some platforms have OpenGL enabled by default */
@@ -1672,11 +1601,9 @@ index 8cf195d1a..a2df8486a 100644
      if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN)) {
          flags |= SDL_WINDOW_OPENGL;
      }
-diff --git a/src/video/switch/SDL_switchkeyboard.c b/src/video/switch/SDL_switchkeyboard.c
-new file mode 100644
-index 000000000..0d8f7bc6b
---- /dev/null
-+++ b/src/video/switch/SDL_switchkeyboard.c
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchkeyboard.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchkeyboard.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,270 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1948,11 +1875,9 @@ index 000000000..0d8f7bc6b
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchkeyboard.h b/src/video/switch/SDL_switchkeyboard.h
-new file mode 100644
-index 000000000..a8355db78
---- /dev/null
-+++ b/src/video/switch/SDL_switchkeyboard.h
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchkeyboard.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchkeyboard.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,34 @@
 +/*
 +  Simple DirectMedia Layer
@@ -1988,11 +1913,9 @@ index 000000000..a8355db78
 +#endif /* _SDL_switchkeyboard_h */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchmouse.c b/src/video/switch/SDL_switchmouse.c
-new file mode 100644
-index 000000000..a7369d5f2
---- /dev/null
-+++ b/src/video/switch/SDL_switchmouse.c
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchmouse.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchmouse.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,105 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2099,11 +2022,9 @@ index 000000000..a7369d5f2
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchmouse_c.h b/src/video/switch/SDL_switchmouse_c.h
-new file mode 100644
-index 000000000..c2bd2cfc0
---- /dev/null
-+++ b/src/video/switch/SDL_switchmouse_c.h
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchmouse_c.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchmouse_c.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,34 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2139,11 +2060,9 @@ index 000000000..c2bd2cfc0
 +#endif /* _SDL_switchmouse_h */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchopengles.c b/src/video/switch/SDL_switchopengles.c
-new file mode 100644
-index 000000000..efed92328
---- /dev/null
-+++ b/src/video/switch/SDL_switchopengles.c
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchopengles.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchopengles.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,53 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2198,11 +2117,9 @@ index 000000000..efed92328
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchopengles.h b/src/video/switch/SDL_switchopengles.h
-new file mode 100644
-index 000000000..3beb5eea7
---- /dev/null
-+++ b/src/video/switch/SDL_switchopengles.h
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchopengles.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchopengles.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,49 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2253,11 +2170,9 @@ index 000000000..3beb5eea7
 +#endif /* SDL_switchteopengles_h_ */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchtouch.c b/src/video/switch/SDL_switchtouch.c
-new file mode 100644
-index 000000000..9191817c0
---- /dev/null
-+++ b/src/video/switch/SDL_switchtouch.c
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchtouch.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchtouch.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,115 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2310,7 +2225,7 @@ index 000000000..9191817c0
 +void
 +SWITCH_InitTouch(void)
 +{
-+    SDL_AddTouch((SDL_TouchID) 0, "Switch");
++    SDL_AddTouch((SDL_TouchID) 0, SDL_TOUCH_DEVICE_DIRECT, "Switch");
 +}
 +
 +void
@@ -2374,11 +2289,9 @@ index 000000000..9191817c0
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchtouch.h b/src/video/switch/SDL_switchtouch.h
-new file mode 100644
-index 000000000..ac5908e39
---- /dev/null
-+++ b/src/video/switch/SDL_switchtouch.h
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchtouch.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchtouch.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,34 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2414,11 +2327,9 @@ index 000000000..ac5908e39
 +#endif /* _SDL_switchtouch_h */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
-new file mode 100644
-index 000000000..7e6518f46
---- /dev/null
-+++ b/src/video/switch/SDL_switchvideo.c
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchvideo.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchvideo.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,377 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2797,11 +2708,9 @@ index 000000000..7e6518f46
 +}
 +
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
-diff --git a/src/video/switch/SDL_switchvideo.h b/src/video/switch/SDL_switchvideo.h
-new file mode 100644
-index 000000000..b4ed8ef10
---- /dev/null
-+++ b/src/video/switch/SDL_switchvideo.h
+diff -r bc90ce38f1e2 src/video/switch/SDL_switchvideo.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/video/switch/SDL_switchvideo.h	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,74 @@
 +/*
 +  Simple DirectMedia Layer
@@ -2877,11 +2786,10 @@ index 000000000..b4ed8ef10
 +#endif /* __SDL_SWITCHVIDEO_H__ */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/test/configure b/test/configure
-index 61c32fba1..d0e04b86e 100755
---- a/test/configure
-+++ b/test/configure
-@@ -637,6 +637,7 @@ infodir
+diff -r bc90ce38f1e2 test/configure
+--- a/test/configure	Tue Jul 23 14:41:00 2019 -0500
++++ b/test/configure	Tue Oct 01 12:02:58 2019 -0500
+@@ -640,6 +640,7 @@
  docdir
  oldincludedir
  includedir
@@ -2889,7 +2797,7 @@ index 61c32fba1..d0e04b86e 100755
  localstatedir
  sharedstatedir
  sysconfdir
-@@ -717,6 +718,7 @@ datadir='${datarootdir}'
+@@ -720,6 +721,7 @@
  sysconfdir='${prefix}/etc'
  sharedstatedir='${prefix}/com'
  localstatedir='${prefix}/var'
@@ -2897,7 +2805,7 @@ index 61c32fba1..d0e04b86e 100755
  includedir='${prefix}/include'
  oldincludedir='/usr/include'
  docdir='${datarootdir}/doc/${PACKAGE}'
-@@ -969,6 +971,15 @@ do
+@@ -972,6 +974,15 @@
    | -silent | --silent | --silen | --sile | --sil)
      silent=yes ;;
  
@@ -2913,7 +2821,7 @@ index 61c32fba1..d0e04b86e 100755
    -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
      ac_prev=sbindir ;;
    -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
-@@ -1106,7 +1117,7 @@ fi
+@@ -1109,7 +1120,7 @@
  for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
  		datadir sysconfdir sharedstatedir localstatedir includedir \
  		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
@@ -2922,7 +2830,7 @@ index 61c32fba1..d0e04b86e 100755
  do
    eval ac_val=\$$ac_var
    # Remove trailing slashes.
-@@ -1259,6 +1270,7 @@ Fine tuning of the installation directories:
+@@ -1262,6 +1273,7 @@
    --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
    --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
    --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
@@ -2930,11 +2838,9 @@ index 61c32fba1..d0e04b86e 100755
    --libdir=DIR            object code libraries [EPREFIX/lib]
    --includedir=DIR        C header files [PREFIX/include]
    --oldincludedir=DIR     C header files for non-gcc [/usr/include]
-diff --git a/test/testswitch.c b/test/testswitch.c
-new file mode 100644
-index 000000000..51012e481
---- /dev/null
-+++ b/test/testswitch.c
+diff -r bc90ce38f1e2 test/testswitch.c
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/test/testswitch.c	Tue Oct 01 12:02:58 2019 -0500
 @@ -0,0 +1,239 @@
 +/*
 +  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
