@@ -10,7 +10,7 @@ license=('BSD')
 options=(!strip libtool staticlibs)
 source=("http://miniupnp.free.fr/files/download.php?file=miniupnpc-${pkgver}.tar.gz" "miniupnpc.patch")
 
-sha256sums=('1fadefea0ecdceb3e35bb5d901f0db880c826740e93148ddfb087b4b4389e165' 'b6b7e16cfd1e78069d352b22defed7e2e23924562da8ab17dd0988a13f0f22c5')
+sha256sums=('1fadefea0ecdceb3e35bb5d901f0db880c826740e93148ddfb087b4b4389e165' 'a9e84bdd286f738f6022b5c04160bdf9e4a5a0bd034a9ec55dba0c41ce523852')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 build() {
@@ -24,8 +24,7 @@ build() {
 
   patch -p1 -i $srcdir/miniupnpc.patch
 
-  export OVERRIDE_OS_NAME=Switch
-  export OVERRIDE_OS_VERSION=1.0
+  export OVERRIDE_OS_STRING=Horizon/NX
   HAVE_IPV6=no make
 }
 
