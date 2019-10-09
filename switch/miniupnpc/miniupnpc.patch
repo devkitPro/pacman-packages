@@ -1,0 +1,224 @@
+diff -Naur miniupnpc-2.1.20190824/Makefile miniupnpc-2.1.20190824-patched/Makefile
+--- miniupnpc-2.1.20190824/Makefile	2018-04-06 11:53:30.000000000 +0100
++++ miniupnpc-2.1.20190824-patched/Makefile	2019-10-09 00:12:41.576580022 +0100
+@@ -85,9 +85,11 @@
+           connecthostport.o portlistingparse.o receivedata.o upnpdev.o
+ 
+ ifeq (, $(findstring amiga, $(OS)))
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ ifeq (, $(findstring mingw, $(OS))$(findstring cygwin, $(OS))$(findstring msys, $(OS)))
+ CFLAGS := -fPIC $(CFLAGS)
+ endif
++endif
+ LIBOBJS := $(LIBOBJS) minissdpc.o
+ endif
+ 
+@@ -116,6 +118,7 @@
+ endif
+ endif
+ 
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ EXECUTABLES = upnpc-static listdevices
+ EXECUTABLES_ADDTESTS = testminixml minixmlvalid testupnpreplyparse \
+ 			  testigddescparse testminiwget testportlistingparse
+@@ -132,12 +135,15 @@
+                    miniupnpc.o miniwget.o upnpcommands.o upnpreplyparse.o \
+                    minisoap.o connecthostport.o receivedata.o \
+                    portlistingparse.o
++endif
+ 
+ ifeq (, $(findstring amiga, $(OS)))
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ EXECUTABLES := $(EXECUTABLES) upnpc-shared
+ TESTMINIWGETOBJS := $(TESTMINIWGETOBJS) minissdpc.o
+ TESTIGDDESCPARSE := $(TESTIGDDESCPARSE) minissdpc.o
+ endif
++endif
+ 
+ LIBDIR ?= lib
+ # install directories
+@@ -154,8 +160,12 @@
+ 
+ FILESTOINSTALL = $(LIBRARY) $(EXECUTABLES)
+ ifeq (, $(findstring amiga, $(OS)))
++ifneq (, $(findstring aarch64-none-elf, $(OS)))
++FILESTOINSTALL := $(FILESTOINSTALL) miniupnpc.pc
++else
+ FILESTOINSTALL := $(FILESTOINSTALL) $(SHAREDLIBRARY) miniupnpc.pc
+ endif
++endif
+ 
+ 
+ .PHONY:	install clean depend all check test everything \
+@@ -237,11 +247,14 @@
+ 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRLIB)
+ 	$(INSTALL) -m 644 $(LIBRARY) $(DESTDIR)$(INSTALLDIRLIB)
+ ifeq (, $(findstring amiga, $(OS)))
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ 	$(INSTALL) -m 644 $(SHAREDLIBRARY) $(DESTDIR)$(INSTALLDIRLIB)/$(SONAME)
+ 	ln -fs $(SONAME) $(DESTDIR)$(INSTALLDIRLIB)/$(SHAREDLIBRARY)
++endif
+ 	$(INSTALL) -d $(DESTDIR)$(PKGCONFIGDIR)
+ 	$(INSTALL) -m 644 miniupnpc.pc $(DESTDIR)$(PKGCONFIGDIR)
+ endif
++ifeq (, $(findstring aarch64-none-elf, $(OS)))
+ 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRBIN)
+ ifneq (, $(findstring amiga, $(OS)))
+ 	$(INSTALL) -m 755 upnpc-static $(DESTDIR)$(INSTALLDIRBIN)/upnpc
+@@ -256,6 +269,7 @@
+ 	gzip -f $(DESTDIR)$(INSTALLDIRMAN)/man3/miniupnpc.3
+ endif
+ endif
++endif
+ 
+ install-static:	updateversion $(FILESTOINSTALL)
+ 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRINC)
+diff -Naur miniupnpc-2.1.20190824/minissdpc.c miniupnpc-2.1.20190824-patched/minissdpc.c
+--- miniupnpc-2.1.20190824/minissdpc.c	2019-06-25 22:30:51.000000000 +0100
++++ miniupnpc-2.1.20190824-patched/minissdpc.c	2019-10-09 00:12:41.576580022 +0100
+@@ -52,7 +52,16 @@
+ #include <sys/socket.h>
+ #include <sys/param.h>
+ #include <sys/time.h>
++#ifdef __SWITCH__
++/* Hack */
++#define UNIX_PATH_LEN   108
++struct sockaddr_un {
++  uint16_t sun_family;
++  char     sun_path[UNIX_PATH_LEN];
++};
++#else
+ #include <sys/un.h>
++#endif
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+ #include <netdb.h>
+@@ -62,7 +71,7 @@
+ 
+ #include "miniupnpc_socketdef.h"
+ 
+-#if !defined(__DragonFly__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__APPLE__) && !defined(_WIN32) && !defined(__CYGWIN__) && !defined(__sun) && !defined(__GNU__) && !defined(__FreeBSD_kernel__)
++#if !defined(__DragonFly__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__APPLE__) && !defined(_WIN32) && !defined(__CYGWIN__) && !defined(__sun) && !defined(__GNU__) && !defined(__FreeBSD_kernel__) && !defined(__SWITCH__)
+ #define HAS_IP_MREQN
+ #endif
+ 
+@@ -93,7 +102,7 @@
+ #include "miniupnpc.h"
+ #include "receivedata.h"
+ 
+-#if !(defined(_WIN32) || defined(__amigaos__) || defined(__amigaos4__))
++#if !(defined(_WIN32) || defined(__amigaos__) || defined(__amigaos4__) || defined(__SWITCH__))
+ 
+ #include "codelength.h"
+ 
+@@ -375,7 +384,7 @@
+ 	return devlist;
+ }
+ 
+-#endif /* !(defined(_WIN32) || defined(__amigaos__) || defined(__amigaos4__)) */
++#endif /* !(defined(_WIN32) || defined(__amigaos__) || defined(__amigaos4__) || defined(__SWITCH__)) */
+ 
+ /* parseMSEARCHReply()
+  * the last 4 arguments are filled during the parsing :
+@@ -667,7 +676,7 @@
+ 	if(multicastif)
+ 	{
+ 		if(ipv6) {
+-#if !defined(_WIN32)
++#if !defined(_WIN32) && !defined(__SWITCH__)
+ 			/* according to MSDN, if_nametoindex() is supported since
+ 			 * MS Windows Vista and MS Windows Server 2008.
+ 			 * http://msdn.microsoft.com/en-us/library/bb408409%28v=vs.85%29.aspx */
+@@ -705,7 +714,7 @@
+ 				{
+ 					PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
+ 				}
+-#elif !defined(_WIN32)
++#elif !defined(_WIN32) && !defined(__SWITCH__)
+ 				struct ifreq ifr;
+ 				int ifrlen = sizeof(ifr);
+ 				strncpy(ifr.ifr_name, multicastif, IFNAMSIZ);
+diff -Naur miniupnpc-2.1.20190824/minissdpc.h miniupnpc-2.1.20190824-patched/minissdpc.h
+--- miniupnpc-2.1.20190824/minissdpc.h	2019-02-10 12:30:19.000000000 +0000
++++ miniupnpc-2.1.20190824-patched/minissdpc.h	2019-10-09 00:12:41.576580022 +0100
+@@ -23,7 +23,7 @@
+ extern "C" {
+ #endif
+ 
+-#if !(defined(_WIN32) || defined(__amigaos__) || defined(__amigaos4__))
++#if !(defined(_WIN32) || defined(__amigaos__) || defined(__amigaos4__) && defined(__SWITCH__))
+ 
+ MINIUPNP_LIBSPEC struct UPNPDev *
+ getDevicesFromMiniSSDPD(const char * devtype, const char * socketpath, int * error);
+diff -Naur miniupnpc-2.1.20190824/miniupnpc.c miniupnpc-2.1.20190824-patched/miniupnpc.c
+--- miniupnpc-2.1.20190824/miniupnpc.c	2019-04-30 10:45:52.000000000 +0100
++++ miniupnpc-2.1.20190824-patched/miniupnpc.c	2019-10-09 00:12:41.576580022 +0100
+@@ -297,7 +297,7 @@
+ 
+ 	if(error)
+ 		*error = UPNPDISCOVER_UNKNOWN_ERROR;
+-#if !defined(_WIN32) && !defined(__amigaos__) && !defined(__amigaos4__)
++#if !defined(_WIN32) && !defined(__amigaos__) && !defined(__amigaos4__) && !defined(__SWITCH__)
+ 	/* first try to get infos from minissdpd ! */
+ 	if(!minissdpdsock)
+ 		minissdpdsock = "/var/run/minissdpd.sock";
+@@ -419,7 +419,7 @@
+ 	char * s;
+ 	const char * base;
+ 	char * p;
+-#if defined(IF_NAMESIZE) && !defined(_WIN32)
++#if defined(IF_NAMESIZE) && !defined(_WIN32) && !defined(__SWITCH__)
+ 	char ifname[IF_NAMESIZE];
+ #else /* defined(IF_NAMESIZE) && !defined(_WIN32) */
+ 	char scope_str[8];
+@@ -444,7 +444,7 @@
+ 	if(url[0] != '/')
+ 		l++;
+ 	if(scope_id != 0) {
+-#if defined(IF_NAMESIZE) && !defined(_WIN32)
++#if defined(IF_NAMESIZE) && !defined(_WIN32) && !defined(__SWITCH__)
+ 		if(if_indextoname(scope_id, ifname)) {
+ 			l += 3 + strlen(ifname);	/* 3 == strlen(%25) */
+ 		}
+@@ -463,7 +463,7 @@
+ 			p = strchr(s, ']');
+ 			if(p) {
+ 				/* insert %25<scope> into URL */
+-#if defined(IF_NAMESIZE) && !defined(_WIN32)
++#if defined(IF_NAMESIZE) && !defined(_WIN32) && !defined(__SWITCH__)
+ 				memmove(p + 3 + strlen(ifname), p, strlen(p) + 1);
+ 				memcpy(p, "%25", 3);
+ 				memcpy(p + 3, ifname, strlen(ifname));
+diff -Naur miniupnpc-2.1.20190824/miniwget.c miniupnpc-2.1.20190824-patched/miniwget.c
+--- miniupnpc-2.1.20190824/miniwget.c	2019-02-10 13:25:00.000000000 +0000
++++ miniupnpc-2.1.20190824-patched/miniwget.c	2019-10-09 00:12:41.579913360 +0100
+@@ -540,7 +540,7 @@
+ 		p2 = strchr(p1, ']');
+ 		if(p2 && scope && scope < p2 && scope_id) {
+ 			/* parse scope */
+-#ifdef IF_NAMESIZE
++#if defined(IF_NAMESIZE) && !defined(__SWITCH__)
+ 			char tmp[IF_NAMESIZE];
+ 			int l;
+ 			scope++;
+diff -Naur miniupnpc-2.1.20190824/updateminiupnpcstrings.sh miniupnpc-2.1.20190824-patched/updateminiupnpcstrings.sh
+--- miniupnpc-2.1.20190824/updateminiupnpcstrings.sh	2011-01-27 17:50:40.000000000 +0000
++++ miniupnpc-2.1.20190824-patched/updateminiupnpcstrings.sh	2019-10-09 00:15:20.116793159 +0100
+@@ -40,10 +40,16 @@
+ MINIUPNPC_VERSION=`cat VERSION`
+ echo "MiniUPnPc version [${MINIUPNPC_VERSION}]"
+ 
++if [ -z $OVERRIDE_OS_STRING ]; then
+ EXPR="s|OS_STRING \".*\"|OS_STRING \"${OS_NAME}/${OS_VERSION}\"|"
++echo "setting OS_STRING macro value to ${OS_NAME}/${OS_VERSION} in $FILE."
++else
++EXPR="s|OS_STRING \".*\"|OS_STRING \"${OVERRIDE_OS_STRING}\"|"
++echo "setting OS_STRING macro value to ${OVERRIDE_OS_STRING} in $FILE."
++fi
++
+ #echo $EXPR
+ test -f ${FILE}.in
+-echo "setting OS_STRING macro value to ${OS_NAME}/${OS_VERSION} in $FILE."
+ sed -e "$EXPR" < $TEMPLATE_FILE > $TMPFILE
+ 
+ EXPR="s|MINIUPNPC_VERSION_STRING \".*\"|MINIUPNPC_VERSION_STRING \"${MINIUPNPC_VERSION}\"|"
