@@ -1,0 +1,57 @@
+diff --git a/lib/socket.c b/lib/socket.c
+index 978f06d..a7fde76 100644
+--- a/lib/socket.c
++++ b/lib/socket.c
+@@ -80,6 +80,52 @@
+ 
+ #define MAX_URL_SIZE 256
+ 
++#ifdef __SWITCH__
++
++#include <netdb.h>
++#include <netinet/tcp.h>
++#include <netinet/in.h>
++#include <poll.h>
++
++ssize_t writev(int fd, const struct iovec *iov, int iovcnt)
++{
++  int total = 0;
++  for (int i = 0; i < iovcnt; i++) {
++    int left = iov[i].iov_len;
++    while (left > 0) {
++      int count = write(fd, iov[i].iov_base, left);
++      if (count == -1) {
++        return -1;
++      }
++      total += count;
++      left -= count;
++    }
++  }
++  return total;
++}
++
++ssize_t readv(int fd, const struct iovec *iov, int iovcnt)
++{
++  ssize_t total = 0;
++  for (int i = 0; i < iovcnt; i++) {
++    int left = iov[i].iov_len;
++    while (left > 0) {
++      int count = read(fd, iov[i].iov_base, left);
++      if (count == -1) {
++        return -1;
++      }
++      if (count == 0) {
++        return total;
++      }
++      total += count;
++      left -= count;
++    }
++  }
++  return total;
++}
++
++#endif
++
+ static int
+ smb2_get_credit_charge(struct smb2_context *smb2, struct smb2_pdu *pdu)
+ {
