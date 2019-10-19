@@ -24,6 +24,7 @@ prepare() {
   patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-define_getlogin_r.patch"
   patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-define_net_readv_writev.patch"
   patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-fix_portable_endian_include.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-fix_getaddrinfo_hints.patch"
   patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-fix_makefile_libnx_include.patch"
 }
 
