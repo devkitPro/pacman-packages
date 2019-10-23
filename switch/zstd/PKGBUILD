@@ -1,0 +1,39 @@
+
+pkgname=switch-zstd
+pkgver=1.4.3
+pkgrel=1
+pkgdesc='compression algorithm'
+arch=('any')
+url='https://facebook.github.io/zstd/'
+license=('bsd')
+options=(!strip libtool staticlibs)
+source=( "https://github.com/facebook/zstd/archive/v${pkgver}.tar.gz" )
+makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
+sha256sums=(
+  '5eda3502ecc285c3c92ee0cc8cd002234dee39d539b3f692997a0e80de1d33de')
+groups=('switch-portlibs')
+build() {
+  cd zstd-$pkgver/build/cmake
+
+  source /opt/devkitpro/switchvars.sh
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CFLAGS" \
+    -DCMAKE_AR="$DEVKITPRO/devkitA64/bin/aarch64-none-elf-gcc-ar" \
+    .
+
+  make
+
+}
+
+package() {
+
+  cd zstd-$pkgver/build/cmake
+
+  source /opt/devkitpro/switchvars.sh
+
+  make install DESTDIR="$pkgdir"
+
+}
