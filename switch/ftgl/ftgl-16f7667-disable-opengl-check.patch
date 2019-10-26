@@ -1,0 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 85fccaf..c06b9ba 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -9,7 +9,9 @@ SET(VERSION_MINOR 0)
+ SET(FTGL_SOVERSION 1)
+ 
+ FIND_PACKAGE(Freetype REQUIRED) # if it fails, check this: https://bugs.launchpad.net/ubuntu/+source/cmake/+bug/826988
+-FIND_PACKAGE(OpenGL   REQUIRED)
++IF(NOT SWITCH_LIBNX)
++  FIND_PACKAGE(OpenGL   REQUIRED)
++ENDIF(NOT SWITCH_LIBNX)
+ 
+ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src)
+ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src/FTFont)
+ 
