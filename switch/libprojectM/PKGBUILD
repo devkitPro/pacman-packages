@@ -1,6 +1,7 @@
 # Maintainer: Rhys Koedijk <rhys@koedijk.co.nz>
 
-pkgname=switch-libprojectm
+pkgbasename=libprojectm
+pkgname=switch-$pkgbasename
 pkgver=r1866.4befa4516
 pkgrel=1
 pkgdesc='Cross-platform music visualization. Open-source and Milkdrop-compatible'
@@ -8,8 +9,9 @@ arch=('any')
 url='https://github.com/projectM-visualizer/projectm'
 license=('(L)GPL')
 options=(!strip libtool staticlibs)
-source=(${pkgname}::"git+https://github.com/projectM-visualizer/projectm.git#commit=4befa4516fedf1c591fbd4e39476ca67f89af6b2")
+source=(${pkgname}::"git+${url}.git#commit=4befa4516fedf1c591fbd4e39476ca67f89af6b2")
 sha256sums=('SKIP')
+depends=('switch-ftgl' 'switch-glfw')
 makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 
@@ -20,8 +22,10 @@ pkgver() {
 
 prepare() {
   cd ${pkgname}
-  patch -Np1 -i "$srcdir/../projectM-4befa4516-disable_navtive_preset_factory.patch"
-  patch -Np1 -i "$srcdir/../projectM-4befa4516-platform_definitions.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-disable_navtive_preset_factory.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-enable_ftgl_font_support.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-platform_definitions.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-disable_render_draw_stats.patch"
 }
 
 build() {
@@ -36,7 +40,7 @@ build() {
   autoconf
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static --disable-threading --disable-sdl
+    --disable-shared --enable-static --disable-threading --disable-sdl --enable-ftgl
 
   make
 }
