@@ -1,0 +1,21 @@
+diff --git a/src/libprojectM/Renderer/Renderer.cpp b/src/libprojectM/Renderer/Renderer.cpp
+index 7b46f79..1c558cb 100644
+--- a/src/libprojectM/Renderer/Renderer.cpp
++++ b/src/libprojectM/Renderer/Renderer.cpp
+@@ -700,6 +700,7 @@ void Renderer::draw_stats()
+ {
+ 
+ #ifdef USE_FTGL
++/*
+     char buffer[128];
+     float offset = (this->showfps % 2 ? -0.05 : 0.0);
+     // glBlendFunc(GL_ONE_MINUS_DST_COLOR,GL_ZERO);
+@@ -748,7 +749,7 @@ void Renderer::draw_stats()
+     glPopMatrix();
+     // glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+ 
+-
++*/
+ #endif /** USE_FTGL */
+ }
+ void Renderer::draw_fps()
