@@ -17,6 +17,7 @@ groups=('switch-portlibs')
 
 prepare() {
   cd ${pkgname}
+  patch -Np1 -i "${startdir}/${pkgbasename}-16f7667-add-pkg-config-template.patch"
   patch -Np1 -i "${startdir}/${pkgbasename}-16f7667-install-pkg-config.patch"
 }
 

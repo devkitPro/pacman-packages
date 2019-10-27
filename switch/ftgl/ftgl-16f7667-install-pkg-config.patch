@@ -9,7 +9,7 @@ index 85fccaf..7449780 100644
 +
 +SET(PKGCONFIG_INSTALL_PREFIX "lib${LIB_SUFFIX}/pkgconfig/" CACHE STRING "Base directory for pkgconfig files")
 +CONFIGURE_FILE(
-+  ${CMAKE_CURRENT_SOURCE_DIR}/ftgl.pc.in 
++  ${CMAKE_CURRENT_SOURCE_DIR}/ftgl.pc.cmake 
 +  ${CMAKE_CURRENT_BINARY_DIR}/ftgl.pc 
 +  @ONLY)
 +INSTALL(
