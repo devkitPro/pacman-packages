@@ -24,8 +24,7 @@ prepare() {
   cd ${pkgname}
   patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-platform_definitions.patch"
   patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-disable_navtive_preset_factory.patch"
-  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-disable_render_draw_stats.patch"
-  patch -Np1 -i "${startdir}/${pkgbasename}-0e46a1fb7-configure-ac-enable-ftgl-arg.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-0e46a1fb7-configure_ac_enable_ftgl_arg.patch"
 }
 
 build() {
