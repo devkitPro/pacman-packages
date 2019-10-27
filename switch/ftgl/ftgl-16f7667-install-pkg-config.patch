@@ -1,0 +1,17 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 85fccaf..7449780 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -73,3 +73,12 @@ install(EXPORT FTGL-targets DESTINATION "${cmakedir}")
+ install(
+   FILES       "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/FTGLConfig.cmake"
+   DESTINATION "${cmakedir}")
++
++SET(PKGCONFIG_INSTALL_PREFIX "lib${LIB_SUFFIX}/pkgconfig/" CACHE STRING "Base directory for pkgconfig files")
++CONFIGURE_FILE(
++  ${CMAKE_CURRENT_SOURCE_DIR}/ftgl.pc.in 
++  ${CMAKE_CURRENT_BINARY_DIR}/ftgl.pc 
++  @ONLY)
++INSTALL(
++  FILES       ${CMAKE_CURRENT_BINARY_DIR}/ftgl.pc
++  DESTINATION ${PKGCONFIG_INSTALL_PREFIX})

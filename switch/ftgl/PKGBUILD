@@ -15,6 +15,11 @@ depends=('switch-freetype' 'switch-glu' 'switch-mesa')
 makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 
+prepare() {
+  cd ${pkgname}
+  patch -Np1 -i "${startdir}/${pkgbasename}-16f7667-install-pkg-config.patch"
+}
+
 build() {
   cd ${pkgname}
 
