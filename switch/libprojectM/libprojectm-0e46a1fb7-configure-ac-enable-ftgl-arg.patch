@@ -1,8 +1,8 @@
 diff --git a/configure.ac b/configure.ac
-index 79a42bd..1c6c967 100644
+index 581596f..44c5167 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -123,6 +123,20 @@ AS_IF([test "x$enable_threading" = "xyes" && ! test "$EMSCRIPTEN"], [
+@@ -122,6 +122,23 @@ AS_IF([test "x$enable_threading" = "xyes" && ! test "$EMSCRIPTEN"], [
    ])
  ])
  
@@ -13,6 +13,9 @@ index 79a42bd..1c6c967 100644
 +AS_IF([test "$enable_ftgl" != "no"], [
 +  PKG_CHECK_MODULES([FTGL], [ftgl], [
 +    AC_DEFINE([USE_FTGL], [1], [Define USE_FTGL])
++    CFLAGS="$CFLAGS ${FTGL_CFLAGS}"
++    CXXFLAGS="$CXXFLAGS ${FTGL_CFLAGS}"
++    LIBS="$LIBS ${FTGL_LIBS}"
 +  ], 
 +  [
 +    AS_IF([test "$enable_ftgl" = "yes"], AC_MSG_ERROR([*** libftgl not found!]))
@@ -23,7 +26,7 @@ index 79a42bd..1c6c967 100644
  AC_ARG_ENABLE([gles],
    AS_HELP_STRING([--enable-gles], [OpenGL ES support]),
    [], [enable_gles=no])
-@@ -266,6 +280,7 @@ SDL:                    ${enable_sdl}
+@@ -265,6 +282,7 @@ SDL:                    ${enable_sdl}
  Qt:                     ${enable_qt}
  Pulseaudio:             ${enable_pulseaudio}
  Jack:                   ${enable_jack}
