@@ -11,14 +11,9 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 source=(${pkgname}::"git+${url}.git#commit=16f7667cbd4b1e988ae24128c5dea54479926f85")
 sha256sums=('SKIP')
-depends=('switch-freetype' 'switch-glu' 'switch-glfw')
+depends=('switch-freetype' 'switch-glu' 'switch-mesa')
 makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
-
-prepare() {
-  cd ${pkgname}
-  patch -Np1 -i "${startdir}/${pkgbasename}-16f7667-disable-opengl-check.patch"
-}
 
 build() {
   cd ${pkgname}
@@ -31,6 +26,8 @@ build() {
     -DCMAKE_CXX_FLAGS="$CFLAGS" \
     -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
     -DBUILD_SHARED_LIBS:BOOL=OFF \
+    -DOPENGL_USE_EGL:BOOL=ON \
+    -DOPENGL_opengl_LIBRARY="${PORTLIBS_PREFIX}/lib" \
     .
   
   make
