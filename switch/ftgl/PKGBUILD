@@ -2,27 +2,27 @@
 
 pkgbasename=ftgl
 pkgname=switch-$pkgbasename
-pkgver=2.3
+pkgver=2.4.0
 pkgrel=1
 pkgdesc='FTGL is a free cross-platform Open Source C++ library that uses Freetype2 to simplify rendering fonts in OpenGL applications'
 arch=('any')
-url='https://github.com/ulrichard/ftgl'
+url='https://github.com/frankheckenbach/ftgl/'
 license=('MIT')
 options=(!strip libtool staticlibs)
-source=(${pkgname}::"git+${url}.git#commit=16f7667cbd4b1e988ae24128c5dea54479926f85")
-sha256sums=('SKIP')
+source=("${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('aa97da1c3442a8fd3941037655df18016d70b5266381c81d81e8b5335f196ea8')
 depends=('switch-freetype' 'switch-glu' 'switch-mesa')
-makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 
 prepare() {
-  cd ${pkgname}
-  patch -Np1 -i "${startdir}/${pkgbasename}-16f7667-add-pkg-config-template.patch"
-  patch -Np1 -i "${startdir}/${pkgbasename}-16f7667-install-pkg-config.patch"
+  cd ${pkgbasename}-${pkgver}
+  patch -Np1 -i "${startdir}/${pkgbasename}-2.4.0-install_pkgconfig.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-2.4.0-fix_libftgl_la_sources.patch"
 }
 
 build() {
-  cd ${pkgname}
+  cd ${pkgbasename}-${pkgver}
 
   source /opt/devkitpro/switchvars.sh
 
@@ -40,7 +40,7 @@ build() {
 }
 
 package() {
-  cd ${pkgname}
+  cd ${pkgbasename}-${pkgver}
 
   make DESTDIR="$pkgdir" install
   
