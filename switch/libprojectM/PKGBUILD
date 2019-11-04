@@ -24,8 +24,6 @@ prepare() {
   cd ${pkgname}
   patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-platform_definitions.patch"
   patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-disable_navtive_preset_factory.patch"
-  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-disable_render_draw_stats.patch"
-  patch -Np1 -i "${startdir}/${pkgbasename}-0e46a1fb7-configure_ac_enable_ftgl_arg.patch"
 }
 
 build() {
@@ -40,7 +38,7 @@ build() {
   autoconf
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static --disable-threading --disable-sdl --disable-ftgl
+    --disable-shared --enable-static --disable-threading --disable-sdl
 
   make
 }
