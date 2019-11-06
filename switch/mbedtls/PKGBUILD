@@ -25,6 +25,7 @@ build() {
 
   ./scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
   ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
+  ./scripts/config.pl set MBEDTLS_CMAC_C
 
   ./scripts/config.pl unset MBEDTLS_TIMING_C
   ./scripts/config.pl unset MBEDTLS_SELF_TEST
