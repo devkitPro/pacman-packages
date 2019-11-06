@@ -1,6 +1,6 @@
 --- a/lib/socket.c
 +++ b/lib/socket.c
-@@ -80,6 +80,106 @@
+@@ -80,6 +80,99 @@
  
  #define MAX_URL_SIZE 256
  
@@ -18,10 +18,6 @@
 +
 +    for (int i = 0; i < count; ++i)
 +    {
-+        if ((SIZE_MAX/2) - bytes < vector[i].iov_len)
-+        {
-+            return -1;
-+        }
 +        bytes += vector[i].iov_len;
 +    }
 +
@@ -51,54 +47,51 @@
 +    return bytes_written;
 +}
 +
-+ssize_t readv(int fd, const struct iovec *vector, int count)
++ssize_t readv(int fd, const struct iovec *iov, int iovcnt)
 +{
-+    size_t bytes = 0;
++  ssize_t total = 0, bytes_read = 0;
++  
++  for (int j = 0; j < iovcnt; j++) {
++	  total += iov[j].iov_len;
++  }
++  
++  char *buffer = (char *)malloc(total);
++  char *bp = buffer;
++  
++  if(buffer == NULL) {
++	  return -1;
++  }
++  
++  int bytes_left = read(fd, buffer, total);
++  
++  if (bytes_left == -1) {
++	  free((void*)buffer);
++      return -1;
++  }
++  
++  if(bytes_left == 0)
++  {
++	  return 0;
++  }
++  
++  for (int i = 0; i < iovcnt; i++)
++  {
++    int sz = MIN(iov[i].iov_len, bytes_left);
++	
++	memcpy(iov[i].iov_base, bp, sz);
 +
-+    for (int i = 0; i < count; ++i)
-+    {
-+        if ((SIZE_MAX/2) - bytes < vector[i].iov_len)
-+        {
-+            return -1;
-+        }
-+        bytes += vector[i].iov_len;
-+    }
-+
-+    char *buffer = (char *)malloc(bytes);
-+    char *bp = buffer;
-+
-+    buffer = (char *)malloc(bytes);
-+
-+    if (buffer == NULL)
-+    {
-+        return -1;
-+    }
-+
-+    ssize_t bytes_read = read(fd, buffer, bytes);
-+
-+    if (bytes_read < 0)
-+    {
-+        free((void*)buffer);
-+        return -1;
-+    }
-+
-+    bytes = bytes_read;
-+
-+    for (int i = 0; i < count; ++i)
-+    {
-+        size_t copy = MIN(vector[i].iov_len, bytes);
-+        memcpy((void *)vector[i].iov_base, (void *)bp, copy);
-+        bp += copy;
-+        bytes -= copy;
-+
-+        if (bytes == 0)
-+        {
-+            break;
-+        }
-+    }
-+
-+    free((void*)buffer);
-+    return bytes_read;
++	bp += sz;
++	bytes_read += sz;
++	bytes_left -= sz;
++	
++	if(bytes_left < 1)
++	{
++		break;
++	}
++  }
++  
++  free((void*)buffer);
++  return bytes_read;
 +}
 +
 +
