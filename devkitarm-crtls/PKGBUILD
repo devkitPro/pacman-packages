@@ -2,28 +2,28 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkitarm-crtls')
-pkgver=1.0.2
+pkgver=1.0.3
 pkgrel=1
 pkgdesc="devkitARM crtls."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/devkitarm-crtls"
 options=(!strip libtool staticlibs)
-source=(${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('69358964e0e9a84b7f0db0419c3739c1ef92876ab12adee16dd90b499486cd1a')
+source=(${url}/archive/${pkgname}-${pkgver}.tar.gz)
+sha256sums=('fefd9d7c7be471fac930019bd02fb98f794c425d862c2b5b08cbb7314c3fcd14')
 makedepends=('devkitARM')
 groups=('gba-dev' 'gp32-dev' 'nds-dev' '3ds-dev')
 
 build() {
 
-  cd $srcdir/$pkgname-$pkgver
+  cd $srcdir/$pkgname-$pkgname-$pkgver
   make
 
 }
 
 package() {
 
-  cd $srcdir/$pkgname-$pkgver
+  cd $srcdir/$pkgname-$pkgname-$pkgver
   make DESTDIR=$pkgdir install
 
 }
