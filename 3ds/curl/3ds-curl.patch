@@ -1,8 +1,7 @@
-diff --git a/lib/connect.c b/lib/connect.c
-index 3edb71eb7..b81a7db87 100644
---- a/lib/connect.c
-+++ b/lib/connect.c
-@@ -109,6 +109,9 @@ static void
+diff -NBaur curl-7.67.0.new/lib/connect.c curl-7.67.0/lib/connect.c
+--- curl-7.67.0.new/lib/connect.c	2019-12-03 10:36:21.885160000 -0700
++++ curl-7.67.0/lib/connect.c	2019-12-03 10:37:27.499231800 -0700
+@@ -111,6 +111,9 @@
  tcpkeepalive(struct Curl_easy *data,
               curl_socket_t sockfd)
  {
@@ -12,7 +11,7 @@ index 3edb71eb7..b81a7db87 100644
    int optval = data->set.tcp_keepalive?1:0;
  
    /* only set IDLE and INTVL if setting KEEPALIVE is successful */
-@@ -160,6 +163,7 @@ tcpkeepalive(struct Curl_easy *data,
+@@ -162,6 +165,7 @@
  #endif
  #endif
    }
@@ -20,7 +19,7 @@ index 3edb71eb7..b81a7db87 100644
  }
  
  static CURLcode
-@@ -484,7 +488,7 @@ static CURLcode bindlocal(struct connectdata *conn,
+@@ -494,7 +498,7 @@
  static bool verifyconnect(curl_socket_t sockfd, int *error)
  {
    bool rc = TRUE;
@@ -29,11 +28,10 @@ index 3edb71eb7..b81a7db87 100644
    int err = 0;
    curl_socklen_t errSize = sizeof(err);
  
-diff --git a/lib/curl_addrinfo.c b/lib/curl_addrinfo.c
-index 95a3f1050..ff7fb3669 100644
---- a/lib/curl_addrinfo.c
-+++ b/lib/curl_addrinfo.c
-@@ -151,9 +151,11 @@ Curl_getaddrinfo_ex(const char *nodename,
+diff -NBaur curl-7.67.0.new/lib/curl_addrinfo.c curl-7.67.0/lib/curl_addrinfo.c
+--- curl-7.67.0.new/lib/curl_addrinfo.c	2019-12-03 10:36:22.042114000 -0700
++++ curl-7.67.0/lib/curl_addrinfo.c	2019-12-03 10:37:27.500256100 -0700
+@@ -151,9 +151,11 @@
      if((ai->ai_addr == NULL) || !(ai->ai_addrlen > 0))
        continue;
  
@@ -45,3 +43,14 @@ index 95a3f1050..ff7fb3669 100644
  
      ca = malloc(sizeof(Curl_addrinfo));
      if(!ca) {
+diff -NBaur curl-7.67.0.new/lib/socketpair.c curl-7.67.0/lib/socketpair.c
+--- curl-7.67.0.new/lib/socketpair.c	2019-12-03 10:36:21.848108500 -0700
++++ curl-7.67.0/lib/socketpair.c	2019-12-03 10:37:27.505455900 -0700
+@@ -40,6 +40,7 @@
+ #ifdef HAVE_NETINET_IN_H
+ #include <netinet/in.h> /* IPPROTO_TCP */
+ #endif
++#include <arpa/inet.h>
+ #ifndef INADDR_LOOPBACK
+ #define INADDR_LOOPBACK 0x7f000001
+ #endif /* !INADDR_LOOPBACK */
