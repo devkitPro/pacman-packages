@@ -32,10 +32,9 @@ build() {
   export CFLAGS="$CFLAGS -D_POSIX_VERSION=200809L -I$srcdir/mpv-${pkgver}/osdep/switch"
   TARGET=aarch64-none-elf ./waf configure --prefix="${PORTLIBS_PREFIX}" \
     --disable-libmpv-shared --enable-libmpv-static --disable-cplayer \
-    --disable-iconv --disable-jpeg \
+    --disable-iconv --disable-jpeg --disable-libavdevice \
     --enable-sdl2 --enable-sdl2-audio --enable-sdl2-gamepad --enable-sdl2-video
   sed -i 's/#define HAVE_POSIX 1/#define HAVE_POSIX 0/' build/config.h
-  sed -i 's/#define HAVE_LIBAVDEVICE 1/#define HAVE_LIBAVDEVICE 0/' build/config.h
   ./waf build
 }
 
