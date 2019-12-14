@@ -29,14 +29,8 @@ build() {
   source /opt/devkitpro/switchvars.sh
 
   ./bootstrap.py
-  export PKG_CONFIG=aarch64-none-elf-pkg-config
-  export PKG_CONFIG_PATH="${PORTLIBS_PREFIX}/lib/pkgconfig"
-  export CC=aarch64-none-elf-gcc
-  export CXX=aarch64-none-elf-g++
-  export LD=aarch64-none-elf-gcc
   export CFLAGS="$CFLAGS -D_POSIX_VERSION=200809L -I$srcdir/mpv-${pkgver}/osdep/switch"
-  export LDLIBS=$LIBS
-  ./waf configure --prefix="${PORTLIBS_PREFIX}" \
+  TARGET=aarch64-none-elf ./waf configure --prefix="${PORTLIBS_PREFIX}" \
     --disable-libmpv-shared --enable-libmpv-static --disable-cplayer \
     --disable-iconv --disable-jpeg \
     --enable-sdl2 --enable-sdl2-audio --enable-sdl2-gamepad --enable-sdl2-video
