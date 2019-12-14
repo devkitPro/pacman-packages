@@ -1,0 +1,52 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Cpasjuste <cpasjuste@gmail.com>
+
+pkgname=switch-libmpv
+pkgver=0.30.0
+pkgrel=1
+pkgdesc='Command line video player (library only)'
+arch=('any')
+url='https://mpv.io/'
+license=('GPL')
+options=(!strip libtool staticlibs)
+source=("https://github.com/mpv-player/mpv/archive/v${pkgver}.tar.gz" "mpv.patch")
+sha256sums=(
+  '33a1bcb7e74ff17f070e754c15c52228cf44f2cefbfd8f34886ae81df214ca35'
+  'a1db60e3cbf820a23dc3154b5c43e19845bba1e18ad668eef38c08d47ea6dc27'
+)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+depends=('switch-ffmpeg' 'switch-mesa')
+groups=('switch-portlibs')
+
+prepare() {
+  cd mpv-$pkgver
+  patch -Np1 -i "$srcdir/mpv.patch"
+}
+
+build() {
+  cd mpv-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./bootstrap.py
+  export PKG_CONFIG=aarch64-none-elf-pkg-config
+  export PKG_CONFIG_PATH="${PORTLIBS_PREFIX}/lib/pkgconfig"
+  export CC=aarch64-none-elf-gcc
+  export CXX=aarch64-none-elf-g++
+  export LD=aarch64-none-elf-gcc
+  export CFLAGS="$CFLAGS -D_POSIX_VERSION=200809L -I$srcdir/mpv-${pkgver}/osdep/switch"
+  export LDLIBS=$LIBS
+  ./waf configure --prefix="${PORTLIBS_PREFIX}" \
+    --disable-libmpv-shared --enable-libmpv-static --disable-cplayer \
+    --disable-iconv --disable-jpeg \
+    --enable-sdl2 --enable-sdl2-audio --enable-sdl2-gamepad --enable-sdl2-video
+  sed -i 's/#define HAVE_POSIX 1/#define HAVE_POSIX 0/' build/config.h
+  sed -i 's/#define HAVE_LIBAVDEVICE 1/#define HAVE_LIBAVDEVICE 0/' build/config.h
+  ./waf build
+}
+
+package() {
+  cd mpv-$pkgver
+
+  ./waf install
+}
