@@ -1,7 +1,7 @@
 # Maintainer:  fincs <fincs.alt1@gmail.com>
 
 pkgname=switch-glm
-pkgver=0.9.9.1
+pkgver=0.9.9.7
 pkgrel=1
 pkgdesc='OpenGL Mathematics (GLM) header only C++ library'
 arch=('any')
@@ -9,30 +9,11 @@ url='https://github.com/g-truc/glm'
 license=(MIT)
 options=(!strip libtool staticlibs)
 source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip")
-sha256sums=('10f1471d69ec09992f400705bedc9f5121e17a2c8fd6f9591244bb5ee1104a10')
+sha256sums=('6b79c3d06d9745d1cce3f38c0c15666596f9aefff25ddb74df3af0a02f011ee1')
 makedepends=('devkitpro-pkgbuild-helpers')
 
-build() {
-
-  mkdir -p build
-  cd build
-
-  source $DEVKITPRO/switchvars.sh
-
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkita64.cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DCMAKE_CXX_FLAGS="$CFLAGS $CPPFLAGS -D_GLIBCXX_USE_C99_MATH_TR1 -D_LDBL_EQ_DBL" \
-    -DGLM_TEST_ENABLE=OFF \
-    ../glm
-
-  make
-
-}
-
 package() {
-  cd build
-
-  make install DESTDIR="$pkgdir"
+  source $DEVKITPRO/switchvars.sh
+  mkdir -p ${pkgdir}${PORTLIBS_PREFIX}/include
+  cp -r ${srcdir}/glm/glm ${pkgdir}${PORTLIBS_PREFIX}/include/
 }
