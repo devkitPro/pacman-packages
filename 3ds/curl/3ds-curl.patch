@@ -54,3 +54,15 @@ diff -NBaur curl-7.67.0.new/lib/socketpair.c curl-7.67.0/lib/socketpair.c
  #ifndef INADDR_LOOPBACK
  #define INADDR_LOOPBACK 0x7f000001
  #endif /* !INADDR_LOOPBACK */
+diff -NBaur curl-7.67.0.new/lib/select.c curl-7.67.0/lib/select.c
+--- curl-7.67.0.new/lib/select.c	2020-03-29 00:13:24.468369500 +0100
++++ curl-7.67.0/lib/select.c	2020-03-29 01:04:51.942360300 +0100
+@@ -22,6 +22,8 @@
+
+ #include "curl_setup.h"
+
++#undef HAVE_POLL_FINE
++
+ #ifdef HAVE_SYS_SELECT_H
+ #include <sys/select.h>
+ #endif
