@@ -1,0 +1,36 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=switch-wslay
+pkgver=1.1.0
+pkgrel=1
+pkgdesc='Wslay is a WebSocket library written in C.'
+arch=('any')
+url="https://github.com/tatsuhiro-t/wslay"
+license=('MIT')
+options=(!strip libtool staticlibs)
+source=("https://github.com/tatsuhiro-t/wslay/releases/download/release-${pkgver}/wslay-${pkgver}.tar.gz")
+sha256sums=('0de975a31818f1c660fa3c674b17bbcbda6ad9c866402ac8ab46a1847325118e')
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+build() {
+  cd wslay-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+     --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd wslay-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+  # license
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+  # remove useless stuff
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+}
