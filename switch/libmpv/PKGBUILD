@@ -41,5 +41,5 @@ build() {
 package() {
   cd mpv-$pkgver
 
-  ./waf install
+  ./waf install --destdir=$pkgdir
 }
