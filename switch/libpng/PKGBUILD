@@ -3,17 +3,18 @@
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
 pkgname=switch-libpng
-pkgver=1.6.34
-pkgrel=2
+pkgver=1.6.37
+pkgrel=1
 pkgdesc='PNG format graphic files library (for Nintendo Switch homebrew development)'
 arch=('any')
 url='http://www.libpng.org'
 license=('custom')
 options=(!strip libtool staticlibs)
 depends=('switch-zlib')
+groups=('switch-portlibs')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
-source=("http://downloads.devkitpro.org/packages/sources/libpng-$pkgver.tar.xz")
-sha256sums=('55952766b5db751efc7c5aa4157c6342783561b44040cfeef91961ab1dfca310')
+source=("https://download.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
+sha256sums=('505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca')
 
 build() {
   cd libpng-$pkgver
@@ -21,15 +22,16 @@ build() {
   source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
+  sed -i 's/^bin_PROGRAMS = .*//' Makefile.in
+
   ./configure --prefix="$DEVKITPRO/portlibs/switch" --host=aarch64-none-elf \
     --disable-shared --enable-static
-  make
 }
 
 package() {
   cd libpng-$pkgver
 
-  make DESTDIR="$pkgdir" install
+  make LN_S=cp DESTDIR="$pkgdir" install
   # license
   install -Dm644 LICENSE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
   # remove useless stuff
