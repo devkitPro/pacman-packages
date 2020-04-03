@@ -4,8 +4,8 @@
 # Contributor: jakibaki <jakibaki live com>
 
 pkgname=switch-ffmpeg
-pkgver=4.1.1
-pkgrel=2
+pkgver=4.2.2
+pkgrel=1
 pkgdesc='ffmpeg port (for Nintendo Switch homebrew development)'
 arch=('any')
 url='https://ffmpeg.org/'
@@ -16,8 +16,8 @@ depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
          'switch-freetype' 'switch-libopus' 'switch-libtheora' 'switch-libvpx')
 source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz" "ffmpeg.patch")
 sha256sums=(
- '373749824dfd334d84e55dff406729edfd1606575ee44dd485d97d45ea4d2d86'
- 'a1cd32e822c9b027b061ffc8cd2f85c429554f2f7a974caff12518a19545700b'
+ 'cb754255ab0ee2ea5f66f8850e1bd6ad5cac1cd855d0a2f4990fb8c668b0d29c'
+ 'c93328dae566fa38f3903ec23a8022c89bc600e8946753c3e32f41a851f20928'
 )
 groups=('switch-portlibs')
 
@@ -33,7 +33,7 @@ build() {
 
   ./configure --prefix=$PORTLIBS_PREFIX --disable-shared --enable-static \
     --cross-prefix=aarch64-none-elf- --enable-cross-compile \
-    --arch=aarch64 --target-os=horizon --enable-pic --disable-asm \
+    --arch=aarch64 --target-os=horizon --enable-pic \
     --extra-cflags='-D__SWITCH__ -D_GNU_SOURCE -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
     --extra-cxxflags='-D__SWITCH__ -D_GNU_SOURCE -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
     --extra-ldflags='-fPIE -L${PORTLIBS_PREFIX}/lib -L${DEVKITPRO}/libnx/lib' \

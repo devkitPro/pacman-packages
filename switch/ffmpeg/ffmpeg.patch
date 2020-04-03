@@ -1,17 +1,18 @@
-diff -NBaur ffmpeg-4.1.1.old/configure ffmpeg-4.1.1.new/configure
---- ffmpeg-4.1.1.old/configure	2019-02-09 20:56:07.000000000 +0000
-+++ ffmpeg-4.1.1.new/configure	2019-03-26 13:45:58.627473027 +0000
-@@ -5347,6 +5347,9 @@
+diff -NBaur ffmpeg-4.2.1.old/configure ffmpeg-4.2.1.new/configure
+--- ffmpeg-4.2.1.old/configure	2019-08-05 22:11:40.000000000 +0100
++++ ffmpeg-4.2.1.new/configure	2020-04-03 10:08:08.918582455 +0100
+@@ -5452,6 +5452,10 @@
          ;;
      minix)
          ;;
 +    horizon)
 +        network_extralibs="-lnx"
++        enable section_data_rel_ro
 +        ;;
      none)
          ;;
      *)
-@@ -6337,7 +6340,7 @@
+@@ -6464,7 +6468,7 @@
  if check_struct sys/soundcard.h audio_buf_info bytes; then
      enable_sanitized sys/soundcard.h
  else
@@ -20,9 +21,9 @@ diff -NBaur ffmpeg-4.1.1.old/configure ffmpeg-4.1.1.new/configure
      #include <sys/soundcard.h>
      audio_buf_info abc;
  EOF
-diff -NBaur ffmpeg-4.1.1.old/libavfilter/vf_drawtext.c ffmpeg-4.1.1.new/libavfilter/vf_drawtext.c
---- ffmpeg-4.1.1.old/libavfilter/vf_drawtext.c	2019-02-09 20:56:02.000000000 +0000
-+++ ffmpeg-4.1.1.new/libavfilter/vf_drawtext.c	2019-03-26 13:45:01.216438970 +0000
+diff -NBaur ffmpeg-4.2.1.old/libavfilter/vf_drawtext.c ffmpeg-4.2.1.new/libavfilter/vf_drawtext.c
+--- ffmpeg-4.2.1.old/libavfilter/vf_drawtext.c	2019-08-05 21:52:21.000000000 +0100
++++ ffmpeg-4.2.1.new/libavfilter/vf_drawtext.c	2020-04-03 10:07:36.404491269 +0100
 @@ -37,7 +37,9 @@
  #if HAVE_UNISTD_H
  #include <unistd.h>
@@ -33,7 +34,7 @@ diff -NBaur ffmpeg-4.1.1.old/libavfilter/vf_drawtext.c ffmpeg-4.1.1.new/libavfil
  
  #if CONFIG_LIBFONTCONFIG
  #include <fontconfig/fontconfig.h>
-@@ -1046,12 +1048,16 @@
+@@ -1081,12 +1083,16 @@
          }
      }
  
