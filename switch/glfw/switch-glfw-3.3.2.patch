@@ -1,16 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3c0f6250..54c6c040 100644
+index e9888624..d3b58ab0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -23,6 +23,7 @@ option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
+@@ -20,6 +20,7 @@ option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
  option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
  option(GLFW_INSTALL "Generate installation target" ON)
  option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
 +option(GLFW_EGL_STATIC "Statically link to EGL" OFF)
  
  include(GNUInstallDirs)
- 
-@@ -62,6 +63,13 @@ if (GLFW_VULKAN_STATIC)
+ include(CMakeDependentOption)
+@@ -53,6 +54,13 @@ if (GLFW_VULKAN_STATIC)
      set(_GLFW_VULKAN_STATIC 1)
  endif()
  
@@ -24,7 +24,7 @@ index 3c0f6250..54c6c040 100644
  list(APPEND CMAKE_MODULE_PATH "${GLFW_SOURCE_DIR}/CMake/modules")
  
  find_package(Threads REQUIRED)
-@@ -157,6 +165,9 @@ elseif (APPLE)
+@@ -148,6 +156,9 @@ elseif (APPLE)
  elseif (UNIX)
      set(_GLFW_X11 1)
      message(STATUS "Using X11 for window creation")
@@ -34,7 +34,7 @@ index 3c0f6250..54c6c040 100644
  else()
      message(FATAL_ERROR "No supported platform was detected")
  endif()
-@@ -185,6 +196,15 @@ if (UNIX AND NOT APPLE)
+@@ -176,6 +187,15 @@ if (UNIX AND NOT APPLE)
      endif()
  endif()
  
@@ -50,8 +50,8 @@ index 3c0f6250..54c6c040 100644
  #--------------------------------------------------------------------
  # Use Win32 for window creation
  #--------------------------------------------------------------------
-@@ -292,13 +312,29 @@ if (_GLFW_COCOA)
-     set(glfw_PKG_LIBS "-framework Cocoa -framework IOKit -framework CoreFoundation -framework CoreVideo")
+@@ -288,13 +308,29 @@ if (_GLFW_COCOA)
+     set(glfw_PKG_LIBS "-framework Cocoa -framework IOKit -framework CoreFoundation")
  endif()
  
 +#--------------------------------------------------------------------
@@ -82,7 +82,7 @@ index 3c0f6250..54c6c040 100644
  # Export GLFW library dependencies
  #--------------------------------------------------------------------
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 0913579b..0a5fc896 100644
+index 891302ed..e6aae465 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -60,6 +60,11 @@ elseif (_GLFW_OSMESA)
@@ -98,10 +98,10 @@ index 0913579b..0a5fc896 100644
  
  if (_GLFW_X11 OR _GLFW_WAYLAND)
 diff --git a/src/egl_context.c b/src/egl_context.c
-index 19525276..72b58852 100644
+index e458bfb8..14dda0b4 100644
 --- a/src/egl_context.c
 +++ b/src/egl_context.c
-@@ -249,6 +249,7 @@ static int extensionSupportedEGL(const char* extension)
+@@ -252,6 +252,7 @@ static int extensionSupportedEGL(const char* extension)
  
  static GLFWglproc getProcAddressEGL(const char* procname)
  {
@@ -109,7 +109,7 @@ index 19525276..72b58852 100644
      _GLFWwindow* window = _glfwPlatformGetTls(&_glfw.contextSlot);
  
      if (window->context.egl.client)
-@@ -258,12 +259,14 @@ static GLFWglproc getProcAddressEGL(const char* procname)
+@@ -261,12 +262,14 @@ static GLFWglproc getProcAddressEGL(const char* procname)
          if (proc)
              return proc;
      }
@@ -124,7 +124,7 @@ index 19525276..72b58852 100644
  #if defined(_GLFW_X11)
      // NOTE: Do not unload libGL.so.1 while the X11 display is still open,
      //       as it will make XCloseDisplay segfault
-@@ -276,6 +279,7 @@ static void destroyContextEGL(_GLFWwindow* window)
+@@ -279,6 +282,7 @@ static void destroyContextEGL(_GLFWwindow* window)
              window->context.egl.client = NULL;
          }
      }
@@ -132,7 +132,7 @@ index 19525276..72b58852 100644
  
      if (window->context.egl.surface)
      {
-@@ -299,6 +303,7 @@ static void destroyContextEGL(_GLFWwindow* window)
+@@ -302,6 +306,7 @@ static void destroyContextEGL(_GLFWwindow* window)
  //
  GLFWbool _glfwInitEGL(void)
  {
@@ -140,7 +140,7 @@ index 19525276..72b58852 100644
      int i;
      const char* sonames[] =
      {
-@@ -391,6 +396,10 @@ GLFWbool _glfwInitEGL(void)
+@@ -394,6 +399,10 @@ GLFWbool _glfwInitEGL(void)
          _glfwTerminateEGL();
          return GLFW_FALSE;
      }
@@ -151,7 +151,7 @@ index 19525276..72b58852 100644
  
      _glfw.egl.display = eglGetDisplay(_GLFW_EGL_NATIVE_DISPLAY);
      if (_glfw.egl.display == EGL_NO_DISPLAY)
-@@ -437,11 +446,13 @@ void _glfwTerminateEGL(void)
+@@ -440,11 +449,13 @@ void _glfwTerminateEGL(void)
          _glfw.egl.display = EGL_NO_DISPLAY;
      }
  
@@ -165,7 +165,7 @@ index 19525276..72b58852 100644
  }
  
  #define setAttrib(a, v) \
-@@ -612,6 +623,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+@@ -615,6 +626,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
  
      window->context.egl.config = config;
  
@@ -173,7 +173,7 @@ index 19525276..72b58852 100644
      // Load the appropriate client library
      if (!_glfw.egl.KHR_get_all_proc_addresses)
      {
-@@ -689,6 +701,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+@@ -692,6 +704,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
              return GLFW_FALSE;
          }
      }
@@ -182,7 +182,7 @@ index 19525276..72b58852 100644
      window->context.makeCurrent = makeContextCurrentEGL;
      window->context.swapBuffers = swapBuffersEGL;
 diff --git a/src/egl_context.h b/src/egl_context.h
-index 7def043a..42c8aabd 100644
+index 6d42e11c..04f92f27 100644
 --- a/src/egl_context.h
 +++ b/src/egl_context.h
 @@ -43,6 +43,10 @@ typedef Window EGLNativeWindowType;
@@ -276,10 +276,10 @@ index f418c995..08673eab 100644
  // Define this to 1 to force use of high-performance GPU on hybrid systems
  #cmakedefine _GLFW_USE_HYBRID_HPG
 diff --git a/src/init.c b/src/init.c
-index 3d0f9cf7..236bad5d 100644
+index e44d0ca2..8706b22d 100644
 --- a/src/init.c
 +++ b/src/init.c
-@@ -26,7 +26,9 @@
+@@ -28,7 +28,9 @@
  //========================================================================
  
  #include "internal.h"
@@ -289,7 +289,7 @@ index 3d0f9cf7..236bad5d 100644
  
  #include <string.h>
  #include <stdlib.h>
-@@ -248,6 +250,7 @@ GLFWAPI int glfwInit(void)
+@@ -250,6 +252,7 @@ GLFWAPI int glfwInit(void)
  
      glfwDefaultWindowHints();
  
@@ -297,7 +297,7 @@ index 3d0f9cf7..236bad5d 100644
      {
          int i;
  
-@@ -260,6 +263,7 @@ GLFWAPI int glfwInit(void)
+@@ -262,6 +265,7 @@ GLFWAPI int glfwInit(void)
              }
          }
      }
@@ -306,10 +306,10 @@ index 3d0f9cf7..236bad5d 100644
      return GLFW_TRUE;
  }
 diff --git a/src/input.c b/src/input.c
-index a2f42efe..9e7c0b02 100644
+index 337d5cf0..44674352 100644
 --- a/src/input.c
 +++ b/src/input.c
-@@ -41,6 +41,8 @@
+@@ -43,6 +43,8 @@
  #define _GLFW_JOYSTICK_BUTTON   2
  #define _GLFW_JOYSTICK_HATBIT   3
  
@@ -318,7 +318,7 @@ index a2f42efe..9e7c0b02 100644
  // Finds a mapping based on joystick GUID
  //
  static _GLFWmapping* findMapping(const char* guid)
-@@ -249,6 +251,8 @@ static GLFWbool parseMapping(_GLFWmapping* mapping, const char* string)
+@@ -251,6 +253,8 @@ static GLFWbool parseMapping(_GLFWmapping* mapping, const char* string)
      return GLFW_TRUE;
  }
  
@@ -327,7 +327,7 @@ index a2f42efe..9e7c0b02 100644
  
  //////////////////////////////////////////////////////////////////////////
  //////                         GLFW event API                       //////
-@@ -437,7 +441,9 @@ _GLFWjoystick* _glfwAllocJoystick(const char* name,
+@@ -439,7 +443,9 @@ _GLFWjoystick* _glfwAllocJoystick(const char* name,
      js->hatCount    = hatCount;
  
      strncpy(js->guid, guid, sizeof(js->guid) - 1);
@@ -337,7 +337,7 @@ index a2f42efe..9e7c0b02 100644
  
      return js;
  }
-@@ -1112,6 +1118,7 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun cbfun)
+@@ -1114,6 +1120,7 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun cbfun)
  
  GLFWAPI int glfwUpdateGamepadMappings(const char* string)
  {
@@ -345,7 +345,7 @@ index a2f42efe..9e7c0b02 100644
      int jid;
      const char* c = string;
  
-@@ -1166,6 +1173,7 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
+@@ -1168,6 +1175,7 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
          if (js->present)
              js->mapping = findValidMapping(js);
      }
@@ -354,10 +354,10 @@ index a2f42efe..9e7c0b02 100644
      return GLFW_TRUE;
  }
 diff --git a/src/internal.h b/src/internal.h
-index 618507c6..3670b159 100644
+index 92b9497a..a503390d 100644
 --- a/src/internal.h
 +++ b/src/internal.h
-@@ -189,6 +189,8 @@ typedef void (APIENTRY * PFN_vkVoidFunction)(void);
+@@ -190,6 +190,8 @@ typedef void (APIENTRY * PFN_vkVoidFunction)(void);
   #include "wl_platform.h"
  #elif defined(_GLFW_OSMESA)
   #include "null_platform.h"
@@ -366,7 +366,7 @@ index 618507c6..3670b159 100644
  #else
   #error "No supported window creation API selected"
  #endif
-@@ -561,6 +563,8 @@ struct _GLFWlibrary
+@@ -563,6 +565,8 @@ struct _GLFWlibrary
          GLFWbool        KHR_xcb_surface;
  #elif defined(_GLFW_WAYLAND)
          GLFWbool        KHR_wayland_surface;
@@ -575,10 +575,10 @@ index 00000000..fa601266
 +
 diff --git a/src/switch_joystick.c b/src/switch_joystick.c
 new file mode 100644
-index 00000000..5fbe9164
+index 00000000..7c087de3
 --- /dev/null
 +++ b/src/switch_joystick.c
-@@ -0,0 +1,200 @@
+@@ -0,0 +1,220 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
 +//------------------------------------------------------------------------
@@ -614,6 +614,9 @@ index 00000000..5fbe9164
 +#define _GLFW_JOYSTICK_AXIS     1
 +#define _GLFW_JOYSTICK_BUTTON   2
 +#define _GLFW_JOYSTICK_HATBIT   3
++
++#define TOUCH_WIDTH             1280
++#define TOUCH_HEIGHT            720
 +
 +enum
 +{
@@ -729,6 +732,23 @@ index 00000000..5fbe9164
 +    MAP_KEY(KEY_Y, GLFW_KEY_A, KBD_A);
 +    MAP_KEY(KEY_PLUS, GLFW_KEY_ENTER, KBD_ENTER);
 +    MAP_KEY(KEY_MINUS, GLFW_KEY_ESCAPE, KBD_ESC);
++
++    // Report touch inputs as mouse clicks
++    if (hidTouchCount() > 0)
++    {
++        touchPosition touch;
++        hidTouchRead(&touch, 0);
++
++        double scaledXPos = (double)touch.px / TOUCH_WIDTH * _glfw.nx.scr_width;
++        double scaledYPos = (double)touch.py / TOUCH_HEIGHT * _glfw.nx.scr_height;
++
++        _glfwInputCursorPos(_glfw.nx.cur_window, scaledXPos, scaledYPos);
++
++        if (_glfw.nx.cur_window->mouseButtons[GLFW_MOUSE_BUTTON_LEFT] == GLFW_RELEASE)
++            _glfwInputMouseClick(_glfw.nx.cur_window, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
++
++    } else if (_glfw.nx.cur_window->mouseButtons[GLFW_MOUSE_BUTTON_LEFT] == GLFW_PRESS)
++        _glfwInputMouseClick(_glfw.nx.cur_window, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
 +}
 +
 +//////////////////////////////////////////////////////////////////////////
@@ -1496,10 +1516,10 @@ index 00000000..594a1397
 +}
 +
 diff --git a/src/vulkan.c b/src/vulkan.c
-index cb326732..85b7b66e 100644
+index 22c54e4a..e186dd03 100644
 --- a/src/vulkan.c
 +++ b/src/vulkan.c
-@@ -136,6 +136,9 @@ GLFWbool _glfwInitVulkan(int mode)
+@@ -142,6 +142,9 @@ GLFWbool _glfwInitVulkan(int mode)
  #elif defined(_GLFW_WAYLAND)
          else if (strcmp(ep[i].extensionName, "VK_KHR_wayland_surface") == 0)
              _glfw.vk.KHR_wayland_surface = GLFW_TRUE;
