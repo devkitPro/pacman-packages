@@ -1,0 +1,28 @@
+# Maintainer: fincs <fincs@devkitpro.org>
+
+pkgname=('deko3d')
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Homebrew low level graphics API for Nintendo Switch (Nvidia Tegra X1)"
+arch=('any')
+license=('custom')
+url="http://github.com/devkitPro/${pkgname}"
+options=(!strip libtool staticlibs)
+source=(${url}/archive/v${pkgver}.tar.gz)
+sha256sums=('5b172fe4c4aca41287ea7d6a737a9b4a30fe44f14d1766907eb258f8e74fb048')
+makedepends=('devkitA64')
+depends=('libnx')
+
+groups=('switch-dev')
+
+build() {
+
+  make -C $srcdir/$pkgname-$pkgver
+
+}
+
+package() {
+
+  make -C $srcdir/$pkgname-$pkgver DESTDIR=$pkgdir install
+
+}
