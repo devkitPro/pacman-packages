@@ -1,9 +1,9 @@
 diff --git a/CMakeLists.switch b/CMakeLists.switch
 new file mode 100644
-index 000000000..8b6ec2b43
+index 000000000..b6c3817d9
 --- /dev/null
 +++ b/CMakeLists.switch
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,86 @@
 +cmake_minimum_required(VERSION 3.0)
 +#set(CMAKE_VERBOSE_MAKEFILE ON)
 +
@@ -58,6 +58,8 @@ index 000000000..8b6ec2b43
 +        src/video
 +        src/video/yuv2rgb
 +        src/video/switch
++        src/sensor
++        src/sensor/dummy
 +        )
 +
 +set(SRC_FILES )
@@ -89,28 +91,10 @@ index 000000000..8b6ec2b43
 +        DEPENDS ${PROJECT_NAME}.elf
 +        COMMAND elf2nro ${PROJECT_NAME}.elf ${PROJECT_NAME}.nro)
 diff --git a/configure b/configure
-index 1c7f87eb0..52a893bf2 100755
+index 9c46ffe2b..93d277692 100755
 --- a/configure
 +++ b/configure
-@@ -1572,7 +1572,7 @@ Optional Features:
-                           QtWayland server support for Wayland video driver
-                           [[default=yes]]
-   --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
--  --enable-video-mir      use Mir video driver [[default=yes]]
-+  --enable-video-mir      use Mir video driver [[default=no]]
-   --enable-mir-shared     dynamically load Mir support [[default=maybe]]
-   --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
-   --enable-video-x11      use X11 video driver [[default=yes]]
-@@ -19300,7 +19300,7 @@ CheckMir()
- if test "${enable_video_mir+set}" = set; then :
-   enableval=$enable_video_mir;
- else
--  enable_video_mir=yes
-+  enable_video_mir=no
- fi
- 
- 
-@@ -24621,6 +24621,88 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+@@ -25383,6 +25383,72 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
              have_timers=yes
          fi
          ;;
@@ -171,22 +155,6 @@ index 1c7f87eb0..52a893bf2 100755
 +            SOURCES="$SOURCES $srcdir/src/timer/switch/*.c"
 +            have_timers=yes
 +        fi
-+        # Set up files for the system power library
-+        if test x$enable_power = xyes; then
-+
-+$as_echo "#define SDL_POWER_SWITCH 1" >>confdefs.h
-+
-+            SOURCES="$SOURCES $srcdir/src/power/switch/*.c"
-+            have_power=yes
-+        fi
-+        # Set up files for the system filesystem library
-+        if test x$enable_filesystem = xyes; then
-+
-+$as_echo "#define SDL_FILESYSTEM_SWITCH 1" >>confdefs.h
-+
-+            SOURCES="$SOURCES $srcdir/src/filesystem/switch/*.c"
-+            have_filesystem=yes
-+        fi
 +        # Set up files for the thread library
 +        if test x$enable_threads = xyes; then
 +
@@ -198,12 +166,12 @@ index 1c7f87eb0..52a893bf2 100755
 +        ;;
      *)
          as_fn_error $? "
- *** Unsupported host:  Please add to configure.in
-diff --git a/configure.in b/configure.in
-index 1c7e79338..3db20e572 100644
---- a/configure.in
-+++ b/configure.in
-@@ -3905,6 +3905,66 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
+ *** Unsupported host:  Please add to configure.ac
+diff --git a/configure.ac b/configure.ac
+index 19361a4b8..0959f5272 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -4085,6 +4085,54 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
              have_timers=yes
          fi
          ;;
@@ -248,18 +216,6 @@ index 1c7e79338..3db20e572 100644
 +            SOURCES="$SOURCES $srcdir/src/timer/switch/*.c"
 +            have_timers=yes
 +        fi
-+        # Set up files for the system power library
-+        if test x$enable_power = xyes; then
-+            AC_DEFINE(SDL_POWER_SWITCH, 1, [ ])
-+            SOURCES="$SOURCES $srcdir/src/power/switch/*.c"
-+            have_power=yes
-+        fi
-+        # Set up files for the system filesystem library
-+        if test x$enable_filesystem = xyes; then
-+            AC_DEFINE(SDL_FILESYSTEM_SWITCH, 1, [ ])
-+            SOURCES="$SOURCES $srcdir/src/filesystem/switch/*.c"
-+            have_filesystem=yes
-+        fi
 +        # Set up files for the thread library
 +        if test x$enable_threads = xyes; then
 +            AC_DEFINE(SDL_THREAD_SWITCH, 1, [ ])
@@ -269,12 +225,12 @@ index 1c7e79338..3db20e572 100644
 +        ;;
      *)
          AC_MSG_ERROR([
- *** Unsupported host:  Please add to configure.in
+ *** Unsupported host:  Please add to configure.ac
 diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index 422f47f78..9cc4de52f 100644
+index f769e3cf4..f06209093 100644
 --- a/include/SDL_config.h.in
 +++ b/include/SDL_config.h.in
-@@ -262,6 +262,7 @@
+@@ -273,6 +273,7 @@
  #undef SDL_AUDIO_DRIVER_SUNAUDIO
  #undef SDL_AUDIO_DRIVER_WASAPI
  #undef SDL_AUDIO_DRIVER_WINMM
@@ -282,15 +238,15 @@ index 422f47f78..9cc4de52f 100644
  
  /* Enable various input drivers */
  #undef SDL_INPUT_LINUXEV
-@@ -278,6 +279,7 @@
- #undef SDL_JOYSTICK_USBHID
+@@ -290,6 +291,7 @@
  #undef SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H
+ #undef SDL_JOYSTICK_HIDAPI
  #undef SDL_JOYSTICK_EMSCRIPTEN
 +#undef SDL_JOYSTICK_SWITCH
  #undef SDL_HAPTIC_DUMMY
  #undef SDL_HAPTIC_ANDROID
  #undef SDL_HAPTIC_LINUX
-@@ -296,12 +298,14 @@
+@@ -312,12 +314,14 @@
  #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
  #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
  #undef SDL_THREAD_WINDOWS
@@ -305,7 +261,7 @@ index 422f47f78..9cc4de52f 100644
  
  /* Enable various video drivers */
  #undef SDL_VIDEO_DRIVER_HAIKU
-@@ -350,6 +354,7 @@
+@@ -363,6 +367,7 @@
  #undef SDL_VIDEO_DRIVER_VIVANTE
  #undef SDL_VIDEO_DRIVER_VIVANTE_VDK
  #undef SDL_VIDEO_DRIVER_QNX
@@ -313,27 +269,11 @@ index 422f47f78..9cc4de52f 100644
  
  #undef SDL_VIDEO_RENDER_D3D
  #undef SDL_VIDEO_RENDER_D3D11
-@@ -382,6 +387,7 @@
- #undef SDL_POWER_ANDROID
- #undef SDL_POWER_EMSCRIPTEN
- #undef SDL_POWER_HARDWIRED
-+#undef SDL_POWER_SWITCH
- 
- /* Enable system filesystem support */
- #undef SDL_FILESYSTEM_HAIKU
-@@ -392,6 +398,7 @@
- #undef SDL_FILESYSTEM_NACL
- #undef SDL_FILESYSTEM_ANDROID
- #undef SDL_FILESYSTEM_EMSCRIPTEN
-+#undef SDL_FILESYSTEM_SWITCH
- 
- /* Enable assembly routines */
- #undef SDL_ASSEMBLY_ROUTINES
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index dcaebea6d..6d930adc1 100644
+index 313749323..a276bc5a3 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
-@@ -98,6 +98,9 @@ static const AudioBootStrap *const bootstrap[] = {
+@@ -101,6 +101,9 @@ static const AudioBootStrap *const bootstrap[] = {
  #if SDL_AUDIO_DRIVER_EMSCRIPTEN
      &EMSCRIPTENAUDIO_bootstrap,
  #endif
@@ -344,10 +284,10 @@ index dcaebea6d..6d930adc1 100644
      &JACK_bootstrap,
  #endif
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index f0e1f3dad..a7e519281 100644
+index 7359adcc9..9d56dab13 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
-@@ -205,6 +205,7 @@ extern AudioBootStrap FUSIONSOUND_bootstrap;
+@@ -207,6 +207,7 @@ extern AudioBootStrap openslES_bootstrap;
  extern AudioBootStrap ANDROIDAUDIO_bootstrap;
  extern AudioBootStrap PSPAUDIO_bootstrap;
  extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
@@ -635,11 +575,24 @@ index 000000000..f5e0340fb
 +};
 +
 +#endif /* SDL_switchaudio_h_ */
+diff --git a/src/cpuinfo/SDL_cpuinfo.c b/src/cpuinfo/SDL_cpuinfo.c
+index 9cecb4f16..1df492e07 100644
+--- a/src/cpuinfo/SDL_cpuinfo.c
++++ b/src/cpuinfo/SDL_cpuinfo.c
+@@ -880,7 +880,7 @@ SDL_GetSystemRAM(void)
+ #endif
+ #ifdef HAVE_SYSCTLBYNAME
+         if (SDL_SystemRAM <= 0) {
+-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__)
++#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__SWITCH__)
+ #ifdef HW_REALMEM
+             int mib[2] = {CTL_HW, HW_REALMEM};
+ #else
 diff --git a/src/dynapi/SDL_dynapi.h b/src/dynapi/SDL_dynapi.h
-index 73316f1f8..81021e9e9 100644
+index 764e5d978..988eb6341 100644
 --- a/src/dynapi/SDL_dynapi.h
 +++ b/src/dynapi/SDL_dynapi.h
-@@ -55,6 +55,8 @@
+@@ -57,6 +57,8 @@
  #define SDL_DYNAMIC_API 0
  #elif defined(__clang_analyzer__)
  #define SDL_DYNAMIC_API 0  /* Turn off for static analysis, so reports are more clear. */
@@ -648,29 +601,52 @@ index 73316f1f8..81021e9e9 100644
  #endif
  
  /* everyone else. This is where we turn on the API if nothing forced it off. */
-diff --git a/src/filesystem/switch/dummy.c b/src/filesystem/switch/dummy.c
-new file mode 100644
-index 000000000..e69de29bb
 diff --git a/src/joystick/SDL_gamecontrollerdb.h b/src/joystick/SDL_gamecontrollerdb.h
-index fdc0b592b..8dcc6ca1d 100644
+index 45379dabd..1061f6d64 100644
 --- a/src/joystick/SDL_gamecontrollerdb.h
 +++ b/src/joystick/SDL_gamecontrollerdb.h
-@@ -226,6 +226,9 @@ static const char *s_ControllerMappings [] =
- #if defined(SDL_JOYSTICK_EMSCRIPTEN)
-     "emscripten,Standard Gamepad,a:b0,b:b1,back:b8,dpdown:b13,dpleft:b14,dpright:b15,dpup:b12,guide:b16,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
+@@ -670,6 +670,9 @@ static const char *s_ControllerMappings [] =
+     "default,Standard Gamepad,a:b0,b:b1,back:b8,dpdown:b13,dpleft:b14,dpright:b15,dpup:b12,guide:b16,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
  #endif
+     "hidapi,*,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
 +#if defined(SDL_JOYSTICK_SWITCH)
 +    "53776974636820436F6E74726F6C6C65,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
 +#endif
      NULL
  };
  
+diff --git a/src/joystick/SDL_joystick.c b/src/joystick/SDL_joystick.c
+index 95aac9c6f..6784d0cba 100644
+--- a/src/joystick/SDL_joystick.c
++++ b/src/joystick/SDL_joystick.c
+@@ -68,6 +68,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
+ #ifdef SDL_JOYSTICK_HAIKU
+     &SDL_HAIKU_JoystickDriver,
+ #endif
++#ifdef SDL_JOYSTICK_SWITCH
++    &SDL_SWITCH_JoystickDriver,
++#endif
+ #ifdef SDL_JOYSTICK_USBHID  /* !!! FIXME: "USBHID" is a generic name, and doubly-confusing with HIDAPI next to it. This is the *BSD interface, rename this. */
+     &SDL_BSD_JoystickDriver,
+ #endif
+diff --git a/src/joystick/SDL_sysjoystick.h b/src/joystick/SDL_sysjoystick.h
+index 6eb8bf47e..71aef4c6b 100644
+--- a/src/joystick/SDL_sysjoystick.h
++++ b/src/joystick/SDL_sysjoystick.h
+@@ -153,6 +153,7 @@ extern SDL_JoystickDriver SDL_HIDAPI_JoystickDriver;
+ extern SDL_JoystickDriver SDL_IOS_JoystickDriver;
+ extern SDL_JoystickDriver SDL_LINUX_JoystickDriver;
+ extern SDL_JoystickDriver SDL_WINDOWS_JoystickDriver;
++extern SDL_JoystickDriver SDL_SWITCH_JoystickDriver;
+ 
+ #endif /* SDL_sysjoystick_h_ */
+ 
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..21e8229fd
+index 000000000..c1a1199f1
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,209 @@
+@@ -0,0 +1,230 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -716,29 +692,29 @@ index 000000000..21e8229fd
 +static JoystickState pad[JOYSTICK_COUNT];
 +
 +static HidControllerID pad_id[JOYSTICK_COUNT] = {
-+    CONTROLLER_P1_AUTO, CONTROLLER_PLAYER_2,
-+    CONTROLLER_PLAYER_3, CONTROLLER_PLAYER_4,
-+    CONTROLLER_PLAYER_5, CONTROLLER_PLAYER_6,
-+    CONTROLLER_PLAYER_7, CONTROLLER_PLAYER_8
++        CONTROLLER_P1_AUTO, CONTROLLER_PLAYER_2,
++        CONTROLLER_PLAYER_3, CONTROLLER_PLAYER_4,
++        CONTROLLER_PLAYER_5, CONTROLLER_PLAYER_6,
++        CONTROLLER_PLAYER_7, CONTROLLER_PLAYER_8
 +};
 +
 +static const HidControllerKeys pad_mapping[] = {
-+    KEY_A, KEY_B, KEY_X, KEY_Y,
-+    KEY_LSTICK, KEY_RSTICK,
-+    KEY_L, KEY_R,
-+    KEY_ZL, KEY_ZR,
-+    KEY_PLUS, KEY_MINUS,
-+    KEY_DLEFT, KEY_DUP, KEY_DRIGHT, KEY_DDOWN,
-+    KEY_LSTICK_LEFT, KEY_LSTICK_UP, KEY_LSTICK_RIGHT, KEY_LSTICK_DOWN,
-+    KEY_RSTICK_LEFT, KEY_RSTICK_UP, KEY_RSTICK_RIGHT, KEY_RSTICK_DOWN,
-+    KEY_SL_LEFT, KEY_SR_LEFT, KEY_SL_RIGHT, KEY_SR_RIGHT
++        KEY_A, KEY_B, KEY_X, KEY_Y,
++        KEY_LSTICK, KEY_RSTICK,
++        KEY_L, KEY_R,
++        KEY_ZL, KEY_ZR,
++        KEY_PLUS, KEY_MINUS,
++        KEY_DLEFT, KEY_DUP, KEY_DRIGHT, KEY_DDOWN,
++        KEY_LSTICK_LEFT, KEY_LSTICK_UP, KEY_LSTICK_RIGHT, KEY_LSTICK_DOWN,
++        KEY_RSTICK_LEFT, KEY_RSTICK_UP, KEY_RSTICK_RIGHT, KEY_RSTICK_DOWN,
++        KEY_SL_LEFT, KEY_SR_LEFT, KEY_SL_RIGHT, KEY_SR_RIGHT
 +};
 +
 +/* Function to scan the system for joysticks.
 + * It should return 0, or -1 on an unrecoverable fatal error.
 + */
-+int
-+SDL_SYS_JoystickInit(void)
++static int
++SWITCH_JoystickInit(void)
 +{
 +    for (int i = 0; i < JOYSTICK_COUNT; i++) {
 +        pad[i].id = pad_id[i];
@@ -747,26 +723,49 @@ index 000000000..21e8229fd
 +    return JOYSTICK_COUNT;
 +}
 +
-+int
-+SDL_SYS_NumJoysticks(void)
++static int
++SWITCH_JoystickGetCount(void)
 +{
 +    return JOYSTICK_COUNT;
 +}
 +
-+void
-+SDL_SYS_JoystickDetect(void)
++static void
++SWITCH_JoystickDetect(void)
 +{
 +}
 +
 +/* Function to get the device-dependent name of a joystick */
-+const char *
-+SDL_SYS_JoystickNameForDeviceIndex(int device_index)
++static const char *
++SWITCH_JoystickGetDeviceName(int device_index)
 +{
 +    return "Switch Controller";
 +}
 +
++static int
++SWITCH_JoystickGetDevicePlayerIndex(int device_index)
++{
++    return -1;
++}
++
++static void
++SWITCH_JoystickSetDevicePlayerIndex(int device_index, int player_index)
++{
++}
++
++static SDL_JoystickGUID
++SWITCH_JoystickGetDeviceGUID(int device_index)
++{
++    SDL_JoystickGUID guid;
++    /* the GUID is just the first 16 chars of the name for now */
++    const char *name = SWITCH_JoystickGetDeviceName(device_index);
++    SDL_zero(guid);
++    SDL_memcpy(&guid, name, SDL_min(sizeof(guid), SDL_strlen(name)));
++    return guid;
++}
++
 +/* Function to perform the mapping from device index to the instance id for this index */
-+SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
++static SDL_JoystickID
++SWITCH_JoystickGetDeviceInstanceID(int device_index)
 +{
 +    return device_index;
 +}
@@ -776,8 +775,8 @@ index 000000000..21e8229fd
 +   This should fill the nbuttons and naxes fields of the joystick structure.
 +   It returns 0, or -1 if there is an error.
 + */
-+int
-+SDL_SYS_JoystickOpen(SDL_Joystick *joystick, int device_index)
++static int
++SWITCH_JoystickOpen(SDL_Joystick *joystick, int device_index)
 +{
 +    joystick->nbuttons = sizeof(pad_mapping) / sizeof(*pad_mapping);
 +    joystick->naxes = 4;
@@ -787,10 +786,11 @@ index 000000000..21e8229fd
 +    return 0;
 +}
 +
-+/* Function to determine if this joystick is attached to the system right now */
-+SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
++static int
++SWITCH_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 +{
-+    return SDL_TRUE;
++    // TODO
++    return SDL_Unsupported();
 +}
 +
 +/* Function to update the state of a joystick - called as a device poll.
@@ -798,8 +798,8 @@ index 000000000..21e8229fd
 + * but instead should call SDL_PrivateJoystick*() to deliver events
 + * and update joystick device state.
 + */
-+void
-+SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
++static void
++SWITCH_JoystickUpdate(SDL_Joystick *joystick)
 +{
 +    u64 changed;
 +    static JoystickState pad_old[JOYSTICK_COUNT];
@@ -838,66 +838,48 @@ index 000000000..21e8229fd
 +        for (int i = 0; i < joystick->nbuttons; i++) {
 +            if (changed & pad_mapping[i]) {
 +                SDL_PrivateJoystickButton(
-+                    joystick, (Uint8) i,
-+                    (Uint8) ((pad[index].buttons & pad_mapping[i]) ? SDL_PRESSED : SDL_RELEASED));
++                        joystick, (Uint8) i,
++                        (Uint8) ((pad[index].buttons & pad_mapping[i]) ? SDL_PRESSED : SDL_RELEASED));
 +            }
 +        }
 +    }
 +}
 +
 +/* Function to close a joystick after use */
-+void
-+SDL_SYS_JoystickClose(SDL_Joystick *joystick)
++static void
++SWITCH_JoystickClose(SDL_Joystick *joystick)
 +{
 +}
 +
 +/* Function to perform any system-specific joystick related cleanup */
-+void
-+SDL_SYS_JoystickQuit(void)
++static void
++SWITCH_JoystickQuit(void)
 +{
 +}
 +
-+SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index)
++SDL_JoystickDriver SDL_SWITCH_JoystickDriver =
 +{
-+    SDL_JoystickGUID guid;
-+    /* the GUID is just the first 16 chars of the name for now */
-+    const char *name = SDL_SYS_JoystickNameForDeviceIndex(device_index);
-+    SDL_zero(guid);
-+    SDL_memcpy(&guid, name, SDL_min(sizeof(guid), SDL_strlen(name)));
-+    return guid;
-+}
-+
-+SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick *joystick)
-+{
-+    SDL_JoystickGUID guid;
-+    /* the GUID is just the first 16 chars of the name for now */
-+    const char *name = joystick->name;
-+    SDL_zero(guid);
-+    SDL_memcpy(&guid, name, SDL_min(sizeof(guid), SDL_strlen(name)));
-+    return guid;
-+}
++    SWITCH_JoystickInit,
++    SWITCH_JoystickGetCount,
++    SWITCH_JoystickDetect,
++    SWITCH_JoystickGetDeviceName,
++    SWITCH_JoystickGetDevicePlayerIndex,
++    SWITCH_JoystickSetDevicePlayerIndex,
++    SWITCH_JoystickGetDeviceGUID,
++    SWITCH_JoystickGetDeviceInstanceID,
++    SWITCH_JoystickOpen,
++    SWITCH_JoystickRumble,
++    SWITCH_JoystickUpdate,
++    SWITCH_JoystickClose,
++    SWITCH_JoystickQuit,
++};
 +
 +#endif /* SDL_JOYSTICK_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/src/power/switch/dummy.c b/src/power/switch/dummy.c
-new file mode 100644
-index 000000000..e69de29bb
-diff --git a/src/render/opengles2/SDL_render_gles2.c b/src/render/opengles2/SDL_render_gles2.c
-index 0cd388c37..e6f22a30a 100644
---- a/src/render/opengles2/SDL_render_gles2.c
-+++ b/src/render/opengles2/SDL_render_gles2.c
-@@ -43,7 +43,7 @@
- #endif
- 
- /* To prevent unnecessary window recreation,
-- * these should match the defaults selected in SDL_GL_ResetAttributes 
-+ * these should match the defaults selected in SDL_GL_ResetAttributes
-  */
- #define RENDERER_CONTEXT_MAJOR 2
- #define RENDERER_CONTEXT_MINOR 0
+\ No newline at end of file
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index b68f90e91..3af243df7 100644
+index 9cc52af1a..34ad1ce8f 100644
 --- a/src/thread/SDL_thread_c.h
 +++ b/src/thread/SDL_thread_c.h
 @@ -36,6 +36,8 @@
@@ -1555,10 +1537,10 @@ index 000000000..2472fbd60
 +}
 diff --git a/src/timer/switch/SDL_systimer.c b/src/timer/switch/SDL_systimer.c
 new file mode 100644
-index 000000000..5c5d209e0
+index 000000000..f0a13a2bd
 --- /dev/null
 +++ b/src/timer/switch/SDL_systimer.c
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,75 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
@@ -1583,13 +1565,10 @@ index 000000000..5c5d209e0
 +
 +#ifdef SDL_TIMER_SWITCH
 +
-+#include "SDL_thread.h"
 +#include "SDL_timer.h"
-+#include "../SDL_timer_c.h"
 +#include <switch.h>
 +
 +static bool started = false;
-+
 +static Uint64 start = 0;
 +
 +void
@@ -1621,13 +1600,13 @@ index 000000000..5c5d209e0
 +Uint64
 +SDL_GetPerformanceCounter(void)
 +{
-+    return svcGetSystemTick();
++    return armGetSystemTick();
 +}
 +
 +Uint64
 +SDL_GetPerformanceFrequency(void)
 +{
-+    return 19200000;
++    return armGetSystemTickFreq();
 +}
 +
 +void
@@ -1638,24 +1617,24 @@ index 000000000..5c5d209e0
 +
 +#endif /* SDL_TIMER_SWITCH */
 diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index 9df71c9aa..c37bb012f 100644
+index 38ed97157..277db3703 100644
 --- a/src/video/SDL_sysvideo.h
 +++ b/src/video/SDL_sysvideo.h
-@@ -418,6 +418,7 @@ extern VideoBootStrap NACL_bootstrap;
- extern VideoBootStrap VIVANTE_bootstrap;
+@@ -430,6 +430,7 @@ extern VideoBootStrap VIVANTE_bootstrap;
  extern VideoBootStrap Emscripten_bootstrap;
  extern VideoBootStrap QNX_bootstrap;
+ extern VideoBootStrap OFFSCREEN_bootstrap;
 +extern VideoBootStrap SWITCH_bootstrap;
  
  extern SDL_VideoDevice *SDL_GetVideoDevice(void);
  extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 8cf195d1a..a2df8486a 100644
+index de0bc1cbc..9be0210a5 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
 @@ -112,6 +112,9 @@ static VideoBootStrap *bootstrap[] = {
- #if SDL_VIDEO_DRIVER_QNX
-     &QNX_bootstrap,
+ #if SDL_VIDEO_DRIVER_OFFSCREEN
+     &OFFSCREEN_bootstrap,
  #endif
 +#if SDL_VIDEO_DRIVER_SWITCH
 +	&SWITCH_bootstrap,
@@ -1663,13 +1642,13 @@ index 8cf195d1a..a2df8486a 100644
  #if SDL_VIDEO_DRIVER_DUMMY
      &DUMMY_bootstrap,
  #endif
-@@ -1376,7 +1379,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
+@@ -1454,7 +1457,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
      }
  
      /* Some platforms have OpenGL enabled by default */
 -#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
 +#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__ || __SWITCH__
-     if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN)) {
+     if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN) && !SDL_IsVideoContextExternal()) {
          flags |= SDL_WINDOW_OPENGL;
      }
 diff --git a/src/video/switch/SDL_switchkeyboard.c b/src/video/switch/SDL_switchkeyboard.c
@@ -1990,10 +1969,10 @@ index 000000000..a8355db78
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchmouse.c b/src/video/switch/SDL_switchmouse.c
 new file mode 100644
-index 000000000..a7369d5f2
+index 000000000..02818a488
 --- /dev/null
 +++ b/src/video/switch/SDL_switchmouse.c
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,114 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -2032,9 +2011,18 @@ index 000000000..a7369d5f2
 +static uint64_t last_timestamp = 0;
 +const uint64_t mouse_read_interval = 15; // in ms
 +
++static int
++SWITCH_SetRelativeMouseMode(SDL_bool enabled)
++{
++    return 0;
++}
++
 +void 
 +SWITCH_InitMouse(void)
 +{
++    SDL_Mouse *mouse = SDL_GetMouse();
++
++    mouse->SetRelativeMouseMode = SWITCH_SetRelativeMouseMode;
 +}
 +
 +void 
@@ -2255,10 +2243,10 @@ index 000000000..3beb5eea7
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchtouch.c b/src/video/switch/SDL_switchtouch.c
 new file mode 100644
-index 000000000..9191817c0
+index 000000000..5b9d3dc0a
 --- /dev/null
 +++ b/src/video/switch/SDL_switchtouch.c
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,122 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
@@ -2286,8 +2274,9 @@ index 000000000..9191817c0
 +#include <switch.h>
 +
 +#include "SDL_events.h"
-+#include "SDL_switchtouch.h"
++#include "SDL_hints.h"
 +#include "../../events/SDL_touch_c.h"
++#include "../../video/SDL_sysvideo.h"
 +
 +#define MAX_TOUCH 16
 +
@@ -2310,7 +2299,8 @@ index 000000000..9191817c0
 +void
 +SWITCH_InitTouch(void)
 +{
-+    SDL_AddTouch((SDL_TouchID) 0, "Switch");
++    SDL_AddTouch((SDL_TouchID) 0, SDL_TOUCH_DEVICE_DIRECT, "Switch");
++    SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 +}
 +
 +void
@@ -2322,6 +2312,11 @@ index 000000000..9191817c0
 +void
 +SWITCH_PollTouch(void)
 +{
++    SDL_Window *window = SDL_GetFocusWindow();
++    if (window == NULL) {
++        return;
++    }
++
 +    memcpy(&touchState_old, &touchState, sizeof(touchState));
 +
 +    touchState.count = hidTouchCount();
@@ -2336,12 +2331,12 @@ index 000000000..9191817c0
 +            hidTouchRead(&touchState.touch[i].position, i);
 +
 +            // Send an initial touch
-+            SDL_SendTouch(0, (SDL_FingerID) i, SDL_TRUE,
++            SDL_SendTouch(0, (SDL_FingerID) i, window, SDL_TRUE,
 +                          (float) touchState.touch[i].position.px / 1280.0f,
 +                          (float) touchState.touch[i].position.py / 720.0f, 1);
 +
 +            // Always send the motion
-+            SDL_SendTouchMotion(0, (SDL_FingerID) i,
++            SDL_SendTouchMotion(0, (SDL_FingerID) i, window,
 +                                (float) touchState.touch[i].position.px / 1280.0f,
 +                                (float) touchState.touch[i].position.py / 720.0f, 1);
 +        }
@@ -2363,7 +2358,7 @@ index 000000000..9191817c0
 +
 +            if (finger_up == 1) {
 +                // Finger released from screen
-+                SDL_SendTouch((SDL_TouchID) 0, (SDL_FingerID) touchState_old.touch[i].id, SDL_FALSE,
++                SDL_SendTouch((SDL_TouchID) 0, (SDL_FingerID) touchState_old.touch[i].id, window, SDL_FALSE,
 +                              (float) touchState_old.touch[i].position.px / 1280.0f,
 +                              (float) touchState_old.touch[i].position.py / 720.0f, 1);
 +            }
@@ -2416,10 +2411,10 @@ index 000000000..ac5908e39
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 000000000..7e6518f46
+index 000000000..a39bf1835
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
-@@ -0,0 +1,377 @@
+@@ -0,0 +1,366 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -2457,6 +2452,10 @@ index 000000000..7e6518f46
 +#include "SDL_switchkeyboard.h"
 +#include "SDL_switchmouse_c.h"
 +
++/* Currently only one window */
++static SDL_Window *switch_window = NULL;
++static AppletOperationMode operationMode;
++
 +static int
 +SWITCH_Available(void)
 +{
@@ -2466,7 +2465,10 @@ index 000000000..7e6518f46
 +static void
 +SWITCH_Destroy(SDL_VideoDevice *device)
 +{
-+    if (device) {
++    if (device != NULL) {
++        if(device->driverdata != NULL) {
++            SDL_free(device->driverdata);
++        }
 +        SDL_free(device);
 +    }
 +}
@@ -2526,10 +2528,10 @@ index 000000000..7e6518f46
 +}
 +
 +VideoBootStrap SWITCH_bootstrap = {
-+    "Switch",
-+    "OpenGL ES2 video driver for Nintendo Switch",
-+    SWITCH_Available,
-+    SWITCH_CreateDevice
++        "Switch",
++        "SDL2 video driver for Nintendo Switch",
++        SWITCH_Available,
++        SWITCH_CreateDevice
 +};
 +
 +/*****************************************************************************/
@@ -2540,42 +2542,18 @@ index 000000000..7e6518f46
 +{
 +    SDL_VideoDisplay display;
 +    SDL_DisplayMode current_mode;
-+    SDL_DisplayData *data;
-+    SDL_DisplayModeData *mdata;
-+    Result rc;
 +
 +    SDL_zero(current_mode);
 +    current_mode.w = 1920;
 +    current_mode.h = 1080;
 +    current_mode.refresh_rate = 60;
 +    current_mode.format = SDL_PIXELFORMAT_RGBA8888;
-+    mdata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
-+    current_mode.driverdata = mdata;
++    current_mode.driverdata = NULL;
 +
 +    SDL_zero(display);
 +    display.desktop_mode = current_mode;
 +    display.current_mode = current_mode;
-+
-+    /* Allocate display internal data */
-+    data = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
-+    if (data == NULL) {
-+        return SDL_OutOfMemory();
-+    }
-+
-+    data->egl_display = EGL_DEFAULT_DISPLAY;
-+
-+    // init vi
-+    rc = viInitialize(ViServiceType_Default);
-+    if (R_FAILED(rc)) {
-+        return SDL_SetError("Could not initialize vi service: 0x%x", rc);
-+    }
-+
-+    rc = viOpenDefaultDisplay(&data->viDisplay);
-+    if (R_FAILED(rc)) {
-+        return SDL_SetError("Could not open default display: 0x%x", rc);
-+    }
-+
-+    display.driverdata = data;
++    display.driverdata = NULL;
 +    SDL_AddVideoDisplay(&display);
 +
 +    // init touch
@@ -2591,11 +2569,9 @@ index 000000000..7e6518f46
 +void
 +SWITCH_VideoQuit(_THIS)
 +{
-+    SDL_DisplayData *data = SDL_GetDisplayDriverData(0);
-+    if (data) {
-+        viCloseDisplay(&data->viDisplay);
++    if (_this->gl_config.driver_loaded) {
++        SDL_GL_UnloadLibrary();
 +    }
-+    viExit();
 +
 +    // exit touch
 +    SWITCH_QuitTouch();
@@ -2609,7 +2585,6 @@ index 000000000..7e6518f46
 +SWITCH_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
 +{
 +    SDL_DisplayMode mode;
-+    SDL_DisplayModeData *data;
 +
 +    // 1920x1080 RGBA8888, default mode
 +    SDL_AddDisplayMode(display, &display->current_mode);
@@ -2620,30 +2595,22 @@ index 000000000..7e6518f46
 +    mode.h = 720;
 +    mode.refresh_rate = 60;
 +    mode.format = SDL_PIXELFORMAT_RGBA8888;
-+    data = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
-+    mode.driverdata = data;
 +    SDL_AddDisplayMode(display, &mode);
 +}
 +
 +int
 +SWITCH_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 +{
-+    SDL_WindowData *data;
-+    Result rc;
++    SDL_WindowData *data = (SDL_WindowData *) SDL_GetFocusWindow()->driverdata;
++    SDL_GLContext ctx = SDL_GL_GetCurrentContext();
++    NWindow *nWindow = nwindowGetDefault();
 +
-+    if (display->fullscreen_window) {
-+        data = (SDL_WindowData *) display->fullscreen_window->driverdata;
-+    }
-+    else {
-+        if (!SDL_GetFocusWindow()) {
-+            return SDL_SetError("Could not get window focus");
-+        }
-+        data = (SDL_WindowData *) SDL_GetFocusWindow()->driverdata;
-+    }
-+
-+    rc = nwindowSetCrop(&data->nWindow, 0, 1080 - mode->h, mode->w, 1080);
-+    if (rc) {
-+        return SDL_SetError("Could not set NWindow crop: 0x%x", rc);
++    if (data != NULL && data->egl_surface != EGL_NO_SURFACE) {
++        SDL_EGL_MakeCurrent(_this, NULL, NULL);
++        SDL_EGL_DestroySurface(_this, data->egl_surface);
++        nwindowSetDimensions(nWindow, mode->w, mode->h);
++        data->egl_surface = SDL_EGL_CreateSurface(_this, nWindow);
++        SDL_EGL_MakeCurrent(_this, data->egl_surface, ctx);
 +    }
 +
 +    return 0;
@@ -2653,56 +2620,40 @@ index 000000000..7e6518f46
 +SWITCH_CreateWindow(_THIS, SDL_Window *window)
 +{
 +    Result rc;
-+    SDL_DisplayData *ddata = SDL_GetDisplayDriverData(0);
-+    SDL_WindowData *wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
-+    if (wdata == NULL) {
-+        return SDL_OutOfMemory();
++    SDL_WindowData *window_data = NULL;
++    NWindow *nWindow = NULL;
++
++    if (switch_window != NULL) {
++        return SDL_SetError("Switch only supports one window");
 +    }
 +
 +    if (!_this->egl_data) {
 +        return SDL_SetError("EGL not initialized");
 +    }
 +
-+    rc = viCreateLayer(&ddata->viDisplay, &wdata->viLayer);
-+    if (R_FAILED(rc)) {
-+        return SDL_SetError("Could not create vi layer: 0x%x", rc);
++    window_data = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
++    if (window_data == NULL) {
++        return SDL_OutOfMemory();
 +    }
 +
-+    rc = viSetLayerScalingMode(&wdata->viLayer, ViScalingMode_FitToLayer);
-+    if (R_FAILED(rc)) {
-+        viCloseLayer(&wdata->viLayer);
-+        return SDL_SetError("Could not set vi scaling mode: 0x%x", rc);
-+    }
++    nWindow = nwindowGetDefault();
 +
-+    rc = nwindowCreateFromLayer(&wdata->nWindow, &wdata->viLayer);
++    rc = nwindowSetDimensions(nWindow, window->w, window->h);
 +    if (R_FAILED(rc)) {
-+        viCloseLayer(&wdata->viLayer);
-+        return SDL_SetError("Could not create NWindow from layer: 0x%x", rc);
-+    }
-+
-+    rc = nwindowSetDimensions(&wdata->nWindow, 1920, 1080);
-+    if (R_FAILED(rc)) {
-+        nwindowClose(&wdata->nWindow);
-+        viCloseLayer(&wdata->viLayer);
 +        return SDL_SetError("Could not set NWindow dimensions: 0x%x", rc);
 +    }
 +
-+    rc = nwindowSetCrop(&wdata->nWindow, 0, 1080 - window->h, window->w, 1080);
-+    if (R_FAILED(rc)) {
-+        nwindowClose(&wdata->nWindow);
-+        viCloseLayer(&wdata->viLayer);
-+        return SDL_SetError("Could not set NWindow crop: 0x%x", rc);
-+    }
-+
-+    wdata->egl_surface = SDL_EGL_CreateSurface(_this, &wdata->nWindow);
-+    if (wdata->egl_surface == EGL_NO_SURFACE) {
-+        nwindowClose(&wdata->nWindow);
-+        viCloseLayer(&wdata->viLayer);
++    window_data->egl_surface = SDL_EGL_CreateSurface(_this, nWindow);
++    if (window_data->egl_surface == EGL_NO_SURFACE) {
 +        return SDL_SetError("Could not create GLES window surface");
 +    }
 +
 +    /* Setup driver data for this window */
-+    window->driverdata = wdata;
++    window->driverdata = window_data;
++    switch_window = window;
++
++    /* starting operation mode */
++    operationMode = appletGetOperationMode();
 +
 +    /* One window, it always has focus */
 +    SDL_SetMouseFocus(window);
@@ -2717,14 +2668,18 @@ index 000000000..7e6518f46
 +{
 +    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 +
-+    if (data) {
-+        if (data->egl_surface != EGL_NO_SURFACE) {
-+            SDL_EGL_DestroySurface(_this, data->egl_surface);
++    if (window == switch_window) {
++        if (data != NULL) {
++            if (data->egl_surface != EGL_NO_SURFACE) {
++                SDL_EGL_MakeCurrent(_this, NULL, NULL);
++                SDL_EGL_DestroySurface(_this, data->egl_surface);
++            }
++            if(window->driverdata != NULL) {
++                SDL_free(window->driverdata);
++                window->driverdata = NULL;
++            }
 +        }
-+        nwindowClose(&data->nWindow);
-+        viCloseLayer(&data->viLayer);
-+        SDL_free(data);
-+        window->driverdata = NULL;
++        switch_window = NULL;
 +    }
 +}
 +
@@ -2748,8 +2703,20 @@ index 000000000..7e6518f46
 +void
 +SWITCH_SetWindowSize(_THIS, SDL_Window *window)
 +{
++    u32 w = 0, h = 0;
 +    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-+    nwindowSetCrop(&data->nWindow, 0, 1080 - window->h, window->w, 1080);
++    SDL_GLContext ctx = SDL_GL_GetCurrentContext();
++    NWindow *nWindow = nwindowGetDefault();
++
++    if(window->w != w || window->h != h) {
++        if (data != NULL && data->egl_surface != EGL_NO_SURFACE) {
++            SDL_EGL_MakeCurrent(_this, NULL, NULL);
++            SDL_EGL_DestroySurface(_this, data->egl_surface);
++            nwindowSetDimensions(nWindow, window->w, window->h);
++            data->egl_surface = SDL_EGL_CreateSurface(_this, nWindow);
++            SDL_EGL_MakeCurrent(_this, data->egl_surface, ctx);
++        }
++    }
 +}
 +void
 +SWITCH_ShowWindow(_THIS, SDL_Window *window)
@@ -2783,6 +2750,8 @@ index 000000000..7e6518f46
 +void
 +SWITCH_PumpEvents(_THIS)
 +{
++    AppletOperationMode om;
++
 +    if (!appletMainLoop()) {
 +        SDL_Event ev;
 +        ev.type = SDL_QUIT;
@@ -2794,15 +2763,30 @@ index 000000000..7e6518f46
 +    SWITCH_PollTouch();
 +    SWITCH_PollKeyboard();
 +    SWITCH_PollMouse();
++
++    // handle docked / un-docked modes
++    // note that SDL_WINDOW_RESIZABLE is only possible in windowed mode,
++    // so we don't care about current fullscreen/windowed status
++    if(switch_window != NULL && switch_window->flags & SDL_WINDOW_RESIZABLE) {
++        om = appletGetOperationMode();
++        if(om != operationMode) {
++            operationMode = om;
++            if(operationMode == AppletOperationMode_Handheld) {
++                SDL_SetWindowSize(switch_window, 1280, 720);
++            } else {
++                SDL_SetWindowSize(switch_window, 1920, 1080);
++            }
++        }
++    }
 +}
 +
 +#endif /* SDL_VIDEO_DRIVER_SWITCH */
 diff --git a/src/video/switch/SDL_switchvideo.h b/src/video/switch/SDL_switchvideo.h
 new file mode 100644
-index 000000000..b4ed8ef10
+index 000000000..d34643ed4
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.h
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,62 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -2836,20 +2820,8 @@ index 000000000..b4ed8ef10
 +
 +#include "SDL_egl.h"
 +
-+typedef struct SDL_DisplayData
-+{
-+    ViDisplay viDisplay;
-+    EGLDisplay egl_display;
-+} SDL_DisplayData;
-+
-+typedef struct SDL_DisplayModeData
-+{
-+} SDL_DisplayModeData;
-+
 +typedef struct SDL_WindowData
 +{
-+    ViLayer viLayer;
-+    NWindow nWindow;
 +    EGLSurface egl_surface;
 +} SDL_WindowData;
 +
@@ -2878,10 +2850,10 @@ index 000000000..b4ed8ef10
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/test/configure b/test/configure
-index 61c32fba1..d0e04b86e 100755
+index 24d27f36f..b9e8df026 100755
 --- a/test/configure
 +++ b/test/configure
-@@ -637,6 +637,7 @@ infodir
+@@ -640,6 +640,7 @@ infodir
  docdir
  oldincludedir
  includedir
@@ -2889,7 +2861,7 @@ index 61c32fba1..d0e04b86e 100755
  localstatedir
  sharedstatedir
  sysconfdir
-@@ -717,6 +718,7 @@ datadir='${datarootdir}'
+@@ -720,6 +721,7 @@ datadir='${datarootdir}'
  sysconfdir='${prefix}/etc'
  sharedstatedir='${prefix}/com'
  localstatedir='${prefix}/var'
@@ -2897,7 +2869,7 @@ index 61c32fba1..d0e04b86e 100755
  includedir='${prefix}/include'
  oldincludedir='/usr/include'
  docdir='${datarootdir}/doc/${PACKAGE}'
-@@ -969,6 +971,15 @@ do
+@@ -972,6 +974,15 @@ do
    | -silent | --silent | --silen | --sile | --sil)
      silent=yes ;;
  
@@ -2913,7 +2885,7 @@ index 61c32fba1..d0e04b86e 100755
    -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
      ac_prev=sbindir ;;
    -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
-@@ -1106,7 +1117,7 @@ fi
+@@ -1109,7 +1120,7 @@ fi
  for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
  		datadir sysconfdir sharedstatedir localstatedir includedir \
  		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
@@ -2922,7 +2894,7 @@ index 61c32fba1..d0e04b86e 100755
  do
    eval ac_val=\$$ac_var
    # Remove trailing slashes.
-@@ -1259,6 +1270,7 @@ Fine tuning of the installation directories:
+@@ -1262,6 +1273,7 @@ Fine tuning of the installation directories:
    --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
    --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
    --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
