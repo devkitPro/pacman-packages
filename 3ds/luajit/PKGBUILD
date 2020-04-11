@@ -1,0 +1,44 @@
+# Contributor: Teddy Astie <TSnake@Outlook.fr>
+
+pkgname=3ds-luajit
+pkgver=2.0.5
+pkgrel=1
+pkgdesc='Just-in-time compiler and drop-in replacement for Lua 5.1 (for Nintendo 3DS homebrew development)'
+arch=('any')
+url='http://luajit.org/'
+license=('MIT')
+options=(!strip)
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers' '3ds-libdl')
+source=("https://luajit.org/download/LuaJIT-$pkgver.tar.gz")
+sha256sums=('874b1f8297c697821f561f9b73b57ffd419ed8f4278c82e05b48806d30c1e979')
+groups=('3ds-portlibs')
+
+build() {
+  cd LuaJIT-$pkgver
+  source /opt/devkitpro/3dsvars.sh
+
+  # We need to "patch" lj_arch.h to assume the existence of libdl on a non-POSIX platform.
+  # This looks weird, but in the pkg-config file, libdl is linked regardless if it is
+  # actually used or not. This patch harmonize the implementation and allow to use the full
+  # LuaJIT FFI API (based on libdl).
+  #
+  # Redefine LJ_TARGET_DLOPEN with 1 (instead of LJ_TARGET_POSIX)
+  echo -e "#undef LJ_TARGET_DLOPEN\n#define LJ_TARGET_DLOPEN 1\n" >> src/lj_arch.h
+
+  echo $CFLAGS
+  touch src/luajit src/jit/vmdef.lua
+  make TARGET_SYS=OTHER TARGET_FLAGS="$CFLAGS -I$PORTLIBS_PREFIX/include" TARGET_T=libluajit.a BUILDMODE=static \
+    HOST_CC="gcc -m32"  XCFLAGS="-DLUAJIT_USE_SYSMALLOC" CFLAGS="" LDFLAGS="" LIBS="" HOST_CFLAGS="" HOST_LIBS="" HOST_LDFLAGS="" \
+    CROSS=arm-none-eabi- PREFIX=${PORTLIBS_PREFIX} DESTDIR=$pkgdir amalg
+}
+
+package() {
+  cd LuaJIT-$pkgver
+  source /opt/devkitpro/3dsvars.sh
+
+  make PREFIX=$PORTLIBS_PREFIX DESTDIR=$pkgdir INSTALL_DEP= install
+
+  cd $pkgdir$PORTLIBS_PREFIX
+
+  rm -rf bin share lib/lua
+}
