@@ -9,16 +9,16 @@ url='http://luajit.org/'
 license=('MIT')
 options=(!strip)
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
-source=("https://luajit.org/download/LuaJIT-$pkgver.tar.gz" "luajit.pc.patch")
-sha256sums=('874b1f8297c697821f561f9b73b57ffd419ed8f4278c82e05b48806d30c1e979'
-            'b993f4bfb7dab888f909f6973996783d481d4cf767eca1d8a68df45202fcab9e')
+source=("https://luajit.org/download/LuaJIT-$pkgver.tar.gz")
+sha256sums=('874b1f8297c697821f561f9b73b57ffd419ed8f4278c82e05b48806d30c1e979')
 groups=('3ds-portlibs')
 
 build() {
   cd LuaJIT-$pkgver
   source /opt/devkitpro/3dsvars.sh
 
-  patch etc/luajit.pc ../luajit.pc.patch
+  # Remove link options. 
+  sed -i -e "s| *-Wl,-E||g" -e "s|-ldl||g" etc/luajit.pc
 
   touch src/luajit src/jit/vmdef.lua
   make BUILDMODE=static \
