@@ -1,7 +1,7 @@
-diff -Nbaur mbedtls-2.8.0/include/mbedtls/config.h mbedtls-2.8.0-new/include/mbedtls/config.h
---- mbedtls-2.8.0/include/mbedtls/config.h	2018-03-16 16:25:12.000000000 +0000
-+++ mbedtls-2.8.0-new/include/mbedtls/config.h	2018-09-29 00:29:27.408247680 +0100
-@@ -435,7 +435,7 @@
+diff -Nbaur mbedtls-2.16.6/include/mbedtls/config.h mbedtls-2.16.6-new/include/mbedtls/config.h
+--- mbedtls-2.16.6/include/mbedtls/config.h	2020-04-09 22:12:23.000000000 +0900
++++ mbedtls-2.16.6-new/include/mbedtls/config.h	2020-04-16 00:21:50.625234859 +0900
+@@ -552,7 +552,7 @@
   *
   * Uncomment to use your own hardware entropy collector.
   */
@@ -10,7 +10,7 @@ diff -Nbaur mbedtls-2.8.0/include/mbedtls/config.h mbedtls-2.8.0-new/include/mbe
  
  /**
   * \def MBEDTLS_AES_ROM_TABLES
-@@ -944,7 +944,7 @@
+@@ -1160,7 +1160,7 @@
   *
   * Uncomment this macro to disable the built-in platform entropy functions.
   */
@@ -19,7 +19,7 @@ diff -Nbaur mbedtls-2.8.0/include/mbedtls/config.h mbedtls-2.8.0-new/include/mbe
  
  /**
   * \def MBEDTLS_ENTROPY_FORCE_SHA256
-@@ -1062,7 +1062,7 @@
+@@ -1278,7 +1278,7 @@
   *
   * Enable the checkup functions (*_self_test).
   */
@@ -28,7 +28,7 @@ diff -Nbaur mbedtls-2.8.0/include/mbedtls/config.h mbedtls-2.8.0-new/include/mbe
  
  /**
   * \def MBEDTLS_SHA256_SMALLER
-@@ -1850,7 +1850,7 @@
+@@ -2149,7 +2149,7 @@
   * Requires: MBEDTLS_AES_C or MBEDTLS_DES_C
   *
   */
@@ -37,7 +37,7 @@ diff -Nbaur mbedtls-2.8.0/include/mbedtls/config.h mbedtls-2.8.0-new/include/mbe
  
  /**
   * \def MBEDTLS_CTR_DRBG_C
-@@ -2559,7 +2559,7 @@
+@@ -2902,7 +2902,7 @@
   *
   * This module is used by the HAVEGE random number generator.
   */
@@ -46,10 +46,10 @@ diff -Nbaur mbedtls-2.8.0/include/mbedtls/config.h mbedtls-2.8.0-new/include/mbe
  
  /**
   * \def MBEDTLS_VERSION_C
-diff -Nbaur mbedtls-2.8.0/library/entropy.c mbedtls-2.8.0-new/library/entropy.c
---- mbedtls-2.8.0/library/entropy.c	2018-03-16 16:25:12.000000000 +0000
-+++ mbedtls-2.8.0-new/library/entropy.c	2018-09-29 00:28:56.505654502 +0100
-@@ -123,6 +123,20 @@
+diff -Nbaur mbedtls-2.16.6/library/entropy.c mbedtls-2.16.6-new/library/entropy.c
+--- mbedtls-2.16.6/library/entropy.c	2020-04-09 22:12:23.000000000 +0900
++++ mbedtls-2.16.6-new/library/entropy.c	2020-04-16 00:21:50.625234859 +0900
+@@ -119,6 +119,20 @@
  #endif /* MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES */
  }
  
@@ -70,22 +70,23 @@ diff -Nbaur mbedtls-2.8.0/library/entropy.c mbedtls-2.8.0-new/library/entropy.c
  void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
  {
  #if defined(MBEDTLS_HAVEGE_C)
-diff -Nbaur mbedtls-2.8.0/library/net_sockets.c mbedtls-2.8.0-new/library/net_sockets.c
---- mbedtls-2.8.0/library/net_sockets.c	2018-03-16 16:25:12.000000000 +0000
-+++ mbedtls-2.8.0-new/library/net_sockets.c	2018-09-29 00:28:56.505654502 +0100
-@@ -27,11 +27,6 @@
+diff -Nbaur mbedtls-2.16.6/library/net_sockets.c mbedtls-2.16.6-new/library/net_sockets.c
+--- mbedtls-2.16.6/library/net_sockets.c	2020-04-09 22:12:23.000000000 +0900
++++ mbedtls-2.16.6-new/library/net_sockets.c	2020-04-16 00:21:50.628568192 +0900
+@@ -32,12 +32,6 @@
  
  #if defined(MBEDTLS_NET_C)
  
 -#if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
--    !defined(__APPLE__) && !defined(_WIN32)
+-    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
+-    !defined(__HAIKU__)
 -#error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
 -#endif
 -
  #if defined(MBEDTLS_PLATFORM_C)
  #include "mbedtls/platform.h"
  #else
-@@ -398,7 +393,7 @@
+@@ -409,7 +403,7 @@
  
              memcpy( client_ip, &addr4->sin_addr.s_addr, *ip_len );
          }
@@ -94,7 +95,7 @@ diff -Nbaur mbedtls-2.8.0/library/net_sockets.c mbedtls-2.8.0-new/library/net_so
          {
              struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
              *ip_len = sizeof( addr6->sin6_addr.s6_addr );
-@@ -407,7 +402,7 @@
+@@ -418,7 +412,7 @@
                  return( MBEDTLS_ERR_NET_BUFFER_TOO_SMALL );
  
              memcpy( client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
