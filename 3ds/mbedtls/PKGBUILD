@@ -3,7 +3,7 @@
 
 pkgname=3ds-mbedtls
 pkgver=2.16.6
-pkgrel=2
+pkgrel=1
 pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='http://www.zlib.net/'
