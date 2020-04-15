@@ -4,9 +4,9 @@
 pkgname=3ds-mbedtls
 pkgver=2.16.6
 pkgrel=1
-pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
+pkgdesc='An open source, portable, easy to use, readable and flexible SSL library (for Nintendo 3DS homebrew development)'
 arch=('any')
-url='http://www.zlib.net/'
+url='https://tls.mbed.org/'
 license=('apache')
 options=(!strip libtool staticlibs)
 depends=(3ds-zlib)
