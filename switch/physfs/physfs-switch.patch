@@ -1,0 +1,300 @@
+--- src/physfs_platform_posix.c
++++ src/physfs_platform_posix.c
+@@ -23,6 +23,10 @@
+ #include <fcntl.h>
+ #include <pthread.h>
+ 
++#ifdef PHYSFS_PLATFORM_SWITCH
++#include <switch.h>
++#endif
++
+ #include "physfs_internal.h"
+ 
+ 
+@@ -58,6 +62,8 @@ static inline PHYSFS_ErrorCode errcodeFromErrno(void)
+ } /* errcodeFromErrno */
+ 
+ 
++/* unsupported */
++#ifndef PHYSFS_PLATFORM_SWITCH
+ static char *getUserDirByUID(void)
+ {
+     uid_t uid = getuid();
+@@ -83,11 +89,16 @@ static char *getUserDirByUID(void)
+     
+     return retval;
+ } /* getUserDirByUID */
++#endif
+ 
+ 
+ char *__PHYSFS_platformCalcUserDir(void)
+ {
+     char *retval = NULL;
++#ifdef PHYSFS_PLATFORM_SWITCH
++    /* Use the jail directory (hopefully) found before. */
++    retval = __PHYSFS_strdup(PHYSFS_getBaseDir());
++#else
+     char *envr = getenv("HOME");
+ 
+     /* if the environment variable was set, make sure it's really a dir. */
+@@ -113,6 +124,7 @@ char *__PHYSFS_platformCalcUserDir(void)
+ 
+     if (retval == NULL)
+         retval = getUserDirByUID();
++#endif
+ 
+     return retval;
+ } /* __PHYSFS_platformCalcUserDir */
+@@ -167,7 +179,11 @@ static void *doOpen(const char *filename, int mode)
+     /* O_APPEND doesn't actually behave as we'd like. */
+     mode &= ~O_APPEND;
+ 
++#ifdef __SWITCH__
++    fd = open(filename, mode);
++#else
+     fd = open(filename, mode, S_IRUSR | S_IWUSR);
++#endif
+     BAIL_IF(fd < 0, errcodeFromErrno(), NULL);
+ 
+     if (appending)
+@@ -299,7 +315,13 @@ int __PHYSFS_platformDelete(const char *path)
+ int __PHYSFS_platformStat(const char *fname, PHYSFS_Stat *st, const int follow)
+ {
+     struct stat statbuf;
++#ifdef PHYSFS_PLATFORM_SWITCH
++    /* ignoring symlinks, they are unsupported anyway! */
++    (void) follow;
++    const int rc = stat(fname, &statbuf);
++#else
+     const int rc = follow ? stat(fname, &statbuf) : lstat(fname, &statbuf);
++#endif
+     BAIL_IF(rc == -1, errcodeFromErrno(), 0);
+ 
+     if (S_ISREG(statbuf.st_mode))
+@@ -330,7 +352,12 @@ int __PHYSFS_platformStat(const char *fname, PHYSFS_Stat *st, const int follow)
+     st->createtime = statbuf.st_ctime;
+     st->accesstime = statbuf.st_atime;
+ 
++#ifdef PHYSFS_PLATFORM_SWITCH
++    /* shortcut */
++    st->readonly = !(statbuf.st_mode & S_IWRITE);
++#else
+     st->readonly = (access(fname, W_OK) == -1);
++#endif
+     return 1;
+ } /* __PHYSFS_platformStat */
+ 
+@@ -345,12 +372,23 @@ typedef struct
+ 
+ void *__PHYSFS_platformGetThreadID(void)
+ {
++#ifdef PHYSFS_PLATFORM_SWITCH
++    u64 tid = 0;
++    svcGetThreadId(&tid, CUR_THREAD_HANDLE);
++    return ( (void *) tid );
++#else
+     return ( (void *) ((size_t) pthread_self()) );
++#endif
+ } /* __PHYSFS_platformGetThreadID */
+ 
+ 
+ void *__PHYSFS_platformCreateMutex(void)
+ {
++#ifdef PHYSFS_PLATFORM_SWITCH
++    RMutex *m = (RMutex *) allocator.Malloc(sizeof(RMutex));
++    BAIL_IF(!m, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++    rmutexInit(m);
++#else
+     int rc;
+     PthreadMutex *m = (PthreadMutex *) allocator.Malloc(sizeof (PthreadMutex));
+     BAIL_IF(!m, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
+@@ -363,12 +401,15 @@ void *__PHYSFS_platformCreateMutex(void)
+ 
+     m->count = 0;
+     m->owner = (pthread_t) 0xDEADBEEF;
++#endif
+     return ((void *) m);
+ } /* __PHYSFS_platformCreateMutex */
+ 
+ 
+ void __PHYSFS_platformDestroyMutex(void *mutex)
+ {
++/* We do not care (yet?) */
++#ifndef PHYSFS_PLATFORM_SWITCH
+     PthreadMutex *m = (PthreadMutex *) mutex;
+ 
+     /* Destroying a locked mutex is a bug, but we'll try to be helpful. */
+@@ -377,11 +418,16 @@ void __PHYSFS_platformDestroyMutex(void *mutex)
+ 
+     pthread_mutex_destroy(&m->mutex);
+     allocator.Free(m);
++#endif
+ } /* __PHYSFS_platformDestroyMutex */
+ 
+ 
+ int __PHYSFS_platformGrabMutex(void *mutex)
+ {
++#ifdef PHYSFS_PLATFORM_SWITCH
++    RMutex *m = (RMutex *) mutex;
++    rmutexLock(m);
++#else
+     PthreadMutex *m = (PthreadMutex *) mutex;
+     pthread_t tid = pthread_self();
+     if (m->owner != tid)
+@@ -392,12 +438,17 @@ int __PHYSFS_platformGrabMutex(void *mutex)
+     } /* if */
+ 
+     m->count++;
++#endif
+     return 1;
+ } /* __PHYSFS_platformGrabMutex */
+ 
+ 
+ void __PHYSFS_platformReleaseMutex(void *mutex)
+ {
++#ifdef PHYSFS_PLATFORM_SWITCH
++    RMutex *m = (RMutex *) mutex;
++    rmutexUnlock(m);
++#else
+     PthreadMutex *m = (PthreadMutex *) mutex;
+     assert(m->owner == pthread_self());  /* catch programming errors. */
+     assert(m->count > 0);  /* catch programming errors. */
+@@ -409,6 +460,7 @@ void __PHYSFS_platformReleaseMutex(void *mutex)
+             pthread_mutex_unlock(&m->mutex);
+         } /* if */
+     } /* if */
++#endif
+ } /* __PHYSFS_platformReleaseMutex */
+ 
+ #endif  /* PHYSFS_PLATFORM_POSIX */
+--- src/physfs_platform_unix.c
++++ src/physfs_platform_unix.c
+@@ -148,6 +148,7 @@ void __PHYSFS_platformDetectAvailableCDs(PHYSFS_StringCallback cb, void *data)
+ } /* __PHYSFS_platformDetectAvailableCDs */
+ 
+ 
++#ifndef PHYSFS_PLATFORM_SWITCH
+ /*
+  * See where program (bin) resides in the $PATH specified by (envr).
+  *  returns a copy of the first element in envr that contains it, or NULL
+@@ -212,8 +213,11 @@ static char *findBinaryInPath(const char *bin, char *envr)
+ 
+     return NULL;  /* doesn't exist in path. */
+ } /* findBinaryInPath */
++#endif
+ 
+ 
++/* ignore symlinks, are not supported anyway */
++#ifndef PHYSFS_PLATFORM_SWITCH
+ static char *readSymLink(const char *path)
+ {
+     ssize_t len = 64;
+@@ -244,15 +248,46 @@ static char *readSymLink(const char *path)
+         allocator.Free(retval);
+     return NULL;
+ } /* readSymLink */
+-
++#endif
+ 
+ char *__PHYSFS_platformCalcBaseDir(const char *argv0)
+ {
+     char *retval = NULL;
+-    const char *envr = NULL;
+ 
+     /* Try to avoid using argv0 unless forced to. Try system-specific stuff. */
+ 
++#ifdef PHYSFS_PLATFORM_SWITCH
++    /* As there is no system-specific directory, directly inspect argv0. */
++    if (argv0 == NULL)
++    {
++        /* User did not provide a path, just use the current working directory.
++         *  As physfs should be initialized soon after application start, this
++         *  should give us a useable directory.
++         */
++        char fullpath[PATH_MAX];
++        if (getcwd(fullpath, sizeof(fullpath)) != NULL)
++        {
++            const size_t cwdlen = strlen(fullpath);
++            /* getcwd does not provide a trailing slash, add it. */
++            retval = (char*) allocator.Malloc(cwdlen + 2);
++            BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++            retval[cwdlen] = '/';
++            retval[cwdlen + 1] = '\0';
++        }
++    }
++    else
++        /* nx-hbmenu should give us the full path of the application, this may
++         *  reside in a subfolder. Higher level code will strip away the name
++         *  and extension.
++         */
++        return NULL;
++
++    if (!retval)
++        /* Last resort: use `/switch` directory. */
++        retval = __PHYSFS_strdup("sdmc:/switch/");
++#else
++    const char *envr = NULL;
++
+     #if defined(PHYSFS_PLATFORM_FREEBSD)
+     {
+         char fullpath[PATH_MAX];
+@@ -327,6 +362,7 @@ char *__PHYSFS_platformCalcBaseDir(const char *argv0)
+         if (ptr != NULL)
+             retval = ptr;  /* oh well if it failed. */
+     } /* if */
++#endif
+ 
+     return retval;
+ } /* __PHYSFS_platformCalcBaseDir */
+@@ -334,6 +370,20 @@ char *__PHYSFS_platformCalcBaseDir(const char *argv0)
+ 
+ char *__PHYSFS_platformCalcPrefDir(const char *org, const char *app)
+ {
++    char *retval = NULL;
++    size_t len = 0;
++#ifdef PHYSFS_PLATFORM_SWITCH
++    /* Use the jail directory (hopefully) found before. This way we do not
++     *  need to add an application folder, because it is exclusive.
++     */
++    const char *envr = __PHYSFS_getUserDir();
++    BAIL_IF_ERRPASS(!envr, NULL);
++    const char *append = ".config/";
++    len = strlen(envr) + strlen(append) + 1;
++    retval = (char *) allocator.Malloc(len);
++    BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++    snprintf(retval, len, "%s%s", envr, append);
++#else
+     /*
+      * We use XDG's base directory spec, even if you're not on Linux.
+      *  This isn't strictly correct, but the results are relatively sane
+@@ -343,8 +393,6 @@ char *__PHYSFS_platformCalcPrefDir(const char *org, const char *app)
+      */
+     const char *envr = getenv("XDG_DATA_HOME");
+     const char *append = "/";
+-    char *retval = NULL;
+-    size_t len = 0;
+ 
+     if (!envr)
+     {
+@@ -358,6 +406,7 @@ char *__PHYSFS_platformCalcPrefDir(const char *org, const char *app)
+     retval = (char *) allocator.Malloc(len);
+     BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
+     snprintf(retval, len, "%s%s%s/", envr, append, app);
++#endif
+     return retval;
+ } /* __PHYSFS_platformCalcPrefDir */
+ 
+--- src/physfs_platforms.h
++++ src/physfs_platforms.h
+@@ -69,6 +69,11 @@
+ #elif defined(__QNX__)
+ #  define PHYSFS_PLATFORM_QNX 1
+ #  define PHYSFS_PLATFORM_POSIX 1
++#elif defined(__SWITCH__)
++#  define PHYSFS_PLATFORM_SWITCH 1
++#  define PHYSFS_PLATFORM_UNIX 1
++#  define PHYSFS_PLATFORM_POSIX 1
++#  define PHYSFS_NO_CDROM_SUPPORT 1
+ #elif defined(unix) || defined(__unix__)
+ #  define PHYSFS_PLATFORM_UNIX 1
+ #  define PHYSFS_PLATFORM_POSIX 1
