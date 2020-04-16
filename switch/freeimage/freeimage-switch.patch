@@ -1,0 +1,57 @@
+--- Source/LibRawLite/internal/defines.h	2020-04-15 11:36:23.208084105 -0600
++++ Source/LibRawLite/internal/defines.h	2020-04-15 11:36:32.828057976 -0600
+@@ -56,6 +56,7 @@
+ #include <unistd.h>
+ #include <utime.h>
+ #include <netinet/in.h>
++#include <arpa/inet.h>
+ #include <stdint.h>
+ typedef int64_t INT64;
+ typedef uint64_t UINT64;
+--- Source/LibRawLite/internal/dcraw_common.cpp	2020-04-15 11:40:53.395348527 -0600
++++ Source/LibRawLite/internal/dcraw_common.cpp	2020-04-15 11:51:08.337657950 -0600
+@@ -27,6 +27,21 @@
+ #include "libraw/libraw.h"
+ #include "internal/defines.h"
+ #include "internal/var_defines.h"
++
++#ifdef __SWITCH__
++static void swab(const void *_src, void *_dest, ssize_t n)
++{
++	const char *src = (char*)_src;
++	char *dest = (char*)_dest;
++	for (; n>1; n-=2) {
++		dest[0] = src[1];
++		dest[1] = src[0];
++		dest += 2;
++		src += 2;
++	}
++}
++#endif // __SWITCH__
++
+ int CLASS fcol(int row, int col)
+ {
+   static const char filter[16][16] = {
+--- Source/LibRawLite/src/libraw_cxx.cpp	2020-04-15 11:51:42.021564798 -0600
++++ Source/LibRawLite/src/libraw_cxx.cpp	2020-04-15 11:51:57.193522827 -0600
+@@ -54,6 +54,20 @@
+ 
+ #include "libraw_fuji_compressed.cpp"
+ 
++#ifdef __SWITCH__
++static void swab(const void *_src, void *_dest, ssize_t n)
++{
++        const char *src = (char*)_src;
++        char *dest = (char*)_dest;
++        for (; n>1; n-=2) {
++                dest[0] = src[1];
++                dest[1] = src[0];
++                dest += 2;
++                src += 2;
++        }
++}
++#endif // __SWITCH__
++
+ #ifdef __cplusplus
+ extern "C"
+ {

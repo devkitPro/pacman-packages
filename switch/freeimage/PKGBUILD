@@ -1,0 +1,46 @@
+# Maintainer: COMP Omega <compomega@tutanota.com>
+pkgname=switch-freeimage
+pkgver=3.18.0
+pkgrel=1
+pkgdesc='FreeImage is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others.'
+arch=('any')
+url='http://freeimage.sourceforge.net'
+license=('GPLv2')
+options=(!strip libtool staticlibs)
+source=( "http://downloads.sourceforge.net/freeimage/FreeImage3180.zip" "Makefile.switch" "freeimage-switch.patch" "libpng-1.6.37.patch")
+makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
+sha256sums=(
+  'f41379682f9ada94ea7b34fe86bf9ee00935a3147be41b6569c9605a53e438fd'
+  '44bf69af6ad0a17fe0dbec9de5953b4a89e3540930adc93cbd79fe3452804e5d'
+  '81a2585caa87b8f45e4fda16a2514dcda8763d7cdd3aeb200e9812ae496caa68'
+  'f82fced80777119dc92f6ef189d551c2884a57fa8012ec942d1ba5e8a7ffe7db')
+groups=('switch-portlibs')
+build() {
+  cd FreeImage
+
+  source /opt/devkitpro/switchvars.sh
+
+  export CC=${TOOL_PREFIX}gcc
+  export CXX=${TOOL_PREFIX}g++
+
+  # CFLAGS and CXXFLAGS don't include libnx!
+  export CFLAGS="${CFLAGS} ${CPPFLAGS}"
+  export CXXFLAGS="${CXXFLAGS} ${CPPFLAGS}"
+
+  cp "$srcdir"/Makefile.switch ./
+  patch -Np0 -i "$srcdir"/freeimage-switch.patch
+  patch -Np1 -i "$srcdir"/libpng-1.6.37.patch
+
+  make -f Makefile.switch
+
+}
+
+package() {
+
+  cd FreeImage
+
+  source /opt/devkitpro/switchvars.sh
+
+  make -f Makefile.switch install DESTDIR="$pkgdir/${PORTLIBS_PREFIX}"
+
+}
