@@ -9,7 +9,7 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 source=( "https://github.com/OGRECave/ogre/archive/v${pkgver}.tar.gz" "ogre-switch.patch")
 makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
-depends=('switch-zlib' 'switch-zziplib' 'switch-freetype' 'switch-freeimage' 'switch-pugixml')
+depends=('switch-mesa' 'switch-glad' 'switch-glm' 'switch-zlib' 'switch-zziplib' 'switch-freetype' 'switch-freeimage' 'switch-pugixml')
 sha256sums=(
   'f14465012b0a10bc3fd3669d02965279878b1048e9972c730866e64688a9ec8d'
   '5c37201788ede975fe755cee5c04e940d7ba7cdd7fc20245d518438f55bfeaa7')
