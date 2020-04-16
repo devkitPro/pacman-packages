@@ -1,6 +1,6 @@
 # Maintainer: COMP Omega <compomega@tutanota.com>
 pkgname=switch-ogre
-pkgver=1.11.1
+pkgver=1.12.5
 pkgrel=1
 pkgdesc='scene-oriented, flexible 3D engine written in C++'
 arch=('any')
@@ -9,10 +9,10 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 source=( "https://github.com/OGRECave/ogre/archive/v${pkgver}.tar.gz" "ogre-switch.patch")
 makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
-depends=('switch-zlib' 'switch-zziplib' 'switch-freetype')
+depends=('switch-zlib' 'switch-zziplib' 'switch-freetype' 'switch-freeimage' 'switch-pugixml')
 sha256sums=(
-  'a3e73e55908042f00be8892fc75db83e8d814dfeca6ff5c6f30b8a7662c32f85'
-  '389c603a843c31f2bcbeb90145eb68e07dda4e9628fce76cfef3eefccf2eaed7')
+  'f14465012b0a10bc3fd3669d02965279878b1048e9972c730866e64688a9ec8d'
+  '5c37201788ede975fe755cee5c04e940d7ba7cdd7fc20245d518438f55bfeaa7')
 groups=('switch-portlibs')
 build() {
   cd ogre-$pkgver
@@ -26,6 +26,8 @@ build() {
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="$CXXFLAGS $CPPFLAGS" \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DOGRE_ENABLE_PRECOMPILED_HEADERS=FALSE \
+    -DOGRE_BUILD_COMPONENT_OVERLAY_IMGUI=OFF \
     -DSWITCH=ON -DOGRE_STATIC=ON -DOGRE_BUILD_DEPENDENCIES=OFF \
     -DOGRE_BUILD_RENDERSYSTEM_GL=OFF \
     -DOGRE_BUILD_RENDERSYSTEM_GL3PLUS=ON \

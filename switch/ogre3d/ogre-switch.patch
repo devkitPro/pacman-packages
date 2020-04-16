@@ -63,28 +63,6 @@ index 9a2819e..2bbf2b8 100644
    # This doesn't work on VS 2010
    # MSVC only builds for intel anyway
    # all IOS devices are little endian
-@@ -258,6 +258,8 @@ elseif(EMSCRIPTEN)
-   set(OGRE_STATIC TRUE CACHE BOOL "Forcing static build for Emscripten" FORCE)
- 
-   set(OGRE_CONFIG_THREADS "0" CACHE STRING "Threading is unstable on Emscripten" FORCE)
-+elseif (SWITCH)
-+  set(OGRE_CONFIG_THREADS "0" CACHE STRING "Threading needs some work on Nintendo Switch" FORCE)
- elseif (APPLE AND NOT APPLE_IOS)
- 
-   set(XCODE_ATTRIBUTE_SDKROOT macosx)
-@@ -312,7 +314,11 @@ include(Dependencies)
- 
- # Customise what to build
- option(OGRE_STATIC "Static build" FALSE)
--option(OGRE_ENABLE_PRECOMPILED_HEADERS "Use precompiled headers to speed up build" TRUE)
-+if (SWITCH)
-+  option(OGRE_ENABLE_PRECOMPILED_HEADERS "Use precompiled headers to speed up build" FALSE)
-+else ()
-+  option(OGRE_ENABLE_PRECOMPILED_HEADERS "Use precompiled headers to speed up build" TRUE)
-+endif ()
- set(OGRE_RESOURCEMANAGER_STRICT "2" CACHE STRING 
-   "Make ResourceManager strict for faster operation. Possible values:
-   0 - OFF search in all groups twice - for case sensitive and insensitive lookup [DEPRECATED]
 diff --git a/OgreMain/CMakeLists.txt b/OgreMain/CMakeLists.txt
 index b2c63ba..e13b6a9 100644
 --- a/OgreMain/CMakeLists.txt
@@ -140,7 +118,7 @@ diff --git a/OgreMain/include/OgreString.h b/OgreMain/include/OgreString.h
 index a4ff3ba..b1196ce 100644
 --- a/OgreMain/include/OgreString.h
 +++ b/OgreMain/include/OgreString.h
-@@ -59,6 +59,16 @@ THE SOFTWARE.
+@@ -59,6 +59,18 @@ THE SOFTWARE.
  #   include <xlocale.h>
  #endif
  
@@ -152,6 +130,8 @@ index a4ff3ba..b1196ce 100644
 +#   define strtod_l(ptr, end, l) strtod(ptr, end)
 +#   define strtoul_l(ptr, end, base, l) strtoul(ptr, end, base)
 +#   define strtol_l(ptr, end, base, l) strtol(ptr, end, base)
++#   define strtoll_l(ptr, end, base, l) strtoll(ptr, end, base)
++#   define strtoull_l(ptr, end, base, l) strtoull(ptr, end, base)
 +#endif
 +
  namespace Ogre {
@@ -382,7 +362,7 @@ new file mode 100644
 index 0000000..98227d4
 --- /dev/null
 +++ b/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLSupport.cpp
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,74 @@
 +/*
 +-----------------------------------------------------------------------------
 +This source file is part of OGRE
@@ -432,9 +412,10 @@ index 0000000..98227d4
 +        mNativeDisplay = EGL_DEFAULT_DISPLAY;
 +        mGLDisplay = getGLDisplay();
 +
-+        mCurrentMode.first.first = 1920;
-+        mCurrentMode.first.second = 1080;
-+        mCurrentMode.second = 0;
++        mCurrentMode.width = 1920;
++        mCurrentMode.height = 1080;
++        mCurrentMode.refreshRate = 0;
++        mCurrentMode.bpp = 24;
 +        mOriginalMode = mCurrentMode;
 +        mVideoModes.push_back(mCurrentMode);
 +    }
@@ -446,8 +427,6 @@ index 0000000..98227d4
 +
 +    void SwitchEGLSupport::switchMode( uint& width, uint& height, short& frequency )
 +    {
-+        if (!mRandr)
-+            return;
 +    }
 +
 +    RenderWindow* SwitchEGLSupport::newWindow( const String &name, unsigned int width, unsigned int height, bool fullScreen, const NameValuePairList *miscParams)
@@ -570,7 +549,7 @@ index 0000000..d9610d3
 +            return;
 +
 +        mContext->setCurrent();
-+        mContext->_destroyInternalResources();
++        static_cast<EGLContext*>(mContext)->_destroyInternalResources();
 +
 +        eglDestroySurface(mEglDisplay, mEglSurface);
 +        EGL_CHECK_ERROR
