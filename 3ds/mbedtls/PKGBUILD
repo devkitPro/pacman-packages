@@ -13,6 +13,7 @@ depends=(3ds-zlib)
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
          '3ds-mbedtls.patch' )
+groups=('3ds-portlibs')
 
 sha256sums=('66455e23a6190a30142cdc1113f7418158839331a9d8e6b0778631d077281770'
             '3bc52b6a6701ee82342bf39ad2f447b6a7dda7fcfdecb083d909d498e51b5be4')
@@ -29,7 +30,6 @@ build() {
   ./scripts/config.pl unset MBEDTLS_SELF_TEST
   ./scripts/config.pl unset MBEDTLS_TIMING_C
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
@@ -48,7 +48,6 @@ package() {
 
   cd mbedtls-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   make install DESTDIR="$pkgdir"
