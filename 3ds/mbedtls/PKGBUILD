@@ -15,12 +15,19 @@ source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
          '3ds-mbedtls.patch' )
 
 sha256sums=('66455e23a6190a30142cdc1113f7418158839331a9d8e6b0778631d077281770'
-            'b91d78426c1df2cfb5714ec3f66e5102b6b004e4febb3ff1cea5e1e0625da6b6')
+            '3bc52b6a6701ee82342bf39ad2f447b6a7dda7fcfdecb083d909d498e51b5be4')
 
 build() {
   cd mbedtls-$pkgver
 
   patch -Np1 -i $srcdir/3ds-mbedtls.patch
+
+  ./scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
+  ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
+  ./scripts/config.pl set MBEDTLS_CMAC_C
+
+  ./scripts/config.pl unset MBEDTLS_SELF_TEST
+  ./scripts/config.pl unset MBEDTLS_TIMING_C
 
   source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
