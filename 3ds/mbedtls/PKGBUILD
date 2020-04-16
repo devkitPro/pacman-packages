@@ -2,27 +2,34 @@
 # Contributor: Elouan Martinet <exa@elou.world>
 
 pkgname=3ds-mbedtls
-pkgver=2.8.0
-pkgrel=2
-pkgdesc='Deflate compression method library (for Nintendo 3DS homebrew development)'
+pkgver=2.16.6
+pkgrel=1
+pkgdesc='An open source, portable, easy to use, readable and flexible SSL library (for Nintendo 3DS homebrew development)'
 arch=('any')
-url='http://www.zlib.net/'
+url='https://tls.mbed.org/'
 license=('apache')
 options=(!strip libtool staticlibs)
 depends=(3ds-zlib)
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
          '3ds-mbedtls.patch' )
+groups=('3ds-portlibs')
 
-sha256sums=('ab8b62b995781bcf22e87a265ed06267f87c3041198e996b44441223d19fa9c3'
-            '802cd6cebcfded7b8d593900643bc5deb06b215cfd7b0663702fbd66124bb474')
+sha256sums=('66455e23a6190a30142cdc1113f7418158839331a9d8e6b0778631d077281770'
+            '3bc52b6a6701ee82342bf39ad2f447b6a7dda7fcfdecb083d909d498e51b5be4')
 
 build() {
   cd mbedtls-$pkgver
 
   patch -Np1 -i $srcdir/3ds-mbedtls.patch
 
-  source /opt/devkitpro/devkitarm.sh
+  ./scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
+  ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
+  ./scripts/config.pl set MBEDTLS_CMAC_C
+
+  ./scripts/config.pl unset MBEDTLS_SELF_TEST
+  ./scripts/config.pl unset MBEDTLS_TIMING_C
+
   source /opt/devkitpro/3dsvars.sh
 
   cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
@@ -41,7 +48,6 @@ package() {
 
   cd mbedtls-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   make install DESTDIR="$pkgdir"
