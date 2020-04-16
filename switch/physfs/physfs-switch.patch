@@ -189,7 +189,7 @@
  static char *readSymLink(const char *path)
  {
      ssize_t len = 64;
-@@ -244,15 +248,46 @@ static char *readSymLink(const char *path)
+@@ -244,15 +248,47 @@ static char *readSymLink(const char *path)
          allocator.Free(retval);
      return NULL;
  } /* readSymLink */
@@ -218,6 +218,7 @@
 +            /* getcwd does not provide a trailing slash, add it. */
 +            retval = (char*) allocator.Malloc(cwdlen + 2);
 +            BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++            strncpy(retval, fullpath, cwdlen);
 +            retval[cwdlen] = '/';
 +            retval[cwdlen + 1] = '\0';
 +        }

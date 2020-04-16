@@ -1,7 +1,7 @@
 # Maintainer: COMP Omega <compomega@tutanota.com>
 pkgname=switch-physfs
 pkgver=3.0.2
-pkgrel=1
+pkgrel=2
 pkgdesc='scene-oriented, flexible 3D engine written in C++'
 arch=('any')
 url='https://icculus.org/physfs/'
@@ -12,7 +12,7 @@ makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
 depends=()
 sha256sums=(
   '304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863'
-  'c27e1e13ebc31d3c4607d3922f3433c553713faa0f85df031dff6e409f18e01e')
+  'fed3054d109d1949e85a7ecfdfcb6a02989f769cb6dce0251db2df1de31747f1')
 groups=('switch-portlibs')
 build() {
   cd physfs-$pkgver
