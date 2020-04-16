@@ -2,7 +2,7 @@
 # Contributor: Elouan Martinet <exa@elou.world>
 
 pkgname=3ds-curl
-pkgver=7.67.0
+pkgver=7.69.1
 pkgrel=1
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
@@ -12,12 +12,12 @@ options=(!strip libtool staticlibs)
 depends=('3ds-zlib' '3ds-mbedtls')
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 
-source=("https://curl.haxx.se/download/curl-${pkgver}.tar.gz"
+source=("https://curl.haxx.se/download/curl-${pkgver}.tar.xz"
         '3ds-curl.patch'
 )
 
-sha256sums=('52af3361cf806330b88b4fe6f483b6844209d47ae196ac46da4de59bb361ab02'
-            'ab2a696769c6e1fb92c7193ec236569ea1b633565d67c3f671965f8259265537')
+sha256sums=('03c7d5e6697f7b7e40ada1b2256e565a555657398e6c1fcfa4cb251ccd819d4f'
+            'fd18f93838addd62776b30c699ab9ea472e1d7f31f3d19d28c92728830a06413')
 groups=('3ds-portlibs')
 
 build() {
