@@ -25,7 +25,7 @@ fi
 
 
 pkgname=("${pkgbasename}-${PLATFORM}")
-pkgver=1.1.4
+pkgver=1.1.5
 pkgrel=1
 pkgdesc="${platdesc} FAT library."
 arch=('any')
@@ -33,7 +33,7 @@ license=('custom')
 url="http://github.com/devkitpro"
 options=(!strip libtool staticlibs)
 source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
-sha256sums=('51ddfa7329c26df4e4778cc55f797853ba484c900cce02081c8a9e7739b2ffc7')
+sha256sums=('b577c7d3d212a0f2ee1f1c6be82e8f64cb150955ab1599424b71914e407c6038')
 
 
 build() {
