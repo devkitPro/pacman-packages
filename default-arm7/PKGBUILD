@@ -3,7 +3,7 @@
 
 pkgname=('default-arm7')
 pkgver=0.7.4
-pkgrel=2
+pkgrel=7
 pkgdesc="Nintendo DS library."
 arch=('any')
 license=('zlib')
