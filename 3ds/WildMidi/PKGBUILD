@@ -3,13 +3,14 @@
 
 pkgname=3ds-wildmidi
 pkgver=0.4.3
-pkgrel=1
+pkgrel=2
 pkgdesc='Core softsynth library that can be used with other applications.'
 arch=('any')
 url='https://www.mindwerks.net/projects/wildmidi/'
 license=('LGPL')
 options=(!strip libtool staticlibs)
 source=( "https://github.com/Mindwerks/wildmidi/archive/wildmidi-${pkgver}.tar.gz" "wildmidi-0.4.3.patch")
+groups=('3ds-portlibs')
 makedepends=('devkitpro-pkgbuild-helpers')
 sha256sums=(
 '498e5a96455bb4b91b37188ad6dcb070824e92c44f5ed452b90adbaec8eef3c5'
