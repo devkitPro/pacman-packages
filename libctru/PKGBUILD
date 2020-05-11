@@ -9,7 +9,7 @@ arch=('any')
 license=('custom')
 url="http://github.com/smealum"
 options=(!strip libtool staticlibs)
-source=(${url}/ctrulib/archive/v${pkgver}.tar.gz)
+source=(${pkgname}-${pkgver}.tar.gz::${url}/ctrulib/archive/v${pkgver}.tar.gz)
 sha256sums=('fc3189567537885c24fd8f6d7ba549b9c3801cf20b474c661741cfbc62a3d3df')
 depends=('devkitARM')
 

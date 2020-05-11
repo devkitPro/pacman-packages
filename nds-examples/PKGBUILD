@@ -9,13 +9,13 @@ arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
-source=(${url}/archive/${pkgname}-${pkgver}.tar.gz)
-sha256sums=('3ff9077e6cffc1e3839e1692f16bfce631946c882d4cc3b7cc59cdcb2f5285dd')
+source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
+sha256sums=('52a50ed5bf52366fa7ece923e138e49e7e534b00b5bd741b5541a6b069b8a57a')
 makedepends=('devkitARM')
 
 groups=('nds-dev')
 
 package() {
   mkdir -p "$pkgdir"/opt/devkitpro/examples/nds
-  cp -R $srcdir/${pkgname}-${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/nds
+  cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/nds
 }

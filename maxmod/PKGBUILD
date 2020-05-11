@@ -27,11 +27,11 @@ arch=('any')
 license=('custom')
 url="http://github.com/devkitpro"
 options=(!strip libtool staticlibs)
-source=(${url}/${pkgbasename}/archive/${pkgbasename}-${pkgver}.tar.gz)
-sha256sums=('283f79ede0feb5e8ee62da451074f790da1574f19a310b3d167ec45fbfaaa40b')
+source=($pkgbasename-$pkgver.tar.gz::${url}/${pkgbasename}/archive/v${pkgver}.tar.gz)
+sha256sums=('1704f3364b15b37b6d50b26e35bf503fad51f49c2b2b06605355772a306c205c')
 
 package() {
 
-  make -C $srcdir/$pkgbasename-$pkgbasename-$pkgver DESTDIR=$pkgdir install-$PLATFORM
+  make -C $srcdir/$pkgbasename-$pkgver DESTDIR=$pkgdir install-$PLATFORM
 
 }
