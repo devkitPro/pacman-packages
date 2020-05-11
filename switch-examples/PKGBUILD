@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/switchbrew/switch-examples"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('d14877f36a68a03fa642d7506acf1a9e0b4282a29abd285d48825942ecca9ecc')
+sha256sums=('639d0fc8aa8998537fda9fc46755e7c063daa85d10450e7825697ebbe45ac263')
 makedepends=('devkitA64')
 
 groups=('switch-dev')
