@@ -2,27 +2,27 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libnds')
-pkgver=1.7.3
-pkgrel=3
+pkgver=1.8.0
+pkgrel=1
 pkgdesc="Nintendo DS library."
 arch=('any')
 license=('zlib')
-url="http://github.com/devkitpro"
+url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
-source=(${url}/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
-sha256sums=('10d054a7e092a3c7a5b3c1e90cfee8757f4e679b26fd557c7daf735bcdd2b1ed')
+source=(${url}/archive/${pkgname}-${pkgver}.tar.gz)
+sha256sums=('9b2af52aedd23fbbe05b917ad58f53c029551662df7733aa031b296a3f7285da')
 depends=('devkitARM' 'devkitarm-rules' 'devkitarm-crtls')
 
 groups=('nds-dev')
 
 build() {
 
-  make -C $srcdir
+  make -C $srcdir/${pkgname}-${pkgname}-${pkgver}
 
 }
 
 package() {
 
-  make -C $srcdir DESTDIR=$pkgdir install
+  make -C  $srcdir/${pkgname}-${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
