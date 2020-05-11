@@ -3,7 +3,7 @@
 
 pkgname=switch-flac
 pkgver=1.3.2
-pkgrel=3
+pkgrel=4
 pkgdesc='FLAC stands for Free Lossless Audio Codec, an audio format similar to MP3, but lossless...'
 arch=('any')
 url='https://xiph.org/flac/'
