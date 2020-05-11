@@ -2,7 +2,7 @@
 # Contributor: Cpasjuste <cpasjuste@gmail.com>
 
 pkgname=3ds-jansson
-pkgver=2.11
+pkgver=2.13
 pkgrel=1
 pkgdesc='A C library for encoding, decoding and manipulating JSON data.'
 arch=('any')
@@ -11,7 +11,8 @@ license=('custom')
 options=(!strip libtool staticlibs)
 makedepends=('devkitpro-pkgbuild-helpers')
 source=("http://www.digip.org/jansson/releases/jansson-$pkgver.tar.gz")
-sha256sums=('6e85f42dabe49a7831dbdd6d30dca8a966956b51a9a50ed534b82afc3fa5b2f4')
+groups=('3ds-portlibs')
+sha256sums=('02c31bc16e702b30feb06d18bbfe086c0d8c938e906950980af7adcdb324541b')
 
 build() {
   cd jansson-$pkgver
