@@ -1,15 +1,15 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 # Contributor: Cpasjuste <cpasjuste@gmail.com>
-
-pkgname=switch-libmpv
+pkgbasename=libmpv
+pkgname=switch-${pkgbasename}
 pkgver=0.30.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Command line video player (library only)'
 arch=('any')
 url='https://mpv.io/'
 license=('GPL')
 options=(!strip libtool staticlibs)
-source=("https://github.com/mpv-player/mpv/archive/v${pkgver}.tar.gz" "mpv.patch")
+source=("${pkgbasename}-${pkgver}.tar,gz::https://github.com/mpv-player/mpv/archive/v${pkgver}.tar.gz" "mpv.patch")
 sha256sums=(
   '33a1bcb7e74ff17f070e754c15c52228cf44f2cefbfd8f34886ae81df214ca35'
   'a1db60e3cbf820a23dc3154b5c43e19845bba1e18ad668eef38c08d47ea6dc27'
