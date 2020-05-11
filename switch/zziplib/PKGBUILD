@@ -1,7 +1,7 @@
 # Maintainer: COMP Omega <compomega@tutanota.com>
 pkgname=switch-zziplib
 pkgver=0.13.69
-pkgrel=2
+pkgrel=3
 pkgdesc='The ZZIPlib provides read access on ZIP-archives and unpacked data. It features an additional simplified API following the standard Posix API for file access'
 arch=('any')
 url='https://github.com/gdraheim/zziplib/'
