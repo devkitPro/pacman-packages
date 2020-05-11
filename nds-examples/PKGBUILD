@@ -2,21 +2,20 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('nds-examples')
-pkgver=20181226
+pkgver=20200510
 pkgrel=1
 pkgdesc="Nintendo NDS example code."
 arch=('any')
 license=('custom')
-url="http://github.com/devkitpro"
+url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
-source=(${url}/${pkgname}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('e469f8d13a73bba0f14f42ba759b55d93ae50b3b7490fcb2376dc2bc13f1a281')
+source=(${url}/archive/${pkgname}-${pkgver}.tar.gz)
+sha256sums=('3ff9077e6cffc1e3839e1692f16bfce631946c882d4cc3b7cc59cdcb2f5285dd')
 makedepends=('devkitARM')
 
 groups=('nds-dev')
 
 package() {
-  rm $srcdir/${pkgname}-${pkgver}.tar.bz2
   mkdir -p "$pkgdir"/opt/devkitpro/examples/nds
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/nds  
+  cp -R $srcdir/${pkgname}-${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/nds
 }
