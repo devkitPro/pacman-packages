@@ -10,18 +10,18 @@ arch=('any')
 license=('MIT')
 url="http://github.com/devkitPro"
 options=(!strip libtool staticlibs)
-source=(${pkgname}-${pkgver}.tar.gz::${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
+source=(${pkgname}-${pkgver}.tar.gz::${url}/${pkgbasename}/archive/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.gz)
 sha256sums=('b069bf8029abb120294bd2dd988dc4d6ce2be3f1016c88c26c73c87b6f312136')
 makedepends=('devkitA64')
 
 build() {
 
-  make -C $srcdir
+  make -C $srcdir/$pkgbasename-$pkgver
 
 }
 
 package() {
 
-  make -C $srcdir DESTDIR=$pkgdir install
+  make -C $srcdir/$pkgbasename-$pkgver DESTDIR=$pkgdir install
 
 }
