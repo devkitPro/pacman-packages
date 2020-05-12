@@ -1,0 +1,41 @@
+# Maintainer: friedkeenan <friedkeenan@protonmail.com>
+
+pkgname=switch-libffi
+pkgver=3.3
+pkgrel=1
+pkgdesc='A portable foreign-function interface library'
+arch=('any')
+url='https://sourceware.org/libffi/'
+license=('MIT')
+options=(!strip libtool staticlibs)
+source=("https://github.com/libffi/libffi/releases/download/v${pkgver}/libffi-${pkgver}.tar.gz")
+sha256sums=('72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+build() {
+    cd libffi-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    ./configure \
+      --prefix="${PORTLIBS_PREFIX}" \
+      --host=aarch64-none-elf \
+      --disable-shared \
+      --enable-static
+
+    make
+}
+
+package() {
+    cd libffi-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    make DESTDIR="$pkgdir" install
+
+    # license
+    install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+
+    # remove useless stuff
+    rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+}
