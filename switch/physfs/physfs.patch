@@ -1,0 +1,191 @@
+diff -Naur physfs-3.0.2/CMakeLists.txt physfs-3.0.2-patched/CMakeLists.txt
+--- physfs-3.0.2/CMakeLists.txt	2020-05-21 14:52:55.378870871 +0100
++++ physfs-3.0.2-patched/CMakeLists.txt	2020-05-21 14:53:10.899215377 +0100
+@@ -76,6 +76,7 @@
+     src/physfs_platform_windows.c
+     src/physfs_platform_os2.c
+     src/physfs_platform_qnx.c
++    src/physfs_platform_switch.c
+     src/physfs_archiver_dir.c
+     src/physfs_archiver_unpacked.c
+     src/physfs_archiver_grp.c
+diff -Naur physfs-3.0.2/src/physfs_internal.h physfs-3.0.2-patched/src/physfs_internal.h
+--- physfs-3.0.2/src/physfs_internal.h	2020-05-21 14:48:36.117670131 +0100
++++ physfs-3.0.2-patched/src/physfs_internal.h	2020-05-21 15:29:11.328382916 +0100
+@@ -107,6 +107,10 @@
+ const void *__PHYSFS_winrtCalcPrefDir(void);
+ #endif
+ 
++#ifdef PHYSFS_PLATFORM_SWITCH
++char *__PHYSFS_switchCalcUserDir(void);
++#endif
++
+ /* atomic operations. */
+ #if defined(_MSC_VER) && (_MSC_VER >= 1500)
+ #include <intrin.h>
+diff -Naur physfs-3.0.2/src/physfs_platform_posix.c physfs-3.0.2-patched/src/physfs_platform_posix.c
+--- physfs-3.0.2/src/physfs_platform_posix.c	2020-05-21 14:48:36.117670131 +0100
++++ physfs-3.0.2-patched/src/physfs_platform_posix.c	2020-05-23 18:57:55.659368948 +0100
+@@ -87,6 +87,9 @@
+ 
+ char *__PHYSFS_platformCalcUserDir(void)
+ {
++#ifdef PHYSFS_PLATFORM_SWITCH
++    return __PHYSFS_switchCalcUserDir();
++#endif
+     char *retval = NULL;
+     char *envr = getenv("HOME");
+ 
+@@ -299,7 +302,14 @@
+ int __PHYSFS_platformStat(const char *fname, PHYSFS_Stat *st, const int follow)
+ {
+     struct stat statbuf;
++#ifdef PHYSFS_PLATFORM_SWITCH
++    /* ignoring symlinks, they are unsupported anyway! */
++    (void) follow;
++    const int rc = stat(fname, &statbuf);
++#else
+     const int rc = follow ? stat(fname, &statbuf) : lstat(fname, &statbuf);
++#endif
++
+     BAIL_IF(rc == -1, errcodeFromErrno(), 0);
+ 
+     if (S_ISREG(statbuf.st_mode))
+@@ -330,7 +340,12 @@
+     st->createtime = statbuf.st_ctime;
+     st->accesstime = statbuf.st_atime;
+ 
++#ifdef PHYSFS_PLATFORM_SWITCH
++    /* shortcut */
++    st->readonly = !(statbuf.st_mode & S_IWRITE);
++#else
+     st->readonly = (access(fname, W_OK) == -1);
++#endif
+     return 1;
+ } /* __PHYSFS_platformStat */
+ 
+diff -Naur physfs-3.0.2/src/physfs_platforms.h physfs-3.0.2-patched/src/physfs_platforms.h
+--- physfs-3.0.2/src/physfs_platforms.h	2020-05-21 14:48:36.117670131 +0100
++++ physfs-3.0.2-patched/src/physfs_platforms.h	2020-05-21 14:56:30.372458194 +0100
+@@ -72,6 +72,10 @@
+ #elif defined(unix) || defined(__unix__)
+ #  define PHYSFS_PLATFORM_UNIX 1
+ #  define PHYSFS_PLATFORM_POSIX 1
++#elif defined(__SWITCH__)
++#  define PHYSFS_PLATFORM_POSIX 1
++#  define PHYSFS_PLATFORM_SWITCH 1
++#  define PHYSFS_NO_CDROM_SUPPORT 1
+ #else
+ #  error Unknown platform.
+ #endif
+diff -Naur physfs-3.0.2/src/physfs_platform_switch.c physfs-3.0.2-patched/src/physfs_platform_switch.c
+--- physfs-3.0.2/src/physfs_platform_switch.c	1970-01-01 01:00:00.000000000 +0100
++++ physfs-3.0.2-patched/src/physfs_platform_switch.c	2020-05-21 15:29:53.178459807 +0100
+@@ -0,0 +1,106 @@
++/*
++ * Nintendo Switch support routines for PhysicsFS.
++ *
++ * Please see the file LICENSE.txt in the source's root directory.
++ *
++ */
++
++
++#define __PHYSICSFS_INTERNAL__
++#include "physfs_platforms.h"
++
++#ifdef PHYSFS_PLATFORM_SWITCH
++
++#include <switch.h>
++
++// for getcwd
++#include <unistd.h>
++// for PATH_MAX
++#include <limits.h>
++
++#include "physfs_internal.h"
++
++int __PHYSFS_platformInit(void)
++{
++	return 1;  /* always succeed. */
++} /* __PHYSFS_platformInit */
++
++
++void __PHYSFS_platformDeinit(void)
++{
++	/* no-op */
++} /* __PHYSFS_platformDeinit */
++
++
++void __PHYSFS_platformDetectAvailableCDs(PHYSFS_StringCallback cb, void *data)
++{
++	/* no-op */
++}
++
++char *__PHYSFS_switchCalcUserDir(void)
++{
++	/* Use the jail directory (hopefully) found before. */
++	return __PHYSFS_strdup(PHYSFS_getBaseDir());
++}
++
++char *__PHYSFS_platformCalcBaseDir(const char *argv0)
++{
++	char *retval = NULL;
++	/* As there is no system-specific directory, directly inspect argv0. */
++	if (argv0 == NULL)
++	{
++		/* User did not provide a path, just use the current working directory.
++		 *  As physfs should be initialized soon after application start, this
++		 *  should give us a useable directory.
++		 */
++		char fullpath[PATH_MAX];
++		if (getcwd(fullpath, sizeof(fullpath)) != NULL)
++		{
++			const size_t cwdlen = strlen(fullpath);
++			/* getcwd does not provide a trailing slash, add it. */
++			retval = (char*) allocator.Malloc(cwdlen + 2);
++			BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++			strncpy(retval, fullpath, cwdlen);
++			retval[cwdlen] = '/';
++			retval[cwdlen + 1] = '\0';
++		}
++	}
++	else
++	{
++		/* nx-hbmenu should give us the full path of the application, this may
++		 *  reside in a subfolder. Higher level code will strip away the name
++		 *  and extension.
++		 */
++		return NULL;
++	}
++
++	if (!retval)
++		/* Last resort: use `/switch` directory. */
++		retval = __PHYSFS_strdup("sdmc:/switch/");
++
++	return retval;
++} /* __PHYSFS_platformCalcBaseDir */
++
++char *__PHYSFS_platformCalcPrefDir(const char *org, const char *app)
++{
++	char *retval = NULL;
++	size_t len = 0;
++
++	/* Use the jail directory (hopefully) found before. This way we do not
++	 *  need to add an application folder, because it is exclusive.
++	 */
++	const char *envr = __PHYSFS_getUserDir();
++	BAIL_IF_ERRPASS(!envr, NULL);
++	const char *append = ".config/";
++	len = strlen(envr) + strlen(append) + 1;
++	retval = (char *) allocator.Malloc(len);
++	BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++	snprintf(retval, len, "%s%s", envr, append);
++
++	return retval;
++} /* __PHYSFS_platformCalcPrefDir */
++
++
++#endif /* PHYSFS_PLATFORM_SWITCH */
++
++/* end of physfs_platform_switch.cpp ... */
+\ No newline at end of file
