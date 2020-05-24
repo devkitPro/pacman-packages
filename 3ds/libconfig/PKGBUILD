@@ -1,7 +1,5 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-# Maintainer:  Dave Murphy <davem@devkitpro.org>
-
 pkgname=3ds-libconfig
 pkgver=1.7.2
 pkgrel=3
