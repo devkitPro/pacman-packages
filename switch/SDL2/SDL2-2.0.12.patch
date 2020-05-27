@@ -643,10 +643,10 @@ index 6eb8bf47e..71aef4c6b 100644
  
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..c1a1199f1
+index 000000000..b19128826
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,251 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -686,6 +686,8 @@ index 000000000..c1a1199f1
 +    JoystickPosition l_pos;
 +    JoystickPosition r_pos;
 +    u64 buttons;
++    u32 vibrationDeviceHandles[2][2];
++    HidVibrationValue vibrationValues[2];
 +} JoystickState;
 +
 +/* Current pad state */
@@ -718,6 +720,12 @@ index 000000000..c1a1199f1
 +{
 +    for (int i = 0; i < JOYSTICK_COUNT; i++) {
 +        pad[i].id = pad_id[i];
++        hidInitializeVibrationDevices(pad[i].vibrationDeviceHandles[0], 2, CONTROLLER_HANDHELD, TYPE_HANDHELD);
++        if(pad[i].id == CONTROLLER_P1_AUTO) {
++            hidInitializeVibrationDevices(pad[i].vibrationDeviceHandles[1], 2, CONTROLLER_PLAYER_1, TYPE_HANDHELD);
++        } else {
++            hidInitializeVibrationDevices(pad[i].vibrationDeviceHandles[1], 2, pad[i].id, TYPE_JOYCON_PAIR);
++        }
 +    }
 +
 +    return JOYSTICK_COUNT;
@@ -789,8 +797,21 @@ index 000000000..c1a1199f1
 +static int
 +SWITCH_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 +{
-+    // TODO
-+    return SDL_Unsupported();
++    int target_device = 0;
++    int id = joystick->instance_id;
++
++    if (!hidGetHandheldMode()) {
++        target_device = 1;
++    }
++
++    pad[id].vibrationValues[0].amp_low = pad[id].vibrationValues[0].amp_high = low_frequency_rumble == 0 ? 0.0f : 320.0f;
++    pad[id].vibrationValues[0].freq_low = low_frequency_rumble == 0 ? 160.0f : (float) low_frequency_rumble / 204;
++    pad[id].vibrationValues[0].freq_high = high_frequency_rumble == 0 ? 320.0f : (float) high_frequency_rumble / 204;
++    memcpy(&pad[id].vibrationValues[1], &pad[id].vibrationValues[0], sizeof(HidVibrationValue));
++
++    hidSendVibrationValues(pad[id].vibrationDeviceHandles[target_device], pad[id].vibrationValues, 2);
++
++    return 0;
 +}
 +
 +/* Function to update the state of a joystick - called as a device poll.
@@ -805,7 +826,7 @@ index 000000000..c1a1199f1
 +    static JoystickState pad_old[JOYSTICK_COUNT];
 +
 +    int index = (int) SDL_JoystickInstanceID(joystick);
-+    if (index > JOYSTICK_COUNT) {
++    if (index > JOYSTICK_COUNT || SDL_IsTextInputActive()) {
 +        return;
 +    }
 +
@@ -2241,6 +2262,149 @@ index 000000000..3beb5eea7
 +#endif /* SDL_switchteopengles_h_ */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/switch/SDL_switchswkb.c b/src/video/switch/SDL_switchswkb.c
+new file mode 100644
+index 000000000..1a7a4b546
+--- /dev/null
++++ b/src/video/switch/SDL_switchswkb.c
+@@ -0,0 +1,111 @@
++//
++// Created by cpasjuste on 22/04/2020.
++//
++
++#include "../../SDL_internal.h"
++
++#if SDL_VIDEO_DRIVER_SWITCH
++
++#include <switch.h>
++#include "SDL_switchswkb.h"
++
++static SwkbdInline kbd;
++static SwkbdAppearArg kbdAppearArg;
++static bool kbdInited = SDL_FALSE;
++static bool kbdShown = SDL_FALSE;
++
++void
++SWITCH_InitSwkb()
++{
++}
++
++void
++SWITCH_PollSwkb(void)
++{
++    if(kbdInited) {
++        if(kbdShown) {
++            swkbdInlineUpdate(&kbd, NULL);
++        } else if(SDL_IsTextInputActive()) {
++            SDL_StopTextInput();
++        }
++    }
++}
++
++void
++SWITCH_QuitSwkb()
++{
++    if(kbdInited) {
++        swkbdInlineClose(&kbd);
++        kbdInited = false;
++    }
++}
++
++SDL_bool
++SWITCH_HasScreenKeyboardSupport(_THIS)
++{
++    return SDL_TRUE;
++}
++
++SDL_bool
++SWITCH_IsScreenKeyboardShown(_THIS, SDL_Window *window)
++{
++    return kbdShown;
++}
++
++static void
++SWITCH_EnterCb(const char *str, SwkbdDecidedEnterArg* arg)
++{
++    if(arg->stringLen > 0) {
++        SDL_SendKeyboardText(str);
++    }
++
++    kbdShown = false;
++}
++
++static void
++SWITCH_CancelCb(void)
++{
++    SDL_StopTextInput();
++}
++
++void
++SWITCH_StartTextInput(_THIS)
++{
++    Result rc;
++
++    if(!kbdInited) {
++        rc = swkbdInlineCreate(&kbd);
++        if (R_SUCCEEDED(rc)) {
++            rc = swkbdInlineLaunchForLibraryApplet(&kbd, SwkbdInlineMode_AppletDisplay, 0);
++            if(R_SUCCEEDED(rc)) {
++                swkbdInlineSetDecidedEnterCallback(&kbd, SWITCH_EnterCb);
++                swkbdInlineSetDecidedCancelCallback(&kbd, SWITCH_CancelCb);
++                swkbdInlineMakeAppearArg(&kbdAppearArg, SwkbdType_Normal);
++                swkbdInlineAppearArgSetOkButtonText(&kbdAppearArg, "Submit");
++                kbdAppearArg.dicFlag = 1;
++                kbdAppearArg.returnButtonFlag = 1;
++                kbdInited = true;
++            }
++        }
++    }
++
++    if(kbdInited) {
++        swkbdInlineSetInputText(&kbd, "");
++        swkbdInlineSetCursorPos(&kbd, 0);
++        swkbdInlineUpdate(&kbd, NULL);
++        swkbdInlineAppear(&kbd, &kbdAppearArg);
++        kbdShown = true;
++    }
++}
++
++void
++SWITCH_StopTextInput(_THIS)
++{
++    if(kbdInited) {
++        swkbdInlineDisappear(&kbd);
++    }
++
++    kbdShown = false;
++}
++
++#endif
+diff --git a/src/video/switch/SDL_switchswkb.h b/src/video/switch/SDL_switchswkb.h
+new file mode 100644
+index 000000000..988728c08
+--- /dev/null
++++ b/src/video/switch/SDL_switchswkb.h
+@@ -0,0 +1,20 @@
++//
++// Created by cpasjuste on 22/04/2020.
++//
++
++#ifndef SDL2_SDL_SWITCHSWKB_H
++#define SDL2_SDL_SWITCHSWKB_H
++
++#include "../../events/SDL_events_c.h"
++
++extern void SWITCH_InitSwkb();
++extern void SWITCH_PollSwkb();
++extern void SWITCH_QuitSwkb();
++
++extern SDL_bool SWITCH_HasScreenKeyboardSupport(_THIS);
++extern SDL_bool SWITCH_IsScreenKeyboardShown(_THIS, SDL_Window * window);
++
++extern void SWITCH_StartTextInput(_THIS);
++extern void SWITCH_StopTextInput(_THIS);
++
++#endif //SDL2_SDL_SWITCHSWKB_H
 diff --git a/src/video/switch/SDL_switchtouch.c b/src/video/switch/SDL_switchtouch.c
 new file mode 100644
 index 000000000..5b9d3dc0a
@@ -2411,10 +2575,10 @@ index 000000000..ac5908e39
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/switch/SDL_switchvideo.c b/src/video/switch/SDL_switchvideo.c
 new file mode 100644
-index 000000000..a39bf1835
+index 000000000..2bfa8cc14
 --- /dev/null
 +++ b/src/video/switch/SDL_switchvideo.c
-@@ -0,0 +1,366 @@
+@@ -0,0 +1,383 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -2451,6 +2615,7 @@ index 000000000..a39bf1835
 +#include "SDL_switchtouch.h"
 +#include "SDL_switchkeyboard.h"
 +#include "SDL_switchmouse_c.h"
++#include "SDL_switchswkb.h"
 +
 +/* Currently only one window */
 +static SDL_Window *switch_window = NULL;
@@ -2522,6 +2687,11 @@ index 000000000..a39bf1835
 +    device->GL_DeleteContext = SWITCH_GLES_DeleteContext;
 +    device->GL_DefaultProfileConfig = SWITCH_GLES_DefaultProfileConfig;
 +
++    device->StartTextInput = SWITCH_StartTextInput;
++    device->StopTextInput = SWITCH_StopTextInput;
++    device->HasScreenKeyboardSupport = SWITCH_HasScreenKeyboardSupport;
++    device->IsScreenKeyboardShown = SWITCH_IsScreenKeyboardShown;
++
 +    device->PumpEvents = SWITCH_PumpEvents;
 +
 +    return device;
@@ -2558,10 +2728,12 @@ index 000000000..a39bf1835
 +
 +    // init touch
 +    SWITCH_InitTouch();
-+    //init keyboard
++    // init keyboard
 +    SWITCH_InitKeyboard();
-+    //init mouse
++    // init mouse
 +    SWITCH_InitMouse();
++    // init software keyboard
++    SWITCH_InitSwkb();
 +
 +    return 0;
 +}
@@ -2569,16 +2741,21 @@ index 000000000..a39bf1835
 +void
 +SWITCH_VideoQuit(_THIS)
 +{
-+    if (_this->gl_config.driver_loaded) {
-+        SDL_GL_UnloadLibrary();
++    // this should not be needed if user code is right (SDL_GL_LoadLibrary/SDL_GL_UnloadLibrary calls match)
++    // this (user) error doesn't have the same effect on switch thought, as the driver needs to be unloaded (crash)
++    if(_this->gl_config.driver_loaded > 0) {
++        SWITCH_GLES_UnloadLibrary(_this);
++        _this->gl_config.driver_loaded = 0;
 +    }
 +
 +    // exit touch
 +    SWITCH_QuitTouch();
-+    //exit keyboard
++    // exit keyboard
 +    SWITCH_QuitKeyboard();
-+    //exit mouse
++    // exit mouse
 +    SWITCH_QuitMouse();
++    // exit software keyboard
++    SWITCH_QuitSwkb();
 +}
 +
 +void
@@ -2760,9 +2937,13 @@ index 000000000..a39bf1835
 +    }
 +
 +    hidScanInput();
-+    SWITCH_PollTouch();
-+    SWITCH_PollKeyboard();
-+    SWITCH_PollMouse();
++    // we don't want other inputs overlapping with software keyboard
++    if(!SDL_IsTextInputActive()) {
++        SWITCH_PollTouch();
++        SWITCH_PollKeyboard();
++        SWITCH_PollMouse();
++    }
++    SWITCH_PollSwkb();
 +
 +    // handle docked / un-docked modes
 +    // note that SDL_WINDOW_RESIZABLE is only possible in windowed mode,
