@@ -18,14 +18,10 @@ groups=('switch-portlibs')
 build() {
   cd physfs-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
-
   patch -Np1 -i "$srcdir"/physfs-${pkgver}.patch
 
   cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
-    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
-    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
-    -DCMAKE_CXX_FLAGS="$CXXFLAGS $CPPFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/switch \
     -DPHYSFS_BUILD_STATIC=ON -DPHYSFS_BUILD_SHARED=OFF \
     -DPHYSFS_BUILD_TEST=OFF \
     .
@@ -36,6 +32,5 @@ build() {
 package() {
   cd physfs-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
   make install DESTDIR="$pkgdir"
 }
