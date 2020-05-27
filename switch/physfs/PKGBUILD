@@ -1,0 +1,41 @@
+# Maintainer: Ezekiel Bethel <zek@9net.org>
+pkgname=switch-physfs
+pkgver=3.0.2
+pkgrel=1
+pkgdesc='PhysicsFS is a library to provide abstract access to various archives. (for Nintendo Switch homebrew development)'
+arch=('any')
+url='https://icculus.org/physfs/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+source=( "https://icculus.org/physfs/downloads/physfs-3.0.2.tar.bz2"
+         "physfs.patch")
+makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
+sha256sums=(
+  '304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863'
+  'a30e2ccc16dd4774e78e95e2cc9e1fbb437bf0aa8113241f6cd054d0860c03ab'
+  )
+groups=('switch-portlibs')
+build() {
+  cd physfs-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  patch -Np1 -i "$srcdir"/physfs.patch
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS $CPPFLAGS" \
+    -DPHYSFS_BUILD_STATIC=ON -DPHYSFS_BUILD_SHARED=OFF \
+    -DPHYSFS_BUILD_TEST=OFF \
+    .
+
+  make
+}
+
+package() {
+  cd physfs-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+  make install DESTDIR="$pkgdir"
+}
