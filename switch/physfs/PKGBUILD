@@ -12,7 +12,7 @@ source=( "https://icculus.org/physfs/downloads/physfs-3.0.2.tar.bz2"
 makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
 sha256sums=(
   '304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863'
-  'SKIP'
+  'a30e2ccc16dd4774e78e95e2cc9e1fbb437bf0aa8113241f6cd054d0860c03ab'
   )
 groups=('switch-portlibs')
 build() {

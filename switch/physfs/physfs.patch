@@ -25,7 +25,7 @@ diff -Naur physfs-3.0.2/src/physfs_internal.h physfs-3.0.2-patched/src/physfs_in
  #include <intrin.h>
 diff -Naur physfs-3.0.2/src/physfs_platform_posix.c physfs-3.0.2-patched/src/physfs_platform_posix.c
 --- physfs-3.0.2/src/physfs_platform_posix.c	2020-05-21 14:48:36.117670131 +0100
-+++ physfs-3.0.2-patched/src/physfs_platform_posix.c	2020-05-23 18:57:55.659368948 +0100
++++ physfs-3.0.2-patched/src/physfs_platform_posix.c	2020-05-27 11:55:10.774090815 +0100
 @@ -87,6 +87,9 @@
  
  char *__PHYSFS_platformCalcUserDir(void)
@@ -36,22 +36,7 @@ diff -Naur physfs-3.0.2/src/physfs_platform_posix.c physfs-3.0.2-patched/src/phy
      char *retval = NULL;
      char *envr = getenv("HOME");
  
-@@ -299,7 +302,14 @@
- int __PHYSFS_platformStat(const char *fname, PHYSFS_Stat *st, const int follow)
- {
-     struct stat statbuf;
-+#ifdef PHYSFS_PLATFORM_SWITCH
-+    /* ignoring symlinks, they are unsupported anyway! */
-+    (void) follow;
-+    const int rc = stat(fname, &statbuf);
-+#else
-     const int rc = follow ? stat(fname, &statbuf) : lstat(fname, &statbuf);
-+#endif
-+
-     BAIL_IF(rc == -1, errcodeFromErrno(), 0);
- 
-     if (S_ISREG(statbuf.st_mode))
-@@ -330,7 +340,12 @@
+@@ -330,7 +333,12 @@
      st->createtime = statbuf.st_ctime;
      st->accesstime = statbuf.st_atime;
  
@@ -80,7 +65,7 @@ diff -Naur physfs-3.0.2/src/physfs_platforms.h physfs-3.0.2-patched/src/physfs_p
  #endif
 diff -Naur physfs-3.0.2/src/physfs_platform_switch.c physfs-3.0.2-patched/src/physfs_platform_switch.c
 --- physfs-3.0.2/src/physfs_platform_switch.c	1970-01-01 01:00:00.000000000 +0100
-+++ physfs-3.0.2-patched/src/physfs_platform_switch.c	2020-05-21 15:29:53.178459807 +0100
++++ physfs-3.0.2-patched/src/physfs_platform_switch.c	2020-05-27 11:54:08.846716041 +0100
 @@ -0,0 +1,106 @@
 +/*
 + * Nintendo Switch support routines for PhysicsFS.
@@ -160,7 +145,7 @@ diff -Naur physfs-3.0.2/src/physfs_platform_switch.c physfs-3.0.2-patched/src/ph
 +
 +	if (!retval)
 +		/* Last resort: use `/switch` directory. */
-+		retval = __PHYSFS_strdup("sdmc:/switch/");
++		retval = __PHYSFS_strdup("/switch/");
 +
 +	return retval;
 +} /* __PHYSFS_platformCalcBaseDir */
@@ -188,4 +173,3 @@ diff -Naur physfs-3.0.2/src/physfs_platform_switch.c physfs-3.0.2-patched/src/ph
 +#endif /* PHYSFS_PLATFORM_SWITCH */
 +
 +/* end of physfs_platform_switch.cpp ... */
-\ No newline at end of file
