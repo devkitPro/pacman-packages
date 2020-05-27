@@ -1,0 +1,301 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4a67c27..4ca8bc9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -76,6 +76,7 @@ set(PHYSFS_SRCS
+     src/physfs_platform_windows.c
+     src/physfs_platform_os2.c
+     src/physfs_platform_qnx.c
++    src/physfs_platform_3ds.c
+     src/physfs_archiver_dir.c
+     src/physfs_archiver_unpacked.c
+     src/physfs_archiver_grp.c
+diff --git a/src/physfs_internal.h b/src/physfs_internal.h
+index 2912623..50b8040 100644
+--- a/src/physfs_internal.h
++++ b/src/physfs_internal.h
+@@ -107,6 +107,10 @@ const void *__PHYSFS_winrtCalcBaseDir(void);
+ const void *__PHYSFS_winrtCalcPrefDir(void);
+ #endif
+ 
++#ifdef PHYSFS_PLATFORM_3DS
++char *__PHYSFS_3DSCalcUserDir(void);
++#endif
++
+ /* atomic operations. */
+ #if defined(_MSC_VER) && (_MSC_VER >= 1500)
+ #include <intrin.h>
+diff --git a/src/physfs_platform_3ds.c b/src/physfs_platform_3ds.c
+new file mode 100644
+index 0000000..2423d1a
+--- /dev/null
++++ b/src/physfs_platform_3ds.c
+@@ -0,0 +1,106 @@
++/*
++ * Nintendo 3DS support routines for PhysicsFS.
++ *
++ * Please see the file LICENSE.txt in the source's root directory.
++ *
++ */
++
++
++#define __PHYSICSFS_INTERNAL__
++#include "physfs_platforms.h"
++
++#ifdef PHYSFS_PLATFORM_3DS
++
++#include <3ds.h>
++
++// for getcwd
++#include <unistd.h>
++// for PATH_MAX
++#include <limits.h>
++
++#include "physfs_internal.h"
++
++int __PHYSFS_platformInit(void)
++{
++	return 1;  /* always succeed. */
++} /* __PHYSFS_platformInit */
++
++
++void __PHYSFS_platformDeinit(void)
++{
++	/* no-op */
++} /* __PHYSFS_platformDeinit */
++
++
++void __PHYSFS_platformDetectAvailableCDs(PHYSFS_StringCallback cb, void *data)
++{
++	/* no-op */
++}
++
++char *__PHYSFS_3DSCalcUserDir(void)
++{
++	/* Use the jail directory (hopefully) found before. */
++	return __PHYSFS_strdup(PHYSFS_getBaseDir());
++}
++
++char *__PHYSFS_platformCalcBaseDir(const char *argv0)
++{
++	char *retval = NULL;
++	/* As there is no system-specific directory, directly inspect argv0. */
++	if (argv0 == NULL)
++	{
++		/* User did not provide a path, just use the current working directory.
++		 *  As physfs should be initialized soon after application start, this
++		 *  should give us a useable directory.
++		 */
++		char fullpath[PATH_MAX];
++		if (getcwd(fullpath, sizeof(fullpath)) != NULL)
++		{
++			const size_t cwdlen = strlen(fullpath);
++			/* getcwd does not provide a trailing slash, add it. */
++			retval = (char*) allocator.Malloc(cwdlen + 2);
++			BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++			strncpy(retval, fullpath, cwdlen);
++			retval[cwdlen] = '/';
++			retval[cwdlen + 1] = '\0';
++		}
++	}
++	else
++	{
++		/* nx-hbmenu should give us the full path of the application, this may
++		 *  reside in a subfolder. Higher level code will strip away the name
++		 *  and extension.
++		 */
++		return NULL;
++	}
++
++	if (!retval)
++		/* Last resort: use `/3ds` directory. */
++		retval = __PHYSFS_strdup("/3ds/");
++
++	return retval;
++} /* __PHYSFS_platformCalcBaseDir */
++
++char *__PHYSFS_platformCalcPrefDir(const char *org, const char *app)
++{
++	char *retval = NULL;
++	size_t len = 0;
++
++	/* Use the jail directory (hopefully) found before. This way we do not
++	 *  need to add an application folder, because it is exclusive.
++	 */
++	const char *envr = __PHYSFS_getUserDir();
++	BAIL_IF_ERRPASS(!envr, NULL);
++	const char *append = ".config/";
++	len = strlen(envr) + strlen(append) + 1;
++	retval = (char *) allocator.Malloc(len);
++	BAIL_IF(!retval, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++	snprintf(retval, len, "%s%s", envr, append);
++
++	return retval;
++} /* __PHYSFS_platformCalcPrefDir */
++
++
++#endif /* PHYSFS_PLATFORM_3DS */
++
++/* end of physfs_platform_3ds.c ... */
+diff --git a/src/physfs_platform_posix.c b/src/physfs_platform_posix.c
+index fa2159c..866a08d 100644
+--- a/src/physfs_platform_posix.c
++++ b/src/physfs_platform_posix.c
+@@ -25,6 +25,10 @@
+ 
+ #include "physfs_internal.h"
+ 
++#ifdef PHYSFS_PLATFORM_3DS
++#include <3ds/synchronization.h>
++#include <3ds/thread.h>
++#endif
+ 
+ static PHYSFS_ErrorCode errcodeFromErrnoError(const int err)
+ {
+@@ -60,6 +64,9 @@ static inline PHYSFS_ErrorCode errcodeFromErrno(void)
+ 
+ static char *getUserDirByUID(void)
+ {
++#ifdef PHYSFS_PLATFORM_3DS
++    return __PHYSFS_3DSCalcUserDir();
++#else
+     uid_t uid = getuid();
+     struct passwd *pw;
+     char *retval = NULL;
+@@ -80,13 +87,16 @@ static char *getUserDirByUID(void)
+             } /* if */
+         } /* if */
+     } /* if */
+-    
+     return retval;
++#endif
+ } /* getUserDirByUID */
+ 
+ 
+ char *__PHYSFS_platformCalcUserDir(void)
+ {
++#ifdef PHYSFS_PLATFORM_3DS
++    return __PHYSFS_3DSCalcUserDir();
++#endif
+     char *retval = NULL;
+     char *envr = getenv("HOME");
+ 
+@@ -330,27 +340,43 @@ int __PHYSFS_platformStat(const char *fname, PHYSFS_Stat *st, const int follow)
+     st->createtime = statbuf.st_ctime;
+     st->accesstime = statbuf.st_atime;
+ 
+-    st->readonly = (access(fname, W_OK) == -1);
++#ifdef PHYSFS_PLATFORM_3DS
++    /* shortcut */
++    st->readonly = !(statbuf.st_mode & S_IWRITE);
++#else
++     st->readonly = (access(fname, W_OK) == -1);
++#endif
+     return 1;
+ } /* __PHYSFS_platformStat */
+ 
+ 
++#ifdef PHYSFS_PLATFORM_3DS
++#else
+ typedef struct
+ {
+     pthread_mutex_t mutex;
+     pthread_t owner;
+     PHYSFS_uint32 count;
+ } PthreadMutex;
+-
++#endif
+ 
+ void *__PHYSFS_platformGetThreadID(void)
+ {
++#ifdef PHYSFS_PLATFORM_3DS
++    return (void*)threadGetCurrent();
++#else
+     return ( (void *) ((size_t) pthread_self()) );
++#endif
+ } /* __PHYSFS_platformGetThreadID */
+ 
+ 
+ void *__PHYSFS_platformCreateMutex(void)
+ {
++#ifdef PHYSFS_PLATFORM_3DS
++    RecursiveLock *m = allocator.Malloc(sizeof(RecursiveLock));
++    BAIL_IF(!m, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
++    RecursiveLock_Init(m);
++#else
+     int rc;
+     PthreadMutex *m = (PthreadMutex *) allocator.Malloc(sizeof (PthreadMutex));
+     BAIL_IF(!m, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
+@@ -363,12 +389,16 @@ void *__PHYSFS_platformCreateMutex(void)
+ 
+     m->count = 0;
+     m->owner = (pthread_t) 0xDEADBEEF;
++#endif
+     return ((void *) m);
+ } /* __PHYSFS_platformCreateMutex */
+ 
+ 
+ void __PHYSFS_platformDestroyMutex(void *mutex)
+ {
++#ifdef PHYSFS_PLATFORM_3DS
++    allocator.Free((RecursiveLock *)mutex);
++#else
+     PthreadMutex *m = (PthreadMutex *) mutex;
+ 
+     /* Destroying a locked mutex is a bug, but we'll try to be helpful. */
+@@ -377,11 +407,15 @@ void __PHYSFS_platformDestroyMutex(void *mutex)
+ 
+     pthread_mutex_destroy(&m->mutex);
+     allocator.Free(m);
++#endif
+ } /* __PHYSFS_platformDestroyMutex */
+ 
+ 
+ int __PHYSFS_platformGrabMutex(void *mutex)
+ {
++#ifdef PHYSFS_PLATFORM_3DS
++    RecursiveLock_Lock((RecursiveLock *)mutex);
++#else
+     PthreadMutex *m = (PthreadMutex *) mutex;
+     pthread_t tid = pthread_self();
+     if (m->owner != tid)
+@@ -392,12 +426,16 @@ int __PHYSFS_platformGrabMutex(void *mutex)
+     } /* if */
+ 
+     m->count++;
++#endif
+     return 1;
+ } /* __PHYSFS_platformGrabMutex */
+ 
+ 
+ void __PHYSFS_platformReleaseMutex(void *mutex)
+ {
++#ifdef PHYSFS_PLATFORM_3DS
++    RecursiveLock_Unlock((RecursiveLock *)mutex);
++#else
+     PthreadMutex *m = (PthreadMutex *) mutex;
+     assert(m->owner == pthread_self());  /* catch programming errors. */
+     assert(m->count > 0);  /* catch programming errors. */
+@@ -409,6 +447,7 @@ void __PHYSFS_platformReleaseMutex(void *mutex)
+             pthread_mutex_unlock(&m->mutex);
+         } /* if */
+     } /* if */
++#endif
+ } /* __PHYSFS_platformReleaseMutex */
+ 
+ #endif  /* PHYSFS_PLATFORM_POSIX */
+diff --git a/src/physfs_platforms.h b/src/physfs_platforms.h
+index d4e4bfd..2385433 100644
+--- a/src/physfs_platforms.h
++++ b/src/physfs_platforms.h
+@@ -69,6 +69,10 @@
+ #elif defined(__QNX__)
+ #  define PHYSFS_PLATFORM_QNX 1
+ #  define PHYSFS_PLATFORM_POSIX 1
++#elif defined(_3DS)
++#  define PHYSFS_PLATFORM_POSIX 1
++#  define PHYSFS_PLATFORM_3DS 1
++#  define PHYSFS_NO_CDROM_SUPPORT 1
+ #elif defined(unix) || defined(__unix__)
+ #  define PHYSFS_PLATFORM_UNIX 1
+ #  define PHYSFS_PLATFORM_POSIX 1

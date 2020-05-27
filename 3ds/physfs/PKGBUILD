@@ -1,0 +1,36 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+pkgname=3ds-physfs
+pkgver=3.0.2
+pkgrel=1
+pkgdesc='PhysicsFS is a library to provide abstract access to various archives. (for Nintendo Switch homebrew development)'
+arch=('any')
+url='https://icculus.org/physfs/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+source=( "https://icculus.org/physfs/downloads/physfs-${pkgver}.tar.bz2"
+         "physfs-${pkgver}.patch")
+makedepends=('devkitARM' 'devkitpro-pkgbuild-helpers')
+sha256sums=(
+  '304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863'
+  'b5fb5273284451f714f1e8f381fb05dc154012da9758fc5402d0aa396ce6331e'
+  )
+groups=('3ds-portlibs')
+build() {
+  cd physfs-$pkgver
+
+  patch -Np1 -i "$srcdir"/physfs-${pkgver}.patch
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/3ds.cmake \
+    -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/3ds \
+    -DPHYSFS_BUILD_STATIC=ON -DPHYSFS_BUILD_SHARED=OFF \
+    -DPHYSFS_BUILD_TEST=OFF \
+    .
+
+  make
+}
+
+package() {
+  cd physfs-$pkgver
+
+  make install DESTDIR="$pkgdir"
+}
