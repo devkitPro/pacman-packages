@@ -27,7 +27,7 @@ index 2912623..50b8040 100644
  #include <intrin.h>
 diff --git a/src/physfs_platform_3ds.c b/src/physfs_platform_3ds.c
 new file mode 100644
-index 0000000..2423d1a
+index 0000000..cc90a1c
 --- /dev/null
 +++ b/src/physfs_platform_3ds.c
 @@ -0,0 +1,106 @@
@@ -100,7 +100,7 @@ index 0000000..2423d1a
 +	}
 +	else
 +	{
-+		/* nx-hbmenu should give us the full path of the application, this may
++		/*  hbmenu should give us the full path of the application, this may
 +		 *  reside in a subfolder. Higher level code will strip away the name
 +		 *  and extension.
 +		 */

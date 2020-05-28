@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 pkgname=3ds-physfs
 pkgver=3.0.2
-pkgrel=1
-pkgdesc='PhysicsFS is a library to provide abstract access to various archives. (for Nintendo Switch homebrew development)'
+pkgrel=2
+pkgdesc='PhysicsFS is a library to provide abstract access to various archives. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://icculus.org/physfs/'
 license=('zlib')
@@ -12,7 +12,7 @@ source=( "https://icculus.org/physfs/downloads/physfs-${pkgver}.tar.bz2"
 makedepends=('devkitARM' 'devkitpro-pkgbuild-helpers')
 sha256sums=(
   '304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863'
-  'b5fb5273284451f714f1e8f381fb05dc154012da9758fc5402d0aa396ce6331e'
+  'f6be88b61fa4bd7c396bfa87e1a19ed267e91505d735e2c557065721a9da09a1'
   )
 groups=('3ds-portlibs')
 build() {
