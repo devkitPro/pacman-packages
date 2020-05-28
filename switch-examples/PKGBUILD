@@ -3,14 +3,14 @@
 
 pkgname=('switch-examples')
 pkgver=20200528
-pkgrel=1
+pkgrel=2
 pkgdesc="Nintendo Switch example code."
 arch=('any')
 license=('custom')
 url="http://github.com/switchbrew/switch-examples"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('cce25d147745c80a90d2a61938979c6490eb835891d96c6e9e6f89d9a5099e2a')
+sha256sums=('ef1eabaa88261bff7065b1c9267dc875898e3e388b80f18af3c29293e0f85ee3')
 makedepends=('devkitA64')
 
 groups=('switch-dev')
