@@ -679,10 +679,10 @@ index 000000000..9ec0c6e50
 +#endif /* _SDL_n3dsaudio_h */
 diff --git a/src/joystick/n3ds/SDL_sysjoystick.c b/src/joystick/n3ds/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..bcb296d14
+index 000000000..d8114ce5d
 --- /dev/null
 +++ b/src/joystick/n3ds/SDL_sysjoystick.c
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,153 @@
 +#include "SDL_config.h"
 +
 +#include <3ds.h>
@@ -714,7 +714,7 @@ index 000000000..bcb296d14
 +}
 +
 +int SDL_SYS_JoystickOpen(SDL_Joystick *joystick) {
-+	joystick->nbuttons = 8;
++	joystick->nbuttons = 14;
 +	joystick->nhats = 0;
 +	joystick->nballs = 0;
 +	joystick->naxes = 2;
@@ -759,13 +759,31 @@ index 000000000..bcb296d14
 +		SDL_PrivateJoystickButton (joystick, 7, SDL_PRESSED);
 +	}
 +	if ((key_press & KEY_START)) {
-+		SDL_PrivateJoystickButton (joystick, 8, SDL_PRESSED);
++		SDL_PrivateJoystickButton (joystick, 0, SDL_PRESSED);
 +	}
 +	if ((key_press & KEY_L)) {
 +		SDL_PrivateJoystickButton (joystick, 5, SDL_PRESSED);
 +	}
-+	if ((key_press&KEY_R)) {
-+		SDL_PrivateJoystickButton(joystick, 6,SDL_PRESSED);
++	if ((key_press & KEY_R)) {
++		SDL_PrivateJoystickButton (joystick, 6, SDL_PRESSED);
++	}
++	if ((key_press & KEY_DDOWN)) {
++		SDL_PrivateJoystickButton (joystick, 8, SDL_PRESSED);
++	}
++	if ((key_press & KEY_DLEFT)) {
++		SDL_PrivateJoystickButton (joystick, 9, SDL_PRESSED);
++	}
++	if ((key_press & KEY_DUP)) {
++		SDL_PrivateJoystickButton (joystick, 10, SDL_PRESSED);
++	}
++	if ((key_press & KEY_DRIGHT)) {
++		SDL_PrivateJoystickButton (joystick, 11, SDL_PRESSED);
++	}
++	if ((key_press & KEY_ZL)) {
++		SDL_PrivateJoystickButton (joystick, 12, SDL_PRESSED);
++	}
++	if ((key_press & KEY_ZR)) {
++		SDL_PrivateJoystickButton (joystick, 13, SDL_PRESSED);
 +	}
 +
 +	key_release = hidKeysUp ();
@@ -785,13 +803,31 @@ index 000000000..bcb296d14
 +		SDL_PrivateJoystickButton (joystick, 7, SDL_RELEASED);
 +	}
 +	if ((key_release & KEY_START)) {
-+		SDL_PrivateJoystickButton (joystick, 8, SDL_RELEASED);
++		SDL_PrivateJoystickButton (joystick, 0, SDL_RELEASED);
 +	}
 +	if ((key_release & KEY_L)) {
 +		SDL_PrivateJoystickButton (joystick, 5, SDL_RELEASED);
 +	}
 +	if ((key_release & KEY_R)) {
 +		SDL_PrivateJoystickButton (joystick, 6, SDL_RELEASED);
++	}
++	if ((key_release & KEY_DDOWN)) {
++		SDL_PrivateJoystickButton (joystick, 8, SDL_RELEASED);
++	}
++	if ((key_release & KEY_DLEFT)) {
++		SDL_PrivateJoystickButton (joystick, 9, SDL_RELEASED);
++	}
++	if ((key_release & KEY_DUP)) {
++		SDL_PrivateJoystickButton (joystick, 10, SDL_RELEASED);
++	}
++	if ((key_release & KEY_DRIGHT)) {
++		SDL_PrivateJoystickButton (joystick, 11, SDL_RELEASED);
++	}
++	if ((key_release & KEY_ZL)) {
++		SDL_PrivateJoystickButton (joystick, 12, SDL_RELEASED);
++	}
++	if ((key_release & KEY_ZR)) {
++		SDL_PrivateJoystickButton (joystick, 13, SDL_RELEASED);
 +	}
 +}
 +
@@ -1609,10 +1645,10 @@ index 7e096e2f7..23af477cc 100644
  static void DUMMY_DeleteDevice(SDL_VideoDevice *device)
 diff --git a/src/video/n3ds/SDL_n3dsevents.c b/src/video/n3ds/SDL_n3dsevents.c
 new file mode 100644
-index 000000000..6ad575b20
+index 000000000..cd61ff045
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsevents.c
-@@ -0,0 +1,188 @@
+@@ -0,0 +1,118 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -1680,9 +1716,6 @@ index 000000000..6ad575b20
 +    aptUnhook(&cookie);
 +}
 +
-+static SDLKey keymap[N3DS_NUMKEYS];
-+char keymem[N3DS_NUMKEYS];
-+
 +void N3DS_PumpEvents(_THIS)
 +{
 +	svcSleepThread(100000); // 0.1 ms
@@ -1697,27 +1730,6 @@ index 000000000..6ad575b20
 +	} 
 +	
 +	hidScanInput();
-+
-+	int i;
-+	SDL_keysym keysym;
-+	keysym.mod = KMOD_NONE;
-+
-+	for (i = 0; i < N3DS_NUMKEYS; i++) {
-+		keysym.scancode = i;
-+		keysym.sym = keymap[i];
-+
-+		if (hidKeysHeld() & (1 << i) && !keymem[i]) {
-+			keymem[i] = 1;
-+
-+			SDL_PrivateKeyboard (SDL_PRESSED, &keysym);
-+		}
-+
-+		if (!(hidKeysHeld() & (1 << i)) && keymem[i]) {
-+			keymem[i] = 0;
-+
-+			SDL_PrivateKeyboard (SDL_RELEASED, &keysym);
-+		}
-+	}
 +
 +	if (hidKeysHeld() & KEY_TOUCH) {
 +		touchPosition touch;
@@ -1749,53 +1761,7 @@ index 000000000..6ad575b20
 +
 +void N3DS_InitOSKeymap(_THIS)
 +{
-+	SDL_memset(keymem,1,N3DS_NUMKEYS);
-+	keymap[0]=SDLK_a; //KEY_A
-+	keymap[1]=SDLK_b; // KEY_B
-+	keymap[2]=SDLK_ESCAPE; //KEY_SELECT
-+	keymap[3]=SDLK_RETURN; //KEY_START
-+	keymap[4]=SDLK_RIGHT; //KEY_RIGHT
-+	keymap[5]=SDLK_LEFT; //KEY_LEFT
-+	keymap[6]=SDLK_UP; // KEY_UP
-+	keymap[7]=SDLK_DOWN; //KEY_DOWN
-+	keymap[8]=SDLK_r; //KEY_R
-+	keymap[9]=SDLK_l; //KEY_L
-+	keymap[10]=SDLK_x; //KEY_X 
-+	keymap[11]=SDLK_y; //KEY_Y 
-+	keymap[12]=SDLK_UNKNOWN; 
-+	keymap[13]=SDLK_UNKNOWN; 
-+	keymap[14]=SDLK_LSHIFT;  //KEY_ZL 
-+	keymap[15]=SDLK_RSHIFT;  //KEY_ZR
-+	keymap[16]=SDLK_UNKNOWN; 
-+	keymap[17]=SDLK_UNKNOWN; 
-+	keymap[18]=SDLK_UNKNOWN; 
-+	keymap[19]=SDLK_UNKNOWN; 
-+	keymap[20]=SDLK_UNKNOWN; 
-+	keymap[21]=SDLK_UNKNOWN; 
-+	keymap[22]=SDLK_UNKNOWN; 
-+	keymap[23]=SDLK_UNKNOWN; 
-+	keymap[24]=SDLK_UNKNOWN; 
-+	keymap[25]=SDLK_UNKNOWN; 
-+	keymap[26]=SDLK_UNKNOWN; 
-+	keymap[27]=SDLK_UNKNOWN; 
-+	keymap[28]=SDLK_UNKNOWN; 
-+	keymap[29]=SDLK_UNKNOWN; 
-+	keymap[30]=SDLK_UNKNOWN; 
-+	keymap[31]=SDLK_UNKNOWN; 
-+
-+// init the key state
-+	int i;
-+	hidScanInput();
-+	for (i = 0; i < N3DS_NUMKEYS; i++)
-+		keymem[i] = (hidKeysHeld() & (1 << i))?1:0;
-+}
-+
-+void SDL_N3DSKeyBind(unsigned int hidkey, SDLKey key) {
-+	int i,pos;
-+	for (i = 0; i < N3DS_NUMKEYS; i++) {
-+		pos= 1<<i;
-+		if(hidkey&pos) keymap[i]=key;
-+	}
++	// Do nothing
 +}
 +
 +
@@ -1803,10 +1769,10 @@ index 000000000..6ad575b20
 +
 diff --git a/src/video/n3ds/SDL_n3dsevents_c.h b/src/video/n3ds/SDL_n3dsevents_c.h
 new file mode 100644
-index 000000000..4f485474c
+index 000000000..db2fddf34
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsevents_c.h
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,37 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -1833,7 +1799,6 @@ index 000000000..4f485474c
 +
 +#include "SDL_n3dsvideo.h"
 +
-+#define N3DS_NUMKEYS 32
 +/* Variables and functions exported by SDL_sysevents.c to other parts 
 +   of the native video subsystem (SDL_sysvideo.c)
 +*/
@@ -1918,10 +1883,10 @@ index 000000000..cdbdd17ce
 +/* Functions to be exported */
 diff --git a/src/video/n3ds/SDL_n3dsvideo.c b/src/video/n3ds/SDL_n3dsvideo.c
 new file mode 100644
-index 000000000..7f3560dd1
+index 000000000..504d52e1c
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.c
-@@ -0,0 +1,765 @@
+@@ -0,0 +1,768 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -2535,7 +2500,10 @@ index 000000000..7f3560dd1
 +	Uint32* palette = this->hidden->palette;
 +
 +	for (i = firstcolor; i < firstcolor + ncolors; i++)
-+		palette[i] = N3DS_MAP_RGB(colors[i].r, colors[i].g, colors[i].b);
++	{
++		int colorIndex = i - firstcolor;
++		palette[i] = N3DS_MAP_RGB(colors[colorIndex].r, colors[colorIndex].g, colors[colorIndex].b);
++	}
 +
 +	return(1);
 +}
