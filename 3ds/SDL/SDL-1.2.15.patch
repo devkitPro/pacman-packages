@@ -169,19 +169,17 @@ index 8bb1773c0..d6f349499 100644
  /* Enable OpenGL support */
  #undef SDL_VIDEO_OPENGL
 diff --git a/include/SDL_keyboard.h b/include/SDL_keyboard.h
-index 9d7129c52..fc2def257 100644
+index 9d7129c52..b03422411 100644
 --- a/include/SDL_keyboard.h
 +++ b/include/SDL_keyboard.h
-@@ -125,6 +125,9 @@ extern DECLSPEC void SDLCALL SDL_SetModState(SDLMod modstate);
+@@ -125,7 +125,6 @@ extern DECLSPEC void SDLCALL SDL_SetModState(SDLMod modstate);
   */
  extern DECLSPEC char * SDLCALL SDL_GetKeyName(SDLKey key);
  
-+#ifdef _3DS
-+void SDL_N3DSKeyBind(unsigned int hidkey, SDLKey key);
-+#endif
- 
+-
  /* Ends C function definitions when using C++ */
  #ifdef __cplusplus
+ }
 diff --git a/include/SDL_platform.h b/include/SDL_platform.h
 index 48540a85d..5fec876ed 100644
 --- a/include/SDL_platform.h
