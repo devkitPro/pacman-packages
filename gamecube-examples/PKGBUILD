@@ -2,21 +2,20 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('gamecube-examples')
-pkgver=20190412
+pkgver=20200609
 pkgrel=1
 pkgdesc="Nintendo Gamecube example code."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
-source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('ab6949c5bb53f3d4a71bb49a1e06f6d148928f60af59dad65050a3fc1d35b916')
+source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
+sha256sums=('dc26381dfccefe476073ad1b13bfc683fd779ec235250278c411a268f43117b8')
 depends=('devkitPPC' 'libogc')
 
 groups=('gamecube-dev')
 
 package() {
-  rm $srcdir/${pkgname}-${pkgver}.tar.bz2
   mkdir -p "$pkgdir"/opt/devkitpro/examples/gamecube
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/gamecube  
+  cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/gamecube  
 }
