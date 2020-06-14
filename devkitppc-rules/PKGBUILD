@@ -2,27 +2,27 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkitppc-rules')
-pkgver=1.0.1
+pkgver=1.1.0
 pkgrel=1
 pkgdesc="devkitPPC build rules."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/devkitppc-rules"
 options=(!strip libtool staticlibs)
-source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.xz)
-sha256sums=('f3b4e1eda409bdc0f05cffd79a43ba61a734a34472324970fcdbea10cae7624c')
-
+source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
+sha256sums=('6e403ae7101d7349dd8029da83de2960aac10ac83c0b6a1c598a92fdb618efd1')
+depends=('general-tools>=1.1.0')
 groups=('gamecube-dev' 'wii-dev' 'wiiu-dev')
 
 build() {
 
-  make
+  make -C ${pkgname}-${pkgver}
 
 }
 
 package() {
 
   mkdir -p $pkgdir/opt/devkitpro/devkitPPC
-  make DESTDIR=$pkgdir install
+  make -C ${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
