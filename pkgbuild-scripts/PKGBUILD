@@ -54,7 +54,7 @@ package() {
   install -d "$pkgdir"/opt/devkitpro/cmake
   install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh ndsvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh wiivars.sh wiiuvars.sh "$pkgdir"/opt/devkitpro
   install -Dm755 meson-cross.sh meson-toolchain.sh portlibs_prefix.sh "$pkgdir"/opt/devkitpro
 
   install -Dm644 OpenGLConfig.cmake "$pkgdir"/opt/devkitpro/cmake
