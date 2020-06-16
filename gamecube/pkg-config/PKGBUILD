@@ -1,0 +1,15 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=gamecube-pkg-config
+pkgver=0.28
+pkgrel=3
+pkgdesc='pkg-config wrapper (for Nintendo Wii homebrew development)'
+arch=('any')
+url='http://devkitpro.org/'
+source=('pkg-config.in')
+sha256sums=('fd6c46dff4014cf61dcc9fdaf64c4a74ae07e4af689b8d6d9e9be7b7ebf4d054')
+
+package() {
+  install -d "$pkgdir"/opt/devkitpro/portlibs/gamecube/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/gamecube/bin/powerpc-eabi-pkg-config
+}
