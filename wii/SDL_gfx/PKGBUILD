@@ -1,0 +1,43 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=wii-sdl_gfx
+pkgver=2.0.25
+pkgrel=2
+pkgdesc="Graphics drawing primitives and other support functions wrapped up in an add-on, C-based library for the Simple Direct Media (SDL) cross-platform API layer"
+arch=('any')
+url="http://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+depends=(
+ 'wii-sdl'
+)
+makedepends=(
+ 'wii-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
+)
+source=("https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-${pkgver}.tar.gz")
+groups=('wii-portlibs' 'wii-sdl-libs')
+sha256sums=(
+'556eedc06b6cf29eb495b6d27f2dcc51bf909ad82389ba2fa7bdc4dec89059c0'
+)
+
+build() {
+  cd SDL_gfx-$pkgver
+
+  source /opt/devkitpro/wiivars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static \
+    --disable-mmx
+
+  make
+}
+
+package() {
+  cd SDL_gfx-$pkgver
+
+  source /opt/devkitpro/wiivars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
