@@ -1,0 +1,15 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=wii-pkg-config
+pkgver=0.28
+pkgrel=3
+pkgdesc='pkg-config wrapper (for Nintendo Wii homebrew development)'
+arch=('any')
+url='http://devkitpro.org/'
+source=('pkg-config.in')
+sha256sums=('325d1e1d0da50b2b0ec14a239392e10f49e37edbacf9051677d9766b89b3dd57')
+
+package() {
+  install -d "$pkgdir"/opt/devkitpro/portlibs/wii/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/wii/bin/powerpc-eabi-pkg-config
+}
