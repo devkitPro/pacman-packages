@@ -8,5 +8,6 @@ export PKG_CONFIG_SYSROOT_DIR=
 
 export PKG_CONFIG_LIBDIR=${DEVKITPRO}/portlibs/3ds/lib/pkgconfig:${DEVKITPRO}/portlibs/armv6k/lib/pkgconfig
 
+[[ "$1" == '--version' ]] && exec pkg-config --version
 exec pkg-config --static "$@"
 

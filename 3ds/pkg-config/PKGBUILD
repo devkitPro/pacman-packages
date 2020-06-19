@@ -2,12 +2,13 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-pkg-config
 pkgver=0.28
-pkgrel=2
+pkgrel=3
 pkgdesc='pkg-config wrapper (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='http://devkitpro.org/'
 source=('pkg-config.in')
-sha256sums=('cd31ea6be05fdc5a4f89bdd0311fcdd6eff13a0c5285686e4be7c8a74bccd5c7')
+sha256sums=('96340865b52cc22c21522b6e333633214e8955ebe030fbc61ce5922fcc773c58')
+groups=('3ds-dev')
 
 package() {
   install -d "$pkgdir"/opt/devkitpro/portlibs/3ds/bin

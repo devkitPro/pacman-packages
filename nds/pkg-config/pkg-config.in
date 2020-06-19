@@ -8,5 +8,6 @@ export PKG_CONFIG_SYSROOT_DIR=
 
 export PKG_CONFIG_LIBDIR=${DEVKITPRO}/portlibs/nds/lib/pkgconfig
 
+[[ "$1" == '--version' ]] && exec pkg-config --version
 exec pkg-config --static "$@"
 

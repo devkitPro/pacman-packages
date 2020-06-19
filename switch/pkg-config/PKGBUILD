@@ -1,13 +1,14 @@
-
+\
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-pkg-config
 pkgver=0.28
-pkgrel=2
+pkgrel=3
 pkgdesc='pkg-config wrapper (for Nintendo Switch homebrew development)'
 arch=('any')
 url='http://devkitpro.org/'
 source=('pkg-config.in')
-sha256sums=('3e0f5725ae933f44a65ce97e71ca6a326da369fbb31f1cb08cfbe867e88de7ad')
+sha256sums=('24bda6f71145d13aaddd472b0db628e2dc5b6f7a6f8df60d7f09a21fc019a1a5')
+groups=('switch-dev')
 
 package() {
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/bin

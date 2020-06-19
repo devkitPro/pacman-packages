@@ -2,12 +2,13 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=nds-pkg-config
 pkgver=0.28
-pkgrel=2
+pkgrel=3
 pkgdesc='pkg-config wrapper (for Nintendo DS homebrew development)'
 arch=('any')
 url='http://devkitpro.org/'
 source=('pkg-config.in')
-sha256sums=('922c2d3238038cda6666dffe506e39c33cb1a70d281b50818a288ac6687fa62a')
+sha256sums=('64995581dff8862f3154ff4daddd362484e5070b193b4dfce83f51a437ead8cc')
+groups=('nds-dev')
 
 package() {
   install -d "$pkgdir"/opt/devkitpro/portlibs/nds/bin

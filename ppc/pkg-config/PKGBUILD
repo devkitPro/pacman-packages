@@ -2,12 +2,13 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=ppc-pkg-config
 pkgver=0.28
-pkgrel=3
+pkgrel=4
 pkgdesc='pkg-config wrapper (for Nintendo Gamecube/Wii homebrew development)'
 arch=('any')
 url='http://devkitpro.org/'
 source=('pkg-config.in')
-sha256sums=('5fb722da22c29a50ca7612ae0344ebbfb2364068e26e07392f94e777c3937041')
+sha256sums=('cfb11e8bf709be4246c0637b2de45420515633f7551cf63e1841de5833c6cbab')
+groups=('ppc-dev' 'gamecube-dev' 'wii-dev' 'wiiu-dev')
 
 package() {
   install -d "$pkgdir"/opt/devkitpro/portlibs/ppc/bin
