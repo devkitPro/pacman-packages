@@ -2,8 +2,8 @@
 
 pkgname=gamecube-sdl_image
 pkgver=1.2.12
-pkgrel=1
-pkgdesc="A simple library to load images of various formats as SDL surfaces (Nintendo 3DS port)"
+pkgrel=2
+pkgdesc="A simple library to load images of various formats as SDL surfaces (Nintendo Gamecube port)"
 arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
@@ -18,7 +18,7 @@ makedepends=(
  'devkitpro-pkgbuild-helpers'
 )
 
-groups=('wii-portlibs' 'wii-sdl-libs')
+groups=('gamecube-portlibs' 'gamecube-sdl-libs')
 
 source=("${url}/projects/SDL_image/release/SDL_image-${pkgver}.tar.gz")
 sha256sums=(
