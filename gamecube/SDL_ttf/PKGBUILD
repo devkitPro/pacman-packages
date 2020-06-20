@@ -1,0 +1,46 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=gamecube-sdl_ttf
+pkgver=2.0.11
+pkgrel=2
+pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications (Nintendo 3DS port)"
+arch=('any')
+url="https://libsdl.org"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+depends=(
+ 'ppc-freetype'
+ 'gamecube-sdl'
+)
+makedepends=(
+ 'gamecube-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
+)
+source=("${url}/projects/SDL_ttf/release/SDL_ttf-${pkgver}.tar.gz")
+groups=('gamecube-portlibs' 'gamecube-sdl-libs')
+sha256sums=(
+'724cd895ecf4da319a3ef164892b72078bd92632a5d812111261cde248ebcdb7'
+)
+
+build() {
+  cd SDL_ttf-$pkgver
+
+  source /opt/devkitpro/gamecubevars.sh
+
+  sed '/^noinst_PROGRAMS/d' -i Makefile.in
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd SDL_ttf-$pkgver
+
+  source /opt/devkitpro/gamecubevars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # add our static libs
+  echo "Requires.private: freetype2" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL_ttf.pc"
+
+}
