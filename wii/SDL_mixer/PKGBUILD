@@ -55,4 +55,7 @@ package() {
 
   make DESTDIR="$pkgdir" install
 
+ # add our static libs
+  echo "Requires.private: mad vorbisfile vorbis ogg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL_mixer.pc"
+
 }
