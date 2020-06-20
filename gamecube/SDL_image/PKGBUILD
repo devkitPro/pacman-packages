@@ -1,0 +1,50 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=gamecube-sdl_image
+pkgver=1.2.12
+pkgrel=1
+pkgdesc="A simple library to load images of various formats as SDL surfaces (Nintendo 3DS port)"
+arch=('any')
+url="https://libsdl.org"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+depends=(
+ 'gamecube-sdl'
+ 'ppc-libpng'
+ 'ppc-libjpeg-turbo'
+)
+makedepends=(
+ 'gamecube-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
+)
+
+groups=('wii-portlibs' 'wii-sdl-libs')
+
+source=("${url}/projects/SDL_image/release/SDL_image-${pkgver}.tar.gz")
+sha256sums=(
+'0b90722984561004de84847744d566809dbb9daf732a9e503b91a1b5a84e5699'
+)
+
+build() {
+  cd SDL_image-$pkgver
+
+  sed -i 's,showimage\$(EXEEXT),,g' Makefile.in
+
+  source /opt/devkitpro/gamecubevars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd SDL_image-$pkgver
+
+  source /opt/devkitpro/gamecubevars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # add our static libs
+  echo "Requires.private: libpng libturbojpeg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL_image.pc"
+
+}
