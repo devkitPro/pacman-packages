@@ -1,0 +1,62 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Sergio Padrino <sergio.padrino@gmail.com>
+
+pkgname=gamecube-sdl_mixer
+pkgver=1.2.12
+pkgrel=1
+pkgdesc="A sample multi-channel audio mixer library (Nintendo Gamecube/Wii port)"
+arch=('any')
+url="https://libsdl.org"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+depends=(
+ 'gamecube-sdl'
+ 'ppc-libvorbis'
+ 'ppc-libogg'
+ 'ppc-libmad'
+)
+groups=('gamecube-portlibs' 'gamecube-sdl-libs')
+
+makedepends=(
+ 'gamecube-pkg-config'
+ 'devkitpro-pkgbuild-helpers'
+)
+source=("${url}/projects/SDL_mixer/release/SDL_mixer-${pkgver}.tar.gz" "SDL_mixer-1.2.12.patch")
+sha256sums=(
+  '1644308279a975799049e4826af2cfc787cad2abb11aa14562e402521f86992a'
+  '3ad77d7ea3468992be2cc7d5e1bbcfd142866a72aa5cb8c9f58218da97420578'
+)
+
+build() {
+  cd SDL_mixer-$pkgver
+
+  source /opt/devkitpro/gamecubevars.sh
+
+  patch -p1 -i $srcdir/SDL_mixer-1.2.12.patch
+
+  sed -i 's,\$(objects)/playwave\$(EXE) \$(objects)/playmus\$(EXE),,g' Makefile.in
+
+  ./autogen.sh
+
+  LIBS="-lvorbis -logg -lm" ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static \
+    --enable-music-ogg \
+    --disable-music-cmd \
+    --disable-music-mod \
+    --enable-music-mp3-mad-gpl
+
+  make
+}
+
+package() {
+  cd SDL_mixer-$pkgver
+
+  source /opt/devkitpro/gamecubevars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # add our static libs
+  echo "Requires.private: mad vorbisfile vorbis ogg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL_mixer.pc"
+
+
+}
