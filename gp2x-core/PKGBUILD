@@ -10,7 +10,7 @@ license=('custom')
 url="https://github.com/Orkie/gp2x-core"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('2d4ecd2d526a3fdf67ca8df19a1b60fe5481ee92f10bbe1b8ad41c2be9c71664')
+sha256sums=('215a4240951491f815502b5296b747b1b66791fa5a3cb5653fc52d83308d381b')
 makedepends=('devkitARM')
 groups=('gp2x-dev')
 
