@@ -1,0 +1,29 @@
+
+# Maintainer: Adan Scotney <adan.scotney@gmail.com
+
+pkgname=('gp2x-core')
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="devkitARM gp2x-core."
+arch=('any')
+license=('custom')
+url="https://github.com/Orkie/gp2x-core"
+options=(!strip libtool staticlibs)
+source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
+sha256sums=('2d4ecd2d526a3fdf67ca8df19a1b60fe5481ee92f10bbe1b8ad41c2be9c71664')
+makedepends=('devkitARM')
+groups=('gp2x-dev')
+
+build() {
+
+  cd $srcdir/$pkgname-$pkgver
+  make
+
+}
+
+package() {
+
+  cd $srcdir/$pkgname-$pkgver
+  make DESTDIR=$pkgdir install
+
+}
