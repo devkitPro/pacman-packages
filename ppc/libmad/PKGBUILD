@@ -3,7 +3,7 @@
 
 pkgname=ppc-libmad
 pkgver=0.15.1b
-pkgrel=1
+pkgrel=2
 pkgdesc="High-quality MPEG audio decoder"
 url="https://www.underbit.com/products/mad/"
 license=("GPLv2")
@@ -17,6 +17,7 @@ sha256sums=("bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690"
             "e54439c7efa6fc7272923d8507d79ee2992b115225baed1c47d1704e442e3c24"
             "0d22d5fe2785502ab1a731e185ad7ccbcdd575220337a99a36683aa9aaeb8072"
             "269505f22d700f3f00bcc97706f75889fbc6f7acf99cf068f0939b287bb50966")
+groups=('ppc-portlibs')
 
 prepare() {
     cd libmad-$pkgver

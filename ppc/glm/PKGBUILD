@@ -3,7 +3,7 @@
 
 pkgname=ppc-glm
 pkgver=0.9.9.2
-pkgrel=1
+pkgrel=2
 pkgdesc='OpenGL Mathematics (GLM) header only C++ library'
 arch=('any')
 url='https://github.com/g-truc/glm'
@@ -12,6 +12,7 @@ options=(!strip libtool staticlibs)
 source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip")
 sha256sums=('209b5943d393925e1a6ecb6734e7507b8f6add25e72a605b25d0d0d382e64fd4')
 makedepends=('devkitpro-pkgbuild-helpers')
+groups=('ppc-portlibs')
 
 build() {
 
