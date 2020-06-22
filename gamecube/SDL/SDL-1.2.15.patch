@@ -1377,10 +1377,10 @@ index 000000000..8be904496
 +#endif /* SDL_JOYSTICK_DC */
 diff --git a/src/main/gamecube/SDL_gamecube_main.c b/src/main/gamecube/SDL_gamecube_main.c
 new file mode 100644
-index 000000000..fbbd91334
+index 000000000..59288fb44
 --- /dev/null
 +++ b/src/main/gamecube/SDL_gamecube_main.c
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,26 @@
 +/* Include the SDL main definition header */
 +#include "SDL_main.h"
 +#undef main
@@ -1401,22 +1401,18 @@ index 000000000..fbbd91334
 +{
 +//	SYS_SetPowerCallback(ShutdownCB);
 +//	SYS_SetResetCallback(ResetCB);
-+	printf("PAD Init\n");
 +	PAD_Init();
-+	printf("video init\n");
 +	OGC_InitVideoSystem();
-+	printf("fat init\n");
 +	fatInitDefault();
 +	/* Call the user's main function */
-+	printf("call main\n");
 +	return(SDL_main(argc, argv));
 +}
 diff --git a/src/main/wii/SDL_wii_main.c b/src/main/wii/SDL_wii_main.c
 new file mode 100644
-index 000000000..741b184a8
+index 000000000..7cfc72400
 --- /dev/null
 +++ b/src/main/wii/SDL_wii_main.c
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,76 @@
 +/* Include the SDL main definition header */
 +#include "SDL_main.h"
 +#undef main
@@ -1436,7 +1432,6 @@ index 000000000..741b184a8
 +
 +bool TerminateRequested=false, ShutdownRequested=false, ResetRequested=false;
 +
-+#ifdef HW_RVL
 +void SDL_Quit();
 +static void ShutdownCB()
 +{
@@ -1465,7 +1460,6 @@ index 000000000..741b184a8
 +	if (ShutdownRequested) ShutdownWii();
 +	else if (ResetRequested) RestartHomebrewChannel();
 +}
-+#endif
 +
 +/* Do initialisation which has to be done first for the console to work */
 +/* Entry point */
@@ -1490,17 +1484,11 @@ index 000000000..741b184a8
 +
 +	MOUSE_Init();
 +	KEYBOARD_Init(NULL);
-+    fatInitDefault();
++	fatInitDefault();
 +	/* Call the user's main function */
 +	return(SDL_main(argc, argv));
 +}
 +
-+/* This function isn't implemented */
-+/*int unlink(const char* file_name)
-+{
-+	return -1;
-+}
-+*/
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
 index 8af6e52f4..e2c21bd6f 100644
 --- a/src/thread/SDL_thread_c.h
