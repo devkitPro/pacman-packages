@@ -2,12 +2,12 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=wii-pkg-config
 pkgver=0.28
-pkgrel=4
+pkgrel=5
 pkgdesc='pkg-config wrapper (for Nintendo Wii homebrew development)'
 arch=('any')
 url='http://devkitpro.org/'
 source=('pkg-config.in')
-sha256sums=('b5edfac524b4f19760ee7cb47e3d60fd9a73beab7bfc647e8287761f34230d0e')
+sha256sums=('7249d1313cc83a9997dc948e54831409857d2bccc461a4f20f9bc3eb840d2fc0')
 groups=('wii-dev')
 
 package() {
