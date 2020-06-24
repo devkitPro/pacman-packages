@@ -333,10 +333,10 @@ index 47fc66aed..2bffba526 100644
     *************************************************************/
 diff --git a/lib/vtls/libnx.c b/lib/vtls/libnx.c
 new file mode 100644
-index 000000000..fa3bad0a3
+index 000000000..372b638c5
 --- /dev/null
 +++ b/lib/vtls/libnx.c
-@@ -0,0 +1,904 @@
+@@ -0,0 +1,896 @@
 +/***************************************************************************
 + *                                  _   _ ____  _
 + *  Project                     ___| | | |  _ \| |
@@ -734,14 +734,6 @@ index 000000000..fa3bad0a3
 +
 +        return CURLE_SSL_CERTPROBLEM;
 +      }
-+    }
-+
-+    if(!ssl_cafile && !ssl_capath && !ssl_cert) {
-+      SslInternalPki internal_pki = SslInternalPki_DeviceClientCertDefault;
-+      rc = sslContextRegisterInternalPki(&BACKEND->context,
-+                                         internal_pki, NULL);
-+      if(R_FAILED(rc))
-+        return CURLE_SSL_CONNECT_ERROR;
 +    }
 +  }
 +
