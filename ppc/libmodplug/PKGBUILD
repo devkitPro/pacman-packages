@@ -1,0 +1,35 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=ppc-libmodplug
+pkgver=0.8.8.5
+pkgrel=1
+pkgdesc='Play various .mod formats'
+arch=('any')
+url='http://modplug-xmms.sourceforge.net/'
+license=(public domain)
+options=(!strip libtool staticlibs)
+depends=("ppc-zlib")
+source=(
+  "https://sourceforge.net/projects/modplug-xmms/files/libmodplug/$pkgver/libmodplug-$pkgver.tar.gz"
+)
+sha256sums=(
+  '77462d12ee99476c8645cb5511363e3906b88b33a6b54362b4dbc0f39aa2daad'
+)
+groups=("ppc-portlibs")
+
+build() {
+  cd libmodplug-$pkgver
+
+  source /opt/devkitpro/ppcvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd libmodplug-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
