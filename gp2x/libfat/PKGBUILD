@@ -1,0 +1,28 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgbasename=('libfat')
+pkgname=("libfat-gp2x")
+pkgver=1.2.0
+pkgrel=1
+pkgdesc="GP2X FAT library."
+arch=('any')
+license=('custom')
+url="http://github.com/devkitpro"
+options=(!strip libtool staticlibs)
+source=(${pkgbasename}-${pkgver}.tar.gz::${url}/${pkgbasename}/archive/v${pkgver}/${pkgbasename}-${pkgver}.tar.gz)
+sha256sums=('6bb461dd128b09abbf1a895249dd59c22da98557939930e0483e8b5b36988e10')
+makedepends=('devkitARM' 'orcus')
+groups=('gp2x-dev')
+
+
+build() {
+
+  make -C $srcdir/${pkgbasename}-${pkgver} gp2x-release
+
+}
+
+package() {
+
+  make -C $srcdir/${pkgbasename}-${pkgver} DESTDIR=$pkgdir gp2x-install
+
+}
