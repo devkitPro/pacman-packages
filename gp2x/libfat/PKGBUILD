@@ -2,27 +2,27 @@
 
 pkgbasename=('libfat')
 pkgname=("libfat-gp2x")
-pkgver=1.1.5
+pkgver=1.2.0
 pkgrel=1
 pkgdesc="GP2X FAT library."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro"
 options=(!strip libtool staticlibs)
-source=(${url}/${pkgbasename}/releases/download/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.bz2)
-sha256sums=('b577c7d3d212a0f2ee1f1c6be82e8f64cb150955ab1599424b71914e407c6038')
+source=(${pkgbasename}-${pkgver}.tar.gz::${url}/${pkgbasename}/archive/v${pkgver}/${pkgbasename}-${pkgver}.tar.gz)
+sha256sums=('6bb461dd128b09abbf1a895249dd59c22da98557939930e0483e8b5b36988e10')
 makedepends=('devkitARM' 'orcus')
 groups=('gp2x-dev')
 
 
 build() {
 
-  make -C $srcdir gp2x-release
+  make -C $srcdir/${pkgbasename}-${pkgver} gp2x-release
 
 }
 
 package() {
 
-  make -C $srcdir DESTDIR=$pkgdir gp2x-install
+  make -C $srcdir${pkgbasename}-${pkgver} DESTDIR=$pkgdir gp2x-install
 
 }
