@@ -1,0 +1,22 @@
+
+# Maintainer: Adan Scotney <adan.scotney@gmail.com
+
+pkgname=('gp2x-examples')
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="GP2X example code."
+arch=('any')
+license=('MIT')
+url="https://github.com/Orkie/gp2x-examples"
+options=(!strip libtool staticlibs)
+source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
+sha256sums=('5814f90bbf9f0b4bd9a477b14da1698b3112ee8e42d15f041127026da63e899d')
+makedepends=('devkitARM' 'orcus')
+
+groups=('gp32-dev')
+
+package() {
+  rm $srcdir/${pkgname}-${pkgver}.tar.gz
+  mkdir -p "$pkgdir"/opt/devkitpro/examples/gp2x
+  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/gp2x
+}
