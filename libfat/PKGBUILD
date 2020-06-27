@@ -18,6 +18,10 @@ elif [ "$PLATFORM" = "nds" ]; then
   platdesc="Nintendo NDS"
   makedepends=('devkitARM')
   groups=('nds-dev')
+elif [ "$PLATFORM" = "gp2x" ]; then
+  platdesc="GP2X"
+  makedepends=('devkitARM')
+  groups=('gp2x-dev')
 else
   echo "$PLATFORM unsupported"
   exit 1
