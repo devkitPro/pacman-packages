@@ -7,7 +7,7 @@ pkgrel=1
 pkgdesc="GP2X example code."
 arch=('any')
 license=('MIT')
-url="https://github.com/Orkie/gp2x-examples"
+url="https://github.com/devkitPro/gp2x-examples"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
 sha256sums=('d5422ce8c0127f16c18a6680faae78938c3625e0ccdd5c791822b0729814da05')
@@ -16,7 +16,6 @@ makedepends=('devkitARM' 'orcus')
 groups=('gp2x-dev')
 
 package() {
-  rm $srcdir/${pkgname}-${pkgver}.tar.gz
   mkdir -p "$pkgdir"/opt/devkitpro/examples/gp2x
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/gp2x
+  cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/gp2x
 }
