@@ -1,0 +1,50 @@
+# Contributor: Luis Scheurenbrand <Luisscheurenbrand@gmail.com>
+
+pkgname=switch-msgpack
+pkgver=3.3.0
+pkgrel=1
+pkgdesc="MessagePack implementation for C and C++"
+url="https://msgpack.org/"
+license=("Boost")
+arch=("any")
+depends=("switch-cJSON")
+makedepends=("switch-pkg-config" "devkitpro-pkgbuild-helpers")
+options=("!buildflags" "staticlibs" "libtool" "!strip")
+source=(
+    "https://github.com/msgpack/msgpack-c/releases/download/cpp-$pkgver/msgpack-$pkgver.tar.gz"
+    "switch-msgpack.patch"
+)
+sha256sums=(
+    "6e114d12a5ddb8cb11f669f83f32246e484a8addd0ce93f274996f1941c1f07b"
+    "916acb38c84fbb4d8cb4057ba767515981bdfa00a56844d9f7e5a174d32f8390"
+)
+groups=('switch-portlibs')
+
+build() {
+    cd msgpack-$pkgver
+
+    patch -Np1 -i $srcdir/switch-msgpack.patch
+
+    source /opt/devkitpro/switchvars.sh
+
+    cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkita64.cmake \
+        -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+        -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+        -DCMAKE_CXX_FLAGS="CFLAGS -fno-exceptions -fno-rtti" \
+        -DBUILD_SHARED_LIBS=Off \
+        -DMSGPACK_CXX11=On -DMSGPACK_BUILD_EXAMPLES=Off \
+        -G"Unix Makefiles" \
+        .
+
+    make
+}
+
+package() {
+    cd msgpack-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    make install DESTDIR="$pkgdir"
+
+    install -Dm 644 "$srcdir/msgpack-$pkgver"/LICENSE_1_0.txt -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
+}

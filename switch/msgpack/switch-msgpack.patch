@@ -1,0 +1,13 @@
+diff -NBaur msgpack-3.3.0.switch/CMakeLists.txt msgpack-3.3.0/CMakeLists.txt
+--- msgpack-3.3.0/CMakeLists.txt	2018-12-02 13:20:52.000000000 +0000
++++ msgpack-3.3.0.switch/CMakeLists.txt	2018-12-23 18:49:07.178930622 +0000
+@@ -5,6 +5,8 @@
+     CMAKE_POLICY(SET CMP0054 NEW)
+ ENDIF ()
+ 
++set(CMAKE_C_COMPILER_WORKS TRUE)
++set(CMAKE_CXX_COMPILER_WORKS TRUE)
+ PROJECT (msgpack)
+ 
+ FILE (READ ${CMAKE_CURRENT_SOURCE_DIR}/include/msgpack/version_master.h contents)
+
