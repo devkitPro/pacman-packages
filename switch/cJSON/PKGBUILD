@@ -1,0 +1,42 @@
+# Contributor: Luis Scheurenbrand <Luisscheurenbrand@gmail.com>
+
+pkgname=switch-cJSON
+pkgver=1.7.13
+pkgrel=1
+pkgdesc="Ultralightweight JSON parser in ANSI C"
+url="https://github.com/DaveGamble/cJSON/"
+license=("MIT")
+arch=("any")
+depends=()
+makedepends=("switch-pkg-config" "devkitpro-pkgbuild-helpers")
+options=("!buildflags" "staticlibs" "libtool" "!strip")
+source=("https://github.com/DaveGamble/cJSON/archive/v$pkgver.zip")
+sha256sums=("bef2d315985ca831f627a488ae0d568fb6e8416da918cd1d054424679bda79d8")
+groups=('switch-portlibs')
+
+build() {
+    cd cJSON-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+        -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+        -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+        -DCMAKE_CXX_FLAGS="$CFLAGS" \
+        -DBUILD_SHARED_LIBS=Off \
+        -G"Unix Makefiles" \
+        -DENABLE_CJSON_TEST=Off -DBUILD_SHARED_LIBS=Off -DENABLE_LOCALES=Off \
+        .
+
+    make
+}
+
+package() {
+    cd cJSON-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    make install DESTDIR="$pkgdir"
+
+    install -Dm 644 "$srcdir/cJSON-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
+}
