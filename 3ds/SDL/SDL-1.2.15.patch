@@ -52,7 +52,7 @@ index 3b3863b4c..7e7897480 100755
  mv ${output}.new ${output}
  rm -f ${cache_prefix}*
 diff --git a/configure.in b/configure.in
-index 08c8e1e97..ae4c68b2b 100644
+index 08c8e1e97..946f8cbfe 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -62,7 +62,7 @@ AC_PROG_MAKE_SET
@@ -71,9 +71,9 @@ index 08c8e1e97..ae4c68b2b 100644
 +Checkn3ds()
 +{
 +    AC_ARG_ENABLE(n3ds,
-+AC_HELP_STRING([--enable-n3ds], [configure SDL to work with n3ds [[default=no]]]),
-+        , enable_n3ds=no)
-+	if test x$enable_n3ds = xyes; then
++    AC_HELP_STRING([--enable-n3ds], [configure SDL to work with n3ds [[default=no]]]),, enable_n3ds=no)
++
++    if test x$enable_n3ds = xyes; then
 +        ARCH=n3ds
 +        N3DS_CFLAGS="-ffunction-sections -fdata-sections -march=armv6k \
 +                     -mtune=mpcore -mfloat-abi=hard -mword-relocations \
@@ -81,26 +81,26 @@ index 08c8e1e97..ae4c68b2b 100644
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $N3DS_CFLAGS"
 +        CFLAGS="$CFLAGS $N3DS_CFLAGS"
 +        SDL_CFLAGS="$SDL_CFLAGS $N3DS_CFLAGS"
-+        SDL_LIBS="-specs=3dsx.specs -march=armv6k -mfloat-abi=hard \
++        SDL_LIBS="-march=armv6k -mfloat-abi=hard \
 +                  -L${DEVKITPRO}/portlibs/3ds $SDL_LIBS \
 +                  -L${DEVKITPRO}/libctru/lib -lcitro3d -lctru"
-+ 		AC_DEFINE(SDL_TIMER_N3DS)
-+		SOURCES="$SOURCES $srcdir/src/timer/n3ds/*.c"
-+		have_timers=yes
-+		AC_DEFINE(SDL_AUDIO_DRIVER_N3DS)
-+		SOURCES="$SOURCES $srcdir/src/audio/n3ds/*.c"
-+		have_audio=yes
-+		AC_DEFINE(SDL_JOYSTICK_N3DS)
-+		SOURCES="$SOURCES $srcdir/src/joystick/n3ds/*.c"
-+		have_joystick=yes
-+		AC_DEFINE(SDL_THREAD_N3DS)
-+		SOURCES="$SOURCES $srcdir/src/thread/n3ds/*.c"
-+		have_threads=yes
-+		AC_DEFINE(SDL_VIDEO_DRIVER_N3DS)
-+		SOURCES="$SOURCES $srcdir/src/video/n3ds/vshader.pica"
-+		SOURCES="$SOURCES $srcdir/src/video/n3ds/*.c"
-+		have_video=yes
-+	fi
++        AC_DEFINE(SDL_TIMER_N3DS)
++        SOURCES="$SOURCES $srcdir/src/timer/n3ds/*.c"
++        have_timers=yes
++        AC_DEFINE(SDL_AUDIO_DRIVER_N3DS)
++        SOURCES="$SOURCES $srcdir/src/audio/n3ds/*.c"
++        have_audio=yes
++        AC_DEFINE(SDL_JOYSTICK_N3DS)
++        SOURCES="$SOURCES $srcdir/src/joystick/n3ds/*.c"
++        have_joystick=yes
++        AC_DEFINE(SDL_THREAD_N3DS)
++        SOURCES="$SOURCES $srcdir/src/thread/n3ds/*.c"
++        have_threads=yes
++        AC_DEFINE(SDL_VIDEO_DRIVER_N3DS)
++        SOURCES="$SOURCES $srcdir/src/video/n3ds/vshader.pica"
++        SOURCES="$SOURCES $srcdir/src/video/n3ds/*.c"
++        have_video=yes
++    fi
 +}
 +
  dnl Find the nanox include and library directories
@@ -259,10 +259,10 @@ index 74ac21df0..2cba86dae 100644
  #endif
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.c b/src/audio/n3ds/SDL_n3dsaudio.c
 new file mode 100644
-index 000000000..6815755f1
+index 000000000..e0a1d39a3
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.c
-@@ -0,0 +1,358 @@
+@@ -0,0 +1,339 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -301,16 +301,11 @@ index 000000000..6815755f1
 +#include <3ds.h>
 +#include <assert.h>
 +
-+//extern volatile bool app_pause;
-+extern volatile bool app_exiting;
-+
-+static Handle wbufDoneEvent;
-+static aptHookCookie aptCookie;
-+
-+static const u64 EventTimeout = 1000LL * 1000LL * 100LL;	// 100 ms
-+
 +/* The tag name used by N3DS audio */
 +#define N3DSAUD_DRIVER_NAME         "n3ds"
++
++static dspHookCookie g_dspHook;
++static SDL_AudioDevice *g_audDev;
 +
 +/* Audio driver functions */
 +static int N3DSAUD_OpenAudio(_THIS, SDL_AudioSpec *spec);
@@ -352,14 +347,13 @@ index 000000000..6815755f1
 +		device->hidden->mixbuf = NULL;
 +	}
 +	if 	( device->hidden->waveBuf[0].data_vaddr!= NULL ) {
-+		linearFree(device->hidden->waveBuf[0].data_vaddr);
++		linearFree((void*)device->hidden->waveBuf[0].data_vaddr);
 +		device->hidden->waveBuf[0].data_vaddr = NULL;
 +	}
 +
 +	ndspExit();
 +
 +	SDL_free(device->hidden);
-+
 +	SDL_free(device);
 +}
 +
@@ -381,7 +375,22 @@ index 000000000..6815755f1
 +		}
 +		return(0);
 +	}
++
++	//start 3ds DSP init
++	Result rc = ndspInit();
++	if (R_FAILED(rc)) {
++		SDL_free(this);
++		if ((R_SUMMARY(rc) == RS_NOTFOUND) && (R_MODULE(rc) == RM_DSP))
++			SDL_SetError("DSP init failed: dspfirm.cdc missing!");
++		else
++			SDL_SetError("DSP init failed. Error code: 0x%X", rc);
++		return(0);
++	}
++
++	/* Initialize internal state */
 +	SDL_memset(this->hidden, 0, (sizeof *this->hidden));
++	LightLock_Init(&this->hidden->lock);
++	CondVar_Init(&this->hidden->cv);
 +
 +	/* Set the function pointers */
 +	this->OpenAudio = N3DSAUD_OpenAudio;
@@ -401,87 +410,70 @@ index 000000000..6815755f1
 +	N3DSAUD_Available, N3DSAUD_CreateDevice
 +};
 +
-+
-+static void aptCallback(APT_HookType hook, void* param)
-+{
-+	switch (hook)
-+	{
-+		case APTHOOK_ONEXIT:
-+			app_exiting = true;
-+			svcSignalEvent(wbufDoneEvent);
-+			break;
-+		default:
-+			break;
-+	}
-+}
-+
 +/* called by ndsp thread on each audio frame */
 +static void audioFrameFinished(void *context)
 +{
 +	SDL_AudioDevice *this = (SDL_AudioDevice *) context;
 +
 +	contextLock(this);
-+	bool done = this->hidden->waveBuf[this->hidden->nextbuf].status == NDSP_WBUF_DONE;
-+	contextUnlock(this);
 +
-+	if (done)
-+	{
-+		svcSignalEvent(wbufDoneEvent);
++	bool shouldBroadcast = false;
++	unsigned i;
++	for (i = 0; i < NUM_BUFFERS; i ++) {
++		if (this->hidden->waveBuf[i].status == NDSP_WBUF_DONE) {
++			this->hidden->waveBuf[i].status = NDSP_WBUF_FREE;
++			shouldBroadcast = true;
++		}
 +	}
++
++	if (shouldBroadcast)
++		CondVar_Broadcast(&this->hidden->cv);
++
++	contextUnlock(this);
 +}
 +
 +/* This function blocks until it is possible to write a full sound buffer */
 +static void N3DSAUD_WaitAudio(_THIS)
 +{
-+	bool not_done;
-+	size_t wait_index;
-+
 +	contextLock(this);
-+	wait_index = this->hidden->nextbuf;
-+
-+retry:
-+			
-+	not_done = this->hidden->waveBuf[wait_index].status != NDSP_WBUF_DONE;
++	while (!this->hidden->isCancelled && this->hidden->waveBuf[this->hidden->nextbuf].status != NDSP_WBUF_FREE) {
++		CondVar_Wait(&this->hidden->cv, &this->hidden->lock);
++	}
 +	contextUnlock(this);
++}
 +
-+	if (not_done)
++static void N3DSAUD_DspHook(DSP_HookType hook)
++{
++	if (hook == DSPHOOK_ONCANCEL)
 +	{
-+		svcWaitSynchronization(wbufDoneEvent, EventTimeout);
-+		
-+		if (app_exiting)
-+		{
-+			return;
-+		}
-+
-+		contextLock(this);
-+		goto retry;
++		contextLock(g_audDev);
++		g_audDev->hidden->isCancelled = true;
++		g_audDev->enabled = false;
++		CondVar_Broadcast(&g_audDev->hidden->cv);
++		contextUnlock(g_audDev);
 +	}
 +}
 +
 +static void N3DSAUD_PlayAudio(_THIS)
 +{
-+	if (app_exiting) return;
-+
 +	contextLock(this);
 +
 +	size_t nextbuf = this->hidden->nextbuf;
 +	size_t sampleLen = this->hidden->mixlen;
 +
-+	assert(this->hidden->waveBuf[nextbuf].status == NDSP_WBUF_DONE);
-+
-+	this->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;
-+	contextUnlock(this);
-+
-+	if (this->hidden->format==NDSP_FORMAT_STEREO_PCM8 || this->hidden->format==NDSP_FORMAT_MONO_PCM8) {
-+		memcpy(this->hidden->waveBuf[nextbuf].data_pcm8,this->hidden->mixbuf,sampleLen);
-+		DSP_FlushDataCache(this->hidden->waveBuf[nextbuf].data_pcm8,sampleLen);
-+	} else {
-+		memcpy(this->hidden->waveBuf[nextbuf].data_pcm16,this->hidden->mixbuf,sampleLen);
-+		DSP_FlushDataCache(this->hidden->waveBuf[nextbuf].data_pcm16,sampleLen);
++	if (this->hidden->isCancelled || this->hidden->waveBuf[nextbuf].status != NDSP_WBUF_FREE)
++	{
++		contextUnlock(this);
++		return;
 +	}
 +
-+	this->hidden->waveBuf[nextbuf].offset=0;
-+	this->hidden->waveBuf[nextbuf].status=NDSP_WBUF_QUEUED;
++	this->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;
++
++	contextUnlock(this);
++
++	memcpy((void*)this->hidden->waveBuf[nextbuf].data_vaddr,this->hidden->mixbuf,sampleLen);
++	DSP_FlushDataCache(this->hidden->waveBuf[nextbuf].data_vaddr,sampleLen);
++
 +	ndspChnWaveBufAdd(0, &this->hidden->waveBuf[nextbuf]);
 +}
 +
@@ -494,13 +486,23 @@ index 000000000..6815755f1
 +{
 +	contextLock(this);
 +
++	dspUnhook(&g_dspHook);
++	ndspSetCallback(NULL, NULL);
++	if (!this->hidden->isCancelled)
++		ndspChnReset(0);
++
 +	if ( this->hidden->mixbuf != NULL ) {
 +		SDL_FreeAudioMem(this->hidden->mixbuf);
 +		this->hidden->mixbuf = NULL;
 +	}
 +	if ( this->hidden->waveBuf[0].data_vaddr!= NULL ) {
-+		linearFree(this->hidden->waveBuf[0].data_vaddr);
++		linearFree((void*)this->hidden->waveBuf[0].data_vaddr);
 +		this->hidden->waveBuf[0].data_vaddr = NULL;
++	}
++
++	if (!this->hidden->isCancelled) {
++		memset(this->hidden->waveBuf,0,sizeof(ndspWaveBuf)*NUM_BUFFERS);
++		CondVar_Broadcast(&this->hidden->cv);
 +	}
 +
 +	contextUnlock(this);
@@ -508,14 +510,9 @@ index 000000000..6815755f1
 +
 +static int N3DSAUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
 +{
-+   //start 3ds DSP init
-+	Result rc = ndspInit();
-+	if (R_FAILED(rc)) {
-+		if ((R_SUMMARY(rc) == RS_NOTFOUND) && (R_MODULE(rc) == RM_DSP))
-+			SDL_SetError("DSP init failed: dspfirm.cdc missing!");
-+		else
-+			SDL_SetError("DSP init failed. Error code: 0x%X", rc);
-+		return -1;
++	if (this->hidden->isCancelled) {
++		SDL_SetError("DSP is in cancelled state");
++		return (-1);
 +	}
 +
 +	if(spec->channels > 2)
@@ -526,7 +523,6 @@ index 000000000..6815755f1
 +    while ((!valid_datatype) && (test_format)) {
 +        spec->format = test_format;
 +        switch (test_format) {
-+
 +			case AUDIO_S8:
 +				/* Signed 8-bit audio supported */
 +				this->hidden->format=(spec->channels==2)?NDSP_FORMAT_STEREO_PCM8:NDSP_FORMAT_MONO_PCM8;
@@ -549,7 +545,6 @@ index 000000000..6815755f1
 +
 +    if (!valid_datatype) {  /* shouldn't happen, but just in case... */
 +        SDL_SetError("Unsupported audio format");
-+		ndspExit();
 +        return (-1);
 +    }
 +
@@ -558,14 +553,10 @@ index 000000000..6815755f1
 +
 +	/* Allocate mixing buffer */
 +	if (spec->size >= UINT32_MAX/2)
-+	{
-+		ndspExit();
 +		return(-1);
-+	}
 +	this->hidden->mixlen = spec->size;
-+	this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(spec->size); 
++	this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(spec->size);
 +	if ( this->hidden->mixbuf == NULL ) {
-+		ndspExit();
 +		return(-1);
 +	}
 +	SDL_memset(this->hidden->mixbuf, spec->silence, spec->size);
@@ -573,7 +564,6 @@ index 000000000..6815755f1
 +	Uint8 * temp = (Uint8 *) linearAlloc(this->hidden->mixlen*NUM_BUFFERS);
 +	if (temp == NULL ) {
 +		SDL_free(this->hidden->mixbuf);
-+		ndspExit();
 +		return(-1);
 +	}
 +	memset(temp,0,this->hidden->mixlen*NUM_BUFFERS);
@@ -583,12 +573,7 @@ index 000000000..6815755f1
 +	this->hidden->channels = spec->channels;
 +	this->hidden->samplerate = spec->freq;
 +
-+	LightLock_Init(&this->hidden->lock);
-+
-+	ndspChnWaveBufClear(0);
 + 	ndspChnReset(0);
-+
-+	ndspSetOutputMode((this->hidden->channels==2)?NDSP_OUTPUT_STEREO:NDSP_OUTPUT_MONO);
 +
 +	ndspChnSetInterp(0, NDSP_INTERP_LINEAR);
 +	ndspChnSetRate(0, spec->freq);
@@ -602,31 +587,27 @@ index 000000000..6815755f1
 +
 +	memset(this->hidden->waveBuf,0,sizeof(ndspWaveBuf)*NUM_BUFFERS);
 +
-+	this->hidden->waveBuf[0].data_vaddr = temp;
-+	this->hidden->waveBuf[0].nsamples = this->hidden->mixlen / this->hidden->bytePerSample;
-+	this->hidden->waveBuf[0].status = NDSP_WBUF_DONE;
-+
-+	this->hidden->waveBuf[1].data_vaddr = temp + this->hidden->mixlen;
-+	this->hidden->waveBuf[1].nsamples = this->hidden->mixlen / this->hidden->bytePerSample;
-+	this->hidden->waveBuf[1].status = NDSP_WBUF_DONE;
++	unsigned i;
++	for (i = 0; i < NUM_BUFFERS; i ++) {
++		this->hidden->waveBuf[i].data_vaddr = temp;
++		this->hidden->waveBuf[i].nsamples = this->hidden->mixlen / this->hidden->bytePerSample;
++		temp += this->hidden->mixlen;
++	}
 +
 +	/* Setup callback */
-+	svcCreateEvent(&wbufDoneEvent, RESET_ONESHOT);
++	g_audDev = this;
 +	ndspSetCallback(audioFrameFinished, this);
-+
-+	aptHook(&aptCookie, aptCallback, NULL);
-+
-+    // end 3ds DSP init
++	dspHook(&g_dspHook, N3DSAUD_DspHook);
 +
 +	/* We're ready to rock and roll. :-) */
 +	return(0);
 +}
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.h b/src/audio/n3ds/SDL_n3dsaudio.h
 new file mode 100644
-index 000000000..9ec0c6e50
+index 000000000..c51c850b9
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.h
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,50 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -672,15 +653,17 @@ index 000000000..9ec0c6e50
 +	Uint32 nextbuf;
 +	ndspWaveBuf waveBuf[NUM_BUFFERS];
 +	LightLock lock;
++    CondVar cv;
++    bool isCancelled;
 +};
 +
 +#endif /* _SDL_n3dsaudio_h */
 diff --git a/src/joystick/n3ds/SDL_sysjoystick.c b/src/joystick/n3ds/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..d8114ce5d
+index 000000000..075d46927
 --- /dev/null
 +++ b/src/joystick/n3ds/SDL_sysjoystick.c
-@@ -0,0 +1,153 @@
+@@ -0,0 +1,158 @@
 +#include "SDL_config.h"
 +
 +#include <3ds.h>
@@ -722,15 +705,20 @@ index 000000000..d8114ce5d
 +
 +void SDL_SYS_JoystickUpdate (SDL_Joystick *joystick) {
 +
++	if (!aptIsActive()) {
++		// Avoid pumping events if we are not in the foreground.
++		return;
++	}
++
 +	circlePosition circlePad;
 +	hidCircleRead(&circlePad);
 +	int x,y;
 +	x = circlePad.dx;
 +	y = circlePad.dy;
-+	if (x > 156) x= 156; 
-+	if (x < -156) x= -156; 
-+	if (y > 156) y= 156; 
-+	if (y < -156) y= -156; 
++	if (x > 156) x= 156;
++	if (x < -156) x= -156;
++	if (y > 156) y= 156;
++	if (y < -156) y= -156;
 +	if (old_x != x) {
 +		old_x = x;
 +		SDL_PrivateJoystickAxis (joystick, 0, x * 210);
@@ -738,7 +726,7 @@ index 000000000..d8114ce5d
 +	if (old_y != y) {
 +		old_y = y;
 +		SDL_PrivateJoystickAxis (joystick, 1, - y * 210);
-+	}	
++	}
 +
 +	key_press = hidKeysDown ();
 +	if ((key_press & KEY_A)) {
@@ -849,10 +837,10 @@ index 8af6e52f4..c48803ff2 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/n3ds/SDL_syscond.c b/src/thread/n3ds/SDL_syscond.c
 new file mode 100644
-index 000000000..56e20d4e8
+index 000000000..df20c52e5
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_syscond.c
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,137 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -875,22 +863,13 @@ index 000000000..56e20d4e8
 +*/
 +//#include "../../SDL_internal.h"
 +
-+/* An implementation of condition variables using semaphores and mutexes */
-+/*
-+   This implementation borrows heavily from the BeOS condition variable
-+   implementation, written by Christopher Tate and Owen Smith.  Thanks!
-+ */
 +#include "SDL_config.h"
 +
-+#include "SDL_thread.h"
++#include "SDL_sysmutex_c.h"
 +
 +struct SDL_cond
 +{
-+    SDL_mutex *lock;
-+    int waiting;
-+    int signals;
-+    SDL_sem *wait_sem;
-+    SDL_sem *wait_done;
++    CondVar cv;
 +};
 +
 +/* Create a condition variable */
@@ -901,14 +880,7 @@ index 000000000..56e20d4e8
 +
 +    cond = (SDL_cond *) SDL_malloc(sizeof(SDL_cond));
 +    if (cond) {
-+        cond->lock = SDL_CreateMutex();
-+        cond->wait_sem = SDL_CreateSemaphore(0);
-+        cond->wait_done = SDL_CreateSemaphore(0);
-+        cond->waiting = cond->signals = 0;
-+        if (!cond->lock || !cond->wait_sem || !cond->wait_done) {
-+            SDL_DestroyCond(cond);
-+            cond = NULL;
-+        }
++        CondVar_Init(&cond->cv);
 +    } else {
 +        SDL_OutOfMemory();
 +    }
@@ -920,15 +892,6 @@ index 000000000..56e20d4e8
 +SDL_DestroyCond(SDL_cond * cond)
 +{
 +    if (cond) {
-+        if (cond->wait_sem) {
-+            SDL_DestroySemaphore(cond->wait_sem);
-+        }
-+        if (cond->wait_done) {
-+            SDL_DestroySemaphore(cond->wait_done);
-+        }
-+        if (cond->lock) {
-+            SDL_DestroyMutex(cond->lock);
-+        }
 +        SDL_free(cond);
 +    }
 +}
@@ -942,19 +905,7 @@ index 000000000..56e20d4e8
 +        return -1;
 +    }
 +
-+    /* If there are waiting threads not already signalled, then
-+       signal the condition and wait for the thread to respond.
-+     */
-+    SDL_LockMutex(cond->lock);
-+    if (cond->waiting > cond->signals) {
-+        ++cond->signals;
-+        SDL_SemPost(cond->wait_sem);
-+        SDL_UnlockMutex(cond->lock);
-+        SDL_SemWait(cond->wait_done);
-+    } else {
-+        SDL_UnlockMutex(cond->lock);
-+    }
-+
++    CondVar_Signal(&cond->cv);
 +    return 0;
 +}
 +
@@ -967,29 +918,7 @@ index 000000000..56e20d4e8
 +        return -1;
 +    }
 +
-+    /* If there are waiting threads not already signalled, then
-+       signal the condition and wait for the thread to respond.
-+     */
-+    SDL_LockMutex(cond->lock);
-+    if (cond->waiting > cond->signals) {
-+        int i, num_waiting;
-+
-+        num_waiting = (cond->waiting - cond->signals);
-+        cond->signals = cond->waiting;
-+        for (i = 0; i < num_waiting; ++i) {
-+            SDL_SemPost(cond->wait_sem);
-+        }
-+        /* Now all released threads are blocked here, waiting for us.
-+           Collect them all (and win fabulous prizes!) :-)
-+         */
-+        SDL_UnlockMutex(cond->lock);
-+        for (i = 0; i < num_waiting; ++i) {
-+            SDL_SemWait(cond->wait_done);
-+        }
-+    } else {
-+        SDL_UnlockMutex(cond->lock);
-+    }
-+
++    CondVar_Broadcast(&cond->cv);
 +    return 0;
 +}
 +
@@ -1017,56 +946,30 @@ index 000000000..56e20d4e8
 +int
 +SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
 +{
-+    int retval;
-+
 +    if (!cond) {
 +        SDL_SetError("Passed a NULL condition variable");
 +        return -1;
 +    }
 +
-+    /* Obtain the protection mutex, and increment the number of waiters.
-+       This allows the signal mechanism to only perform a signal if there
-+       are waiting threads.
-+     */
-+    SDL_LockMutex(cond->lock);
-+    ++cond->waiting;
-+    SDL_UnlockMutex(cond->lock);
-+
-+    /* Unlock the mutex, as is required by condition variable semantics */
-+    SDL_UnlockMutex(mutex);
-+
-+    /* Wait for a signal */
-+    if (ms == SDL_MUTEX_MAXWAIT) {
-+        retval = SDL_SemWait(cond->wait_sem);
-+    } else {
-+        retval = SDL_SemWaitTimeout(cond->wait_sem, ms);
++    if (!mutex) {
++        SDL_SetError("Passed a NULL mutex");
++        return -1;
 +    }
 +
-+    /* Let the signaler know we have completed the wait, otherwise
-+       the signaler can race ahead and get the condition semaphore
-+       if we are stopped between the mutex unlock and semaphore wait,
-+       giving a deadlock.  See the following URL for details:
-+       http://www-classic.be.com/aboutbe/benewsletter/volume_III/Issue40.html
-+     */
-+    SDL_LockMutex(cond->lock);
-+    if (cond->signals > 0) {
-+        /* If we timed out, we need to eat a condition signal */
-+        if (retval > 0) {
-+            SDL_SemWait(cond->wait_sem);
-+        }
-+        /* We always notify the signal thread that we are done */
-+        SDL_SemPost(cond->wait_done);
++    RecursiveLock rl_backup = mutex->rl;
++    mutex->rl.thread_tag = 0;
++    mutex->rl.counter = 0;
 +
-+        /* Signal handshake complete */
-+        --cond->signals;
-+    }
-+    --cond->waiting;
-+    SDL_UnlockMutex(cond->lock);
++    Result res = 0;
++    if (ms == SDL_MUTEX_MAXWAIT)
++        CondVar_Wait(&cond->cv, &mutex->rl.lock);
++    else
++        res = CondVar_WaitTimeout(&cond->cv, &mutex->rl.lock, (s64)ms * 1000000LL);
 +
-+    /* Lock the mutex, as is required by condition variable semantics */
-+    SDL_LockMutex(mutex);
++    mutex->rl.thread_tag = rl_backup.thread_tag;
++    mutex->rl.counter = rl_backup.counter;
 +
-+    return retval;
++    return R_SUCCEEDED(res) ? 0 : SDL_MUTEX_TIMEDOUT;
 +}
 +
 +/* Wait on the condition variable forever */
@@ -1077,10 +980,10 @@ index 000000000..56e20d4e8
 +}
 diff --git a/src/thread/n3ds/SDL_sysmutex.c b/src/thread/n3ds/SDL_sysmutex.c
 new file mode 100644
-index 000000000..860583deb
+index 000000000..9a84e761c
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_sysmutex.c
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,85 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -1103,20 +1006,9 @@ index 000000000..860583deb
 +*/
 +//#include "../../SDL_internal.h"
 +
-+/* An implementation of mutexes using semaphores */
-+
 +#include "SDL_config.h"
 +
-+#include "SDL_thread.h"
-+#include "SDL_systhread_c.h"
-+
-+
-+struct SDL_mutex
-+{
-+    int recursive;
-+    Uint32 owner;
-+    SDL_sem *sem;
-+};
++#include "SDL_sysmutex_c.h"
 +
 +/* Create a mutex */
 +SDL_mutex *
@@ -1127,14 +1019,8 @@ index 000000000..860583deb
 +    /* Allocate mutex memory */
 +    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
 +    if (mutex) {
-+        /* Create the mutex semaphore, with initial value 1 */
-+        mutex->sem = SDL_CreateSemaphore(1);
-+        mutex->recursive = 0;
-+        mutex->owner = 0;
-+        if (!mutex->sem) {
-+            SDL_free(mutex);
-+            mutex = NULL;
-+        }
++        /* Initialize the inner recursive lock */
++        RecursiveLock_Init(&mutex->rl);
 +    } else {
 +        SDL_OutOfMemory();
 +    }
@@ -1146,9 +1032,6 @@ index 000000000..860583deb
 +SDL_DestroyMutex(SDL_mutex * mutex)
 +{
 +    if (mutex) {
-+        if (mutex->sem) {
-+            SDL_DestroySemaphore(mutex->sem);
-+        }
 +        SDL_free(mutex);
 +    }
 +}
@@ -1160,26 +1043,12 @@ index 000000000..860583deb
 +#if SDL_THREADS_DISABLED
 +    return 0;
 +#else
-+    Uint32 this_thread;
-+
 +    if (mutex == NULL) {
 +        SDL_SetError("Passed a NULL mutex");
 +        return -1;
 +    }
 +
-+    this_thread = SDL_ThreadID();
-+    if (mutex->owner == this_thread) {
-+        ++mutex->recursive;
-+    } else {
-+        /* The order of operations is important.
-+           We set the locking thread id after we obtain the lock
-+           so unlocks from other threads will fail.
-+         */
-+        SDL_SemWait(mutex->sem);
-+        mutex->owner = this_thread;
-+        mutex->recursive = 0;
-+    }
-+
++    RecursiveLock_Lock(&mutex->rl);
 +    return 0;
 +#endif /* SDL_THREADS_DISABLED */
 +}
@@ -1196,32 +1065,16 @@ index 000000000..860583deb
 +        return -1;
 +    }
 +
-+    /* If we don't own the mutex, we can't unlock it */
-+    if (SDL_ThreadID() != mutex->owner) {
-+        SDL_SetError("mutex not owned by this thread");
-+        return -1;
-+    }
-+
-+    if (mutex->recursive) {
-+        --mutex->recursive;
-+    } else {
-+        /* The order of operations is important.
-+           First reset the owner so another thread doesn't lock
-+           the mutex and set the ownership before we reset it,
-+           then release the lock semaphore.
-+         */
-+        mutex->owner = 0;
-+        SDL_SemPost(mutex->sem);
-+    }
++    RecursiveLock_Unlock(&mutex->rl);
 +    return 0;
 +#endif /* SDL_THREADS_DISABLED */
 +}
 diff --git a/src/thread/n3ds/SDL_sysmutex_c.h b/src/thread/n3ds/SDL_sysmutex_c.h
 new file mode 100644
-index 000000000..f868fade8
+index 000000000..4f123f78c
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_sysmutex_c.h
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,31 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -1242,14 +1095,23 @@ index 000000000..f868fade8
 +     misrepresented as being the original software.
 +  3. This notice may not be removed or altered from any source distribution.
 +*/
-+#include "../../SDL_internal.h"
++#include "SDL_config.h"
++
++#include "SDL_thread.h"
++#include "SDL_systhread_c.h"
++
++struct SDL_mutex
++{
++   RecursiveLock rl;
++};
++
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/thread/n3ds/SDL_syssem.c b/src/thread/n3ds/SDL_syssem.c
 new file mode 100644
-index 000000000..4f9f893c5
+index 000000000..eefbd95fa
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_syssem.c
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,103 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -1283,7 +1145,7 @@ index 000000000..4f9f893c5
 +#include <3ds.h>
 +
 +struct SDL_semaphore {
-+    Handle  semid;
++    LightSemaphore sem;
 +};
 +
 +
@@ -1294,13 +1156,7 @@ index 000000000..4f9f893c5
 +
 +    sem = (SDL_sem *) malloc(sizeof(*sem));
 +    if (sem != NULL) {
-+        /* TODO: Figure out the limit on the maximum value. */
-+        svcCreateSemaphore(&sem->semid, initial_value, 255);
-+        if (sem->semid < 0) {
-+            SDL_SetError("Couldn't create semaphore");
-+            free(sem);
-+            sem = NULL;
-+        }
++        LightSemaphore_Init(&sem->sem, initial_value, 255);
 +    } else {
 +        SDL_OutOfMemory();
 +    }
@@ -1312,31 +1168,30 @@ index 000000000..4f9f893c5
 +void SDL_DestroySemaphore(SDL_sem *sem)
 +{
 +    if (sem != NULL) {
-+        if (sem->semid > 0) {
-+	    svcCloseHandle(sem->semid);
-+            sem->semid = 0;
-+        }
-+
 +        free(sem);
 +    }
 +}
 +
-+/* TODO: This routine is a bit overloaded.
-+ * If the timeout is 0 then just poll the semaphore; if it's SDL_MUTEX_MAXWAIT, pass
-+ * NULL to sceKernelWaitSema() so that it waits indefinitely; and if the timeout
-+ * is specified, convert it to microseconds. */
++/* Waits on a semaphore */
 +int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 +{
-+    unsigned int res;
-+
 +    if (sem == NULL) {
 +        SDL_SetError("Passed a NULL sem");
-+        return 0;
++        return -1;
 +    }
 +
-+    res = svcWaitSynchronization(sem->semid, (timeout == SDL_MUTEX_MAXWAIT) ? U64_MAX : (signed long long)timeout*1000000);
-+
-+    return (res == 0) ? 0 : SDL_MUTEX_TIMEDOUT;
++    if (timeout == SDL_MUTEX_MAXWAIT) {
++        LightSemaphore_Acquire(&sem->sem, 1);
++        return 0;
++    }
++    else if (timeout == 0) {
++        int rc = LightSemaphore_TryAcquire(&sem->sem, 1);
++        return rc != 0 ? SDL_MUTEX_TIMEDOUT : 0;
++    }
++    else {
++        SDL_SetError("Non-trivial semaphore wait timeout values not supported");
++        return -1;
++    }
 +}
 +
 +int SDL_SemTryWait(SDL_sem *sem)
@@ -1352,42 +1207,20 @@ index 000000000..4f9f893c5
 +/* Returns the current count of the semaphore */
 +Uint32 SDL_SemValue(SDL_sem *sem)
 +{
-+    Sint32 value;
-+
-+    if (sem == NULL) {
-+        SDL_SetError("Passed a NULL sem");
-+        return 0;
-+    }
-+
-+    svcReleaseSemaphore(&value, sem->semid, 0);
-+
-+    return (Uint32)value;
++    return sem->sem.current_count;
 +}
 +
 +int SDL_SemPost(SDL_sem *sem)
 +{
-+    int res;
-+    Sint32 count;
-+
-+    if (sem == NULL) {
-+        SDL_SetError("Passed a NULL sem");
-+        return -1;                
-+    }
-+
-+    res = svcReleaseSemaphore(&count, sem->semid, 1);
-+    if (res < 0) {
-+        SDL_SetError("svcReleaseSemaphore() failed");
-+        return -1;
-+    }
-+
++    LightSemaphore_Release(&sem->sem, 1);
 +    return 0;
 +}
 diff --git a/src/thread/n3ds/SDL_systhread.c b/src/thread/n3ds/SDL_systhread.c
 new file mode 100644
-index 000000000..526370a35
+index 000000000..aace52a72
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_systhread.c
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,93 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -1421,9 +1254,7 @@ index 000000000..526370a35
 +#include "../SDL_thread_c.h"
 +#include <3ds.h>
 +
-+#define CURRENT_KTHREAD 0xFFFF8000
-+#define STACKSIZE       (32 * 1024)
-+#define APPCORE_CPUID   0
++#define STACKSIZE       (128 * 1024)
 +
 +void ThreadEntry(void *arg)
 +{
@@ -1436,7 +1267,7 @@ index 000000000..526370a35
 +	s32 priority = 0x30;
 +
 +	/* Set priority of new thread higher than the current thread */
-+	svcGetThreadPriority(&priority, CURRENT_KTHREAD);
++	svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
 +	if(priority>0x19) priority--;
 +	else priority = 0x19; //priority 0x18 is for video thread that is activated by a signal and than must run at maximum priority to avoid flickering
 +	if(priority>0x2F) priority = 0x2F;
@@ -1450,7 +1281,7 @@ index 000000000..526370a35
 +	SDL_SetError("Create Thread failed");
 +	return(-1);
 +	}
-+ 
++
 +	return 0;
 +}
 +
@@ -1515,10 +1346,10 @@ index 000000000..1baf0d721
 +typedef Thread SYS_ThreadHandle;
 diff --git a/src/timer/n3ds/SDL_systimer.c b/src/timer/n3ds/SDL_systimer.c
 new file mode 100644
-index 000000000..e0958dba9
+index 000000000..d921cdc0e
 --- /dev/null
 +++ b/src/timer/n3ds/SDL_systimer.c
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,42 @@
 +#include "SDL_config.h"
 +
 +#include <sys/time.h>
@@ -1531,51 +1362,19 @@ index 000000000..e0958dba9
 +#include "SDL_error.h"
 +#include "../SDL_timer_c.h"
 +
-+static struct timeval start;
++static u64 g_startTicks;
 +
 +void SDL_StartTicks (void) {
-+	gettimeofday (&start, NULL);
++	g_startTicks = svcGetSystemTick();
 +}
 +
 +Uint32 SDL_GetTicks (void) {
-+	Uint32 ticks;
-+	struct timeval now;
-+
-+	gettimeofday (&now, NULL);
-+	ticks = (now.tv_sec - start.tv_sec) * 1000 + (now.tv_usec - start.tv_usec) / 1000;
-+
-+	return (ticks);
++	u64 elapsed = svcGetSystemTick() - g_startTicks;
++	return elapsed * 1000 / SYSCLOCK_ARM11;
 +}
 +
 +void SDL_Delay (Uint32 ms) {
-+#ifdef SDL_THREAD_N3DS
-+	if (threadGetCurrent() != NULL)
-+		svcSleepThread((Uint64)ms * 1000000);
-+	else {
-+#endif
-+	int was_error;
-+	struct timeval tv;
-+	Uint32 then, now, elapsed;
-+
-+	then = SDL_GetTicks();
-+
-+	do {
-+		now = SDL_GetTicks ();
-+		elapsed = (now - then);
-+		then = now;
-+		if (elapsed >= ms) {
-+			break;
-+		}
-+		ms -= elapsed;
-+
-+		tv.tv_sec = ms / 1000;
-+		tv.tv_usec = (ms % 1000) * 1000;
-+
-+		was_error = select(0, NULL, NULL, NULL, &tv);
-+	} while (was_error);
-+#ifdef SDL_THREAD_N3DS
-+	}
-+#endif
++	svcSleepThread((u64)ms * 1000000ULL);
 +}
 +
 +int SDL_SYS_TimerInit (void) {
@@ -1643,10 +1442,10 @@ index 7e096e2f7..23af477cc 100644
  static void DUMMY_DeleteDevice(SDL_VideoDevice *device)
 diff --git a/src/video/n3ds/SDL_n3dsevents.c b/src/video/n3ds/SDL_n3dsevents.c
 new file mode 100644
-index 000000000..cd61ff045
+index 000000000..42dda2f28
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsevents.c
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,89 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -1682,64 +1481,35 @@ index 000000000..cd61ff045
 +#include "SDL_n3dsvideo.h"
 +#include "SDL_n3dsevents_c.h"
 +
-+static aptHookCookie cookie;
-+volatile bool app_pause = false;
-+volatile bool app_exiting = false;
-+
-+static void task_apt_hook(APT_HookType hook, void* param) {
-+    
-+	switch(hook) {
-+		case APTHOOK_ONSUSPEND:
-+			app_pause = true;
-+            break;
-+        case APTHOOK_ONRESTORE:
-+			app_pause = false;
-+			app_exiting = false;
-+            break;
-+        case APTHOOK_ONEXIT:
-+			app_exiting = true;
-+            break;
-+        default:
-+            break;
-+    }
-+}
-+
-+void task_init() {
-+    aptHook(&cookie, task_apt_hook, NULL);
-+	app_pause = false;
-+	app_exiting = false;
-+}
-+
-+void task_exit() {
-+    aptUnhook(&cookie);
-+}
-+
 +void N3DS_PumpEvents(_THIS)
 +{
 +	svcSleepThread(100000); // 0.1 ms
-+	
-+	if (app_pause) return;
-+	
-+	if(!aptMainLoop())
++
++	if (!aptMainLoop())
 +	{
-+		SDL_Event sdlevent;
-+		sdlevent.type = SDL_QUIT;
-+		SDL_PushEvent(&sdlevent);
-+	} 
-+	
++		static bool pushedQuit = false;
++		if (!pushedQuit) {
++			SDL_Event sdlevent;
++			sdlevent.type = SDL_QUIT;
++			SDL_PushEvent(&sdlevent);
++			pushedQuit = true;
++		}
++		return;
++	}
++
 +	hidScanInput();
 +
 +	if (hidKeysHeld() & KEY_TOUCH) {
 +		touchPosition touch;
 +
 +		hidTouchRead (&touch);
-+		
++
 +// TO DO: handle fit screen on x and y.Y and Y to be considered separately
-+		
++
 +		if(this->hidden->screens&SDL_TOPSCR && this->hidden->screens&SDL_BOTTOMSCR) {
 +			if (touch.px != 0 || touch.py != 0) {
-+				SDL_PrivateMouseMotion (0, 0, 
-+					touch.px  + (this->hidden->w1 - 320)/2, 
++				SDL_PrivateMouseMotion (0, 0,
++					touch.px  + (this->hidden->w1 - 320)/2,
 +					this->hidden->y2 + touch.py + (this->hidden->h2 - 240)/2);
 +				if (!SDL_GetMouseState (NULL, NULL))
 +					SDL_PrivateMouseButton (SDL_PRESSED, 1, 0, 0);
@@ -1767,10 +1537,10 @@ index 000000000..cd61ff045
 +
 diff --git a/src/video/n3ds/SDL_n3dsevents_c.h b/src/video/n3ds/SDL_n3dsevents_c.h
 new file mode 100644
-index 000000000..db2fddf34
+index 000000000..af9957168
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsevents_c.h
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,34 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -1797,14 +1567,11 @@ index 000000000..db2fddf34
 +
 +#include "SDL_n3dsvideo.h"
 +
-+/* Variables and functions exported by SDL_sysevents.c to other parts 
++/* Variables and functions exported by SDL_sysevents.c to other parts
 +   of the native video subsystem (SDL_sysvideo.c)
 +*/
 +extern void N3DS_InitOSKeymap(_THIS);
 +extern void N3DS_PumpEvents(_THIS);
-+
-+void task_init();
-+void task_exit();
 +
 +/* end of SDL_nullevents_c.h ... */
 +
@@ -1881,10 +1648,10 @@ index 000000000..cdbdd17ce
 +/* Functions to be exported */
 diff --git a/src/video/n3ds/SDL_n3dsvideo.c b/src/video/n3ds/SDL_n3dsvideo.c
 new file mode 100644
-index 000000000..504d52e1c
+index 000000000..dc47d9621
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.c
-@@ -0,0 +1,768 @@
+@@ -0,0 +1,764 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -1931,7 +1698,7 @@ index 000000000..504d52e1c
 +// This header is generated by the build process
 +#include "vshader_shbin.h"
 +
-+#define STACKSIZE (4 * 1024)
++#define STACKSIZE (32 * 1024)
 +
 +#define TEX_MIN_SIZE 32
 +#define CLEAR_COLOR0 0x000000FF
@@ -1942,10 +1709,10 @@ index 000000000..504d52e1c
 +// Used to transfer the final rendered display to the framebuffer
 +#define DISPLAY_TRANSFER_FLAGS0 \
 +	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
-+	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8)) 
++	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8))
 +#define DISPLAY_TRANSFER_FLAGS1 \
 +	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
-+	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8)) 
++	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8))
 +#define DISPLAY_TRANSFER_FLAGS2 \
 +	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
 +	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB5A1) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565))
@@ -1986,17 +1753,15 @@ index 000000000..504d52e1c
 +static int displayTranferFlags[4] = { DISPLAY_TRANSFER_FLAGS0, DISPLAY_TRANSFER_FLAGS1, DISPLAY_TRANSFER_FLAGS2, DISPLAY_TRANSFER_FLAGS3};
 +static unsigned int clearcolors[4] = { CLEAR_COLOR0, CLEAR_COLOR1, CLEAR_COLOR2, CLEAR_COLOR3};
 +
-+static void sceneInit(GSPGPU_FramebufferFormats mode, bool scale);
++static void sceneInit(GSPGPU_FramebufferFormat mode, bool scale);
 +static void sceneExit(void);
 +void drawTexture( int x, int y, int width, int height, float left, float right, float top, float bottom);
 +
 +// video thread variables and functions
 +volatile bool runThread = false;
-+Handle privateVideoThreadRequest;
++LightEvent privateVideoThreadEvent;
 +Thread privateVideoThreadHandle = NULL;
 +static void videoThread(void* data);
-+extern volatile bool app_pause;
-+extern volatile bool app_exiting;
 +
 +/* Initialization/Query functions */
 +static int N3DS_VideoInit(_THIS, SDL_PixelFormat *vformat);
@@ -2011,7 +1776,7 @@ index 000000000..504d52e1c
 +static int N3DS_LockHWSurface(_THIS, SDL_Surface *surface);
 +static void N3DS_UnlockHWSurface(_THIS, SDL_Surface *surface);
 +static void N3DS_FreeHWSurface(_THIS, SDL_Surface *surface);
-+static int N3DS_FlipHWSurface (_THIS, SDL_Surface *surface); 
++static int N3DS_FlipHWSurface (_THIS, SDL_Surface *surface);
 +
 +int N3DS_ToggleFullScreen(_THIS, int on);
 +
@@ -2060,10 +1825,8 @@ index 000000000..504d52e1c
 +		return(0);
 +	}
 +
-+	task_init();
-+
 +	SDL_memset(device->hidden, 0, (sizeof *device->hidden));
-+	
++
 +	/* Set the function pointers */
 +	device->VideoInit = N3DS_VideoInit;
 +	device->ListModes = N3DS_ListModes;
@@ -2109,14 +1872,14 @@ index 000000000..504d52e1c
 +	gfxInitDefault();
 +	gfxSet3D(false);
 +	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-+	
-+	vformat->BitsPerPixel = 32;	
++
++	vformat->BitsPerPixel = 32;
 +	vformat->BytesPerPixel = 4;
 +	vformat->Rmask = 0xff000000;
 +	vformat->Gmask = 0x00ff0000;
-+	vformat->Bmask = 0x0000ff00; 
-+	vformat->Amask = 0x000000ff; 
-+	
++	vformat->Bmask = 0x0000ff00;
++	vformat->Amask = 0x000000ff;
++
 +	/* We're done! */
 +	return(0);
 +}
@@ -2128,7 +1891,7 @@ index 000000000..504d52e1c
 +
 +void N3DS_SetScaling(_THIS)
 +{
-+	if(this->hidden->flags & SDL_FULLSCREEN) 
++	if(this->hidden->flags & SDL_FULLSCREEN)
 +//		flags |= (SDL_FITWIDTH | SDL_FITHEIGHT);
 +		this->hidden->fitscreen = (SDL_FITWIDTH | SDL_FITHEIGHT);
 +	else
@@ -2150,12 +1913,12 @@ index 000000000..504d52e1c
 +}
 +
 +int N3DS_ToggleFullScreen(_THIS, int on){
-+   	if ((this->hidden->flags & SDL_FITWIDTH) && (this->hidden->flags & SDL_FITHEIGHT)) 
++   	if ((this->hidden->flags & SDL_FITWIDTH) && (this->hidden->flags & SDL_FITHEIGHT))
 +		return -1;
-+	
++
 +	if ( this->hidden->flags & SDL_FULLSCREEN )
 +		this->hidden->flags &= ~SDL_FULLSCREEN;
-+	else 
++	else
 +		this->hidden->flags |= SDL_FULLSCREEN;
 +
 +	N3DS_SetScaling(this);
@@ -2168,7 +1931,7 @@ index 000000000..504d52e1c
 +				int width, int height, int bpp, Uint32 flags)
 +{
 +
-+	Uint32 Rmask, Gmask, Bmask, Amask; 
++	Uint32 Rmask, Gmask, Bmask, Amask;
 +	int hw = next_pow2(width);
 +	int hh= next_pow2(height);
 +
@@ -2178,14 +1941,14 @@ index 000000000..504d52e1c
 +	if(this->hidden->screens==0) this->hidden->screens = SDL_TOPSCR; //Default
 +	flags &= ~SDL_DUALSCR;
 +	flags |= this->hidden->screens;
-+	
++
 +	this->hidden->flags = flags;
-+	
++
 +	switch(bpp) {
 +		case 0:
 +			bpp = 32;
 +		case 32:
-+			Rmask = 0xff000000; 
++			Rmask = 0xff000000;
 +			Gmask = 0x00ff0000;
 +			Bmask = 0x0000ff00;
 +			Amask = 0x000000ff;
@@ -2194,7 +1957,7 @@ index 000000000..504d52e1c
 +			this->hidden->bpp = 32;
 +			break;
 +		case 24:
-+			Rmask = 0xff0000; 
++			Rmask = 0xff0000;
 +			Gmask = 0x00ff00;
 +			Bmask = 0x0000ff;
 +			Amask = 0x0;
@@ -2237,9 +2000,9 @@ index 000000000..504d52e1c
 +
 +
 +// if there is a video thread running, stop and free it
-+	runThread = false;
 +	if (privateVideoThreadHandle) {
-+		svcSignalEvent(privateVideoThreadRequest);
++		runThread = false;
++		LightEvent_Signal(&privateVideoThreadEvent);
 +		threadJoin(privateVideoThreadHandle, U64_MAX);
 +		privateVideoThreadHandle = NULL;
 +	}
@@ -2280,7 +2043,7 @@ index 000000000..504d52e1c
 +	}
 +
 +	if(setVideoModecount>1) sceneExit(); // unload rendertarget and the shader
-+	
++
 +	//setup the screens mode
 +	sceneInit(this->hidden->mode, (this->hidden->fitscreen & (SDL_FITWIDTH | SDL_FITHEIGHT)) ? false:true);
 +
@@ -2327,7 +2090,7 @@ index 000000000..504d52e1c
 +//Set scaling
 +
 +	N3DS_SetScaling(this);
-+	
++
 +	this->info.current_w = current->w = width;
 +	this->info.current_h = current->h = height;
 +	if(bpp>8) {
@@ -2341,18 +2104,18 @@ index 000000000..504d52e1c
 +// NOTE: the following is a dirty hack to make work mode 2. Passing a RGB565 buffer to a RGB656 texture and rendering it to a RGB656 display results in some colors being transparent.
 +// To fix this we are transfering a RGB656 buffer to a RGB5A1 texure and then rendering it to a RGB656 display. We lose 1 bit of Green color depth, but at least it works
 +	int mode = this->hidden->mode;
-+	if (mode==2) mode = 3; 
++	if (mode==2) mode = 3;
 +
 +	// Setup the textures
 +	C3D_TexInit(&spritesheet_tex, hw, hh, this->hidden->mode);
 +	C3D_TexSetFilter(&spritesheet_tex, this->hidden->fitscreen ? GPU_LINEAR : GPU_NEAREST , GPU_NEAREST);
 +//	C3D_TexBind(0, &spritesheet_tex);
-+	
++
 +	runThread = true;
-+	svcCreateEvent(&privateVideoThreadRequest,0);
-+ // ctrulib sys threads uses 0x18, so we use a lower priority, but higher than any other SDL thread
++	LightEvent_Init(&privateVideoThreadEvent, RESET_ONESHOT);
++ // libctru sys threads uses 0x18, so we use a lower priority, but higher than any other SDL thread
 +	privateVideoThreadHandle = threadCreate(videoThread, (void *) this, STACKSIZE, 0x19, -2, true);
-+	this->hidden->currentVideoSurface = current; 
++	this->hidden->currentVideoSurface = current;
 +	/* We're done */
 +
 +	return(current);
@@ -2385,41 +2148,42 @@ index 000000000..504d52e1c
 +{
 +    _THIS = (SDL_VideoDevice *) data;
 +
-+	do {
-+		if(!app_pause && !app_exiting) { 
-+//			if (C3D_FrameBegin(C3D_FRAME_SYNCDRAW)){ 
-+			if (C3D_FrameBegin(C3D_FRAME_NONBLOCK)){ 
++	while (runThread) {
++		LightEvent_Wait(&privateVideoThreadEvent);
++
++		if (!runThread)
++			break;
++
++		if(gspHasGpuRight()) {
++//			if (C3D_FrameBegin(C3D_FRAME_SYNCDRAW)){
++			if (C3D_FrameBegin(C3D_FRAME_NONBLOCK)){
 +				if (this->hidden->screens & SDL_TOPSCR) {
 +					C3D_RenderTargetClear(VideoSurface1, C3D_CLEAR_ALL, RenderClearColor, 0);
 +					C3D_FrameDrawOn(VideoSurface1);
 +					C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection);
-+					drawTexture((400-this->hidden->w1*this->hidden->scalex)/2,(240-this->hidden->h1*this->hidden->scaley)/2, this->hidden->w1*this->hidden->scalex, this->hidden->h1*this->hidden->scaley, this->hidden->l1, this->hidden->r1, this->hidden->t1, this->hidden->b1);  
++					drawTexture((400-this->hidden->w1*this->hidden->scalex)/2,(240-this->hidden->h1*this->hidden->scaley)/2, this->hidden->w1*this->hidden->scalex, this->hidden->h1*this->hidden->scaley, this->hidden->l1, this->hidden->r1, this->hidden->t1, this->hidden->b1);
 +				}
 +				if (this->hidden->screens & SDL_BOTTOMSCR) {
 +					C3D_RenderTargetClear(VideoSurface2, C3D_CLEAR_ALL, RenderClearColor, 0);
 +					C3D_FrameDrawOn(VideoSurface2);
 +					C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_projection, &projection2);
 +					if (this->hidden->fitscreen & SDL_FITWIDTH)
-+						drawTexture(0,(240-this->hidden->h2*this->hidden->scaley)/2, this->hidden->w2*this->hidden->scalex, this->hidden->h2*this->hidden->scaley, this->hidden->l2, this->hidden->r2, this->hidden->t2, this->hidden->b2);  
++						drawTexture(0,(240-this->hidden->h2*this->hidden->scaley)/2, this->hidden->w2*this->hidden->scalex, this->hidden->h2*this->hidden->scaley, this->hidden->l2, this->hidden->r2, this->hidden->t2, this->hidden->b2);
 +					else
-+						drawTexture((400-this->hidden->w2*this->hidden->scalex*1.25)/2,(240-this->hidden->h2*this->hidden->scaley)/2, this->hidden->w2*this->hidden->scalex*1.25, this->hidden->h2*this->hidden->scaley, this->hidden->l2, this->hidden->r2, this->hidden->t2, this->hidden->b2);  
++						drawTexture((400-this->hidden->w2*this->hidden->scalex*1.25)/2,(240-this->hidden->h2*this->hidden->scaley)/2, this->hidden->w2*this->hidden->scalex*1.25, this->hidden->h2*this->hidden->scaley, this->hidden->l2, this->hidden->r2, this->hidden->t2, this->hidden->b2);
 +				}
 +				C3D_FrameEnd(0);
-+			} 
-+		} 
-+
-+		svcWaitSynchronization(privateVideoThreadRequest, U64_MAX);
-+		svcClearEvent(privateVideoThreadRequest);
-+	} while(runThread); 
-+	threadExit(0);
++			}
++		}
++	}
 +}
 +
 +static void drawBuffers(_THIS)
 +{
 +	if(this->hidden->buffer) {
 +
-+		if(app_pause || app_exiting) return; // Blocking video output if the application is closing 
-+	
++		if(!gspHasGpuRight()) return; // Blocking video output if the application is closing
++
 +		GSPGPU_FlushDataCache(this->hidden->buffer, this->hidden->w*this->hidden->h*this->hidden->byteperpixel);
 +
 +		C3D_SyncDisplayTransfer ((u32*)this->hidden->buffer, GX_BUFFER_DIM(this->hidden->w, this->hidden->h), (u32*)spritesheet_tex.data, GX_BUFFER_DIM(this->hidden->w, this->hidden->h), textureTranferFlags[this->hidden->mode]);
@@ -2432,17 +2196,17 @@ index 000000000..504d52e1c
 +		C3D_TexEnv* env = C3D_GetTexEnv(0);
 +		C3D_TexEnvInit(env);
 +		C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, 0, 0);
-+		
++
 +		C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 +
 +		gspWaitForVBlank();
-+		svcSignalEvent(privateVideoThreadRequest); 
++		LightEvent_Signal(&privateVideoThreadEvent);
 +	}
 +}
 +
 +static void N3DS_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 +{
-+	if(app_pause || app_exiting) return; //Block video output on quitting
++	if(!gspHasGpuRight()) return; //Block video output on quitting
 +
 +	if( this->hidden->bpp == 8) {
 +/*
@@ -2469,7 +2233,7 @@ index 000000000..504d52e1c
 +				dst_addr += 4;
 +}
 +			}
-+		} 
++		}
 +*/
 +		// update whole screen
 +		Uint8 *src_addr;
@@ -2508,7 +2272,7 @@ index 000000000..504d52e1c
 +
 +static int N3DS_FlipHWSurface (_THIS, SDL_Surface *surface) {
 +
-+	if(app_pause || app_exiting) return(0); //Block video output on quitting
++	if(!gspHasGpuRight()) return(0); //Block video output on quitting
 +
 +	if(this->hidden->bpp == 8) {
 +		Uint8 *src_addr;
@@ -2538,7 +2302,7 @@ index 000000000..504d52e1c
 +{
 +	if (privateVideoThreadHandle) {
 +		runThread = false;
-+		svcSignalEvent(privateVideoThreadRequest);
++		LightEvent_Signal(&privateVideoThreadEvent);
 +		threadJoin(privateVideoThreadHandle, U64_MAX);
 +		privateVideoThreadHandle = NULL;
 +	}
@@ -2553,16 +2317,15 @@ index 000000000..504d52e1c
 +		this->hidden->palettedbuffer = NULL;
 +	}
 +	this->hidden->currentVideoSurface->pixels = NULL; // set to buffer or to palettedbuffer, so now pointing to not allocated memory
-+	
++
 +	sceneExit();
 +	C3D_Fini();
 +	gfxExit();
-+	task_exit();
 +}
 +
 +
 +//---------------------------------------------------------------------------------
-+static void sceneInit(GSPGPU_FramebufferFormats mode, bool scale) {
++static void sceneInit(GSPGPU_FramebufferFormat mode, bool scale) {
 +//---------------------------------------------------------------------------------
 +	// Load the vertex shader, create a shader program and bind it
 +	vshader_dvlb = DVLB_ParseFile((u32*)vshader_shbin, vshader_shbin_size);
@@ -2604,17 +2367,17 @@ index 000000000..504d52e1c
 +		VideoSurface1 = C3D_RenderTargetCreate(240*2, 400*2, mode, GPU_RB_DEPTH24_STENCIL8);
 +	else
 +		VideoSurface1 = C3D_RenderTargetCreate(240, 400, mode, GPU_RB_DEPTH24_STENCIL8);
-+	if(scale)	
++	if(scale)
 +		C3D_RenderTargetSetOutput(VideoSurface1, GFX_TOP, GFX_LEFT, displayTranferFlags[mode] | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_XY));
 +	else
 +		C3D_RenderTargetSetOutput(VideoSurface1, GFX_TOP, GFX_LEFT, displayTranferFlags[mode] | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
-+	
++
 +	// Initialize the bottom screen render target
 +	if (scale)
 +		VideoSurface2 = C3D_RenderTargetCreate(240*2, 320*2, mode, GPU_RB_DEPTH24_STENCIL8);
 +	else
 +		VideoSurface2 = C3D_RenderTargetCreate(240, 320, mode, GPU_RB_DEPTH24_STENCIL8);
-+	if (scale)	
++	if (scale)
 +		C3D_RenderTargetSetOutput(VideoSurface2, GFX_BOTTOM, GFX_LEFT, displayTranferFlags[mode] | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_XY));
 +	else
 +		C3D_RenderTargetSetOutput(VideoSurface2, GFX_BOTTOM, GFX_LEFT, displayTranferFlags[mode] | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
@@ -2655,7 +2418,7 @@ index 000000000..504d52e1c
 +}
 diff --git a/src/video/n3ds/SDL_n3dsvideo.h b/src/video/n3ds/SDL_n3dsvideo.h
 new file mode 100644
-index 000000000..02c91bc3f
+index 000000000..4b204224a
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.h
 @@ -0,0 +1,63 @@
@@ -2696,7 +2459,7 @@ index 000000000..02c91bc3f
 +
 +struct SDL_PrivateVideoData {
 +//GPU drawing specific
-+	int x1,y1,w1,h1; // drawing window for top screen; width and height of top screen part of the video buffer 
++	int x1,y1,w1,h1; // drawing window for top screen; width and height of top screen part of the video buffer
 +	int x2,y2,w2,h2; // drawing window for bottom screen; width and height of bottom part of the video buffer
 +	float l1,r1,t1,b1; // GPU source window for the top part of the video buffer
 +	float l2,r2,t2,b2; // GPU source window for the bottom part of the video buffer
@@ -2708,7 +2471,7 @@ index 000000000..02c91bc3f
 +	void *buffer;
 +	Uint8 *palettedbuffer;
 +	Uint32 palette[256];
-+	GSPGPU_FramebufferFormats mode;
++	GSPGPU_FramebufferFormat mode;
 +	unsigned int flags; // backup of create device flags
 +	unsigned int screens; // SDL_TOPSCR, SDL_BOTTOMSCR, SDL_DUALSCR
 +	unsigned int console; // SDL_CONSOLETOP, SDL_CONSOLEBOTTOM
@@ -2716,7 +2479,7 @@ index 000000000..02c91bc3f
 +	int byteperpixel;
 +	int bpp;
 +// video surface
-+	SDL_Surface* currentVideoSurface;	
++	SDL_Surface* currentVideoSurface;
 +// Video process flags
 +	bool blockVideo;  // block video output and events handlings on SDL_QUIT
 +};
