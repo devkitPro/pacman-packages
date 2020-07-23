@@ -1,16 +1,21 @@
-
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libctru')
 pkgver=2.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Nintendo 3DS userland library."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitPro/${pkgname}"
 options=(!strip libtool staticlibs)
-source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('340582cc972ff214a7a6f5b1dd1df6dfc3937d9cef9fdb310b3c4beadcbcebe7')
+source=(
+  ${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz
+  0001-condvar-fix-embarrassing-typo-that-prevented-it-from.patch
+)
+sha256sums=(
+  '340582cc972ff214a7a6f5b1dd1df6dfc3937d9cef9fdb310b3c4beadcbcebe7'
+  '6a10a72d86e76a5ab8c20caacf6960b88775f59d7308f782767183c6ebcc3ec1'
+)
 depends=('devkitARM')
 
 groups=('3ds-dev')
@@ -18,7 +23,10 @@ groups=('3ds-dev')
 build() {
 
   cd ${srcdir}/libctru-${pkgver}/libctru
-  make -j
+
+  patch -p2 -i ${srcdir}/0001-condvar-fix-embarrassing-typo-that-prevented-it-from.patch
+
+  make
 
 }
 
