@@ -1,9 +1,8 @@
-
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkitarm-rules')
 pkgver=1.2.0
-pkgrel=1
+pkgrel=2
 pkgdesc="devkitARM build rules."
 arch=('any')
 license=('custom')
@@ -11,8 +10,6 @@ url="http://github.com/devkitpro/devkitarm-rules"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
 sha256sums=('b3fded40e088b843c346c014fcd1ef768acd68415f0da762e31018a61268f023')
-
-groups=('gba-dev' 'gp32-dev' 'nds-dev' '3ds-dev')
 
 package() {
 
