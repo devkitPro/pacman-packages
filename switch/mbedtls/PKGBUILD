@@ -15,7 +15,7 @@ source=(
 groups=('switch-portlibs')
 sha256sums=(
  '66455e23a6190a30142cdc1113f7418158839331a9d8e6b0778631d077281770'
- 'c0cf5e262788144fb4c4a163334f7c55c8b4c2b93a9fc780e3f7cdf5d236aca0'
+ 'c98c1a5ae150df2d81f07c3e8bf64402f1695996d85936d4add04fa84fa60e7e'
 )
 
 build() {
@@ -26,7 +26,6 @@ build() {
   ./scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
   ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
 
-  ./scripts/config.pl unset MBEDTLS_TIMING_C
   ./scripts/config.pl unset MBEDTLS_SELF_TEST
 
   source /opt/devkitpro/switchvars.sh

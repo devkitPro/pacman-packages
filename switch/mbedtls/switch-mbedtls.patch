@@ -1,6 +1,6 @@
-diff -NBaur mbedtls-2.14.1/library/entropy.c mbedtls-2.14.1.switch/library/entropy.c
---- mbedtls-2.14.1/library/entropy.c	2018-12-02 13:20:52.000000000 +0000
-+++ mbedtls-2.14.1.switch/library/entropy.c	2018-12-23 18:49:07.178930622 +0000
+diff -Naur mbedtls-2.16.6/library/entropy.c mbedtls-2.16.6-patched/library/entropy.c
+--- mbedtls-2.16.6/library/entropy.c	2020-04-09 14:12:23.000000000 +0100
++++ mbedtls-2.16.6-patched/library/entropy.c	2020-07-15 13:42:22.169835684 +0100
 @@ -119,6 +119,19 @@
  #endif /* MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES */
  }
@@ -21,9 +21,9 @@ diff -NBaur mbedtls-2.14.1/library/entropy.c mbedtls-2.14.1.switch/library/entro
  void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
  {
  #if defined(MBEDTLS_HAVEGE_C)
-diff -NBaur mbedtls-2.14.1/library/net_sockets.c mbedtls-2.14.1.switch/library/net_sockets.c
---- mbedtls-2.14.1/library/net_sockets.c	2018-12-02 13:20:52.000000000 +0000
-+++ mbedtls-2.14.1.switch/library/net_sockets.c	2018-12-23 18:54:12.216006757 +0000
+diff -Naur mbedtls-2.16.6/library/net_sockets.c mbedtls-2.16.6-patched/library/net_sockets.c
+--- mbedtls-2.16.6/library/net_sockets.c	2020-04-09 14:12:23.000000000 +0100
++++ mbedtls-2.16.6-patched/library/net_sockets.c	2020-07-15 13:42:22.169835684 +0100
 @@ -34,7 +34,7 @@
  
  #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
@@ -51,3 +51,104 @@ diff -NBaur mbedtls-2.14.1/library/net_sockets.c mbedtls-2.14.1.switch/library/n
  
      return( 0 );
  }
+diff -Naur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timing.c
+--- mbedtls-2.16.6/library/timing.c	2020-04-09 14:12:23.000000000 +0100
++++ mbedtls-2.16.6-patched/library/timing.c	2020-07-28 23:38:36.881476522 +0100
+@@ -40,7 +40,7 @@
+ 
+ #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
+     !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
+-    !defined(__HAIKU__)
++    !defined(__HAIKU__) && !defined(__SWITCH__)
+ #error "This module only works on Unix and Windows, see MBEDTLS_TIMING_C in config.h"
+ #endif
+ 
+@@ -73,6 +73,10 @@
+ 
+ #endif /* _WIN32 && !EFIX64 && !EFI32 */
+ 
++#ifdef __SWITCH__
++#include <switch.h>
++#endif
++
+ #if !defined(HAVE_HARDCLOCK) && defined(MBEDTLS_HAVE_ASM) &&  \
+     ( defined(_MSC_VER) && defined(_M_IX86) ) || defined(__WATCOMC__)
+ 
+@@ -216,6 +220,16 @@
+ }
+ #endif /* !HAVE_HARDCLOCK && _MSC_VER && !EFIX64 && !EFI32 */
+ 
++#if !defined(HAVE_HARDCLOCK) && defined(__SWITCH__)
++
++#define HAVE_HARDCLOCK
++unsigned long mbedtls_timing_hardclock( void )
++{
++    return armGetSystemTick();
++}
++
++#endif
++
+ #if !defined(HAVE_HARDCLOCK)
+ 
+ #define HAVE_HARDCLOCK
+@@ -313,6 +327,51 @@
+     }
+ }
+ 
++#ifdef __SWITCH__
++static bool timer_thread_created = false;
++static unsigned int alarmUs = 0;
++static Thread timerThread;
++static alignas(0x1000) char timerThreadStack[0x1000];
++
++static void timer_thread_func(void *param)
++{
++    (void) param;
++    usleep(alarmUs);
++    mbedtls_timing_alarmed = 1;
++} 
++
++static void __attribute__((destructor)) cleanup_timer_thread() 
++{
++    if(timer_thread_created)
++    {
++        threadWaitForExit(&timerThread);
++        threadClose(&timerThread);
++    }
++}
++
++void mbedtls_set_alarm( int seconds )
++{
++    if(seconds == 0)
++    {
++        mbedtls_timing_alarmed = 1;
++        return;
++    }
++
++    mbedtls_timing_alarmed = 0;
++    alarmUs = seconds * 1000000;
++
++    if(timer_thread_created)
++    {
++        threadWaitForExit(&timerThread);
++        threadClose(&timerThread);
++    }
++
++    timer_thread_created = true;
++
++    threadCreate(&timerThread, timer_thread_func, NULL, timerThreadStack, 0x1000, 0x3b, 0);
++    threadStart(&timerThread);
++}
++#else
+ static void sighandler( int signum )
+ {
+     mbedtls_timing_alarmed = 1;
+@@ -331,7 +390,7 @@
+         mbedtls_timing_alarmed = 1;
+     }
+ }
+-
++#endif
+ #endif /* _WIN32 && !EFIX64 && !EFI32 */
+ 
+ /*
