@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkita64-rules')
-pkgver=1.0.0
+pkgver=1.0.1
 pkgrel=2
 pkgdesc="devkitA64 build rules."
 arch=('any')
@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/devkitpro/devkita64-rules"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('810cfa1a4bb39871f2ab780d08ca5f49f84d551ee6e84d16c9a41bb49b24e4a6')
+sha256sums=('fbd52e3c32f3c7de8c2ba4ea718c3cfb4ce1fb538d31f8930b5c6dbdafe43f4c')
 
 package() {
 
