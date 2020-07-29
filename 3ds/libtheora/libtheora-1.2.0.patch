@@ -1,0 +1,27 @@
+diff -Naur libtheora-1.2.0alpha1.orig/lib/arm/armcpu.c libtheora-1.2.0alpha1/lib/arm/armcpu.c
+--- libtheora-1.2.0alpha1.orig/lib/arm/armcpu.c	2020-05-06 15:19:58.912792332 -0700
++++ libtheora-1.2.0alpha1/lib/arm/armcpu.c	2020-05-06 15:17:05.241797764 -0700
+@@ -111,6 +111,20 @@
+ /*The feature registers which can tell us what the processor supports are
+    accessible in priveleged modes only, so we can't have a general user-space
+    detection method like on x86.*/
+-# error "Configured to use ARM asm but no CPU detection method available for " \
+- "your platform.  Reconfigure with --disable-asm (or send patches)."
++
++ogg_uint32_t oc_cpu_flags_get(void){
++  ogg_uint32_t  flags;
++  flags=0;
++
++#if defined(OC_ARM_ASM_EDSP)
++  flags|=OC_CPU_ARM_EDSP;
++#elif defined(OC_ARM_ASM_MEDIA)
++  flags|=OC_ARM_ASM_MEDIA;
++#elif defined(OC_ARM_ASM_NEON)
++  flags|=OC_ARM_ASM_NEON;
++#endif
++
++  return flags;
++}
++
+ #endif
+
