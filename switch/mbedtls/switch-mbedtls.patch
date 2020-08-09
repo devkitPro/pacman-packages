@@ -1,4 +1,4 @@
-diff -Naur mbedtls-2.16.6/library/entropy.c mbedtls-2.16.6-patched/library/entropy.c
+diff -NBaur mbedtls-2.16.6/library/entropy.c mbedtls-2.16.6-patched/library/entropy.c
 --- mbedtls-2.16.6/library/entropy.c	2020-04-09 14:12:23.000000000 +0100
 +++ mbedtls-2.16.6-patched/library/entropy.c	2020-07-15 13:42:22.169835684 +0100
 @@ -119,6 +119,19 @@
@@ -21,7 +21,7 @@ diff -Naur mbedtls-2.16.6/library/entropy.c mbedtls-2.16.6-patched/library/entro
  void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
  {
  #if defined(MBEDTLS_HAVEGE_C)
-diff -Naur mbedtls-2.16.6/library/net_sockets.c mbedtls-2.16.6-patched/library/net_sockets.c
+diff -NBaur mbedtls-2.16.6/library/net_sockets.c mbedtls-2.16.6-patched/library/net_sockets.c
 --- mbedtls-2.16.6/library/net_sockets.c	2020-04-09 14:12:23.000000000 +0100
 +++ mbedtls-2.16.6-patched/library/net_sockets.c	2020-07-15 13:42:22.169835684 +0100
 @@ -34,7 +34,7 @@
@@ -51,9 +51,9 @@ diff -Naur mbedtls-2.16.6/library/net_sockets.c mbedtls-2.16.6-patched/library/n
  
      return( 0 );
  }
-diff -Naur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timing.c
+diff -NBaur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timing.c
 --- mbedtls-2.16.6/library/timing.c	2020-04-09 14:12:23.000000000 +0100
-+++ mbedtls-2.16.6-patched/library/timing.c	2020-07-28 23:38:36.881476522 +0100
++++ mbedtls-2.16.6-patched/library/timing.c	2020-08-09 20:42:24.909687336 +0100
 @@ -40,7 +40,7 @@
  
  #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
@@ -97,14 +97,14 @@ diff -Naur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timing
  
 +#ifdef __SWITCH__
 +static bool timer_thread_created = false;
-+static unsigned int alarmUs = 0;
++static unsigned int alarmSecs = 0;
 +static Thread timerThread;
 +static alignas(0x1000) char timerThreadStack[0x1000];
 +
 +static void timer_thread_func(void *param)
 +{
 +    (void) param;
-+    usleep(alarmUs);
++    svcSleepThread((s64)alarmSecs * 1e9L);
 +    mbedtls_timing_alarmed = 1;
 +} 
 +
@@ -126,7 +126,7 @@ diff -Naur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timing
 +    }
 +
 +    mbedtls_timing_alarmed = 0;
-+    alarmUs = seconds * 1000000;
++    alarmSecs = seconds;
 +
 +    if(timer_thread_created)
 +    {
@@ -136,7 +136,7 @@ diff -Naur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timing
 +
 +    timer_thread_created = true;
 +
-+    threadCreate(&timerThread, timer_thread_func, NULL, timerThreadStack, 0x1000, 0x3b, 0);
++    threadCreate(&timerThread, timer_thread_func, NULL, timerThreadStack, 0x1000, 0x3b, -2);
 +    threadStart(&timerThread);
 +}
 +#else
