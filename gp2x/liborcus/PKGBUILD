@@ -2,7 +2,7 @@
 # Maintainer: Adan Scotney <adan.scotney@gmail.com
 
 pkgname=('orcus')
-pkgver=1.1.0
+pkgver=1.2.0
 pkgrel=1
 pkgdesc="orcus"
 arch=('any')
@@ -10,7 +10,7 @@ license=('MIT')
 url="https://github.com/Orkie/orcus"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('4da96e5154a98f11ec28791941300dfe4887d3bdb33f6a92fdff0fffbdcab62c')
+sha256sums=('92758e27c39dc80ea44e84987e6bf0c69c2df917a3800e6b48ff654eecc9b450')
 makedepends=('devkitARM' 'gp2x-core')
 groups=('gp2x-dev')
 
