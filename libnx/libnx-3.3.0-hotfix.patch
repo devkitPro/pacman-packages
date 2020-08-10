@@ -1,0 +1,83 @@
+From d0a7c6a2a5bc808340bd3f1d44abb1d163faa53b Mon Sep 17 00:00:00 2001
+From: Ezekiel Bethel <zek@9net.org>
+Date: Thu, 18 Jun 2020 10:58:12 +0100
+Subject: [PATCH 11/18] fix return value of romfs_stat for non-existent
+ files/directories (#488)
+
+---
+ nx/source/runtime/devices/romfs_dev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/nx/source/runtime/devices/romfs_dev.c b/nx/source/runtime/devices/romfs_dev.c
+index b1e4c7f0..31759e8a 100644
+--- a/nx/source/runtime/devices/romfs_dev.c
++++ b/nx/source/runtime/devices/romfs_dev.c
+@@ -804,7 +804,7 @@ int romfs_stat(struct _reent *r, const char *path, struct stat *st)
+     }
+ 
+     r->_errno = ENOENT;
+-    return 1;
++    return -1;
+ }
+ 
+ int romfs_chdir(struct _reent *r, const char *path)
+-- 
+2.11.0
+
+From 1b95c09a275a97b4749f4e1ffc292d4f5fc2f8c5 Mon Sep 17 00:00:00 2001
+From: fincs <fincs@devkitpro.org>
+Date: Sat, 25 Jul 2020 18:26:33 +0200
+Subject: [PATCH 18/18] switch.ld: update init_array/fini_array handling for
+ latest devkitA64
+
+---
+ nx/switch.ld | 24 ++++--------------------
+ 1 file changed, 4 insertions(+), 20 deletions(-)
+
+diff --git a/nx/switch.ld b/nx/switch.ld
+index d84c2e0f..48bf24b9 100644
+--- a/nx/switch.ld
++++ b/nx/switch.ld
+@@ -113,35 +113,19 @@ SECTIONS
+ 	.init_array ALIGN(8) :
+ 	{
+ 		PROVIDE (__init_array_start = .);
+-		KEEP (*(SORT(.init_array.*)))
+-		KEEP (*(.init_array))
++		KEEP( *(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)) )
++		KEEP( *(.init_array .ctors) )
+ 		PROVIDE (__init_array_end = .);
+ 	} :data
+ 
+ 	.fini_array ALIGN(8) :
+ 	{
+ 		PROVIDE (__fini_array_start = .);
+-		KEEP (*(.fini_array))
+-		KEEP (*(SORT(.fini_array.*)))
++		KEEP( *(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)) )
++		KEEP( *(.fini_array .dtors) )
+ 		PROVIDE (__fini_array_end = .);
+ 	} :data
+ 
+-	.ctors ALIGN(8) :
+-	{
+-		KEEP (*crtbegin.o(.ctors)) /* MUST be first -- GCC requires it */
+-		KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))
+-		KEEP (*(SORT(.ctors.*)))
+-		KEEP (*(.ctors))
+-	} :data
+-
+-	.dtors ALIGN(8) :
+-	{
+-		KEEP (*crtbegin.o(.dtors))
+-		KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
+-		KEEP (*(SORT(.dtors.*)))
+-		KEEP (*(.dtors))
+-	} :data
+-
+ 	__got_start__ = .;
+ 
+ 	.got            : { *(.got) *(.igot) } :data
+-- 
+2.11.0
+

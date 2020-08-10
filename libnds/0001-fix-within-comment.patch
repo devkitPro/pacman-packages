@@ -1,0 +1,45 @@
+From 154a21cc3d57716f773ff2b10f815511c1b8ba9f Mon Sep 17 00:00:00 2001
+From: Dave Murphy <davem@devkitpro.org>
+Date: Mon, 27 Jul 2020 03:29:04 +0100
+Subject: [PATCH] fix /* within comment
+
+---
+ include/gl2d.h | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/include/gl2d.h b/include/gl2d.h
+index 43295ce..a2c9348 100644
+--- a/include/gl2d.h
++++ b/include/gl2d.h
+@@ -2,7 +2,7 @@
+ 
+ 	Easy GL2D
+ 
+-	Relminator 2010 
++	Relminator 2010
+ 	Richard Eric M. Lope BSN RN
+ 
+ 	http://rel.betterwebber.com
+@@ -11,17 +11,13 @@
+ 
+ ---------------------------------------------------------------------------------*/
+ 
+-/*!
+ 
++/*! \file gl2d.h
++	\brief A very small and simple DS rendering lib using the 3d core to render 2D stuff.
+ 
+- 
+  \section gl2d API
+  - \ref gl2d.h "Reference"
+- 
+- 
+ 
+-/*! \file gl2d.h
+-	\brief A very small and simple DS rendering lib using the 3d core to render 2D stuff.
+ */
+ 
+ 
+-- 
+2.11.0
+
