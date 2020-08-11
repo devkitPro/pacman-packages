@@ -1,0 +1,36 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=switch-libssh2
+pkgver=1.9.0
+pkgrel=1
+pkgdesc="A library implementing the SSH2 protocol as defined by Internet Drafts"
+url="https://www.libssh2.org"
+license=('BSD')
+arch=('any')
+options=(!strip libtool staticlibs)
+depends=('switch-mbedtls' 'switch-zlib')
+groups=('switch-portlibs')
+source=("${url}/libssh2-${pkgver}.tar.gz")
+sha256sums=('d5fb8bd563305fd1074dda90bd053fb2d29fc4bce048d182f96eaa466dfadafd')
+
+build() {
+  cd "libssh2-${pkgver}"
+
+  source /opt/devkitpro/switchvars.sh
+
+  ./configure --prefix=${PORTLIBS_PREFIX} \
+	--disable-shared --enable-static \
+	--host=aarch64-none-elf \
+	--with-crypto=mbedtls \
+	--disable-examples-build
+
+  make
+}
+
+package() {
+  cd "libssh2-${pkgver}"
+
+  source /opt/devkitpro/switchvars.sh
+
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 COPYING "${pkgdir}/opt/devkitpro/portlibs/switch/licenses/${pkgname}/LICENSE"
+}
