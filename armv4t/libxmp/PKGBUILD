@@ -1,0 +1,29 @@
+# Maintainer: Chromaryu <knight.ryu12@gmail.com>
+pkgname=dkp-armv4t-libxmp
+pkgver=4.4.1
+pkgrel=1
+pkgdesc="Library that supports over 90 module formats"
+arch=('any')
+url="http://xmp.sourceforge.net/"
+license=('GPL')
+options=(!strip libtool staticlibs)
+source=("http://download.sourceforge.net/project/xmp/libxmp/$pkgver/libxmp-$pkgver.tar.gz" "libxmp.patch")
+sha256sums=('353535cc84c8cddae8decec4e65fa4c51fc64f22eb0891bc3dae6eaf25f9cccf' 'f63e0e3aa4197423d82c0cff42a400ca5182a4a56b62bd087e32e7913ed7f42d')
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=("dkp-armv4t-portlibs")
+ 
+build() {
+  cd "libxmp-$pkgver"
+  patch -Np1 -i $srcdir/libxmp.patch
+
+  source /opt/devkitpro/armv4tvars.sh
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+              --disable-shared --enable-static
+  make
+}
+ 
+package() {
+  cd "libxmp-$pkgver"
+  source /opt/devkitpro/armv4tvars.sh
+  make DESTDIR="$pkgdir/" install
+}
