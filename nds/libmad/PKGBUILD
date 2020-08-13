@@ -1,0 +1,45 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: Cameron Cawley <ccawley2011@gmail.com>
+
+pkgname=nds-libmad
+pkgver=0.15.1b
+pkgrel=1
+pkgdesc='A high-quality MPEG audio decoder. (for Nintendo DS homebrew development)'
+arch=('any')
+url='https://www.underbit.com'
+license=('GPL')
+options=(!strip libtool staticlibs)
+source=(
+ "https://sourceforge.net/projects/mad/files/libmad/${pkgver}/libmad-${pkgver}.tar.gz"
+ "libmad-0.15.1b.patch"
+)
+sha256sums=(
+ 'bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690'
+ '2b7c29f4383b6f92b3b33144ce445f9558ff3e3fa4f185cec13d44969c7c9b11'
+)
+makedepends=('nds-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('nds-portlibs')
+
+build() {
+  cd libmad-$pkgver
+
+  patch -Np1 -i "$srcdir/libmad-0.15.1b.patch"
+
+  source /opt/devkitpro/ndsvars.sh
+
+  rm -f Makefile.in aclocal.m4 config.guess config.h.in config.sub configure depcomp install-sh ltmain.sh mad.h missing mkinstalldirs msvc++/Makefile.in
+  touch AUTHORS NEWS ChangeLog
+  autoreconf -fi
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --disable-shared --enable-static \
+              --enable-fpm=arm --enable-speed --enable-sso
+  make
+}
+
+package() {
+  cd libmad-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
