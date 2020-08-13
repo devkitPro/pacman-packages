@@ -1,0 +1,42 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=dkp-armv4t-libmad
+pkgver=0.15.1b
+pkgrel=1
+pkgdesc='A high-quality MPEG audio decoder. (for armv4t homebrew development)'
+arch=('any')
+url='https://www.underbit.com'
+license=('GPL')
+options=(!strip libtool staticlibs)
+source=(
+ "https://sourceforge.net/projects/mad/files/libmad/${pkgver}/libmad-${pkgver}.tar.gz"
+ "libmad-0.15.1b.patch"
+)
+sha256sums=(
+ 'bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690'
+ 'b8fd4477d793c1081bd1a4c5c6870fc088b593516c153d3d40bf5d22e7f38a7f'
+)
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=('dkp-armv4t-portlibs')
+
+build() {
+  cd libmad-$pkgver
+
+  patch -Np1 -i "$srcdir/libmad-0.15.1b.patch"
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/armv4tvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --disable-shared --enable-static \
+  	      --enable-fpm=arm --enable-speed
+  make
+}
+
+package() {
+  cd libmad-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/armv4tvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
