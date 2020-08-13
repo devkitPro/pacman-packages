@@ -1,0 +1,50 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: oreo639 <oreo6391@gmail.com>
+
+pkgname=dkp-armv4t-libtheora
+pkgver=1.2.0alpha1
+pkgrel=1
+pkgdesc='Free and open video compression codec from the Xiph.org Foundation'
+arch=('any')
+url='https://www.theora.org/'
+license=(Xiph.org)
+options=(!strip libtool staticlibs)
+source=(
+ "https://ftp.osuosl.org/pub/xiph/releases/theora/libtheora-${pkgver}.tar.gz" 
+ "libtheora-1.2.0.patch"
+)
+sha256sums=(
+ '538305e6efa484ba740616b521f0d8c4428a0a995193c5e6af9b20f488f3c497'
+ '45c9601eda3425699530edd66da0cf70658844f4cae04f4b1910d1f7f6cb2aa1'
+)
+makedepends=('devkitpro-pkgbuild-helpers')
+depends=('dkp-armv4t-libogg')
+groups=('dkp-armv4t-portlibs')
+
+build() {
+  cd libtheora-${pkgver}
+
+  patch -Np1 -i "$srcdir/libtheora-1.2.0.patch"
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  HAVE_ARM_ASM_EDSP=0 ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static --disable-encode \
+    --disable-examples --disable-vorbistest \
+    --disable-asflag-probe --disable-float
+
+  CFLAGS="-march=armv4t" make
+}
+
+package() {
+  cd libtheora-${pkgver}
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+
+  # remove useless documentation
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share/doc
+}
