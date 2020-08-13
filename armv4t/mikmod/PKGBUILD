@@ -1,0 +1,40 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=dkp-armv4t-mikmod
+pkgver=3.3.11.1
+pkgrel=1
+pkgdesc="Amodule player and library supporting many formats, including mod, s3m, it, and xm (armv4t port)"
+arch=('any')
+url="http://mikmod.sourceforge.net/"
+license=("LGPL")
+options=(!strip libtool staticlibs)
+makedepends=(
+ 'devkitpro-pkgbuild-helpers'
+)
+source=("https://sourceforge.net/projects/mikmod/files/libmikmod/$pkgver/libmikmod-$pkgver.tar.gz")
+sha256sums=(
+'ad9d64dfc8f83684876419ea7cd4ff4a41d8bcd8c23ef37ecb3a200a16b46d19'
+)
+groups=("dkp-armv4t-portlibs")
+
+build() {
+  cd libmikmod-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/armv4tvars.sh
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd libmikmod-$pkgver
+
+  source /opt/devkitpro/devkitarm.sh
+  source /opt/devkitpro/armv4tvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  rm -fr "$pkgdir"${PORTLIBS_PREFIX}/share
+}
