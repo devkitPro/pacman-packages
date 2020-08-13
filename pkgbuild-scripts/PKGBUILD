@@ -9,7 +9,7 @@ arch=('any')
 url='http://devkitpro.org/'
 
 source=(
-'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh' 'ndsvars.sh' 'armv4tvars.ah'
+'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh' 'ndsvars.sh' 'armv4tvars.sh'
 'devkitppc.sh' 'devkitppc.cmake' 'gamecube.cmake' 'wii.cmake' 'ppcvars.sh' 'cubevars.sh' 'wiivars.sh' 'wiiuvars.sh'
 'devkita64.sh' 'devkita64.cmake' 'switch.cmake' 'switchvars.sh'
 'meson-cross.sh' 'meson-toolchain.sh' 'portlibs_prefix.sh'
