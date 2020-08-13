@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitpro-pkgbuild-helpers
-pkgver=2.1.1
+pkgver=2.1.2
 pkgrel=1
 
 pkgdesc='makepkg helpers for devkitPro portlibs'
@@ -9,7 +9,7 @@ arch=('any')
 url='http://devkitpro.org/'
 
 source=(
-'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh' 'ndsvars.sh'
+'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh' 'ndsvars.sh' 'armv4tvars.ah'
 'devkitppc.sh' 'devkitppc.cmake' 'gamecube.cmake' 'wii.cmake' 'ppcvars.sh' 'cubevars.sh' 'wiivars.sh' 'wiiuvars.sh'
 'devkita64.sh' 'devkita64.cmake' 'switch.cmake' 'switchvars.sh'
 'meson-cross.sh' 'meson-toolchain.sh' 'portlibs_prefix.sh'
@@ -26,6 +26,7 @@ sha256sums=(
   'ee9db3dc30964d9294eec06a8c92bb3660acd5df6131149993947a6fd00a9193'
   '4ce7e4332497871fe92e1aedc0100cd717658412b5e411171e6f39314ea32cd2'
   '84a6c7a8cc78137655f47b36f8f34556123a4fd30e62242b615548cc7b70f2d0'
+  'bb392cee1fd51591cb9f0ed7d399642b26b10afb152b2603d55a3a5975d0ec4f'
 
   '95ca2a35f2026d1c47a5609c35273ff346e6b57989aa1e0b29fe3431a61ee3e1'
   'eae3882d869a8e5087dec63874a7079094ac5bbeb81ec09c0be9ea75a358a458'
