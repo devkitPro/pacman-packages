@@ -1,0 +1,36 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('dkp-armv4t-bzip2')
+pkgver=1.0.8
+pkgrel=1
+pkgdesc="A high-quality data compression program"
+arch=('any')
+license=('custom')
+url="http://www.bzip.org"
+options=(!strip libtool staticlibs)
+source=(https://fossies.org/linux/misc/bzip2-$pkgver.tar.gz)
+sha256sums=('ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269')
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=('dkp-armv4t-portlibs')
+
+build() {
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  make -C "$srcdir/bzip2-$pkgver" \
+  CC=arm-none-eabi-gcc \
+  AR=arm-none-eabi-ar \
+  RANLIB=arm-none-eabi-ranlib \
+  CPPFLAGS="${CPPFLAGS}" \
+  CFLAGS="-D_FILE_OFFSET_BITS=64 -Winline ${CFLAGS}" libbz2.a
+
+}
+
+package() {
+  source /opt/devkitpro/armv4tvars.sh
+
+  install -Dm 644 "$srcdir/bzip2-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
+  install -Dm 644 "$srcdir/bzip2-$pkgver"/bzlib.h -t "${pkgdir}/${PORTLIBS_PREFIX}/include/"
+  install -Dm 644 "$srcdir/bzip2-$pkgver"/libbz2.a -t "${pkgdir}/${PORTLIBS_PREFIX}/lib"
+}
