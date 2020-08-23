@@ -1,25 +1,22 @@
-diff -Naur flac-1.3.2-stock/include/share/compat.h flac-1.3.2/include/share/compat.h
---- flac-1.3.2-stock/include/share/compat.h
-+++ flac-1.3.2/include/share/compat.h
-@@ -167,8 +167,14 @@
+diff -ur srcpure/include/share/compat.h srcpatched/include/share/compat.h
+--- srcpure/include/share/compat.h	2016-12-07 20:10:26.218454157 +0000
++++ srcpatched/include/share/compat.h	2020-08-23 13:10:05.619975022 +0100
+@@ -167,8 +167,9 @@
  #define flac_vfprintf vfprintf
  
  #define flac_fopen fopen
-+#if defined(_3DS) || defined(_ARMV4T)
+-#define flac_chmod chmod
+-#define flac_utime utime
 +#define flac_chmod(a, b) printf("flac_chmod: not implemented\n")
 +#define flac_utime(a, b) printf("flac_utime: not implemented\n")
 +#define chown(a, b, c) printf("flac_chown: not implemented\n")
-+#else
- #define flac_chmod chmod
- #define flac_utime utime
-+#endif
  #define flac_unlink unlink
  #define flac_rename rename
  #define flac_stat stat
-
-diff -NBaur flac-1.3.2.orig/Makefile.in flac-1.3.2/Makefile.in
---- flac-1.3.2.orig/Makefile.in	2017-01-01 03:46:48.833726273 +0000
-+++ flac-1.3.2/Makefile.in	2019-05-24 01:17:05.264899302 +0100
+Only in srcpatched/include/share: compat.h~
+diff -ur srcpure/Makefile.in srcpatched/Makefile.in
+--- srcpure/Makefile.in	2017-01-01 03:46:48.833726273 +0000
++++ srcpatched/Makefile.in	2020-08-23 13:09:00.589975823 +0100
 @@ -397,7 +397,7 @@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
@@ -29,10 +26,9 @@ diff -NBaur flac-1.3.2.orig/Makefile.in flac-1.3.2/Makefile.in
  EXTRA_DIST = \
  	COPYING.FDL \
  	COPYING.GPL \
-
-diff -NBaur flac-1.3.2.orig/src/Makefile.in flac-1.3.2/src/Makefile.in
---- flac-1.3.2.orig/src/Makefile.in	2017-01-01 03:46:49.385728167 +0000
-+++ flac-1.3.2/src/Makefile.in	2019-05-24 01:18:39.497280352 +0100
+diff -ur srcpure/src/Makefile.in srcpatched/src/Makefile.in
+--- srcpure/src/Makefile.in	2017-01-01 03:46:49.385728167 +0000
++++ srcpatched/src/Makefile.in	2020-08-23 13:09:00.589975823 +0100
 @@ -363,19 +363,11 @@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
