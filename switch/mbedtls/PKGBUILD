@@ -1,6 +1,6 @@
 pkgname=switch-mbedtls
 pkgver=2.16.6
-pkgrel=2
+pkgrel=3
 pkgdesc='An open source, portable, easy to use, readable and flexible SSL library'
 arch=('any')
 url='https://tls.mbed.org'
