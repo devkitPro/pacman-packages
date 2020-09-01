@@ -1,0 +1,50 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=armv4t-zlib
+pkgver=1.2.11
+pkgrel=1
+pkgdesc='Deflate compression method library (for armv4t homebrew development)'
+arch=('any')
+url='http://www.zlib.net/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+source=("https://zlib.net/zlib-1.2.11.tar.gz")
+sha256sums=('c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1')
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=('dkp-armv4t-portlibs')
+
+build() {
+  cd zlib-$pkgver
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  CHOST=arm-none-eabi \
+    ./configure --prefix="${PORTLIBS_PREFIX}" --static
+  make libz.a # only build library, no programs
+
+
+  # libminizip
+  cd contrib/minizip
+  autoreconf --force --verbose --install
+  CFLAGS="${CFLAGS} -DUSE_FILE32API"
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd zlib-$pkgver
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  make DESTDIR="$pkgdir" install
+  # license
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  tail -n 31 README > "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+  # remove useless stuff
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+
+  # libminizip
+  cd contrib/minizip
+  make DESTDIR="$pkgdir" install
+}
