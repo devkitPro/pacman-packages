@@ -9,7 +9,7 @@ arch=('any')
 url='http://devkitpro.org/'
 
 source=(
-'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh' 'ndsvars.sh'
+'devkitarm.sh' 'devkitarm.cmake' '3ds.cmake' '3dsvars.sh' 'ndsvars.sh' 'armv4tvars.sh'
 'devkitppc.sh' 'devkitppc.cmake' 'gamecube.cmake' 'wii.cmake' 'ppcvars.sh' 'cubevars.sh' 'wiivars.sh' 'wiiuvars.sh'
 'devkita64.sh' 'devkita64.cmake' 'switch.cmake' 'switchvars.sh'
 'meson-cross.sh' 'meson-toolchain.sh' 'portlibs_prefix.sh'
@@ -26,6 +26,7 @@ sha256sums=(
   '4592e9f06c5b5e5291f5721ddd3cc260d064dd693820aaf934f4c901c2164afb'
   '4ce7e4332497871fe92e1aedc0100cd717658412b5e411171e6f39314ea32cd2'
   '84a6c7a8cc78137655f47b36f8f34556123a4fd30e62242b615548cc7b70f2d0'
+  '1ec23c5e1f15fb18c9e4a4ee6896a2354ba21b4d1adf2c1f904f08665af78666'
 
   '95ca2a35f2026d1c47a5609c35273ff346e6b57989aa1e0b29fe3431a61ee3e1'
   'eae3882d869a8e5087dec63874a7079094ac5bbeb81ec09c0be9ea75a358a458'
@@ -52,7 +53,7 @@ sha256sums=(
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/cmake
-  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh ndsvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitarm.sh devkitarm.cmake 3ds.cmake 3dsvars.sh ndsvars.sh armv4tvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkita64.sh devkita64.cmake switch.cmake switchvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkitppc.sh devkitppc.cmake gamecube.cmake wii.cmake ppcvars.sh wiivars.sh wiiuvars.sh "$pkgdir"/opt/devkitpro
   install -Dm755 meson-cross.sh meson-toolchain.sh portlibs_prefix.sh "$pkgdir"/opt/devkitpro
