@@ -1,6 +1,6 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=dkp-armv4t-zlib
+pkgname=armv4t-zlib
 pkgver=1.2.11
 pkgrel=1
 pkgdesc='Deflate compression method library (for armv4t homebrew development)'
