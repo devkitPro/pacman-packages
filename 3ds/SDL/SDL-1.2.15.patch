@@ -660,10 +660,10 @@ index 000000000..c51c850b9
 +#endif /* _SDL_n3dsaudio_h */
 diff --git a/src/joystick/n3ds/SDL_sysjoystick.c b/src/joystick/n3ds/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..075d46927
+index 000000000..fac6624c7
 --- /dev/null
 +++ b/src/joystick/n3ds/SDL_sysjoystick.c
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,176 @@
 +#include "SDL_config.h"
 +
 +#include <3ds.h>
@@ -677,6 +677,7 @@ index 000000000..075d46927
 +#include "../../video/n3ds/SDL_n3dsvideo.h"
 +
 +int old_x = 0, old_y = 0;
++int old_cs_x = 0, old_cs_y = 0;
 +u32 key_press, key_release = 0;
 +
 +int SDL_SYS_JoystickInit (void) {
@@ -698,7 +699,7 @@ index 000000000..075d46927
 +	joystick->nbuttons = 14;
 +	joystick->nhats = 0;
 +	joystick->nballs = 0;
-+	joystick->naxes = 2;
++	joystick->naxes = 4;
 +
 +	return 0;
 +}
@@ -726,6 +727,23 @@ index 000000000..075d46927
 +	if (old_y != y) {
 +		old_y = y;
 +		SDL_PrivateJoystickAxis (joystick, 1, - y * 210);
++	}
++
++	circlePosition circleStick = {0};
++	irrstCstickRead(&circleStick);
++	x = circleStick.dx;
++	y = circleStick.dy;
++	if (x > 156) x= 156;
++	if (x < -156) x= -156;
++	if (y > 156) y= 156;
++	if (y < -156) y= -156;
++	if (old_cs_x != x) {
++		old_cs_x = x;
++		SDL_PrivateJoystickAxis (joystick, 2, x * 210);
++	}
++	if (old_cs_y != y) {
++		old_cs_y = y;
++		SDL_PrivateJoystickAxis (joystick, 3, - y * 210);
 +	}
 +
 +	key_press = hidKeysDown ();
