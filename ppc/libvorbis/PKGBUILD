@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-libvorbis
-pkgver=1.3.6
+pkgver=1.3.7
 pkgrel=1
 pkgdesc='A patent-clear, fully open, general purpose audio encoding format standard that rivals or even surpasses the 'upcoming' generation of proprietary codecs (AAC and TwinVQ, also known as VQF).'
 arch=('any')
@@ -12,15 +12,13 @@ depends=('ppc-libogg')
 makedepends=('devkitpro-pkgbuild-helpers' 'ppc-pkg-config')
 groups=('ppc-portlibs')
 
-source=("libvorbis-${pkgver}.tar.gz::https://github.com/xiph/vorbis/archive/v${pkgver}.tar.gz")
-sha256sums=('43fc4bc34f13da15b8acfa72fd594678e214d1cab35fc51d3a54969a725464eb')
+source=("https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-$pkgver.tar.gz")
+sha256sums=('0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab')
 
 build() {
   cd vorbis-$pkgver
 
   source /opt/devkitpro/ppcvars.sh
-
-  ./autogen.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static
