@@ -2,7 +2,7 @@
 # Contributor: cpasjuste <cpasjuste@gmail.com>
 
 pkgname=switch-libmodplug
-pkgver=0.8.8.5
+pkgver=0.8.9.0
 pkgrel=1
 pkgdesc='Play various .mod formats'
 arch=('any')
@@ -15,8 +15,8 @@ source=(
   "libmodplug-${pkgver}.patch"
 )
 sha256sums=(
-  '77462d12ee99476c8645cb5511363e3906b88b33a6b54362b4dbc0f39aa2daad'
-  'e898148dc021a2efe49942a5d1a58661cda34888403bfea279c552ebe65d21da'
+  '457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de'
+  '0be5de1981997ac11cd4711a3715662d75d7fabb15ff096ea302ebc8378ce9ef'
 )
 
 build() {
