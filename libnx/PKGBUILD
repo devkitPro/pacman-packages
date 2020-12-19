@@ -2,8 +2,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libnx')
-pkgver=3.3.0
-pkgrel=2
+pkgver=4.0.0
+pkgrel=1
 pkgdesc="Nintendo Switch AArch64-only userland library."
 arch=('any')
 license=('custom')
@@ -11,11 +11,9 @@ url="http://github.com/switchbrew"
 options=(!strip libtool staticlibs)
 source=(
   ${pkgname}-${pkgver}.tar.gz::${url}/${pkgname}/archive/v${pkgver}.tar.gz
-  libnx-3.3.0-hotfix.patch
 )
 sha256sums=(
-  '9c3d717df58a2d7239de8acd31d7e4a5755055a8088268131cbd68315ee58d14'
-  '1939afa7429ea6c8dac9833b0bc46b3bf8fecba368614d9c90753cbdec4869f4'
+  '2d8ba11a2e9356317cf1fce4d7bab82b526bc1a02b1a71fe0b09e91ec4db995f'
 )
 makedepends=('devkitA64')
 
@@ -24,7 +22,6 @@ groups=('switch-dev')
 build() {
 
   cd ${srcdir}/${pkgname}-${pkgver}/nx
-  patch -p2 -i ${srcdir}/libnx-3.3.0-hotfix.patch
   make
 
 }
