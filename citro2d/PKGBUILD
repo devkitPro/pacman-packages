@@ -2,7 +2,7 @@
 # Maintainer: fincs <fincs.alt1@gmail.com>
 
 pkgname=('citro2d')
-pkgver=1.4.0
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="Nintendo 3DS gpu 2d helper library."
 arch=('any')
@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('bdb18f4d29fbe3e792d271b089fb3bff3ed1921e89ef656f5a908095ebd844fa')
+sha256sums=('8ad21381d4b881004879ce75650678d09aee92f30b928128732e47b152de064f')
 makedepends=('devkitARM')
 depends=('libctru' 'citro3d')
 
