@@ -2,7 +2,7 @@
 # Maintainer: fincs <fincs.alt1@gmail.com>
 
 pkgname=('citro3d')
-pkgver=1.6.1
+pkgver=1.6.2
 pkgrel=1
 pkgdesc="Nintendo 3DS gpu library."
 arch=('any')
@@ -10,7 +10,7 @@ license=('custom')
 url="http://github.com/devkitPro/${pkgname}"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('f7b73dd0ef38a7a5d44cfce1ea3339cce2de766cc684515d781a7145a06571cf')
+sha256sums=('d4f669018ca0b932da416a0c7bd100d94ffa11a1c247d64d4b472811f66e8c9b')
 makedepends=('devkitARM')
 depends=('libctru')
 
