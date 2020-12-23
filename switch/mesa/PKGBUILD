@@ -2,7 +2,7 @@
 
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
-pkgver=20.1.0
+pkgver=20.1.10
 pkgrel=1
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
@@ -10,26 +10,31 @@ url='https://mesa.freedesktop.org/archive'
 license=(MIT)
 options=(!strip libtool staticlibs)
 source=(
-  "${pkgbasename}-${pkgver}.tar.xz::${url}/${pkgbasename}-${pkgver}-rc3.tar.xz"
+  "${pkgbasename}-${pkgver}.tar.xz::${url}/${pkgbasename}-${pkgver}.tar.xz"
   "${pkgname}-${pkgver}-${pkgrel}.patch"
 )
 sha256sums=(
-  'c90b75ea34302ebde9b81b87c5642fa864c40fe9c4ad34ce0793170c1413168d'
-  '950f93d3e5b6ae9c5a42c2918623fe9a80d7ee398d92d2e73abec86b62d75916'
+  'b1dba69910adac9fcb4cbdfd7833d99a4a8c75b91f3d2e97f0fd0a3cd8c6ee9f'
+  'bf12ef045532688e3553ac13ab060569da031a465783e63cb751c22b4a2a96c6'
 )
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-libdrm_nouveau')
 
-build() {
-  cd ${pkgbasename}-${pkgver}-rc3
+prepare() {
+  cd ${pkgbasename}-${pkgver}
 
   patch -p1 -i ${srcdir}/${pkgname}-${pkgver}-${pkgrel}.patch
-  /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build -Db_ndebug=true
+  ${DEVKITPRO}/meson-cross.sh switch ../crossfile.txt build -Db_ndebug=true -Dgles1=false -Dgles2=true -Dshared-glapi=true -Degl=true
+}
+
+build() {
+  cd ${pkgbasename}-${pkgver}
+
   ninja -C build
 }
 
 package() {
-  cd ${pkgbasename}-${pkgver}-rc3
+  cd ${pkgbasename}-${pkgver}
 
   DESTDIR="$pkgdir" ninja -C build install
 }

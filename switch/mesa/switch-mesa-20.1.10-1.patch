@@ -1,3 +1,97 @@
+From ce892b96671ab3c316f44288f4bdaea69386af42 Mon Sep 17 00:00:00 2001
+From: Mahyar Koshkouei <mk@deltabeard.com>
+Date: Wed, 23 Dec 2020 00:47:21 +0000
+Subject: [PATCH] switch: add support
+
+Signed-off-by: Mahyar Koshkouei <mk@deltabeard.com>
+---
+ include/EGL/eglplatform.h                     |   6 +
+ include/c11/threads.h                         |  28 +-
+ include/c99_alloca.h                          |   2 +-
+ meson.build                                   | 102 ++-
+ meson_options.txt                             |   2 +-
+ src/compiler/glsl/glsl_lexer.ll               |   3 +-
+ src/egl/drivers/switch/egl_switch.c           | 750 ++++++++++++++++++
+ src/egl/main/eglcurrent.c                     |  17 +-
+ src/egl/main/egldevice.c                      |   1 +
+ src/egl/main/egldisplay.c                     |   3 +-
+ src/egl/main/egldisplay.h                     |   1 +
+ src/egl/main/eglglobals.c                     |   4 +
+ src/egl/main/eglglobals.h                     |   1 +
+ src/egl/main/egllog.c                         |   9 +-
+ src/egl/meson.build                           |  22 +-
+ src/gallium/auxiliary/driver_ddebug/dd_util.h |   2 +-
+ src/gallium/auxiliary/hud/hud_context.c       |   5 +-
+ src/gallium/auxiliary/os/os_thread.h          |   4 +-
+ .../target-helpers/inline_debug_helper.h      |   2 +
+ src/gallium/auxiliary/util/u_network.c        |   2 +-
+ src/gallium/auxiliary/util/u_tests.c          |   2 +-
+ .../drivers/nouveau/codegen/nv50_ir.cpp       |   2 +
+ .../nouveau/codegen/nv50_ir_emit_nvc0.cpp     |   4 +
+ .../nouveau/codegen/nv50_ir_target.cpp        |   2 +
+ .../nouveau/codegen/nv50_ir_target_nvc0.cpp   |   4 +
+ .../nouveau/codegen/nv50_ir_target_nvc0.h     |   2 +
+ src/gallium/drivers/nouveau/nouveau_debug.h   |   2 +-
+ src/gallium/drivers/nouveau/nouveau_screen.c  |  32 +-
+ src/gallium/drivers/nouveau/nouveau_screen.h  |   3 +-
+ .../drivers/nouveau/nouveau_vp3_video.c       |   7 +-
+ src/gallium/drivers/nouveau/nouveau_winsys.h  |   1 -
+ .../drivers/nouveau/nv30/nv30_miptree.c       |  11 +-
+ .../drivers/nouveau/nv30/nv30_screen.c        |   1 -
+ .../drivers/nouveau/nv50/nv50_miptree.c       |  10 +-
+ .../drivers/nouveau/nv50/nv50_screen.c        |   1 -
+ src/gallium/drivers/nouveau/nv50/nv84_video.c |   6 +-
+ .../drivers/nouveau/nv50/nv98_video_vp.c      |   4 +-
+ .../drivers/nouveau/nvc0/nvc0_program.c       |   4 +
+ .../drivers/nouveau/nvc0/nvc0_screen.c        |  24 +-
+ src/gallium/drivers/nouveau/nvc0/nvc0_state.c |   6 +
+ .../drivers/nouveau/nvc0/nvc0_video_vp.c      |   4 +-
+ src/gallium/include/pipe/p_config.h           |  34 +-
+ src/gallium/meson.build                       |   6 +-
+ src/gallium/winsys/nouveau/switch/meson.build |  29 +
+ .../nouveau/switch/nouveau_switch_public.h    |  13 +
+ .../nouveau/switch/nouveau_switch_winsys.c    | 206 +++++
+ src/loader/loader.c                           |   4 +
+ src/mapi/es1api/meson.build                   |   2 +-
+ src/mapi/es2api/meson.build                   |   2 +-
+ src/mapi/shared-glapi/meson.build             |  11 +-
+ src/mesa/main/context.c                       |   2 +-
+ src/mesa/main/errors.c                        |  10 +-
+ src/mesa/main/execmem.c                       |   1 +
+ src/mesa/main/glspirv.c                       |   2 +
+ src/mesa/main/hash.h                          |   1 +
+ src/mesa/state_tracker/st_cb_clear.c          |  22 +-
+ src/mesa/state_tracker/st_cb_drawpixels.c     |   8 +
+ src/mesa/state_tracker/st_cb_drawtex.c        |   4 +
+ src/mesa/state_tracker/st_cb_memoryobjects.c  |   2 +-
+ .../state_tracker/st_cb_semaphoreobjects.c    |   2 +-
+ src/mesa/state_tracker/st_context.c           |  16 +
+ src/mesa/state_tracker/st_draw.c              |   3 +
+ src/mesa/state_tracker/st_glsl_to_ir.cpp      |   6 +
+ src/mesa/state_tracker/st_glsl_to_tgsi.cpp    |   2 +-
+ .../st_glsl_to_tgsi_array_merge.cpp           |   8 +-
+ .../state_tracker/st_glsl_to_tgsi_private.cpp |   8 +
+ .../state_tracker/st_glsl_to_tgsi_private.h   |   2 +-
+ src/mesa/state_tracker/st_manager.c           |   2 +
+ src/mesa/state_tracker/st_pbo.c               |   4 +
+ src/mesa/state_tracker/st_program.c           |  30 +
+ src/mesa/state_tracker/st_shader_cache.c      |  12 +
+ src/meson.build                               |   7 +-
+ src/util/detect_os.h                          |   4 +
+ src/util/disk_cache.h                         |  10 +-
+ src/util/macros.h                             |   2 +
+ src/util/os_memory_aligned.h                  |  22 +-
+ src/util/os_memory_stdc.h                     |  10 +-
+ src/util/os_misc.c                            |   6 +
+ src/util/os_time.c                            |  25 +-
+ src/util/slab.c                               |   1 +
+ src/util/u_endian.h                           |  12 +-
+ 81 files changed, 1488 insertions(+), 163 deletions(-)
+ create mode 100644 src/egl/drivers/switch/egl_switch.c
+ create mode 100644 src/gallium/winsys/nouveau/switch/meson.build
+ create mode 100644 src/gallium/winsys/nouveau/switch/nouveau_switch_public.h
+ create mode 100644 src/gallium/winsys/nouveau/switch/nouveau_switch_winsys.c
+
 diff --git a/include/EGL/eglplatform.h b/include/EGL/eglplatform.h
 index 939539e640e..1ce16b2e109 100644
 --- a/include/EGL/eglplatform.h
@@ -74,7 +168,7 @@ index 5a3b8c19abb..5c4b6510e8d 100644
  #  include <alloca.h>
  
 diff --git a/meson.build b/meson.build
-index ba4fdb2a59f..0ed24fd6fcc 100644
+index ff5402f363e..5db4ed8b57a 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -146,7 +146,7 @@ if dri_drivers.contains('auto')
@@ -145,7 +239,7 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
    elif not with_shared_glapi
      error('EGL requires shared-glapi')
    elif not with_platforms
-@@ -791,6 +796,9 @@ endif
+@@ -782,6 +787,9 @@ endif
  if with_platform_haiku
    pre_args += '-DHAVE_HAIKU_PLATFORM'
  endif
@@ -155,7 +249,7 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
  
  if meson.version().version_compare('>=0.50')
    prog_python = import('python').find_installation('python3')
-@@ -825,7 +833,7 @@ endif
+@@ -816,7 +824,7 @@ endif
  with_shader_cache = false
  _shader_cache = get_option('shader-cache')
  if _shader_cache != 'false'
@@ -164,7 +258,7 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
      if _shader_cache == 'true'
        error('Shader Cache does not currently work on Windows')
      endif
-@@ -887,7 +895,7 @@ if cc.compiles('__uint128_t foo(void) { return 0; }',
+@@ -875,7 +883,7 @@ if cc.compiles('__uint128_t foo(void) { return 0; }',
  endif
  
  # TODO: this is very incomplete
@@ -173,8 +267,8 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
    pre_args += '-D_GNU_SOURCE'
  elif host_machine.system() == 'sunos'
    pre_args += '-D__EXTENSIONS__'
-@@ -912,6 +920,10 @@ elif host_machine.system() == 'windows'
-   endif
+@@ -902,6 +910,10 @@ elif host_machine.system() == 'openbsd'
+   pre_args += '-D_ISOC11_SOURCE'
  endif
  
 +if ['horizon'].contains(host_machine.system())
@@ -184,7 +278,7 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
  # Check for generic C arguments
  c_args = []
  c_vis_args = []
-@@ -1017,6 +1029,16 @@ else
+@@ -1012,6 +1024,16 @@ else
      cpp_vis_args += '-fvisibility=hidden'
    endif
  
@@ -201,7 +295,7 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
  endif
  
  # set linker arguments
-@@ -1243,7 +1265,7 @@ ld_args_build_id = cc.get_supported_link_arguments('-Wl,--build-id=sha1')
+@@ -1245,7 +1267,7 @@ ld_args_build_id = cc.get_supported_link_arguments('-Wl,--build-id=sha1')
  # check for dl support
  dep_dl = null_dep
  if not cc.has_function('dlopen')
@@ -210,37 +304,23 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
  endif
  if cc.has_function('dladdr', dependencies : dep_dl)
    # This is really only required for megadrivers
-@@ -1265,42 +1287,50 @@ else
+@@ -1267,36 +1289,48 @@ else
    dep_clock = cc.find_library('rt')
  endif
  
 -# TODO: some of these may be conditional
 -dep_zlib = dependency('zlib', version : '>= 1.2.3', fallback : ['zlib', 'zlib_dep'])
 -pre_args += '-DHAVE_ZLIB'
--
--_zstd = get_option('zstd')
--if _zstd != 'false'
--  dep_zstd = dependency('libzstd', required : _zstd == 'true')
--  if dep_zstd.found()
--    pre_args += '-DHAVE_ZSTD'
--  endif
--else
--  dep_zstd = null_dep
--endif
 +if host_machine.system() != 'horizon'
 +  # TODO: some of these may be conditional
 +  dep_zlib = dependency('zlib', version : '>= 1.2.3', fallback : ['zlib', 'zlib_dep'])
 +  pre_args += '-DHAVE_ZLIB'
  
--dep_thread = dependency('threads')
--if dep_thread.found() and host_machine.system() != 'windows'
--  pre_args += '-DHAVE_PTHREAD'
--  if cc.has_function(
--      'pthread_setaffinity_np',
--      dependencies : dep_thread,
--      prefix : '#include <pthread.h>',
--      args : '-D_GNU_SOURCE')
--    pre_args += '-DHAVE_PTHREAD_SETAFFINITY'
+-_zstd = get_option('zstd')
+-if _zstd != 'false'
+-  dep_zstd = dependency('libzstd', required : _zstd == 'true')
+-  if dep_zstd.found()
+-    pre_args += '-DHAVE_ZSTD'
 +  _zstd = get_option('zstd')
 +  if _zstd != 'false'
 +    dep_zstd = dependency('libzstd', required : _zstd == 'true')
@@ -268,15 +348,21 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
 +      pre_args += '-DPTHREAD_SETAFFINITY_IN_NP_HEADER'
 +    endif
    endif
+-else
+-  dep_zstd = null_dep
+-endif
+-
+-dep_thread = dependency('threads')
+-if dep_thread.found() and host_machine.system() != 'windows'
+-  pre_args += '-DHAVE_PTHREAD'
 -  if cc.has_function(
 -      'pthread_setaffinity_np',
 -      dependencies : dep_thread,
--      prefix : '#include <pthread_np.h>')
--    pre_args += '-DPTHREAD_SETAFFINITY_IN_NP_HEADER'
+-      prefix : '#include <pthread.h>',
+-      args : '-D_GNU_SOURCE')
+-    pre_args += '-DHAVE_PTHREAD_SETAFFINITY'
 +  if host_machine.system() != 'windows'
 +    dep_expat = dependency('expat', fallback : ['expat', 'expat_dep'])
-+  else
-+    dep_expat = null_dep
    endif
 -endif
 -if host_machine.system() != 'windows'
@@ -291,7 +377,7 @@ index ba4fdb2a59f..0ed24fd6fcc 100644
  # this only exists on linux so either this is linux and it will be found, or
  # it's not linux and wont
  dep_m = cc.find_library('m', required : false)
-@@ -1419,7 +1449,7 @@ endif
+@@ -1415,7 +1449,7 @@ endif
  
  dep_llvm = null_dep
  with_llvm = false
@@ -1199,10 +1285,10 @@ index 02ac4fb9a9d..2d8cff739f0 100644
     _EGL_PLATFORM_DEVICE,
  
 diff --git a/src/egl/main/eglglobals.c b/src/egl/main/eglglobals.c
-index 6811048bdf7..3f67dac321e 100644
+index f5814b2b2a1..def0ddb5b0f 100644
 --- a/src/egl/main/eglglobals.c
 +++ b/src/egl/main/eglglobals.c
-@@ -135,7 +135,11 @@ EGLBoolean
+@@ -138,7 +138,11 @@ EGLBoolean
  _eglPointerIsDereferencable(void *p)
  {
     uintptr_t addr = (uintptr_t) p;
@@ -1328,10 +1414,10 @@ index 4c77cbcc163..0996525b083 100644
  #include <sys/stat.h>
  #elif defined(PIPE_OS_WINDOWS)
 diff --git a/src/gallium/auxiliary/hud/hud_context.c b/src/gallium/auxiliary/hud/hud_context.c
-index 1e2b948e348..b9a7ce1b336 100644
+index 81feb15b9e6..d9717a4a083 100644
 --- a/src/gallium/auxiliary/hud/hud_context.c
 +++ b/src/gallium/auxiliary/hud/hud_context.c
-@@ -1014,7 +1014,7 @@ static void strcat_without_spaces(char *dst, const char *src)
+@@ -1003,7 +1003,7 @@ static void strcat_without_spaces(char *dst, const char *src)
  }
  
  
@@ -1340,7 +1426,7 @@ index 1e2b948e348..b9a7ce1b336 100644
  #define W_OK 0
  static int
  access(const char *pathname, int mode)
-@@ -1022,6 +1022,9 @@ access(const char *pathname, int mode)
+@@ -1011,6 +1011,9 @@ access(const char *pathname, int mode)
     /* no-op */
     return 0;
  }
@@ -2437,7 +2523,7 @@ index 00000000000..87b9eff8017
 +	return 0;
 +}
 diff --git a/src/loader/loader.c b/src/loader/loader.c
-index 8548cbdfedb..058a38af1d2 100644
+index b96d8c75ef0..47d601acc31 100644
 --- a/src/loader/loader.c
 +++ b/src/loader/loader.c
 @@ -26,7 +26,9 @@
@@ -2519,7 +2605,7 @@ index 5b9db0c081a..315b72e65de 100644
    test(
      'shared-glapi-test',
 diff --git a/src/mesa/main/context.c b/src/mesa/main/context.c
-index 2b8becb806d..3038ac3641b 100644
+index 21e7068866a..3b27ad64635 100644
 --- a/src/mesa/main/context.c
 +++ b/src/mesa/main/context.c
 @@ -1233,7 +1233,7 @@ _mesa_initialize_context(struct gl_context *ctx,
@@ -2566,7 +2652,7 @@ index 91988f183f8..eeaefde0960 100644
  #endif
     }
 diff --git a/src/mesa/main/execmem.c b/src/mesa/main/execmem.c
-index b2018b5e767..823fe406f76 100644
+index a3e76c5d0b0..03214ebf3d8 100644
 --- a/src/mesa/main/execmem.c
 +++ b/src/mesa/main/execmem.c
 @@ -133,6 +133,7 @@ _mesa_exec_free(void *addr)
@@ -2739,10 +2825,10 @@ index 4960a55e986..deb95d247e7 100644
     if (preferred_ir == PIPE_SHADER_IR_NIR) {
        unsigned inputs[2 + MAX_TEXTURE_UNITS];
 diff --git a/src/mesa/state_tracker/st_cb_memoryobjects.c b/src/mesa/state_tracker/st_cb_memoryobjects.c
-index d81c7692c1f..7d2c3d7396b 100644
+index f695e9b10a0..144694f4c52 100644
 --- a/src/mesa/state_tracker/st_cb_memoryobjects.c
 +++ b/src/mesa/state_tracker/st_cb_memoryobjects.c
-@@ -80,7 +80,7 @@ st_import_memoryobj_fd(struct gl_context *ctx,
+@@ -86,7 +86,7 @@ st_import_memoryobj_fd(struct gl_context *ctx,
                                                        &whandle,
                                                        obj->Dedicated);
  
@@ -2752,7 +2838,7 @@ index d81c7692c1f..7d2c3d7396b 100644
     close(fd);
  #endif
 diff --git a/src/mesa/state_tracker/st_cb_semaphoreobjects.c b/src/mesa/state_tracker/st_cb_semaphoreobjects.c
-index 7a32d9b138f..88b41dc9047 100644
+index dca4b209d32..0c45d73f356 100644
 --- a/src/mesa/state_tracker/st_cb_semaphoreobjects.c
 +++ b/src/mesa/state_tracker/st_cb_semaphoreobjects.c
 @@ -68,7 +68,7 @@ st_import_semaphoreobj_fd(struct gl_context *ctx,
@@ -2765,10 +2851,10 @@ index 7a32d9b138f..88b41dc9047 100644
     close(fd);
  #endif
 diff --git a/src/mesa/state_tracker/st_context.c b/src/mesa/state_tracker/st_context.c
-index 4f7fd242741..848d075dd41 100644
+index 935de6d7b1f..7dfa132ce58 100644
 --- a/src/mesa/state_tracker/st_context.c
 +++ b/src/mesa/state_tracker/st_context.c
-@@ -453,7 +453,9 @@ st_destroy_context_priv(struct st_context *st, bool destroy_pipe)
+@@ -454,7 +454,9 @@ st_destroy_context_priv(struct st_context *st, bool destroy_pipe)
     uint i;
  
     st_destroy_atoms(st);
@@ -2778,7 +2864,7 @@ index 4f7fd242741..848d075dd41 100644
     st_destroy_clear(st);
     st_destroy_bitmap(st);
     st_destroy_drawpix(st);
-@@ -773,9 +775,13 @@ st_create_context_priv(struct gl_context *ctx, struct pipe_context *pipe,
+@@ -778,9 +780,13 @@ st_create_context_priv(struct gl_context *ctx, struct pipe_context *pipe,
  
     ctx->Const.ShaderCompilerOptions[MESA_SHADER_VERTEX].PositionAlwaysInvariant = options->vs_position_always_invariant;
  
@@ -2792,7 +2878,7 @@ index 4f7fd242741..848d075dd41 100644
     ctx->Const.UseNIRGLSLLinker = preferred_ir == PIPE_SHADER_IR_NIR;
  
     if (ctx->Const.GLSLVersion < 400) {
-@@ -901,14 +907,18 @@ st_init_driver_functions(struct pipe_screen *screen,
+@@ -906,14 +912,18 @@ st_init_driver_functions(struct pipe_screen *screen,
     st_init_bitmap_functions(functions);
     st_init_copy_image_functions(functions);
     st_init_drawpixels_functions(functions);
@@ -2811,7 +2897,7 @@ index 4f7fd242741..848d075dd41 100644
     st_init_memoryobject_functions(functions);
     st_init_msaa_functions(functions);
     st_init_perfmon_functions(functions);
-@@ -943,9 +953,13 @@ st_init_driver_functions(struct pipe_screen *screen,
+@@ -948,9 +958,13 @@ st_init_driver_functions(struct pipe_screen *screen,
     /* GL_ARB_get_program_binary */
     functions->GetProgramBinaryDriverSHA1 = st_get_program_binary_driver_sha1;
  
@@ -2825,7 +2911,7 @@ index 4f7fd242741..848d075dd41 100644
     if (preferred_ir == PIPE_SHADER_IR_NIR) {
        functions->ShaderCacheSerializeDriverBlob =  st_serialise_nir_program;
        functions->ProgramBinarySerializeDriverBlob =
-@@ -1062,8 +1076,10 @@ st_destroy_context(struct st_context *st)
+@@ -1067,8 +1081,10 @@ st_destroy_context(struct st_context *st)
      */
     _mesa_make_current(ctx, NULL, NULL);
  
@@ -3062,7 +3148,7 @@ index ee5ee2df598..3ebb149b6aa 100644
     return create_fs_tgsi(st, download, target, conversion);
  }
 diff --git a/src/mesa/state_tracker/st_program.c b/src/mesa/state_tracker/st_program.c
-index cb9fcfdbdd6..47b746bfd6a 100644
+index e4cc3408fd8..a5dd4ac4c14 100644
 --- a/src/mesa/state_tracker/st_program.c
 +++ b/src/mesa/state_tracker/st_program.c
 @@ -225,8 +225,10 @@ delete_variant(struct st_context *st, struct st_variant *v, GLenum target)
@@ -3100,9 +3186,9 @@ index cb9fcfdbdd6..47b746bfd6a 100644
  
 +#ifndef __SWITCH__
        /* Translate to NIR if preferred. */
-       if (st->pipe->screen->get_shader_param(st->pipe->screen,
-                                              PIPE_SHADER_VERTEX,
-@@ -550,6 +557,7 @@ st_translate_vertex_program(struct st_context *st,
+       if (PIPE_SHADER_IR_NIR ==
+           st->pipe->screen->get_shader_param(st->pipe->screen,
+@@ -551,6 +558,7 @@ st_translate_vertex_program(struct st_context *st,
              return true;
           }
        }
@@ -3110,7 +3196,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
     }
  
     st_prepare_vertex_program(stp);
-@@ -645,6 +653,8 @@ st_translate_vertex_program(struct st_context *st,
+@@ -646,6 +654,8 @@ st_translate_vertex_program(struct st_context *st,
     return stp->state.tokens != NULL;
  }
  
@@ -3119,7 +3205,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
  static struct nir_shader *
  get_nir_shader(struct st_context *st, struct st_program *stp)
  {
-@@ -668,6 +678,8 @@ get_nir_shader(struct st_context *st, struct st_program *stp)
+@@ -669,6 +679,8 @@ get_nir_shader(struct st_context *st, struct st_program *stp)
     return nir_deserialize(NULL, options, &blob_reader);
  }
  
@@ -3128,7 +3214,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
  static const gl_state_index16 depth_range_state[STATE_LENGTH] =
     { STATE_DEPTH_RANGE };
  
-@@ -689,6 +701,7 @@ st_create_vp_variant(struct st_context *st,
+@@ -690,6 +702,7 @@ st_create_vp_variant(struct st_context *st,
  
     state.stream_output = stvp->state.stream_output;
  
@@ -3136,7 +3222,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
     if (stvp->state.type == PIPE_SHADER_IR_NIR &&
         (!key->is_draw_shader || draw_has_llvm())) {
        bool finalize = false;
-@@ -756,6 +769,7 @@ st_create_vp_variant(struct st_context *st,
+@@ -757,6 +770,7 @@ st_create_vp_variant(struct st_context *st,
  
        return vpv;
     }
@@ -3144,7 +3230,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
  
     state.type = PIPE_SHADER_IR_TGSI;
     state.tokens = tgsi_dup_tokens(stvp->state.tokens);
-@@ -792,9 +806,11 @@ st_create_vp_variant(struct st_context *st,
+@@ -793,9 +807,11 @@ st_create_vp_variant(struct st_context *st,
     if (ST_DEBUG & DEBUG_PRINT_IR)
        tgsi_dump(state.tokens, 0);
  
@@ -3156,15 +3242,15 @@ index cb9fcfdbdd6..47b746bfd6a 100644
        vpv->base.driver_shader = pipe->create_vs_state(pipe, &state);
  
     if (state.tokens) {
-@@ -881,6 +897,7 @@ st_translate_fragment_program(struct st_context *st,
+@@ -882,6 +898,7 @@ st_translate_fragment_program(struct st_context *st,
                                       ST_NEW_FS_SAMPLERS;
        }
  
 +#ifndef __SWITCH__
        /* Translate to NIR. */
        if (!stfp->ati_fs &&
-           st->pipe->screen->get_shader_param(st->pipe->screen,
-@@ -899,6 +916,7 @@ st_translate_fragment_program(struct st_context *st,
+           PIPE_SHADER_IR_NIR ==
+@@ -901,6 +918,7 @@ st_translate_fragment_program(struct st_context *st,
           stfp->Base.nir = nir;
           return true;
        }
@@ -3172,7 +3258,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
     }
  
     ubyte outputMapping[2 * FRAG_RESULT_MAX];
-@@ -1248,6 +1266,7 @@ st_create_fp_variant(struct st_context *st,
+@@ -1250,6 +1268,7 @@ st_create_fp_variant(struct st_context *st,
     if (!variant)
        return NULL;
  
@@ -3180,7 +3266,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
     if (stfp->state.type == PIPE_SHADER_IR_NIR) {
        bool finalize = false;
  
-@@ -1384,6 +1403,7 @@ st_create_fp_variant(struct st_context *st,
+@@ -1386,6 +1405,7 @@ st_create_fp_variant(struct st_context *st,
  
        return variant;
     }
@@ -3188,7 +3274,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
  
     state.tokens = stfp->state.tokens;
  
-@@ -1780,6 +1800,7 @@ st_get_common_variant(struct st_context *st,
+@@ -1782,6 +1802,7 @@ st_get_common_variant(struct st_context *st,
        v = (struct st_variant*)CALLOC_STRUCT(st_common_variant);
        if (v) {
  	 if (prog->state.type == PIPE_SHADER_IR_NIR) {
@@ -3196,7 +3282,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
              bool finalize = false;
  
  	    state.type = PIPE_SHADER_IR_NIR;
-@@ -1799,6 +1820,7 @@ st_get_common_variant(struct st_context *st,
+@@ -1801,6 +1822,7 @@ st_get_common_variant(struct st_context *st,
  
              if (ST_DEBUG & DEBUG_PRINT_IR)
                 nir_print_shader(state.ir.nir, stderr);
@@ -3204,7 +3290,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
           } else {
              if (key->lower_depth_clamp) {
                 struct gl_program_parameter_list *params = prog->Base.Parameters;
-@@ -1838,9 +1860,11 @@ st_get_common_variant(struct st_context *st,
+@@ -1840,9 +1862,11 @@ st_get_common_variant(struct st_context *st,
              cs.ir_type = state.type;
              cs.req_local_mem = prog->Base.info.cs.shared_size;
  
@@ -3216,7 +3302,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
                 cs.prog = state.tokens;
  
              v->driver_shader = pipe->create_compute_state(pipe, &cs);
-@@ -2021,6 +2045,8 @@ st_precompile_shader_variant(struct st_context *st,
+@@ -2023,6 +2047,8 @@ st_precompile_shader_variant(struct st_context *st,
     }
  }
  
@@ -3225,7 +3311,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
  void
  st_serialize_nir(struct st_program *stp)
  {
-@@ -2035,6 +2061,8 @@ st_serialize_nir(struct st_program *stp)
+@@ -2037,6 +2063,8 @@ st_serialize_nir(struct st_program *stp)
     }
  }
  
@@ -3234,7 +3320,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
  void
  st_finalize_program(struct st_context *st, struct gl_program *prog)
  {
-@@ -2045,6 +2073,7 @@ st_finalize_program(struct st_context *st, struct gl_program *prog)
+@@ -2047,6 +2075,7 @@ st_finalize_program(struct st_context *st, struct gl_program *prog)
           st->dirty |= ((struct st_program *)prog)->affected_states;
     }
  
@@ -3242,7 +3328,7 @@ index cb9fcfdbdd6..47b746bfd6a 100644
     if (prog->nir) {
        nir_sweep(prog->nir);
  
-@@ -2054,6 +2083,7 @@ st_finalize_program(struct st_context *st, struct gl_program *prog)
+@@ -2056,6 +2085,7 @@ st_finalize_program(struct st_context *st, struct gl_program *prog)
         */
        st_serialize_nir(st_program(prog));
     }
@@ -3509,10 +3595,10 @@ index bda5715998f..b9b7fa91e5a 100644
  
  
 diff --git a/src/util/os_misc.c b/src/util/os_misc.c
-index e6894731b63..c4df72a657e 100644
+index e184edc893d..9cc374f57b8 100644
 --- a/src/util/os_misc.c
 +++ b/src/util/os_misc.c
-@@ -60,6 +60,8 @@
+@@ -67,6 +67,8 @@
  #  include <kernel/OS.h>
  #elif DETECT_OS_WINDOWS
  #  include <windows.h>
@@ -3521,7 +3607,7 @@ index e6894731b63..c4df72a657e 100644
  #else
  #error unexpected platform in os_sysinfo.c
  #endif
-@@ -104,6 +106,8 @@ os_log_message(const char *message)
+@@ -111,6 +113,8 @@ os_log_message(const char *message)
        fputs(message, fout);
        fflush(fout);
     }
@@ -3530,7 +3616,7 @@ index e6894731b63..c4df72a657e 100644
  #else /* !DETECT_OS_WINDOWS */
     fflush(stdout);
     fputs(message, fout);
-@@ -177,6 +181,8 @@ os_get_total_physical_memory(uint64_t *size)
+@@ -184,6 +188,8 @@ os_get_total_physical_memory(uint64_t *size)
     ret = GlobalMemoryStatusEx(&status);
     *size = status.ullTotalPhys;
     return (ret == TRUE);
@@ -3638,7 +3724,7 @@ index 62634034fdc..cfe0ddcf0d0 100644
  #define SLAB_MAGIC_ALLOCATED 0xcafe4321
  #define SLAB_MAGIC_FREE 0x7ee01234
 diff --git a/src/util/u_endian.h b/src/util/u_endian.h
-index 6bbae3c444c..fd9e02f1daa 100644
+index d9ead69a4a4..9619778da08 100644
 --- a/src/util/u_endian.h
 +++ b/src/util/u_endian.h
 @@ -1,8 +1,8 @@
@@ -3675,7 +3761,7 @@ index 6bbae3c444c..fd9e02f1daa 100644
   **************************************************************************/
  #ifndef U_ENDIAN_H
  #define U_ENDIAN_H
-@@ -73,7 +73,7 @@
+@@ -82,7 +82,7 @@
  # define UTIL_ARCH_BIG_ENDIAN 1
  #endif
  
@@ -3684,3 +3770,6 @@ index 6bbae3c444c..fd9e02f1daa 100644
  
  #define UTIL_ARCH_LITTLE_ENDIAN 1
  #define UTIL_ARCH_BIG_ENDIAN 0
+-- 
+2.29.2
+
