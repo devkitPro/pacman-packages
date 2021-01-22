@@ -43,7 +43,7 @@ build() {
     --disable-protocols --enable-protocol=file,http,ftp,tcp,udp,rtmp \
     --enable-zlib --enable-bzlib --enable-libass --enable-libfreetype --enable-libfribidi
 
-  make -j9
+  make
 }
 
 package() {
