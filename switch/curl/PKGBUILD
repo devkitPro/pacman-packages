@@ -27,6 +27,7 @@ build() {
   patch -Np1 -i $srcdir/switch-curl.patch
 
   source /opt/devkitpro/switchvars.sh
+  LDFLAGS="-specs=${DEVKITPRO}/libnx/switch.specs ${LDFLAGS}"
 
   ./buildconf
 
