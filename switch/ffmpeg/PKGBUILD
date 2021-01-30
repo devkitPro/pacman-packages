@@ -4,8 +4,8 @@
 # Contributor: jakibaki <jakibaki live com>
 
 pkgname=switch-ffmpeg
-pkgver=4.2.2
-pkgrel=2
+pkgver=4.3.1
+pkgrel=1
 pkgdesc='ffmpeg port (for Nintendo Switch homebrew development)'
 arch=('any')
 url='https://ffmpeg.org/'
@@ -16,8 +16,8 @@ depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
          'switch-freetype')
 source=("https://ffmpeg.org/releases/ffmpeg-$pkgver.tar.xz" "ffmpeg.patch")
 sha256sums=(
- 'cb754255ab0ee2ea5f66f8850e1bd6ad5cac1cd855d0a2f4990fb8c668b0d29c'
- 'c93328dae566fa38f3903ec23a8022c89bc600e8946753c3e32f41a851f20928'
+ 'ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb'
+ '8604ce3a949bc7dff33be66d5ea1d83ff01eed1fed3fbe89f199922d8101f5d8'
 )
 groups=('switch-portlibs')
 
@@ -38,13 +38,10 @@ build() {
     --extra-cxxflags='-D__SWITCH__ -D_GNU_SOURCE -O2 -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -ftls-model=local-exec' \
     --extra-ldflags='-fPIE -L${PORTLIBS_PREFIX}/lib -L${DEVKITPRO}/libnx/lib' \
     --disable-runtime-cpudetect --disable-programs --disable-debug --disable-doc --disable-autodetect \
-    --enable-network --disable-hwaccels --disable-encoders \
-    --disable-avdevice --enable-swscale --enable-swresample \
-    --enable-zlib --enable-bzlib --enable-libass --enable-libfreetype --enable-libfribidi \
-    --enable-filter='rotate,transpose' \
+    --disable-avdevice --disable-hwaccels --disable-encoders --disable-muxers \
+    --enable-swscale --enable-swresample --enable-network  \
     --disable-protocols --enable-protocol=file,http,ftp,tcp,udp,rtmp \
-    --disable-demuxers --enable-demuxer=h264,matroska,mov,ogg,rtsp,mpegts \
-    --disable-parsers --enable-parser=h264,aac
+    --enable-zlib --enable-bzlib --enable-libass --enable-libfreetype --enable-libfribidi
 
   make
 }
