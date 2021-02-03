@@ -1,0 +1,37 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: carstene1ns <arch carsten-teibes de> - http://git.io/ctPKG
+# Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
+
+pkgname=switch-libsmm
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='SimpleModManager plugin library (for Nintendo Switch homebrew development)'
+arch=('any')
+url='https://github.com/withertech/libsmm'
+license=('custom')
+options=(!strip libtool staticlibs)
+depends=('libnx')
+groups=('switch-portlibs')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers' 'libnx')
+source=("https://github.com/withertech/libsmm/archive/$pkgver.tar.gz")
+sha256sums=('b1529466a074b7230435b4e7f8af6bb7c0e2b051a993b03838d0a6d3c88dea36')
+
+build() {
+  cd libsmm-$pkgver
+  source /opt/devkitpro/devkita64.sh
+  source /opt/devkitpro/switchvars.sh
+  make
+}
+
+package() {
+  cd libsmm-$pkgver
+
+  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/
+  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/include/
+  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/lib/
+
+
+  install LICENSE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/
+  install output/include/libsmm.h "$pkgdir"/opt/devkitpro/portlibs/switch/include/libsmm.h
+  install output/lib/libsmm.a "$pkgdir"/opt/devkitpro/portlibs/switch/lib/libsmm.a
+}
