@@ -1,6 +1,4 @@
-# Maintainer:  Dave Murphy <davem@devkitpro.org>
-# Contributor: carstene1ns <arch carsten-teibes de> - http://git.io/ctPKG
-# Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
+# Maintainer:  Witherking25 <witherking@withertech.com>
 
 pkgname=switch-libsmm
 pkgver=1.0.0
