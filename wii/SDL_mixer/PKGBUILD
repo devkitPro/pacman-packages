@@ -14,6 +14,7 @@ depends=(
  'ppc-libvorbis'
  'ppc-libogg'
  'ppc-libmad'
+ 'ppc-libmodplug'
 )
 groups=('wii-portlibs' 'wii-sdl-libs')
 
@@ -42,7 +43,7 @@ build() {
     --disable-shared --enable-static \
     --enable-music-ogg \
     --disable-music-cmd \
-    --disable-music-mod \
+    --enable-music-mod-modplug \
     --enable-music-mp3-mad-gpl
 
   make
