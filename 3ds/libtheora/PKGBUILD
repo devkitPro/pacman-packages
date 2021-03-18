@@ -3,7 +3,7 @@
 
 pkgname=3ds-libtheora
 pkgver=1.2.0alpha1
-pkgrel=1
+pkgrel=2
 pkgdesc='Free and open video compression codec from the Xiph.org Foundation'
 arch=('any')
 url='https://www.theora.org/'
@@ -15,7 +15,7 @@ source=(
 )
 sha256sums=(
  '538305e6efa484ba740616b521f0d8c4428a0a995193c5e6af9b20f488f3c497'
- '45c9601eda3425699530edd66da0cf70658844f4cae04f4b1910d1f7f6cb2aa1'
+ 'b508af29ae3b290e0c2cb0565937826024b0acd6d8c9fb47d2abff6dd04de89a'
 )
 makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('3ds-libogg')
