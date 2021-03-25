@@ -1,0 +1,34 @@
+# Maintainer:  Mary Strodl <ipadlover8322@gmail.com>
+
+pkgname=switch-harfbuzz
+pkgver=2.8.0
+pkgrel=1
+pkgdesc='HarfBuzz is a text shaping library. Using the HarfBuzz library allows programs to convert a sequence of Unicode input into properly formatted and positioned glyph output—for any writing system and language.'
+arch=('any')
+url='https://harfbuzz.github.io/'
+license=(LGPL)
+options=(!strip libtool staticlibs)
+source=("https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz")
+sha256sums=('a1079fd021adaf5683351f34587a255975cc3bcadba31246ae40ebebb95ecd42')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers' 'switch-freetype')
+depends=('switch-freetype')
+
+build() {
+  mkdir harfbuzz-$pkgver/build
+  cd harfbuzz-$pkgver/build
+
+  source "${DEVKITPRO}/switchvars.sh"
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="${DEVKITPRO}/switch.cmake" \
+    -DUSE_SWITCH=ON -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}"  \
+    -DHB_HAVE_FREETYPE=ON \
+    ../
+
+  cmake --build .
+}
+
+package() {
+  cd harfbuzz-$pkgver
+
+  cmake --install build --prefix "$pkgdir"
+}
