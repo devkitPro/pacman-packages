@@ -1,3 +1,61 @@
+diff --git a/Makefile.in b/Makefile.in
+index 3d10565..833ef35 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -47,7 +47,7 @@ LT_RELEASE  = @LT_RELEASE@
+ LT_REVISION = @LT_REVISION@
+ LT_LDFLAGS  = -no-undefined -rpath $(libdir) -release $(LT_RELEASE) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+ 
+-all: $(srcdir)/configure Makefile $(objects) $(objects)/$(TARGET) $(objects)/playwave$(EXE) $(objects)/playmus$(EXE)
++all: $(srcdir)/configure Makefile $(objects) $(objects)/$(TARGET)
+ 
+ $(srcdir)/configure: $(srcdir)/configure.in
+ 	@echo "Warning, configure.in is out of date"
+@@ -60,18 +60,12 @@ Makefile: $(srcdir)/Makefile.in
+ $(objects):
+ 	$(SHELL) $(auxdir)/mkinstalldirs $@
+ 
+-.PHONY: all install install-hdrs install-lib install-bin uninstall uninstall-hdrs uninstall-lib uninstall-bin clean distclean dist
++.PHONY: all install install-hdrs install-lib uninstall uninstall-hdrs uninstall-lib clean distclean dist
+ 
+ $(objects)/$(TARGET): $(OBJECTS) $(VERSION_OBJECTS)
+ 	$(LIBTOOL) --mode=link $(CC) -o $@ $(OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
+ 
+-$(objects)/playwave$(EXE): $(objects)/playwave.lo $(objects)/$(TARGET)
+-	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
+-
+-$(objects)/playmus$(EXE): $(objects)/playmus.lo $(objects)/$(TARGET)
+-	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
+-
+-install: all install-hdrs install-lib #install-bin
++install: all install-hdrs install-lib
+ install-hdrs:
+ 	$(SHELL) $(auxdir)/mkinstalldirs $(includedir)/SDL
+ 	for src in $(srcdir)/SDL_mixer.h; do \
+@@ -83,12 +77,8 @@ install-hdrs:
+ install-lib: $(objects) $(objects)/$(TARGET)
+ 	$(SHELL) $(auxdir)/mkinstalldirs $(libdir)
+ 	$(LIBTOOL) --mode=install $(INSTALL) $(objects)/$(TARGET) $(libdir)/$(TARGET)
+-install-bin:
+-	$(SHELL) $(auxdir)/mkinstalldirs $(bindir)
+-	$(LIBTOOL) --mode=install $(INSTALL) -m 755 $(objects)/playwave$(EXE) $(bindir)/playwave$(EXE)
+-	$(LIBTOOL) --mode=install $(INSTALL) -m 755 $(objects)/playmus$(EXE) $(bindir)/playmus$(EXE)
+ 
+-uninstall: uninstall-hdrs uninstall-lib uninstall-bin
++uninstall: uninstall-hdrs uninstall-lib
+ uninstall-hdrs:
+ 	for src in $(srcdir)/SDL_mixer.h; do \
+ 	    file=`echo $$src | sed -e 's|^.*/||'`; \
+@@ -99,9 +89,6 @@ uninstall-hdrs:
+ 	-rmdir $(libdir)/pkgconfig
+ uninstall-lib:
+ 	$(LIBTOOL) --mode=uninstall rm -f $(libdir)/$(TARGET)
+-uninstall-bin:
+-	rm -f $(bindir)/playwave$(EXE)
+-	rm -f $(bindir)/playmus$(EXE)
+ 
+ clean:
+ 	rm -rf $(objects)
 diff --git a/load_ogg.c b/load_ogg.c
 index 2d0ee65..1e94fa6 100644
 --- a/load_ogg.c
@@ -23,6 +81,18 @@ index 2d0ee65..1e94fa6 100644
  #endif	 
      {
          if (read == OV_HOLE || read == OV_EBADLINK)
+diff --git a/music_modplug.h b/music_modplug.h
+index 92cbafd..555227b 100644
+--- a/music_modplug.h
++++ b/music_modplug.h
+@@ -1,6 +1,6 @@
+ #ifdef MODPLUG_MUSIC
+ 
+-#include "modplug.h"
++#include <libmodplug/modplug.h>
+ #include "SDL_rwops.h"
+ #include "SDL_audio.h"
+ #include "SDL_mixer.h"
 diff --git a/music_ogg.c b/music_ogg.c
 index 18a094b..269a197 100644
 --- a/music_ogg.c
