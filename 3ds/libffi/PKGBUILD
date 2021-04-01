@@ -1,0 +1,45 @@
+#maintainer:  Tulio Beloqui <beloquitulio@gmail.com>
+
+pkgname=3ds-libffi
+pkgver=3.3
+pkgrel=1
+pkgdesc="A Portable Foreign Function Interface Library"
+arch=('any')
+url="https://sourceware.org/libffi/"
+license=("Copyright (c) 1996-2020  Anthony Green, Red Hat, Inc and others.")
+options=(!strip libtool staticlibs)
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=('3ds-portlibs')
+
+source=(
+    "https://github.com/libffi/libffi/releases/download/v3.3/libffi-3.3.tar.gz"
+)
+sha256sums=(
+    '72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056'
+)
+
+build() {
+    cd libffi-$pkgver
+
+    source /opt/devkitpro/3dsvars.sh
+
+    ./configure --prefix="${PORTLIBS_PREFIX}" \
+        --host=arm-none-eabi \
+        --disable-shared \
+        --enable-static \
+        --disable-rpath
+
+    make
+}
+
+package() {
+    cd libffi-$pkgver
+
+    source /opt/devkitpro/3dsvars.sh
+
+    make DESTDIR="${pkgdir}" install
+
+    # license
+    install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+   }
+
