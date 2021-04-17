@@ -1348,3 +1348,17 @@ index 205fdc0d7..03d130deb 100644
 -#endif /* USE_GSKIT or USE_NSS or USE_GNUTLS or USE_WOLFSSL or USE_SCHANNEL */
 +#endif /* USE_GSKIT or USE_NSS or USE_GNUTLS or USE_WOLFSSL or USE_SCHANNEL or USE_LIBNX */
  #endif /* HEADER_CURL_X509ASN1_H */
+
+diff --git a/include/curl/curl.h b/include/curl/curl.h
+index 4cb8c0e4d..8786b1be5 100644
+--- a/include/curl/curl.h
++++ b/include/curl/curl.h
+@@ -75,7 +75,8 @@
+     defined(__minix) || defined(__SYMBIAN32__) || defined(__INTEGRITY) || \
+     defined(ANDROID) || defined(__ANDROID__) || defined(__OpenBSD__) || \
+     defined(__CYGWIN__) || \
+-   (defined(__FreeBSD_version) && (__FreeBSD_version < 800000))
++   (defined(__FreeBSD_version) && (__FreeBSD_version < 800000)) || \
++   defined(__SWITCH__)
+ #include <sys/select.h>
+ #endif
