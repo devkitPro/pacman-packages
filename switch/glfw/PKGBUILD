@@ -1,9 +1,10 @@
 # Maintainer:  fincs <fincs.alt1@gmail.com>
+# Maintainer:  DarkMatterCore <pabloacurielz@gmail.com>
 
 pkgbasename=glfw
 pkgname=switch-$pkgbasename
 pkgver=3.3.2
-pkgrel=1
+pkgrel=2
 pkgdesc='Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop'
 arch=('any')
 url='https://github.com/glfw/glfw'
@@ -15,7 +16,7 @@ source=(
 )
 sha256sums=(
   '08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7'
-  'e3b581089c5dc1a87ae216f4c7ca39a5b1038d9e57836920eefb44a5f1562b3d'
+  'd808b37a9a9e37b6b8b99d8fc3f1e05d688d5ee3a9b7f5b208a3846915869a3a'
 )
 depends=('switch-mesa')
 makedepends=('devkitpro-pkgbuild-helpers')
@@ -27,10 +28,11 @@ build() {
 
   source /opt/devkitpro/switchvars.sh
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
-    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
-    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
-    -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="${DEVKITPRO}/switch.cmake" \
+    -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}" \
+    -DCMAKE_C_FLAGS="${CFLAGS} ${CPPFLAGS}" \
+    -DCMAKE_AR="${DEVKITPRO}/devkitA64/bin/${AR}" \
+    -DSWITCH_LIBNX:BOOL=ON \
     -DGLFW_BUILD_EXAMPLES:BOOL=OFF -DGLFW_BUILD_TESTS:BOOL=OFF -DGLFW_BUILD_DOCS:BOOL=OFF \
     -DGLFW_VULKAN_STATIC:BOOL=ON -DGLFW_EGL_STATIC:BOOL=ON \
     .

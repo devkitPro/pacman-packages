@@ -1,8 +1,7 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e9888624..d3b58ab0 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -20,6 +20,7 @@ option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
+diff -uprN glfw-3.3.2/CMakeLists.txt glfw-3.3.2-switch/CMakeLists.txt
+--- glfw-3.3.2/CMakeLists.txt	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/CMakeLists.txt	2021-04-20 15:55:11.617993600 -0400
+@@ -20,6 +20,7 @@ option(GLFW_BUILD_TESTS "Build the GLFW
  option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
  option(GLFW_INSTALL "Generate installation target" ON)
  option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
@@ -50,11 +49,10 @@ index e9888624..d3b58ab0 100644
  #--------------------------------------------------------------------
  # Use Win32 for window creation
  #--------------------------------------------------------------------
-@@ -288,13 +308,29 @@ if (_GLFW_COCOA)
-     set(glfw_PKG_LIBS "-framework Cocoa -framework IOKit -framework CoreFoundation")
+@@ -289,13 +309,29 @@ if (_GLFW_COCOA)
  endif()
  
-+#--------------------------------------------------------------------
+ #--------------------------------------------------------------------
 +# Use Switch for window creation
 +#--------------------------------------------------------------------
 +if (_GLFW_SWITCH)
@@ -63,7 +61,7 @@ index e9888624..d3b58ab0 100644
 +
 +endif()
 +
- #--------------------------------------------------------------------
++#--------------------------------------------------------------------
  # Add the Vulkan loader as a dependency if necessary
  #--------------------------------------------------------------------
 -if (GLFW_VULKAN_STATIC)
@@ -71,20 +69,20 @@ index e9888624..d3b58ab0 100644
      list(APPEND glfw_PKG_DEPS "vulkan")
  endif()
  
-+#--------------------------------------------------------------------
+ #--------------------------------------------------------------------
 +# Add EGL as a dependency if necessary
 +#--------------------------------------------------------------------
 +if (GLFW_EGL_STATIC)
 +    list(APPEND glfw_PKG_DEPS "egl")
 +endif()
 +
- #--------------------------------------------------------------------
++#--------------------------------------------------------------------
  # Export GLFW library dependencies
  #--------------------------------------------------------------------
-diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 891302ed..e6aae465 100644
---- a/src/CMakeLists.txt
-+++ b/src/CMakeLists.txt
+ foreach(arg ${glfw_PKG_DEPS})
+diff -uprN glfw-3.3.2/src/CMakeLists.txt glfw-3.3.2-switch/src/CMakeLists.txt
+--- glfw-3.3.2/src/CMakeLists.txt	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/CMakeLists.txt	2021-04-20 15:55:11.639934200 -0400
 @@ -60,6 +60,11 @@ elseif (_GLFW_OSMESA)
                       posix_time.h posix_thread.h osmesa_context.h)
      set(glfw_SOURCES ${common_SOURCES} null_init.c null_monitor.c null_window.c
@@ -97,11 +95,10 @@ index 891302ed..e6aae465 100644
  endif()
  
  if (_GLFW_X11 OR _GLFW_WAYLAND)
-diff --git a/src/egl_context.c b/src/egl_context.c
-index e458bfb8..14dda0b4 100644
---- a/src/egl_context.c
-+++ b/src/egl_context.c
-@@ -252,6 +252,7 @@ static int extensionSupportedEGL(const char* extension)
+diff -uprN glfw-3.3.2/src/egl_context.c glfw-3.3.2-switch/src/egl_context.c
+--- glfw-3.3.2/src/egl_context.c	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/egl_context.c	2021-04-20 15:55:11.661876600 -0400
+@@ -252,6 +252,7 @@ static int extensionSupportedEGL(const c
  
  static GLFWglproc getProcAddressEGL(const char* procname)
  {
@@ -109,7 +106,7 @@ index e458bfb8..14dda0b4 100644
      _GLFWwindow* window = _glfwPlatformGetTls(&_glfw.contextSlot);
  
      if (window->context.egl.client)
-@@ -261,12 +262,14 @@ static GLFWglproc getProcAddressEGL(const char* procname)
+@@ -261,12 +262,14 @@ static GLFWglproc getProcAddressEGL(cons
          if (proc)
              return proc;
      }
@@ -124,7 +121,7 @@ index e458bfb8..14dda0b4 100644
  #if defined(_GLFW_X11)
      // NOTE: Do not unload libGL.so.1 while the X11 display is still open,
      //       as it will make XCloseDisplay segfault
-@@ -279,6 +282,7 @@ static void destroyContextEGL(_GLFWwindow* window)
+@@ -279,6 +282,7 @@ static void destroyContextEGL(_GLFWwindo
              window->context.egl.client = NULL;
          }
      }
@@ -132,7 +129,7 @@ index e458bfb8..14dda0b4 100644
  
      if (window->context.egl.surface)
      {
-@@ -302,6 +306,7 @@ static void destroyContextEGL(_GLFWwindow* window)
+@@ -302,6 +306,7 @@ static void destroyContextEGL(_GLFWwindo
  //
  GLFWbool _glfwInitEGL(void)
  {
@@ -165,7 +162,7 @@ index e458bfb8..14dda0b4 100644
  }
  
  #define setAttrib(a, v) \
-@@ -615,6 +626,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+@@ -615,6 +626,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwind
  
      window->context.egl.config = config;
  
@@ -173,7 +170,7 @@ index e458bfb8..14dda0b4 100644
      // Load the appropriate client library
      if (!_glfw.egl.KHR_get_all_proc_addresses)
      {
-@@ -692,6 +704,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+@@ -692,6 +704,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwind
              return GLFW_FALSE;
          }
      }
@@ -181,10 +178,9 @@ index e458bfb8..14dda0b4 100644
  
      window->context.makeCurrent = makeContextCurrentEGL;
      window->context.swapBuffers = swapBuffersEGL;
-diff --git a/src/egl_context.h b/src/egl_context.h
-index 6d42e11c..04f92f27 100644
---- a/src/egl_context.h
-+++ b/src/egl_context.h
+diff -uprN glfw-3.3.2/src/egl_context.h glfw-3.3.2-switch/src/egl_context.h
+--- glfw-3.3.2/src/egl_context.h	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/egl_context.h	2021-04-20 15:55:11.682822200 -0400
 @@ -43,6 +43,10 @@ typedef Window EGLNativeWindowType;
   #define EGLAPIENTRY
  typedef struct wl_display* EGLNativeDisplayType;
@@ -221,7 +217,7 @@ index 6d42e11c..04f92f27 100644
  // EGL function pointer typedefs
  typedef EGLBoolean (EGLAPIENTRY * PFN_eglGetConfigAttrib)(EGLDisplay,EGLConfig,EGLint,EGLint*);
  typedef EGLBoolean (EGLAPIENTRY * PFN_eglGetConfigs)(EGLDisplay,EGLConfig*,EGLint,EGLint*);
-@@ -148,6 +170,7 @@ typedef GLFWglproc (EGLAPIENTRY * PFN_eglGetProcAddress)(const char*);
+@@ -148,6 +170,7 @@ typedef GLFWglproc (EGLAPIENTRY * PFN_eg
  #define eglSwapInterval _glfw.egl.SwapInterval
  #define eglQueryString _glfw.egl.QueryString
  #define eglGetProcAddress _glfw.egl.GetProcAddress
@@ -255,10 +251,9 @@ index 6d42e11c..04f92f27 100644
  
  } _GLFWlibraryEGL;
  
-diff --git a/src/glfw_config.h.in b/src/glfw_config.h.in
-index f418c995..08673eab 100644
---- a/src/glfw_config.h.in
-+++ b/src/glfw_config.h.in
+diff -uprN glfw-3.3.2/src/glfw_config.h.in glfw-3.3.2-switch/src/glfw_config.h.in
+--- glfw-3.3.2/src/glfw_config.h.in	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/glfw_config.h.in	2021-04-20 15:55:11.709748700 -0400
 @@ -44,11 +44,15 @@
  #cmakedefine _GLFW_WAYLAND
  // Define this to 1 if building GLFW for OSMesa
@@ -275,10 +270,9 @@ index f418c995..08673eab 100644
  
  // Define this to 1 to force use of high-performance GPU on hybrid systems
  #cmakedefine _GLFW_USE_HYBRID_HPG
-diff --git a/src/init.c b/src/init.c
-index e44d0ca2..8706b22d 100644
---- a/src/init.c
-+++ b/src/init.c
+diff -uprN glfw-3.3.2/src/init.c glfw-3.3.2-switch/src/init.c
+--- glfw-3.3.2/src/init.c	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/init.c	2021-04-20 15:55:11.739668100 -0400
 @@ -28,7 +28,9 @@
  //========================================================================
  
@@ -305,10 +299,9 @@ index e44d0ca2..8706b22d 100644
  
      return GLFW_TRUE;
  }
-diff --git a/src/input.c b/src/input.c
-index 337d5cf0..44674352 100644
---- a/src/input.c
-+++ b/src/input.c
+diff -uprN glfw-3.3.2/src/input.c glfw-3.3.2-switch/src/input.c
+--- glfw-3.3.2/src/input.c	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/input.c	2021-04-20 15:55:11.759661200 -0400
 @@ -43,6 +43,8 @@
  #define _GLFW_JOYSTICK_BUTTON   2
  #define _GLFW_JOYSTICK_HATBIT   3
@@ -318,7 +311,7 @@ index 337d5cf0..44674352 100644
  // Finds a mapping based on joystick GUID
  //
  static _GLFWmapping* findMapping(const char* guid)
-@@ -251,6 +253,8 @@ static GLFWbool parseMapping(_GLFWmapping* mapping, const char* string)
+@@ -251,6 +253,8 @@ static GLFWbool parseMapping(_GLFWmappin
      return GLFW_TRUE;
  }
  
@@ -327,7 +320,7 @@ index 337d5cf0..44674352 100644
  
  //////////////////////////////////////////////////////////////////////////
  //////                         GLFW event API                       //////
-@@ -439,7 +443,9 @@ _GLFWjoystick* _glfwAllocJoystick(const char* name,
+@@ -439,7 +443,9 @@ _GLFWjoystick* _glfwAllocJoystick(const
      js->hatCount    = hatCount;
  
      strncpy(js->guid, guid, sizeof(js->guid) - 1);
@@ -337,7 +330,7 @@ index 337d5cf0..44674352 100644
  
      return js;
  }
-@@ -1114,6 +1120,7 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun cbfun)
+@@ -1114,6 +1120,7 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickC
  
  GLFWAPI int glfwUpdateGamepadMappings(const char* string)
  {
@@ -345,7 +338,7 @@ index 337d5cf0..44674352 100644
      int jid;
      const char* c = string;
  
-@@ -1168,6 +1175,7 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
+@@ -1168,6 +1175,7 @@ GLFWAPI int glfwUpdateGamepadMappings(co
          if (js->present)
              js->mapping = findValidMapping(js);
      }
@@ -353,11 +346,10 @@ index 337d5cf0..44674352 100644
  
      return GLFW_TRUE;
  }
-diff --git a/src/internal.h b/src/internal.h
-index 92b9497a..a503390d 100644
---- a/src/internal.h
-+++ b/src/internal.h
-@@ -190,6 +190,8 @@ typedef void (APIENTRY * PFN_vkVoidFunction)(void);
+diff -uprN glfw-3.3.2/src/internal.h glfw-3.3.2-switch/src/internal.h
+--- glfw-3.3.2/src/internal.h	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/internal.h	2021-04-20 15:55:11.779561400 -0400
+@@ -190,6 +190,8 @@ typedef void (APIENTRY * PFN_vkVoidFunct
   #include "wl_platform.h"
  #elif defined(_GLFW_OSMESA)
   #include "null_platform.h"
@@ -375,11 +367,9 @@ index 92b9497a..a503390d 100644
  #endif
      } vk;
  
-diff --git a/src/switch_context.c b/src/switch_context.c
-new file mode 100644
-index 00000000..b2fef527
---- /dev/null
-+++ b/src/switch_context.c
+diff -uprN glfw-3.3.2/src/switch_context.c glfw-3.3.2-switch/src/switch_context.c
+--- glfw-3.3.2/src/switch_context.c	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_context.c	2021-04-20 15:55:11.790533500 -0400
 @@ -0,0 +1,77 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
@@ -458,11 +448,9 @@ index 00000000..b2fef527
 +    return _glfwGetProcAddressImpl(procname);
 +}
 +
-diff --git a/src/switch_init.c b/src/switch_init.c
-new file mode 100644
-index 00000000..fa601266
---- /dev/null
-+++ b/src/switch_init.c
+diff -uprN glfw-3.3.2/src/switch_init.c glfw-3.3.2-switch/src/switch_init.c
+--- glfw-3.3.2/src/switch_init.c	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_init.c	2021-04-20 15:55:11.806489300 -0400
 @@ -0,0 +1,109 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
@@ -498,7 +486,7 @@ index 00000000..fa601266
 +
 +static void _glfwSwitchRefreshFocusState(void)
 +{
-+    int is_focused = appletGetFocusState() == AppletFocusState_Focused ? GLFW_TRUE : GLFW_FALSE;
++    int is_focused = appletGetFocusState() == AppletFocusState_InFocus ? GLFW_TRUE : GLFW_FALSE;
 +    if (is_focused != _glfw.nx.is_focused)
 +    {
 +        _glfw.nx.event_mask |= _GLFW_SWITCH_EVENT_FOCUS_CHANGED;
@@ -516,7 +504,7 @@ index 00000000..fa601266
 +            _glfw.nx.scr_width = 1280;
 +            _glfw.nx.scr_height = 720;
 +            break;
-+        case AppletOperationMode_Docked:
++        case AppletOperationMode_Console:
 +            _glfw.nx.scr_width = 1920;
 +            _glfw.nx.scr_height = 1080;
 +            break;
@@ -573,12 +561,10 @@ index 00000000..fa601266
 +    return _GLFW_VERSION_NUMBER " Switch EGL";
 +}
 +
-diff --git a/src/switch_joystick.c b/src/switch_joystick.c
-new file mode 100644
-index 00000000..7c087de3
---- /dev/null
-+++ b/src/switch_joystick.c
-@@ -0,0 +1,220 @@
+diff -uprN glfw-3.3.2/src/switch_joystick.c glfw-3.3.2-switch/src/switch_joystick.c
+--- glfw-3.3.2/src/switch_joystick.c	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_joystick.c	2021-04-20 17:09:58.206523600 -0400
+@@ -0,0 +1,225 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
 +//------------------------------------------------------------------------
@@ -608,7 +594,7 @@ index 00000000..7c087de3
 +#include "internal.h"
 +
 +// Built-in soft-reset combo that triggers a GLFW window close event
-+#define SOFT_RESET_COMBO (KEY_PLUS|KEY_MINUS|KEY_L|KEY_R)
++#define SOFT_RESET_COMBO (HidNpadButton_Plus|HidNpadButton_Minus|HidNpadButton_L|HidNpadButton_R)
 +
 +// Internal constants for gamepad mapping source types
 +#define _GLFW_JOYSTICK_AXIS     1
@@ -688,24 +674,31 @@ index 00000000..7c087de3
 +    },
 +};
 +
++static PadState g_switchPad = {0};
++
 +void _glfwInitSwitchJoysticks(void)
 +{
 +    _GLFWjoystick* js = _glfwAllocJoystick(s_switchMapping.name, s_switchMapping.guid,
 +        _SWITCH_AXIS_COUNT, _SWITCH_BUTTON_COUNT, _SWITCH_HAT_COUNT);
 +
 +    js->mapping = &s_switchMapping;
-+    js->nx.id = CONTROLLER_P1_AUTO;
++
++    padConfigureInput(1, HidNpadStyleSet_NpadStandard);
++    padInitializeDefault(&g_switchPad);
++
++    hidInitializeTouchScreen();
 +}
 +
 +void _glfwUpdateSwitchJoysticks(void)
 +{
 +    u64 down, held, up;
++    HidTouchScreenState ts = {0};
 +
 +    // Read input state
-+    hidScanInput();
-+    down = hidKeysDown(CONTROLLER_P1_AUTO);
-+    held = hidKeysHeld(CONTROLLER_P1_AUTO);
-+    up   = hidKeysUp  (CONTROLLER_P1_AUTO);
++    padUpdate(&g_switchPad);
++    down = padGetButtonsDown(&g_switchPad);
++    held = padGetButtons(&g_switchPad);
++    up   = padGetButtonsUp(&g_switchPad);
 +
 +    // Check for soft-reset combo
 +    if ((held & SOFT_RESET_COMBO) == SOFT_RESET_COMBO)
@@ -722,25 +715,24 @@ index 00000000..7c087de3
 +
 +    // Map common keyboard keys to the controller
 +    // TODO: Only do this mapping if a keyboard isn't connected
-+    MAP_KEY(KEY_UP, GLFW_KEY_UP, KBD_UP);
-+    MAP_KEY(KEY_DOWN, GLFW_KEY_DOWN, KBD_DOWN);
-+    MAP_KEY(KEY_LEFT, GLFW_KEY_LEFT, KBD_LEFT);
-+    MAP_KEY(KEY_RIGHT, GLFW_KEY_RIGHT, KBD_RIGHT);
-+    MAP_KEY(KEY_A, GLFW_KEY_X, KBD_X);
-+    MAP_KEY(KEY_B, GLFW_KEY_Z, KBD_Z);
-+    MAP_KEY(KEY_X, GLFW_KEY_S, KBD_S);
-+    MAP_KEY(KEY_Y, GLFW_KEY_A, KBD_A);
-+    MAP_KEY(KEY_PLUS, GLFW_KEY_ENTER, KBD_ENTER);
-+    MAP_KEY(KEY_MINUS, GLFW_KEY_ESCAPE, KBD_ESC);
++    MAP_KEY(HidNpadButton_Up, GLFW_KEY_UP, HidKeyboardKey_UpArrow);
++    MAP_KEY(HidNpadButton_Down, GLFW_KEY_DOWN, HidKeyboardKey_DownArrow);
++    MAP_KEY(HidNpadButton_Left, GLFW_KEY_LEFT, HidKeyboardKey_LeftArrow);
++    MAP_KEY(HidNpadButton_Right, GLFW_KEY_RIGHT, HidKeyboardKey_RightArrow);
++    MAP_KEY(HidNpadButton_A, GLFW_KEY_X, HidKeyboardKey_X);
++    MAP_KEY(HidNpadButton_B, GLFW_KEY_Z, HidKeyboardKey_Z);
++    MAP_KEY(HidNpadButton_X, GLFW_KEY_S, HidKeyboardKey_S);
++    MAP_KEY(HidNpadButton_Y, GLFW_KEY_A, HidKeyboardKey_A);
++    MAP_KEY(HidNpadButton_Plus, GLFW_KEY_ENTER, HidKeyboardKey_Return);
++    MAP_KEY(HidNpadButton_Minus, GLFW_KEY_ESCAPE, HidKeyboardKey_Escape);
 +
 +    // Report touch inputs as mouse clicks
-+    if (hidTouchCount() > 0)
++    if (hidGetTouchScreenStates(&ts, 1) && ts.count)
 +    {
-+        touchPosition touch;
-+        hidTouchRead(&touch, 0);
++        HidTouchState *touch = &(ts.touches[0]);
 +
-+        double scaledXPos = (double)touch.px / TOUCH_WIDTH * _glfw.nx.scr_width;
-+        double scaledYPos = (double)touch.py / TOUCH_HEIGHT * _glfw.nx.scr_height;
++        double scaledXPos = (double)touch->x / TOUCH_WIDTH * _glfw.nx.scr_width;
++        double scaledYPos = (double)touch->y / TOUCH_HEIGHT * _glfw.nx.scr_height;
 +
 +        _glfwInputCursorPos(_glfw.nx.cur_window, scaledXPos, scaledYPos);
 +
@@ -757,25 +749,24 @@ index 00000000..7c087de3
 +
 +int _glfwPlatformPollJoystick(_GLFWjoystick* js, int mode)
 +{
-+    // Detect presence - we assume CONTROLLER_P1_AUTO always exists
-+    if (js->nx.id != CONTROLLER_P1_AUTO && !hidIsControllerConnected(js->nx.id))
++    // Detect presence - we assume player 1 controller always exists
++    if (!padIsConnected(&g_switchPad))
 +        return GLFW_FALSE;
 +
 +    if (mode & _GLFW_POLL_AXES)
 +    {
-+        JoystickPosition left, right;
-+        hidJoystickRead(&left,  js->nx.id, JOYSTICK_LEFT);
-+        hidJoystickRead(&right, js->nx.id, JOYSTICK_RIGHT);
-+        _glfwInputJoystickAxis(js, _SWITCH_AXIS_LEFT_X,   left.dx  / 32768.0f);
-+        _glfwInputJoystickAxis(js, _SWITCH_AXIS_LEFT_Y,  -left.dy  / 32768.0f);
-+        _glfwInputJoystickAxis(js, _SWITCH_AXIS_RIGHT_X,  right.dx / 32768.0f);
-+        _glfwInputJoystickAxis(js, _SWITCH_AXIS_RIGHT_Y, -right.dy / 32768.0f);
++        HidAnalogStickState left = padGetStickPos(&g_switchPad, 0);
++        HidAnalogStickState right = padGetStickPos(&g_switchPad, 1);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_LEFT_X,   left.x  / 32768.0f);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_LEFT_Y,  -left.y  / 32768.0f);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_RIGHT_X,  right.x / 32768.0f);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_RIGHT_Y, -right.y / 32768.0f);
 +    }
 +
 +    if (mode & _GLFW_POLL_BUTTONS)
 +    {
 +        int i;
-+        u64 keys = hidKeysHeld(js->nx.id);
++        u64 keys = padGetButtons(&g_switchPad);
 +        keys |= ((keys >> 24) & 0x3) << _SWITCH_BUTTON_L; // Map KEY_SL/SR_LEFT  into KEY_L/R
 +        keys |= ((keys >> 26) & 0x3) << _SWITCH_BUTTON_L; // Map KEY_SL/SR_RIGHT into KEY_L/R
 +        for (i = 0; i < _SWITCH_BUTTON_COUNT; i ++)
@@ -799,12 +790,10 @@ index 00000000..7c087de3
 +}
 +*/
 +
-diff --git a/src/switch_joystick.h b/src/switch_joystick.h
-new file mode 100644
-index 00000000..ac3d7de9
---- /dev/null
-+++ b/src/switch_joystick.h
-@@ -0,0 +1,41 @@
+diff -uprN glfw-3.3.2/src/switch_joystick.h glfw-3.3.2-switch/src/switch_joystick.h
+--- glfw-3.3.2/src/switch_joystick.h	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_joystick.h	2021-04-20 16:30:03.599010000 -0400
+@@ -0,0 +1,34 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
 +//------------------------------------------------------------------------
@@ -831,26 +820,17 @@ index 00000000..ac3d7de9
 +//
 +//========================================================================
 +
-+#define _GLFW_PLATFORM_JOYSTICK_STATE         _GLFWjoystickNX nx
++#define _GLFW_PLATFORM_JOYSTICK_STATE
 +#define _GLFW_PLATFORM_LIBRARY_JOYSTICK_STATE
 +
 +#define _GLFW_PLATFORM_MAPPING_NAME "Switch"
 +
-+// Switch-specific per-joystick data
-+//
-+typedef struct _GLFWjoystickNX
-+{
-+    HidControllerID id;
-+} _GLFWjoystickNX;
-+
 +void _glfwInitSwitchJoysticks(void);
 +void _glfwUpdateSwitchJoysticks(void);
 +
-diff --git a/src/switch_monitor.c b/src/switch_monitor.c
-new file mode 100644
-index 00000000..4a7df359
---- /dev/null
-+++ b/src/switch_monitor.c
+diff -uprN glfw-3.3.2/src/switch_monitor.c glfw-3.3.2-switch/src/switch_monitor.c
+--- glfw-3.3.2/src/switch_monitor.c	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_monitor.c	2021-04-20 15:55:11.945367200 -0400
 @@ -0,0 +1,91 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
@@ -943,11 +923,9 @@ index 00000000..4a7df359
 +{
 +}
 +
-diff --git a/src/switch_platform.h b/src/switch_platform.h
-new file mode 100644
-index 00000000..1158b6cf
---- /dev/null
-+++ b/src/switch_platform.h
+diff -uprN glfw-3.3.2/src/switch_platform.h glfw-3.3.2-switch/src/switch_platform.h
+--- glfw-3.3.2/src/switch_platform.h	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_platform.h	2021-04-20 15:55:11.965509200 -0400
 @@ -0,0 +1,99 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
@@ -1048,11 +1026,9 @@ index 00000000..1158b6cf
 +GLFWAPI int _glfwExtensionSupportedImpl(const char* extension);
 +GLFWAPI GLFWglproc _glfwGetProcAddressImpl(const char* procname);
 +
-diff --git a/src/switch_time.c b/src/switch_time.c
-new file mode 100644
-index 00000000..bd38d67d
---- /dev/null
-+++ b/src/switch_time.c
+diff -uprN glfw-3.3.2/src/switch_time.c glfw-3.3.2-switch/src/switch_time.c
+--- glfw-3.3.2/src/switch_time.c	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_time.c	2021-04-20 15:55:11.984418600 -0400
 @@ -0,0 +1,44 @@
 +//========================================================================
 +// GLFW 3.3 POSIX - www.glfw.org
@@ -1098,11 +1074,9 @@ index 00000000..bd38d67d
 +    return 19200000; // 19.2 MHz
 +}
 +
-diff --git a/src/switch_window.c b/src/switch_window.c
-new file mode 100644
-index 00000000..594a1397
---- /dev/null
-+++ b/src/switch_window.c
+diff -uprN glfw-3.3.2/src/switch_window.c glfw-3.3.2-switch/src/switch_window.c
+--- glfw-3.3.2/src/switch_window.c	1969-12-31 20:00:00.000000000 -0400
++++ glfw-3.3.2-switch/src/switch_window.c	2021-04-20 15:55:11.998841900 -0400
 @@ -0,0 +1,411 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
@@ -1515,10 +1489,9 @@ index 00000000..594a1397
 +    return VK_ERROR_INITIALIZATION_FAILED;
 +}
 +
-diff --git a/src/vulkan.c b/src/vulkan.c
-index 22c54e4a..e186dd03 100644
---- a/src/vulkan.c
-+++ b/src/vulkan.c
+diff -uprN glfw-3.3.2/src/vulkan.c glfw-3.3.2-switch/src/vulkan.c
+--- glfw-3.3.2/src/vulkan.c	2020-01-19 18:43:31.000000000 -0400
++++ glfw-3.3.2-switch/src/vulkan.c	2021-04-20 15:55:12.021745200 -0400
 @@ -142,6 +142,9 @@ GLFWbool _glfwInitVulkan(int mode)
  #elif defined(_GLFW_WAYLAND)
          else if (strcmp(ep[i].extensionName, "VK_KHR_wayland_surface") == 0)
