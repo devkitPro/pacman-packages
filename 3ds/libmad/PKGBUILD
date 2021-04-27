@@ -18,8 +18,6 @@ prepare() {
 
 build() {
   cd libmad-$pkgver
-
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --disable-shared --enable-static
@@ -29,7 +27,6 @@ build() {
 package() {
   cd libmad-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   make DESTDIR="$pkgdir" install
