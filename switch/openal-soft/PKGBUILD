@@ -15,7 +15,7 @@ depends=('switch-sdl2')
 groups=('switch-portlibs')
 
 build() {
-  cd openal-soft-$pkgver/build
+  cd openal-soft-${pkgver}/build
 
   source "${DEVKITPRO}/switchvars.sh"
 
@@ -26,13 +26,11 @@ build() {
     -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}"  \
     ../
 
-    # -DCMAKE_REQUIRED_INCLUDES="${PORTLIBS_PREFIX}/include;${DEVKITPRO}/devkitA64/include;${DEVKITPRO}/
-
-  cmake --build .
+  make
 }
 
 package() {
-  cd openal-soft-$pkgver
+  cd openal-soft-${pkgver}/build
 
-  cmake --install build --prefix "$pkgdir"
+  make install DESTDIR="${pkgdir}"
 }
