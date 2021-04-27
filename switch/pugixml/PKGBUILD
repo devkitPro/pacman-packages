@@ -1,0 +1,40 @@
+# Maintainer: COMP Omega <compomega@tutanota.com>
+pkgname=switch-pugixml
+pkgver=1.10
+pkgrel=1
+pkgdesc='Light-weight, simple and fast XML parser for C++ with XPath support'
+arch=('any')
+url='http://pugixml.org/'
+license=('MIT')
+options=(!strip libtool staticlibs)
+source=( "https://github.com/zeux/pugixml/releases/download/v1.10/pugixml-${pkgver}.tar.gz")
+makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
+sha256sums=(
+  '55f399fbb470942410d348584dc953bcaec926415d3462f471ef350f29b5870a')
+groups=('switch-portlibs')
+build() {
+  cd pugixml-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  cmake -G"Unix Makefiles" \
+    -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS $CPPFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DBUILD_SHARED_LIBS=OFF \
+    .
+
+  make
+
+}
+
+package() {
+
+  cd pugixml-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make install DESTDIR="$pkgdir"
+
+}
