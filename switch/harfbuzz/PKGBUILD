@@ -12,6 +12,7 @@ source=("https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz
 sha256sums=('a1079fd021adaf5683351f34587a255975cc3bcadba31246ae40ebebb95ecd42')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers' 'switch-freetype')
 depends=('switch-freetype')
+groups=('switch-portlibs')
 
 build() {
   mkdir harfbuzz-$pkgver/build
