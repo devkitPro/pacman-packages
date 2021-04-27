@@ -15,8 +15,8 @@ depends=('switch-freetype')
 groups=('switch-portlibs')
 
 build() {
-  mkdir harfbuzz-$pkgver/build
-  cd harfbuzz-$pkgver/build
+  mkdir harfbuzz-${pkgver}/build
+  cd harfbuzz-${pkgver}/build
 
   source "${DEVKITPRO}/switchvars.sh"
 
@@ -29,7 +29,8 @@ build() {
 }
 
 package() {
-  cd harfbuzz-$pkgver
 
-  cmake --install build --prefix "$pkgdir"
+  cd harfbuzz-${pkgver}/build
+  make DESTDIR="${pkgdir}"
+
 }
