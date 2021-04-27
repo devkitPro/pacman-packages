@@ -12,6 +12,7 @@ source=("https://openal-soft.org/openal-releases/openal-soft-$pkgver.tar.bz2")
 sha256sums=('c8ad767e9a3230df66756a21cc8ebf218a9d47288f2514014832204e666af5d8')
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-sdl2')
+groups=('switch-portlibs')
 
 build() {
   cd openal-soft-$pkgver/build
