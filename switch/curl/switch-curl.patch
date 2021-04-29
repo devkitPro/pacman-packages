@@ -104,10 +104,20 @@ index e7ad63925..819a22c72 100755
  x1)
    # one SSL backend is enabled
 diff --git a/include/curl/curl.h b/include/curl/curl.h
-index b7cb30a58..4cb8c0e4d 100644
+index b7cb30a58..8786b1be5 100644
 --- a/include/curl/curl.h
 +++ b/include/curl/curl.h
-@@ -155,7 +155,8 @@ typedef enum {
+@@ -75,7 +75,8 @@
+     defined(__minix) || defined(__SYMBIAN32__) || defined(__INTEGRITY) || \
+     defined(ANDROID) || defined(__ANDROID__) || defined(__OpenBSD__) || \
+     defined(__CYGWIN__) || \
+-   (defined(__FreeBSD_version) && (__FreeBSD_version < 800000))
++   (defined(__FreeBSD_version) && (__FreeBSD_version < 800000)) || \
++   defined(__SWITCH__)
+ #include <sys/select.h>
+ #endif
+ 
+@@ -155,7 +156,8 @@ typedef enum {
    CURLSSLBACKEND_AXTLS = 10, /* never used since 7.63.0 */
    CURLSSLBACKEND_MBEDTLS = 11,
    CURLSSLBACKEND_MESALINK = 12,
@@ -1284,16 +1294,16 @@ index dfefa1bd5..e46379f72 100644
  #else
  #error "Missing struct Curl_ssl for selected SSL backend"
  #endif
-@@ -1223,6 +1225,9 @@ static const struct Curl_ssl *available_backends[] = {
- #endif
+@@ -1224,6 +1226,9 @@ static const struct Curl_ssl *available_backends[] = {
  #if defined(USE_BEARSSL)
    &Curl_ssl_bearssl,
-+#endif
+ #endif
 +#if defined(USE_LIBNX)
 +  &Curl_ssl_libnx,
- #endif
++#endif
    NULL
  };
+ 
 diff --git a/lib/vtls/vtls.h b/lib/vtls/vtls.h
 index a81b2f22d..7874353e8 100644
 --- a/lib/vtls/vtls.h
