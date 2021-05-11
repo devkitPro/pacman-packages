@@ -15,7 +15,7 @@ groups=('switch-dev')
 
 sha256sums=(
   '0fb7a53ea2a2d767cf61079ce7a05f48107f287b94e5e9ef54116cb667c70b9f' # aarch64-none-elf-cmake
-  'e443c9522a42aac04aac901ea116fa3f956158dbb8599549999592d4de09c5aa' # devkita64.cmake
+  'a088908be23eb14cb4f72b0c2512640b96e006a0b67c567d148f792fad9b0946' # devkita64.cmake
   '0b2c0f725980e72d449a34acf4e2799e5163adec2fd0392d8871b6f5eaef5c70' # switch.cmake
 )
 
