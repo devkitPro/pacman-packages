@@ -1,0 +1,59 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=ppc-ntfs-3g
+pkgver=2017.3.23AR.6
+pkgrel=1
+pkgdesc='An open source, freely available read/write NTFS driver '
+arch=('any')
+url='https://www.tuxera.com/'
+license=('GPL')
+options=(!strip libtool staticlibs)
+groups=('ppc-portlibs')
+
+source=(
+  "ntfs-3g-${pkgver}.tar.gz::https://github.com/tuxera/ntfs-3g/archive/refs/tags/${pkgver}.tar.gz"
+  "ntfs-3g-2017.3.23AR.6.patch"
+)
+sha256sums=(
+  'a911f609c62f2a9d993263c9e3b91c2fea29556c8403e4740b1328e701568701'
+  'e90a185743167d79dcf3886477a4915e0c927518bb091a5a72e9faa0c66be41f'
+)
+
+prepare() {
+
+  cd ntfs-3g-${pkgver}
+  patch -Np1 -i ${srcdir}/ntfs-3g-${pkgver}.patch
+  ./autogen.sh
+
+}
+
+build() {
+
+  cd ntfs-3g-${pkgver}
+
+  source /opt/devkitpro/ppcvars.sh
+
+
+  CPPFLAGS=-I/opt/devkitpro/libogc/include ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=powerpc-eabi \
+    --disable-shared \
+    --enable-static \
+    --disable-ntfsprogs \
+    --disable-ntfs-3g \
+    --disable-device-default-io-ops \
+    --disable-plugins
+
+  make
+}
+
+package() {
+
+  cd ntfs-3g-${pkgver}
+
+  source /opt/devkitpro/ppcvars.sh
+
+  # license
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+  # remove useless stuff
+  rm -fr "$pkgdir"${PORTLIBS_PREFIX}/share
+}
