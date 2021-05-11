@@ -1,7 +1,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libogc')
-pkgver=2.1.0
+pkgver=2.2.0
 pkgrel=1
 pkgdesc="Nintendo Gamecube & Wii library."
 arch=('any')
@@ -9,7 +9,7 @@ license=('custom')
 url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('cf185c5dbbc3662c7828f942184b700931160e5a0f3602fb40aae38cbc88a099')
+sha256sums=('889115abea83d911e84db1d1c07c198b950f7ad28d912105457dfa0779bd7a6e')
 makedepends=('devkitPPC')
 
 groups=('wii-dev' 'gamecube-dev')
