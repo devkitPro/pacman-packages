@@ -1,0 +1,55 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=ppc-e2fs
+pkgver=1.46.2
+pkgrel=1
+pkgdesc='An open source, freely available read/write NTFS driver '
+arch=('any')
+url='https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git'
+license=('GPL')
+options=(!strip libtool staticlibs)
+groups=('ppc-portlibs')
+
+source=(
+  "https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/snapshot/e2fsprogs-1.46.2.tar.gz"
+)
+sha256sums=(
+  'f1ef0161aa8918182d088c4b576a5485a60aa3aff3e16cf10824698af5d34dcf'
+)
+
+prepare() {
+
+  sed -i 's#tst_uuid uuid_time##' e2fsprogs-${pkgver}/lib/uuid/Makefile.in
+
+}
+
+build() {
+
+  cd e2fsprogs-${pkgver}
+
+  source /opt/devkitpro/ppcvars.sh
+
+
+  CPPFLAGS=-I/opt/devkitpro/libogc/include ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=powerpc-eabi \
+    --disable-tls \
+    --disable-uuidd \
+    --disable-mmp \
+    --disable-tdb \
+    --disable-bmap-stats \
+    --disable-fuse2fs
+
+  make libs
+}
+
+package() {
+
+  cd e2fsprogs-${pkgver}
+
+  source /opt/devkitpro/ppcvars.sh
+
+  make install-libs DESTDIR=${pkgdir}
+
+  # remove useless stuff
+  rm -fr "$pkgdir"${PORTLIBS_PREFIX}/share
+}
