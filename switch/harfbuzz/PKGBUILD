@@ -2,7 +2,7 @@
 
 pkgname=switch-harfbuzz
 pkgver=2.8.0
-pkgrel=1
+pkgrel=2
 pkgdesc='HarfBuzz is a text shaping library. Using the HarfBuzz library allows programs to convert a sequence of Unicode input into properly formatted and positioned glyph output—for any writing system and language.'
 arch=('any')
 url='https://harfbuzz.github.io/'
@@ -10,8 +10,9 @@ license=(LGPL)
 options=(!strip libtool staticlibs)
 source=("https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz")
 sha256sums=('a1079fd021adaf5683351f34587a255975cc3bcadba31246ae40ebebb95ecd42')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers' 'switch-freetype')
+makedepends=('switch-pkg-config' 'switch-cmake' 'switch-freetype')
 depends=('switch-freetype')
+
 groups=('switch-portlibs')
 
 build() {
@@ -20,17 +21,17 @@ build() {
 
   source "${DEVKITPRO}/switchvars.sh"
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="${DEVKITPRO}/switch.cmake" \
+  aarch64-none-elf-cmake -G"Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}"  \
     -DHB_HAVE_FREETYPE=ON \
     ../
 
-  cmake --build .
+  make
 }
 
 package() {
 
   cd harfbuzz-${pkgver}/build
-  make DESTDIR="${pkgdir}"
+  make install DESTDIR="${pkgdir}"
 
 }
