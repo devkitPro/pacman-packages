@@ -9,6 +9,7 @@ options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 source=(enet-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
 sha256sums=('1e0b4bc0b7127a2d779dd7928f0b31830f5b3dcb7ec9588c5de70033e8d2434a')
+groups=('switch-portlibs')
 
 build() {
   cd enet-${pkgver}
