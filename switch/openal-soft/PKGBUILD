@@ -2,17 +2,29 @@
 
 pkgname=switch-openal-soft
 pkgver=1.21.1
-pkgrel=1
+pkgrel=2
 pkgdesc='OpenAL Soft is a software implementation of the OpenAL 3D audio API.'
 arch=('any')
 url='https://openal-soft.org/'
 license=(LGPL)
 options=(!strip libtool staticlibs)
-source=("https://openal-soft.org/openal-releases/openal-soft-$pkgver.tar.bz2")
-sha256sums=('c8ad767e9a3230df66756a21cc8ebf218a9d47288f2514014832204e666af5d8')
+source=(
+  "https://openal-soft.org/openal-releases/openal-soft-$pkgver.tar.bz2"
+  "openal-switch.patch"
+)
+sha256sums=(
+  'c8ad767e9a3230df66756a21cc8ebf218a9d47288f2514014832204e666af5d8'
+  'd6448f691e13a0042df71cfeb2191c3572920a2c525debcb43e9651efc136b4f'
+)
+
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 depends=('switch-sdl2')
 groups=('switch-portlibs')
+
+prepare() {
+  cd openal-soft-${pkgver}
+  patch -Np1 -i ${srcdir}/openal-switch.patch
+}
 
 build() {
   cd openal-soft-${pkgver}/build

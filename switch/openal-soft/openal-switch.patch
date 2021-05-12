@@ -1,0 +1,18 @@
+--- openal-soft-1.21.1/alc/helpers.cpp~	2021-05-12 18:38:18.671806871 +0100
++++ openal-soft-1.21.1/alc/helpers.cpp	2021-05-12 18:40:28.352222562 +0100
+@@ -209,6 +209,7 @@
+     if(!ret.fname.empty() || !ret.path.empty())
+         return ret;
+ 
++#ifndef __SWITCH__
+     al::vector<char> pathname;
+ #ifdef __FreeBSD__
+     size_t pathlen;
+@@ -287,6 +288,7 @@
+         ret.fname = std::string(pathname.cbegin(), pathname.cend());
+ 
+     TRACE("Got binary: %s, %s\n", ret.path.c_str(), ret.fname.c_str());
++#endif // #ifndef __SWITCH__
+     return ret;
+ }
+ 
