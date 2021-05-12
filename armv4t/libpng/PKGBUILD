@@ -1,0 +1,39 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=armv4t-libpng
+pkgver=1.6.37
+pkgrel=1
+pkgdesc='PNG format graphic files library (for armv4t homebrew development)'
+arch=('any')
+url='http://www.libpng.org'
+license=('custom')
+options=(!strip libtool staticlibs)
+depends=('armv4t-zlib')
+groups=('armv4t-portlibs')
+makedepends=('devkitpro-pkgbuild-helpers')
+source=("https://download.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
+sha256sums=('505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca')
+
+build() {
+  cd libpng-$pkgver
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  sed -i 's/^bin_PROGRAMS = .*//' Makefile.in
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static
+  make
+}
+
+package() {
+  cd libpng-$pkgver
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  make LN_S=cp DESTDIR="$pkgdir" install
+  # license
+  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+  # remove useless stuff
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+}
