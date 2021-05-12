@@ -1,6 +1,6 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=dkp-armv4t-libexpat
+pkgname=armv4t-libexpat
 pkgver=2.2.5
 pkgrel=1
 pkgdesc='Expat, a stream-oriented XML parser library written in C.'
