@@ -1,6 +1,6 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=dkp-armv4t-freetype
+pkgname=armv4t-freetype
 pkgver=2.9
 pkgrel=1
 pkgdesc='FreeType is a freely available software library to render fonts.'
@@ -8,14 +8,14 @@ arch=('any')
 url='https://www.freetype.org/'
 license=(GPL2+ custom:FreeType)
 options=(!strip libtool staticlibs)
-depends=("dkp-armv4t-bzip2"
-         "dkp-armv4t-libpng"
-         "dkp-armv4t-zlib"
+depends=("armv4t-bzip2"
+         "armv4t-libpng"
+         "armv4t-zlib"
 )
 makedepends=('devkitpro-pkgbuild-helpers')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
 sha256sums=('bf380e4d7c4f3b5b1c1a7b2bf3abb967bda5e9ab480d0df656e0e08c5019c5e6')
-groups=("dkp-armv4t-portlibs")
+groups=("armv4t-portlibs")
 
 build() {
   cd freetype-$pkgver
