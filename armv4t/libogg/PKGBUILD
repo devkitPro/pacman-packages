@@ -1,6 +1,6 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=dkp-armv4t-libogg
+pkgname=armv4t-libogg
 pkgver=1.3.4
 pkgrel=1
 pkgdesc='The Ogg transport bitstream is designed to provide framing, error protection and seeking structure for higher-level codec streams that consist of raw, unencapsulated data packets, such as the Opus, Vorbis and FLAC audio codecs or the Theora and Dirac video codecs.'
@@ -11,12 +11,11 @@ options=(!strip libtool staticlibs)
 source=("https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-$pkgver.tar.gz")
 sha256sums=('fe5670640bd49e828d64d2879c31cb4dde9758681bb664f9bdbf159a01b0c76e')
 makedepends=('devkitpro-pkgbuild-helpers')
-groups=('dkp-armv4t-portlibs')
+groups=('armv4t-portlibs')
 
 build() {
   cd libogg-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
@@ -28,7 +27,6 @@ build() {
 package() {
   cd libogg-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
 
   make DESTDIR="$pkgdir" install
