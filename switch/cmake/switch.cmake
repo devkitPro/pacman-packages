@@ -9,6 +9,7 @@ set(CMAKE_EXE_LINKER_FLAGS_INIT "-fPIE -specs=${DEVKITPRO}/libnx/switch.specs")
 
 set(CMAKE_FIND_ROOT_PATH
   ${DEVKITPRO}/devkitA64
+  ${DEVKITPRO}/devkitA64/aarch64-none-elf
   ${DEVKITPRO}/tools
   ${DEVKITPRO}/portlibs/switch
   ${DEVKITPRO}/libnx
