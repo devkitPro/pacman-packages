@@ -1,6 +1,6 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=dkp-armv4t-libpng
+pkgname=armv4t-libpng
 pkgver=1.6.37
 pkgrel=1
 pkgdesc='PNG format graphic files library (for armv4t homebrew development)'
@@ -8,8 +8,8 @@ arch=('any')
 url='http://www.libpng.org'
 license=('custom')
 options=(!strip libtool staticlibs)
-depends=('dkp-armv4t-zlib')
-groups=('dkp-armv4t-portlibs')
+depends=('armv4t-zlib')
+groups=('armv4t-portlibs')
 makedepends=('devkitpro-pkgbuild-helpers')
 source=("https://download.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
 sha256sums=('505e70834d35383537b6491e7ae8641f1a4bed1876dbfe361201fc80868d88ca')
