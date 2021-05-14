@@ -1,6 +1,6 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=dkp-armv4t-libconfig
+pkgname=armv4t-libconfig
 pkgver=1.7.2
 pkgrel=1
 pkgdesc='C/C++ Configuration File Library (for armv4t homebrew development)'
@@ -14,12 +14,11 @@ sha256sums=(
   '7c3c7a9c73ff3302084386e96f903eb62ce06953bb1666235fac74363a16fad9'
   '474c17940200d4aa286e486568a0ecaba2130a758f108e2a0b86c6fed5915d1f'
 )
-groups=('dkp-armv4t-portlibs')
+groups=('armv4t-portlibs')
 
 build() {
   cd libconfig-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
   
   patch -Np1 -i "$srcdir"/libconfig.patch
@@ -34,7 +33,6 @@ build() {
 package() {
   cd libconfig-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
 
   make DESTDIR="$pkgdir" install
