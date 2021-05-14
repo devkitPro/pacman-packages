@@ -21,7 +21,7 @@ if (NOT PKG_CONFIG_EXECUTABLE)
    message(WARNING "Could not find aarch64-none-elf-pkg-config: try installing switch-pkg-config")
 endif()
 
-set(NSWITCH TRUE)
+set(NINTENDO_SWITCH TRUE)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
