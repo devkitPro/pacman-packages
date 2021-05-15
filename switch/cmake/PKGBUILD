@@ -1,23 +1,21 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-cmake
 pkgver=1.0.0
-pkgrel=5
+pkgrel=6
 pkgdesc="switch cmake wrapper"
 arch=('any')
 url='http://devkitpro.org/'
 source=(
   'aarch64-none-elf-cmake'
-  'devkita64.cmake'
   'switch.cmake'
 )
 
-depends=('switch-pkg-config' 'switch-tools' 'libnx')
+depends=('switch-pkg-config' 'devkita64-cmake' 'switch-tools' 'libnx')
 groups=('switch-dev')
 
 sha256sums=(
   '0fb7a53ea2a2d767cf61079ce7a05f48107f287b94e5e9ef54116cb667c70b9f' # aarch64-none-elf-cmake
-  '77a2c11a34feb90f718a9a2c69cdb82763041c2a56c2e0c3a4c45ea29e6e75ed' # devkita64.cmake
-  '18b5863d305179833ab8a0b12b0efac54b667571de1ae4d17dc89c91bf7a25f8' # switch.cmake
+  '934ec995831e1c1e8537285769eccd99a14129e5459c9d99feb62633f306d22e' # switch.cmake
 )
 
 package() {
@@ -25,7 +23,6 @@ package() {
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/bin
   cp "$srcdir"/aarch64-none-elf-cmake "$pkgdir"/opt/devkitpro/portlibs/switch/bin/
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/share
-  cp "${srcdir}"/devkita64.cmake "$pkgdir"/opt/devkitpro/portlibs/switch/share
   cp "${srcdir}"/switch.cmake "$pkgdir"/opt/devkitpro/portlibs/switch/share
 
 }

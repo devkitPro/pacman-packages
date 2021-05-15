@@ -1,0 +1,27 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=devkita64-cmake
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="devkita64 cmake wrapper"
+arch=('any')
+url='http://devkitpro.org/'
+source=(
+  'devkitA64.cmake'
+  'aarch64-none-elf-cmake'
+)
+
+groups=('switch-dev')
+
+sha256sums=(
+  'c42175114afbd47ecb0aa5e91bdfce2ecc058aca14a7951de5766d86306e6e51'  # devkitA64.cmake
+  'e7ed7fa75b909fb53738bb6cf4040d8a2b9bea7ebbfa702ca776438d7fb87d0c'  # aarch64-none-elf-cmake
+)
+
+package() {
+
+  install -d "$pkgdir"/opt/devkitpro/devkitA64/bin
+  cp "$srcdir"/aarch64-none-elf-cmake "$pkgdir"/opt/devkitpro/devkitA64/bin/
+  install -d "$pkgdir"/opt/devkitpro/devkitA64/share
+  cp "${srcdir}"/devkitA64.cmake "$pkgdir"/opt/devkitpro/devkitA64/share
+
+}
