@@ -17,8 +17,50 @@ set(CMAKE_FIND_ROOT_PATH
 # Set pkg-config for the same
 find_program(PKG_CONFIG_EXECUTABLE NAMES arm-none-eabi-pkg-config HINTS "${DEVKITPRO}/portlibs/3ds/bin")
 if (NOT PKG_CONFIG_EXECUTABLE)
-   message(WARNING "Could not find arm-none-eabi-pkg-config: try installing switch-pkg-config")
+   message(WARNING "Could not find arm-none-eabi-pkg-config: try installing 3ds-pkg-config")
 endif()
+
+find_program(CTR_SMDHTOOL_EXE NAMES smdhtool HINTS "${DEVKITPRO}/tools/bin")
+if (NOT CTR_SMDHTOOL_EXE)
+	message(WARNING "Could not find smdhtool: try installing 3ds-tools")
+endif()
+
+find_program(CTR_3DSXTOOL_EXE NAMES 3dsxtool HINTS "${DEVKITPRO}/tools/bin")
+if (NOT CTR_3DSXTOOL_EXE)
+	message(WARNING "Could not find 3dsxtool: try installing 3ds-tools")
+endif()
+
+find_file(CTR_DEFAULT_ICON NAMES default_icon.png HINTS "${DEVKITPRO}/libctru" NO_CMAKE_FIND_ROOT_PATH)
+if (NOT CTR_DEFAULT_ICON)
+	message(WARNING "Could not find default icon: try installing libctru")
+endif()
+
+function(ctr_generate_smdh target)
+	cmake_parse_arguments(SMDH "" "NAME;DESCRIPTION;AUTHOR;ICON" "" "${ARGN}")
+	if (NOT DEFINED SMDH_NAME)
+		set(SMDH_NAME "${CMAKE_PROJECT_NAME}")
+	endif()
+	if (NOT DEFINED SMDH_DESCRIPTION)
+		set(SMDH_DESCRIPTION "Built with devkitARM & libctru")
+	if (NOT DEFINED SMDH_AUTHOR)
+		set(SMDH_AUTHOR "Unspecified Author")
+	endif()
+	endif()
+	if (NOT DEFINED SMDH_ICON)
+		set(SMDH_ICON "${CTR_DEFAULT_ICON}")
+	endif()
+
+	add_custom_command(
+		OUTPUT "${target}"
+		COMMAND ${CTR_SMDHTOOL_EXE} --create "${SMDH_NAME}" "${SMDH_DESCRIPTION}" "${SMDH_AUTHOR}" "${SMDH_ICON}" "${target}"
+		VERBATIM
+	)
+endfunction()
+
+function(ctr_create_3dsx target)
+
+
+endfunction()
 
 set(NINTENDO_3DS TRUE)
 
