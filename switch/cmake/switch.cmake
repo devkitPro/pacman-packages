@@ -1,11 +1,14 @@
 include(/opt/devkitpro/devkitA64/share/devkitA64.cmake)
 
-set (DKA_SWITCH_C_FLAGS "-D__SWITCH__ -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec -ffunction-sections -fdata-sections")
-set(CMAKE_C_FLAGS   "${DKA_SWITCH_C_FLAGS}" CACHE STRING "")
-set(CMAKE_CXX_FLAGS "${DKA_SWITCH_C_FLAGS}" CACHE STRING "")
-set(CMAKE_ASM_FLAGS "${DKA_SWITCH_C_FLAGS}" CACHE STRING "")
+set(NX_ARCH_SETTINGS "-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec")
+set(NX_COMMON_FLAGS  "${NX_ARCH_SETTINGS} -ffunction-sections -fdata-sections -D__SWITCH__")
+set(NX_LIB_DIRS      "-L${DEVKITPRO}/libnx/lib -L${DEVKITPRO}/portlibs/switch/lib")
 
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-fPIE -specs=${DEVKITPRO}/libnx/switch.specs")
+set(CMAKE_C_FLAGS_INIT   "${NX_COMMON_FLAGS}")
+set(CMAKE_CXX_FLAGS_INIT "${NX_COMMON_FLAGS}")
+set(CMAKE_ASM_FLAGS_INIT "${NX_COMMON_FLAGS}")
+
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${NX_ARCH_SETTINGS} ${NX_LIB_DIRS} -fPIE -specs=${DEVKITPRO}/libnx/switch.specs")
 
 set(CMAKE_FIND_ROOT_PATH
 	${CMAKE_FIND_ROOT_PATH}
@@ -40,18 +43,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(NX_ROOT ${DEVKITPRO}/libnx)
 
-set(NX_STANDARD_LIBRARIES "${NX_ROOT}/lib/libnx.a")
-set(CMAKE_C_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "")
-set(CMAKE_CXX_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "")
-set(CMAKE_ASM_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "")
+set(NX_STANDARD_LIBRARIES "-lnx")
+set(CMAKE_C_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
+set(CMAKE_CXX_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
+set(CMAKE_ASM_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
 
 #for some reason cmake (3.14.3) doesn't appreciate having \" here
 set(NX_STANDARD_INCLUDE_DIRECTORIES "${NX_ROOT}/include")
 set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
 set(CMAKE_ASM_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
-
-link_directories( ${DEVKITPRO}/libnx/lib ${DEVKITPRO}/portlibs/switch/lib )
 
 function(nx_generate_nacp target)
 	cmake_parse_arguments(NACP "" "NAME;AUTHOR;VERSION" "" "${ARGN}")
