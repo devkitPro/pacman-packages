@@ -1,15 +1,16 @@
-include(/opt/devkitpro/devkitARM/share/devkitarm.cmake)
+include(/opt/devkitpro/devkitARM/share/devkitARM.cmake)
 
-set (DKA_3DS_C_FLAGS "-D__3DS__ -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -mword-relocations -ffunction-sections -fdata-sections")
+set(CMAKE_SYSTEM_PROCESSOR "armv6k")
+
+set (DKA_3DS_C_FLAGS "-D__3DS__ -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -mword-relocations -ffunction-sections")
 set(CMAKE_C_FLAGS   "${DKA_3DS_C_FLAGS}" CACHE STRING "")
 set(CMAKE_CXX_FLAGS "${DKA_3DS_C_FLAGS}" CACHE STRING "")
 set(CMAKE_ASM_FLAGS "${DKA_3DS_C_FLAGS}" CACHE STRING "")
 
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-march=armv6k -mtune=mpcore -specs=3ds.specs")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -specs=3dsx.specs")
 
 set(CMAKE_FIND_ROOT_PATH
-  ${DEVKITPRO}/devkitARM
-  ${DEVKITPRO}/tools
+  ${CMAKE_FIND_ROOT_PATH}
   ${DEVKITPRO}/portlibs/3ds
   ${DEVKITPRO}/libctru
 )
@@ -42,9 +43,9 @@ function(ctr_generate_smdh target)
 	endif()
 	if (NOT DEFINED SMDH_DESCRIPTION)
 		set(SMDH_DESCRIPTION "Built with devkitARM & libctru")
+	endif()
 	if (NOT DEFINED SMDH_AUTHOR)
 		set(SMDH_AUTHOR "Unspecified Author")
-	endif()
 	endif()
 	if (NOT DEFINED SMDH_ICON)
 		set(SMDH_ICON "${CTR_DEFAULT_ICON}")
@@ -57,9 +58,37 @@ function(ctr_generate_smdh target)
 	)
 endfunction()
 
-function(ctr_create_3dsx target)
+function(ctr_create_3dsx prefix)
+	cmake_parse_arguments(CTR_3DSXTOOL "NOSMDH" "SMDH" "" "${ARGN}")
 
+	set(CTR_3DSXTOOL_ARGS "${prefix}" "${prefix}.3dsx")
+	set(CTR_3DSXTOOL_DEPS "${prefix}")
 
+	if (DEFINED CTR_3DSXTOOL_SMDH AND CTR_3DSXTOOL_NOSMDH)
+		message(FATAL_ERROR "ctr_create_3dsx: cannot specify SMDH and NOSMDH at the same time")
+	endif()
+
+	if (NOT DEFINED CTR_3DSXTOOL_SMDH AND NOT CTR_3DSXTOOL_NOSMDH)
+		set(CTR_3DSXTOOL_SMDH "${prefix}.default.smdh")
+		ctr_generate_smdh(${CTR_3DSXTOOL_SMDH})
+	endif()
+
+	if (DEFINED ELF2NRO_SMDH)
+		set(CTR_3DSXTOOL_ARGS ${CTR_3DSXTOOL_ARGS} "--smdh=${CTR_3DSXTOOL_SMDH}")
+		set(CTR_3DSXTOOL_DEPS ${CTR_3DSXTOOL_DEPS} "${CTR_3DSXTOOL_SMDH}")
+	endif()
+
+	add_custom_command(
+		OUTPUT "${prefix}.3dsx"
+		COMMAND "${CTR_3DSXTOOL_EXE}" ${CTR_3DSXTOOL_ARGS}
+		DEPENDS "${prefix}" ${CTR_3DSXTOOL_DEPS}
+		VERBATIM
+	)
+
+	add_custom_target(
+		"${prefix}_3dsx" ALL
+		DEPENDS "${prefix}.3dsx"
+	)
 endfunction()
 
 set(NINTENDO_3DS TRUE)
