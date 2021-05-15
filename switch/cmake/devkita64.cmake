@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.7)
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_VERSION 1)
@@ -18,6 +18,12 @@ set(CMAKE_RANLIB       ${TOOL_PREFIX}ranlib CACHE PATH "")
 set(CMAKE_STRIP        ${TOOL_PREFIX}strip  CACHE PATH "")
 
 set(CMAKE_LIBRARY_ARCHITECTURE aarch64-none-elf CACHE INTERNAL "abi")
+
+set(CMAKE_FIND_ROOT_PATH
+	${DEVKITPRO}/devkitA64
+	${DEVKITPRO}/devkitA64/aarch64-none-elf
+	${DEVKITPRO}/tools
+)
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
