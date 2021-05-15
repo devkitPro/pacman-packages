@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-cmake
 pkgver=1.0.0
-pkgrel=8
+pkgrel=9
 pkgdesc="3ds cmake wrapper"
 arch=('any')
 url='http://devkitpro.org/'
@@ -14,7 +14,7 @@ depends=('devkitarm-cmake')
 groups=('3ds-dev')
 
 sha256sums=(
-  '2d629f88cd89ab488c19c7b9d344e6428eb79fc16e4ce29f301fd46f959950ec'  # 3ds.cmake
+  'b0f29b8bd77249ac705daf02fae1979fe7d8de0e9d2b8dbf43fed45fe7c15ea6'  # 3ds.cmake
   'bd138884be42ef179fe2faab484ea511c6c1e0a624e160419e961b2e7a3c5ab4'  # arm-none-eabi-cmake
 )
 
