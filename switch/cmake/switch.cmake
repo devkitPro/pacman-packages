@@ -1,4 +1,4 @@
-include(/opt/devkitpro/portlibs/switch/share/devkita64.cmake)
+include(/opt/devkitpro/devkitA64/share/devkitA64.cmake)
 
 set (DKA_SWITCH_C_FLAGS "-D__SWITCH__ -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec -ffunction-sections -fdata-sections")
 set(CMAKE_C_FLAGS   "${DKA_SWITCH_C_FLAGS}" CACHE STRING "")
