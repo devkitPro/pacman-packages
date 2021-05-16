@@ -5,7 +5,12 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR "aarch64")
 set(CMAKE_CROSSCOMPILING 1)
 
-set(DEVKITPRO /opt/devkitpro)
+if(NOT DEFINED ENV{DEVKITPRO})
+	set(DEVKITPRO /opt/devkitpro)
+else()
+	set(DEVKITPRO $ENV{DEVKITPRO})
+endif()
+
 
 set(TOOL_PREFIX ${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-)
 
