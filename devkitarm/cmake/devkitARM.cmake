@@ -5,7 +5,11 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR "arm")
 set(CMAKE_CROSSCOMPILING 1)
 
-set(DEVKITPRO /opt/devkitpro)
+if(NOT DEFINED ENV{DEVKITPRO})
+	set(DEVKITPRO /opt/devkitpro)
+else()
+	set(DEVKITPRO $ENV{DEVKITPRO})
+endif()
 
 set(TOOL_PREFIX ${DEVKITPRO}/devkitARM/bin/arm-none-eabi-)
 

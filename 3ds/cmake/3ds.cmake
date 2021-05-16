@@ -1,4 +1,10 @@
-include(/opt/devkitpro/devkitARM/share/devkitARM.cmake)
+if(NOT DEFINED ENV{DEVKITPRO})
+	set(DEVKITPRO /opt/devkitpro)
+else()
+	set(DEVKITPRO $ENV{DEVKITPRO})
+endif()
+
+include(${DEVKITPRO}/devkitARM/share/devkitARM.cmake)
 
 set(CMAKE_SYSTEM_PROCESSOR "armv6k")
 

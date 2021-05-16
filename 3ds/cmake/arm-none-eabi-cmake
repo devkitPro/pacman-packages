@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-exec cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/portlibs/3ds/share/3ds.cmake "$@"
+exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/portlibs/3ds/share/3ds.cmake "$@"
