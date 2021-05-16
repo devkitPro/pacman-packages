@@ -1,4 +1,10 @@
-include(/opt/devkitpro/devkitA64/share/devkitA64.cmake)
+if(NOT DEFINED ENV{DEVKITPRO})
+	set(DEVKITPRO /opt/devkitpro)
+else()
+	set(DEVKITPRO $ENV{DEVKITPRO})
+endif()
+
+include(${DEVKITPRO}/devkitA64/share/devkitA64.cmake)
 
 set(NX_ARCH_SETTINGS "-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec")
 set(NX_COMMON_FLAGS  "${NX_ARCH_SETTINGS} -ffunction-sections -fdata-sections -D__SWITCH__")
