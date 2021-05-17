@@ -33,3 +33,4 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available" )
 
 set(devkitPPC TRUE)
 
+include(${DEVKITPRO}/share/common-utils.cmake)

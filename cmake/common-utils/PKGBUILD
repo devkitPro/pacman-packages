@@ -1,0 +1,20 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=cmake-common-utils
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="cmake script for devkitPro common utilities"
+arch=('any')
+url='http://devkitpro.org/'
+source=(
+  'common-utils.cmake'
+)
+groups=('gp32-dev' 'gp2x-dev' 'gba-dev' 'nds-dev' '3ds-dev' 'switch-dev' 'gamecube-dev' 'wii-dev' 'wiiu-dev')
+
+sha256sums=(
+  '05a91ae59a9640bb5dc3df90d84e8c5d587c93ef06186f2998ee667e7268b982'  # common-utils.cmake
+)
+
+package() {
+  install -d "$pkgdir"/opt/devkitpro/share
+  cp "$srcdir"/common-utils.cmake "$pkgdir"/opt/devkitpro/share
+}

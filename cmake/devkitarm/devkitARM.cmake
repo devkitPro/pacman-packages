@@ -38,3 +38,5 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(devkitARM TRUE)
 
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available" )
+
+include(${DEVKITPRO}/share/common-utils.cmake)
