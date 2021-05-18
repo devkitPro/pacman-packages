@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitppc-cmake
 pkgver=1.0.0
-pkgrel=2
+pkgrel=4
 pkgdesc="devkitPPC cmake wrapper"
 arch=('any')
 url='http://devkitpro.org/'
@@ -12,16 +12,16 @@ source=(
 
 groups=('gamecube-dev' 'wii-dev' 'wiiu-dev')
 
-depends=('cmake-common-utils')
+depends=('dkp-cmake-common-utils')
 
 sha256sums=(
-  '5527051211d204dc379dc59aa5480664ccea3655d784b8ebe20c78bad24cc735'  # devkitPPC.cmake
-  'd854eed8ffcce98bb54a2bf7aa10de0243bd14210382fc41c28f9b5ddbaa7ecc'  # powerpc-eabi-cmake
+  'a036cbdbd041be9b1bcf55f4368ef57193cec0e292191c3ba94019e36d4e4b86'  # devkitPPC.cmake
+  'f6f5c6028f1b90e3fcdc8f34bac1573cd2c8a6ada72578189a28785a68613508'  # powerpc-eabi-cmake
 )
 
 package() {
   install -d "$pkgdir"/opt/devkitpro/devkitPPC/bin
   cp "$srcdir"/powerpc-eabi-cmake "$pkgdir"/opt/devkitpro/devkitPPC/bin/
-  install -d "$pkgdir"/opt/devkitpro/devkitPPC/share
-  cp "${srcdir}"/devkitPPC.cmake "$pkgdir"/opt/devkitpro/devkitPPC/share
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "${srcdir}"/devkitPPC.cmake "$pkgdir"/opt/devkitpro/cmake
 }

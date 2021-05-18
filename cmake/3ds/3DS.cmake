@@ -1,10 +1,6 @@
-if(NOT DEFINED ENV{DEVKITPRO})
-	set(DEVKITPRO /opt/devkitpro)
-else()
-	set(DEVKITPRO $ENV{DEVKITPRO})
-endif()
-
-include(${DEVKITPRO}/devkitARM/share/devkitARM.cmake)
+cmake_minimum_required(VERSION 3.7)
+include(${CMAKE_CURRENT_LIST_DIR}/devkitARM.cmake)
+include(dkp-embedded-binary)
 
 set(CMAKE_SYSTEM_PROCESSOR "armv6k")
 

@@ -1,20 +1,22 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=cmake-common-utils
+pkgname=dkp-cmake-common-utils
 pkgver=1.0.0
-pkgrel=2
+pkgrel=1
 pkgdesc="cmake script for devkitPro common utilities"
 arch=('any')
 url='http://devkitpro.org/'
 source=(
-  'common-utils.cmake'
+  'dkp-initialize-path.cmake'
+  'dkp-embedded-binary.cmake'
 )
-groups=('gp32-dev' 'gp2x-dev' 'gba-dev' 'nds-dev' '3ds-dev' 'switch-dev' 'gamecube-dev' 'wii-dev' 'wiiu-dev')
 
 sha256sums=(
-  '05a91ae59a9640bb5dc3df90d84e8c5d587c93ef06186f2998ee667e7268b982'  # common-utils.cmake
+  '091a0d08998c7e02db833913a010fdd5ba42f56e49cd62c40503d2e3d2ee6f21'  # dkp-initialize-path.cmake
+  '510b7e37ddab895dc4cfbb085557c66cc0100808df9819f99e1951707f5679c9'  # dkp-embedded-binary.cmake
 )
 
 package() {
-  install -d "$pkgdir"/opt/devkitpro/share
-  cp "$srcdir"/common-utils.cmake "$pkgdir"/opt/devkitpro/share
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-initialize-path.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-embedded-binary.cmake "$pkgdir"/opt/devkitpro/cmake
 }

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.7)
+
 find_program(BIN2S_EXE NAMES bin2s HINTS "${DEVKITPRO}/tools/bin")
 if (NOT BIN2S_EXE)
 	message(WARNING "Could not find bin2s: try installing general-tools")

@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkita64-cmake
 pkgver=1.0.0
-pkgrel=4
+pkgrel=6
 pkgdesc="devkita64 cmake wrapper"
 arch=('any')
 url='http://devkitpro.org/'
@@ -11,19 +11,19 @@ source=(
   'aarch64-none-elf-cmake'
 )
 
-depends=('cmake-common-utils')
+depends=('dkp-cmake-common-utils')
 groups=('switch-dev')
 
 sha256sums=(
-  'c7dc3125741a184b7429802690d86c56fde569e949de3d68f21771a4737de936'  # devkitA64.cmake
-  '073efc71577163f783e99e6328d348f6c02aa435a28916867c54ed37e7e3fe93'  # aarch64-none-elf-cmake
+  '2a89445fe6dc070fa3c0c09f21bf3dc52670a90c21c9b0e5a6d445a5bb62044f'  # devkitA64.cmake
+  'dafcffebdaa9c789d6bfb7c51acd51285c23720b1be3fe6b65ee9c514973061a'  # aarch64-none-elf-cmake
 )
 
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/devkitA64/bin
   cp "$srcdir"/aarch64-none-elf-cmake "$pkgdir"/opt/devkitpro/devkitA64/bin/
-  install -d "$pkgdir"/opt/devkitpro/devkitA64/share
-  cp "${srcdir}"/devkitA64.cmake "$pkgdir"/opt/devkitpro/devkitA64/share
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "${srcdir}"/devkitA64.cmake "$pkgdir"/opt/devkitpro/cmake
 
 }

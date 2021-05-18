@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/devkitA64/share/devkitA64.cmake "$@"
+exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/devkitA64.cmake "$@"

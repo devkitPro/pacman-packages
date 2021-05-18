@@ -1,16 +1,12 @@
 cmake_minimum_required(VERSION 3.7)
+include(${CMAKE_CURRENT_LIST_DIR}/dkp-initialize-path.cmake)
+
+set(devkitA64 TRUE)
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR "aarch64")
 set(CMAKE_CROSSCOMPILING 1)
-
-if(NOT DEFINED ENV{DEVKITPRO})
-	set(DEVKITPRO /opt/devkitpro)
-else()
-	set(DEVKITPRO $ENV{DEVKITPRO})
-endif()
-
 
 set(TOOL_PREFIX ${DEVKITPRO}/devkitA64/bin/aarch64-none-elf-)
 
@@ -35,8 +31,4 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available" )
-
-set(devkitA64 TRUE)
-
-include(${DEVKITPRO}/share/common-utils.cmake)
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available")

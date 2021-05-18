@@ -1,15 +1,12 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.7)
+include(${CMAKE_CURRENT_LIST_DIR}/dkp-initialize-path.cmake)
+
+set(devkitARM TRUE)
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR "arm")
 set(CMAKE_CROSSCOMPILING 1)
-
-if(NOT DEFINED ENV{DEVKITPRO})
-	set(DEVKITPRO /opt/devkitpro)
-else()
-	set(DEVKITPRO $ENV{DEVKITPRO})
-endif()
 
 set(TOOL_PREFIX ${DEVKITPRO}/devkitARM/bin/arm-none-eabi-)
 
@@ -34,9 +31,4 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
-
-set(devkitARM TRUE)
-
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available" )
-
-include(${DEVKITPRO}/share/common-utils.cmake)

@@ -1,12 +1,12 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-cmake
 pkgver=1.0.0
-pkgrel=10
+pkgrel=12
 pkgdesc="3ds cmake wrapper"
 arch=('any')
 url='http://devkitpro.org/'
 source=(
-  '3ds.cmake'
+  '3DS.cmake'
   'arm-none-eabi-cmake'
 )
 options=('!strip')
@@ -14,15 +14,15 @@ depends=('devkitarm-cmake')
 groups=('3ds-dev')
 
 sha256sums=(
-  '7f25b7b91c164ba5148d44f4dae66eb9dc77468206fa7b944dc2d6277d22376f'  # 3ds.cmake
-  'bc5cbc292b33487ff9a6dd57a3fe9a5e98a998b550324b0a68642a56424c1bf7'  # arm-none-eabi-cmake
+  'd744c07d9e92776be8e24e3c47c57e5faca9f719444a99e133e71f79d62d4cfc'  # 3DS.cmake
+  'f4bbf2fab22c7ecd091fb755464795e915a4f46269ae15a094bce7c21ddf2aa2'  # arm-none-eabi-cmake
 )
 
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/portlibs/3ds/bin
   cp "$srcdir"/arm-none-eabi-cmake "$pkgdir"/opt/devkitpro/portlibs/3ds/bin/
-  install -d "$pkgdir"/opt/devkitpro/portlibs/3ds/share
-  cp "${srcdir}"/3ds.cmake "$pkgdir"/opt/devkitpro/portlibs/3ds/share
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "${srcdir}"/3DS.cmake "$pkgdir"/opt/devkitpro/cmake
 
 }

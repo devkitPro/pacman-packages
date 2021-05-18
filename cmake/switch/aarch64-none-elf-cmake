@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/portlibs/switch/share/switch.cmake "$@"
+exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/Switch.cmake "$@"
