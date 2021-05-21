@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-cmake-common-utils
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="cmake script for devkitPro common utilities"
 arch=('any')
 url='http://devkitpro.org/'
@@ -12,7 +12,7 @@ source=(
 
 sha256sums=(
   '091a0d08998c7e02db833913a010fdd5ba42f56e49cd62c40503d2e3d2ee6f21'  # dkp-initialize-path.cmake
-  '510b7e37ddab895dc4cfbb085557c66cc0100808df9819f99e1951707f5679c9'  # dkp-embedded-binary.cmake
+  'd3483ee3fdd9d9847e7c8f95a17b753040565d89981a62ba36392750fb3c4aa8'  # dkp-embedded-binary.cmake
 )
 
 package() {
