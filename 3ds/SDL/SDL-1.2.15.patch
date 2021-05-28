@@ -180,22 +180,8 @@ index 9d7129c52..b03422411 100644
  /* Ends C function definitions when using C++ */
  #ifdef __cplusplus
  }
-diff --git a/include/SDL_platform.h b/include/SDL_platform.h
-index 48540a85d..5fec876ed 100644
---- a/include/SDL_platform.h
-+++ b/include/SDL_platform.h
-@@ -106,5 +106,9 @@
- #undef __WIN32__
- #define __WIN32__	1
- #endif
-+#if defined(_3DS)
-+#undef __N3DS__
-+#define __N3DS__	1
-+#endif
- 
- #endif /* _SDL_platform_h */
 diff --git a/include/SDL_stdinc.h b/include/SDL_stdinc.h
-index 35a4fdde5..d21e0d3db 100644
+index 35a4fdde5..5d8b62045 100644
 --- a/include/SDL_stdinc.h
 +++ b/include/SDL_stdinc.h
 @@ -147,7 +147,7 @@ typedef enum {
@@ -203,12 +189,12 @@ index 35a4fdde5..d21e0d3db 100644
  } SDL_DUMMY_ENUM;
  
 -#ifndef __NDS__
-+#if !defined(__NDS__) && !defined(__N3DS__)
++#if !defined(__NDS__) && !defined(__3DS__)
  SDL_COMPILE_TIME_ASSERT(enum, sizeof(SDL_DUMMY_ENUM) == sizeof(int));
  #endif
  /*@}*/
 diff --git a/include/SDL_video.h b/include/SDL_video.h
-index f9c4e0702..d184221da 100644
+index f9c4e0702..b2d064284 100644
 --- a/include/SDL_video.h
 +++ b/include/SDL_video.h
 @@ -142,7 +142,16 @@ typedef struct SDL_Surface {
@@ -217,10 +203,10 @@ index f9c4e0702..d184221da 100644
  #define SDL_RESIZABLE	0x00000010	/**< This video mode may be resized */
 -#define SDL_NOFRAME	0x00000020	/**< No window caption or edge frame */
 +#define SDL_NOFRAME		0x00000020	/**< No window caption or edge frame */
-+#ifdef __N3DS__
-+#define SDL_TOPSCR		0x00100000	/**< N3DS Top Screen mode */
-+#define SDL_BOTTOMSCR	0x00200000	/**< N3DS Bottom Screen mode */
-+#define SDL_DUALSCR		0x00300000	/**< N3DS Top+Bottom Screen mode */
++#ifdef __3DS__
++#define SDL_TOPSCR		0x00100000	/**< 3DS Top Screen mode */
++#define SDL_BOTTOMSCR	0x00200000	/**< 3DS Bottom Screen mode */
++#define SDL_DUALSCR		0x00300000	/**< 3DS Top+Bottom Screen mode */
 +#define SDL_FITWIDTH	0x00400000	/**> Render a resized surface to fit systen screen width */
 +#define SDL_FITHEIGHT	0x00800000	/**> Render a resized surface to fit systen screen height */
 +#define SDL_CONSOLETOP	0x00040000	/**> Enale console output on Top screen */
@@ -660,10 +646,10 @@ index 000000000..c51c850b9
 +#endif /* _SDL_n3dsaudio_h */
 diff --git a/src/joystick/n3ds/SDL_sysjoystick.c b/src/joystick/n3ds/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..fac6624c7
+index 000000000..c41e7a245
 --- /dev/null
 +++ b/src/joystick/n3ds/SDL_sysjoystick.c
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,183 @@
 +#include "SDL_config.h"
 +
 +#include <3ds.h>
@@ -679,6 +665,7 @@ index 000000000..fac6624c7
 +int old_x = 0, old_y = 0;
 +int old_cs_x = 0, old_cs_y = 0;
 +u32 key_press, key_release = 0;
++int old_dpad_state = 0;
 +
 +int SDL_SYS_JoystickInit (void) {
 +	SDL_numjoysticks = 1;
@@ -696,8 +683,8 @@ index 000000000..fac6624c7
 +}
 +
 +int SDL_SYS_JoystickOpen(SDL_Joystick *joystick) {
-+	joystick->nbuttons = 14;
-+	joystick->nhats = 0;
++	joystick->nbuttons = 10;
++	joystick->nhats = 1;
 +	joystick->nballs = 0;
 +	joystick->naxes = 4;
 +
@@ -747,6 +734,7 @@ index 000000000..fac6624c7
 +	}
 +
 +	key_press = hidKeysDown ();
++	int dpad_state = old_dpad_state;
 +	if ((key_press & KEY_A)) {
 +		SDL_PrivateJoystickButton (joystick, 1, SDL_PRESSED);
 +	}
@@ -772,22 +760,22 @@ index 000000000..fac6624c7
 +		SDL_PrivateJoystickButton (joystick, 6, SDL_PRESSED);
 +	}
 +	if ((key_press & KEY_DDOWN)) {
-+		SDL_PrivateJoystickButton (joystick, 8, SDL_PRESSED);
++		dpad_state |= SDL_HAT_DOWN;
 +	}
 +	if ((key_press & KEY_DLEFT)) {
-+		SDL_PrivateJoystickButton (joystick, 9, SDL_PRESSED);
++		dpad_state |= SDL_HAT_LEFT;
 +	}
 +	if ((key_press & KEY_DUP)) {
-+		SDL_PrivateJoystickButton (joystick, 10, SDL_PRESSED);
++		dpad_state |= SDL_HAT_UP;
 +	}
 +	if ((key_press & KEY_DRIGHT)) {
-+		SDL_PrivateJoystickButton (joystick, 11, SDL_PRESSED);
++		dpad_state |= SDL_HAT_RIGHT;
 +	}
 +	if ((key_press & KEY_ZL)) {
-+		SDL_PrivateJoystickButton (joystick, 12, SDL_PRESSED);
++		SDL_PrivateJoystickButton (joystick, 8, SDL_PRESSED);
 +	}
 +	if ((key_press & KEY_ZR)) {
-+		SDL_PrivateJoystickButton (joystick, 13, SDL_PRESSED);
++		SDL_PrivateJoystickButton (joystick, 9, SDL_PRESSED);
 +	}
 +
 +	key_release = hidKeysUp ();
@@ -816,22 +804,27 @@ index 000000000..fac6624c7
 +		SDL_PrivateJoystickButton (joystick, 6, SDL_RELEASED);
 +	}
 +	if ((key_release & KEY_DDOWN)) {
-+		SDL_PrivateJoystickButton (joystick, 8, SDL_RELEASED);
++		dpad_state &= ~SDL_HAT_DOWN;
 +	}
 +	if ((key_release & KEY_DLEFT)) {
-+		SDL_PrivateJoystickButton (joystick, 9, SDL_RELEASED);
++		dpad_state &= ~SDL_HAT_LEFT;
 +	}
 +	if ((key_release & KEY_DUP)) {
-+		SDL_PrivateJoystickButton (joystick, 10, SDL_RELEASED);
++		dpad_state &= ~SDL_HAT_UP;
 +	}
 +	if ((key_release & KEY_DRIGHT)) {
-+		SDL_PrivateJoystickButton (joystick, 11, SDL_RELEASED);
++		dpad_state &= ~SDL_HAT_RIGHT;
 +	}
 +	if ((key_release & KEY_ZL)) {
-+		SDL_PrivateJoystickButton (joystick, 12, SDL_RELEASED);
++		SDL_PrivateJoystickButton (joystick, 8, SDL_RELEASED);
 +	}
 +	if ((key_release & KEY_ZR)) {
-+		SDL_PrivateJoystickButton (joystick, 13, SDL_RELEASED);
++		SDL_PrivateJoystickButton (joystick, 9, SDL_RELEASED);
++	}
++
++	if (dpad_state != old_dpad_state) {
++		old_dpad_state = dpad_state;
++		SDL_PrivateJoystickHat (joystick, 0, dpad_state);
 +	}
 +}
 +
@@ -1666,10 +1659,10 @@ index 000000000..cdbdd17ce
 +/* Functions to be exported */
 diff --git a/src/video/n3ds/SDL_n3dsvideo.c b/src/video/n3ds/SDL_n3dsvideo.c
 new file mode 100644
-index 000000000..dc47d9621
+index 000000000..2fbb8ee82
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.c
-@@ -0,0 +1,764 @@
+@@ -0,0 +1,766 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -2125,6 +2118,8 @@ index 000000000..dc47d9621
 +	if (mode==2) mode = 3;
 +
 +	// Setup the textures
++	if(setVideoModecount>1)
++		C3D_TexDelete(&spritesheet_tex); // delete in case it was initialized before
 +	C3D_TexInit(&spritesheet_tex, hw, hh, this->hidden->mode);
 +	C3D_TexSetFilter(&spritesheet_tex, this->hidden->fitscreen ? GPU_LINEAR : GPU_NEAREST , GPU_NEAREST);
 +//	C3D_TexBind(0, &spritesheet_tex);
@@ -2173,8 +2168,8 @@ index 000000000..dc47d9621
 +			break;
 +
 +		if(gspHasGpuRight()) {
-+//			if (C3D_FrameBegin(C3D_FRAME_SYNCDRAW)){
-+			if (C3D_FrameBegin(C3D_FRAME_NONBLOCK)){
++			if (C3D_FrameBegin(C3D_FRAME_SYNCDRAW)){
++//			if (C3D_FrameBegin(C3D_FRAME_NONBLOCK)){
 +				if (this->hidden->screens & SDL_TOPSCR) {
 +					C3D_RenderTargetClear(VideoSurface1, C3D_CLEAR_ALL, RenderClearColor, 0);
 +					C3D_FrameDrawOn(VideoSurface1);
@@ -2217,7 +2212,7 @@ index 000000000..dc47d9621
 +
 +		C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 +
-+		gspWaitForVBlank();
++//		gspWaitForVBlank();
 +		LightEvent_Signal(&privateVideoThreadEvent);
 +	}
 +}
