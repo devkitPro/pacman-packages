@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.7)
 include(${CMAKE_CURRENT_LIST_DIR}/devkitA64.cmake)
+include(dkp-custom-target)
 include(dkp-embedded-binary)
+include(dkp-asset-folder)
 
 set(NX_ARCH_SETTINGS "-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec")
 set(NX_COMMON_FLAGS  "${NX_ARCH_SETTINGS} -ffunction-sections -fdata-sections -D__SWITCH__")
@@ -34,6 +36,11 @@ if (NOT NX_NACPTOOL_EXE)
 	message(WARNING "Could not find nacptool: try installing switch-tools")
 endif()
 
+find_program(NX_UAM_EXE NAMES uam HINTS "${DEVKITPRO}/tools/bin")
+if (NOT NX_UAM_EXE)
+	message(WARNING "Could not find uam: try installing uam")
+endif()
+
 find_file(NX_DEFAULT_ICON NAMES default_icon.jpg HINTS "${DEVKITPRO}/libnx" NO_CMAKE_FIND_ROOT_PATH)
 if (NOT NX_DEFAULT_ICON)
 	message(WARNING "Could not find default icon: try installing libnx")
@@ -56,8 +63,8 @@ set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CA
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
 set(CMAKE_ASM_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
 
-function(nx_generate_nacp target)
-	cmake_parse_arguments(NACP "" "NAME;AUTHOR;VERSION" "" "${ARGN}")
+function(nx_generate_nacp outfile)
+	cmake_parse_arguments(NACP "" "NAME;AUTHOR;VERSION" "" ${ARGN})
 	if (NOT DEFINED NACP_NAME)
 		set(NACP_NAME "${CMAKE_PROJECT_NAME}")
 	endif()
@@ -65,21 +72,25 @@ function(nx_generate_nacp target)
 		set(NACP_AUTHOR "Unspecified Author")
 	endif()
 	if (NOT DEFINED NACP_VERSION)
-		set(NACP_VERSION "1.0.0")
+		if (PROJECT_VERSION)
+			set(NACP_VERSION "${PROJECT_VERSION}")
+		else()
+			set(NACP_VERSION "1.0.0")
+		endif()
 	endif()
 
 	add_custom_command(
-		OUTPUT "${target}"
-		COMMAND "${NX_NACPTOOL_EXE}" --create "${NACP_NAME}" "${NACP_AUTHOR}" "${NACP_VERSION}" "${target}"
+		OUTPUT "${outfile}"
+		COMMAND "${NX_NACPTOOL_EXE}" --create "${NACP_NAME}" "${NACP_AUTHOR}" "${NACP_VERSION}" "${outfile}"
 		VERBATIM
 	)
 endfunction()
 
 function(nx_create_nro prefix)
-	cmake_parse_arguments(ELF2NRO "NOICON;NONACP" "ICON;NACP" "" "${ARGN}")
+	cmake_parse_arguments(ELF2NRO "NOICON;NONACP" "ICON;NACP;ROMFS" "" ${ARGN})
 
-	set(ELF2NRO_ARGS "${prefix}" "${prefix}.nro")
-	set(ELF2NRO_DEPS "${prefix}")
+	set(ELF2NRO_ARGS ${prefix} "${prefix}.nro")
+	set(ELF2NRO_DEPS ${prefix})
 
 	if (DEFINED ELF2NRO_ICON AND ELF2NRO_NOICON)
 		message(FATAL_ERROR "nx_create_nro: cannot specify ICON and NOICON at the same time")
@@ -99,19 +110,38 @@ function(nx_create_nro prefix)
 	endif()
 
 	if (DEFINED ELF2NRO_ICON)
-		set(ELF2NRO_ARGS ${ELF2NRO_ARGS} "--icon=${ELF2NRO_ICON}")
-		set(ELF2NRO_DEPS ${ELF2NRO_DEPS} "${ELF2NRO_ICON}")
+		list(APPEND ELF2NRO_ARGS "--icon=${ELF2NRO_ICON}")
+		list(APPEND ELF2NRO_DEPS "${ELF2NRO_ICON}")
 	endif()
 
 	if (DEFINED ELF2NRO_NACP)
-		set(ELF2NRO_ARGS ${ELF2NRO_ARGS} "--nacp=${ELF2NRO_NACP}")
-		set(ELF2NRO_DEPS ${ELF2NRO_DEPS} "${ELF2NRO_NACP}")
+		list(APPEND ELF2NRO_ARGS "--nacp=${ELF2NRO_NACP}")
+		list(APPEND ELF2NRO_DEPS "${ELF2NRO_NACP}")
+	endif()
+
+	if (DEFINED ELF2NRO_ROMFS)
+		if (TARGET "${ELF2NRO_ROMFS}")
+			get_target_property(_folder "${ELF2NRO_ROMFS}" DKP_ASSET_FOLDER)
+			if (NOT _folder)
+				message(FATAL_ERROR "nx_create_nro: not a valid asset target")
+			endif()
+			list(APPEND ELF2NRO_ARGS "--romfsdir=${_folder}")
+			list(APPEND ELF2NRO_DEPS ${ELF2NRO_ROMFS} $<TARGET_PROPERTY:${ELF2NRO_ROMFS},DKP_ASSET_FILES>)
+		else()
+			if (NOT IS_ABSOLUTE "${ELF2NRO_ROMFS}")
+				set(ELF2NRO_ROMFS "${CMAKE_CURRENT_LIST_DIR}/${ELF2NRO_ROMFS}")
+			endif()
+			if (NOT IS_DIRECTORY "${ELF2NRO_ROMFS}")
+				message(FATAL_ERROR "nx_create_nro: cannot find romfs dir: ${ELF2NRO_ROMFS}")
+			endif()
+			list(APPEND ELF2NRO_ARGS "--romfsdir=${ELF2NRO_ROMFS}")
+		endif()
 	endif()
 
 	add_custom_command(
 		OUTPUT "${prefix}.nro"
 		COMMAND "${NX_ELF2NRO_EXE}" ${ELF2NRO_ARGS}
-		DEPENDS "${prefix}" ${ELF2NRO_DEPS}
+		DEPENDS ${ELF2NRO_DEPS}
 		VERBATIM
 	)
 
@@ -119,4 +149,20 @@ function(nx_create_nro prefix)
 		"${prefix}_nro" ALL
 		DEPENDS "${prefix}.nro"
 	)
+endfunction()
+
+function(nx_add_shader_program target source type)
+	if(NOT IS_ABSOLUTE ${source})
+		set(source "${CMAKE_CURRENT_LIST_DIR}/${source}")
+	endif()
+
+	set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.dksh")
+	add_custom_command(
+		OUTPUT "${outfile}"
+		COMMAND "${NX_UAM_EXE}" -o "${outfile}" -s ${type} "${source}"
+		DEPENDS "${source}"
+		COMMENT "Building shader program ${target}"
+	)
+	add_custom_target(${target} DEPENDS "${outfile}")
+	dkp_set_target_file(${target} "${outfile}")
 endfunction()
