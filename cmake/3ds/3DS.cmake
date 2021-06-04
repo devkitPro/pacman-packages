@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.7)
 include(${CMAKE_CURRENT_LIST_DIR}/devkitARM.cmake)
+include(dkp-custom-target)
 include(dkp-embedded-binary)
+include(dkp-asset-folder)
 
 set(CMAKE_SYSTEM_PROCESSOR "armv6k")
 
@@ -36,13 +38,18 @@ if (NOT CTR_3DSXTOOL_EXE)
 	message(WARNING "Could not find 3dsxtool: try installing 3ds-tools")
 endif()
 
+find_program(CTR_PICASSO_EXE NAMES picasso HINTS "${DEVKITPRO}/tools/bin")
+if (NOT CTR_PICASSO_EXE)
+	message(WARNING "Could not find picasso: try installing picasso")
+endif()
+
 find_file(CTR_DEFAULT_ICON NAMES default_icon.png HINTS "${DEVKITPRO}/libctru" NO_CMAKE_FIND_ROOT_PATH)
 if (NOT CTR_DEFAULT_ICON)
 	message(WARNING "Could not find default icon: try installing libctru")
 endif()
 
-function(ctr_generate_smdh target)
-	cmake_parse_arguments(SMDH "" "NAME;DESCRIPTION;AUTHOR;ICON" "" "${ARGN}")
+function(ctr_generate_smdh outfile)
+	cmake_parse_arguments(SMDH "" "NAME;DESCRIPTION;AUTHOR;ICON" "" ${ARGN})
 	if (NOT DEFINED SMDH_NAME)
 		set(SMDH_NAME "${CMAKE_PROJECT_NAME}")
 	endif()
@@ -57,17 +64,17 @@ function(ctr_generate_smdh target)
 	endif()
 
 	add_custom_command(
-		OUTPUT "${target}"
-		COMMAND ${CTR_SMDHTOOL_EXE} --create "${SMDH_NAME}" "${SMDH_DESCRIPTION}" "${SMDH_AUTHOR}" "${SMDH_ICON}" "${target}"
+		OUTPUT "${outfile}"
+		COMMAND ${CTR_SMDHTOOL_EXE} --create "${SMDH_NAME}" "${SMDH_DESCRIPTION}" "${SMDH_AUTHOR}" "${SMDH_ICON}" "${outfile}"
 		VERBATIM
 	)
 endfunction()
 
 function(ctr_create_3dsx prefix)
-	cmake_parse_arguments(CTR_3DSXTOOL "NOSMDH" "SMDH" "" "${ARGN}")
+	cmake_parse_arguments(CTR_3DSXTOOL "NOSMDH" "SMDH;ROMFS" "" ${ARGN})
 
-	set(CTR_3DSXTOOL_ARGS "${prefix}" "${prefix}.3dsx")
-	set(CTR_3DSXTOOL_DEPS "${prefix}")
+	set(CTR_3DSXTOOL_ARGS ${prefix} "${prefix}.3dsx")
+	set(CTR_3DSXTOOL_DEPS ${prefix})
 
 	if (DEFINED CTR_3DSXTOOL_SMDH AND CTR_3DSXTOOL_NOSMDH)
 		message(FATAL_ERROR "ctr_create_3dsx: cannot specify SMDH and NOSMDH at the same time")
@@ -78,21 +85,62 @@ function(ctr_create_3dsx prefix)
 		ctr_generate_smdh(${CTR_3DSXTOOL_SMDH})
 	endif()
 
-	if (DEFINED ELF2NRO_SMDH)
-		set(CTR_3DSXTOOL_ARGS ${CTR_3DSXTOOL_ARGS} "--smdh=${CTR_3DSXTOOL_SMDH}")
-		set(CTR_3DSXTOOL_DEPS ${CTR_3DSXTOOL_DEPS} "${CTR_3DSXTOOL_SMDH}")
+	if (DEFINED CTR_3DSXTOOL_SMDH)
+		list(APPEND CTR_3DSXTOOL_ARGS "--smdh=${CTR_3DSXTOOL_SMDH}")
+		list(APPEND CTR_3DSXTOOL_DEPS "${CTR_3DSXTOOL_SMDH}")
+	endif()
+
+	if (DEFINED CTR_3DSXTOOL_ROMFS)
+		if (TARGET "${CTR_3DSXTOOL_ROMFS}")
+			get_target_property(_folder "${CTR_3DSXTOOL_ROMFS}" DKP_ASSET_FOLDER)
+			if (NOT _folder)
+				message(FATAL_ERROR "ctr_create_3dsx: not a valid asset target")
+			endif()
+			list(APPEND CTR_3DSXTOOL_ARGS "--romfs=${_folder}")
+			list(APPEND CTR_3DSXTOOL_DEPS ${CTR_3DSXTOOL_ROMFS} $<TARGET_PROPERTY:${CTR_3DSXTOOL_ROMFS},DKP_ASSET_FILES>)
+		else()
+			if (NOT IS_ABSOLUTE "${CTR_3DSXTOOL_ROMFS}")
+				set(CTR_3DSXTOOL_ROMFS "${CMAKE_CURRENT_LIST_DIR}/${CTR_3DSXTOOL_ROMFS}")
+			endif()
+			if (NOT IS_DIRECTORY "${CTR_3DSXTOOL_ROMFS}")
+				message(FATAL_ERROR "ctr_create_3dsx: cannot find romfs dir: ${CTR_3DSXTOOL_ROMFS}")
+			endif()
+			list(APPEND CTR_3DSXTOOL_ARGS "--romfs=${CTR_3DSXTOOL_ROMFS}")
+		endif()
 	endif()
 
 	add_custom_command(
 		OUTPUT "${prefix}.3dsx"
 		COMMAND "${CTR_3DSXTOOL_EXE}" ${CTR_3DSXTOOL_ARGS}
-		DEPENDS "${prefix}" ${CTR_3DSXTOOL_DEPS}
+		DEPENDS ${CTR_3DSXTOOL_DEPS}
 		VERBATIM
 	)
 
 	add_custom_target(
 		"${prefix}_3dsx" ALL
 		DEPENDS "${prefix}.3dsx"
+	)
+endfunction()
+
+function(ctr_add_shader_library target)
+	if (NOT ${ARGC} GREATER 1)
+		message(FATAL_ERROR "ctr_add_shader_library: must provide at least one input file")
+	endif()
+
+	add_custom_command(
+		OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin"
+		COMMAND "${CTR_PICASSO_EXE}" -o "${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin" ${ARGN}
+		DEPENDS ${ARGN}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+		COMMENT "Building shader library ${target}"
+	)
+
+	add_custom_target(${target}
+		DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin"
+	)
+
+	dkp_set_target_file(${target}
+		"${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin"
 	)
 endfunction()
 
