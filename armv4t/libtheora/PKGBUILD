@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 # Contributor: oreo639 <oreo6391@gmail.com>
 
-pkgname=dkp-armv4t-libtheora
+pkgname=armv4t-libtheora
 pkgver=1.2.0alpha1
 pkgrel=1
 pkgdesc='Free and open video compression codec from the Xiph.org Foundation'
@@ -18,8 +18,8 @@ sha256sums=(
  '45c9601eda3425699530edd66da0cf70658844f4cae04f4b1910d1f7f6cb2aa1'
 )
 makedepends=('devkitpro-pkgbuild-helpers')
-depends=('dkp-armv4t-libogg')
-groups=('dkp-armv4t-portlibs')
+depends=('armv4t-libogg')
+groups=('armv4t-portlibs')
 
 build() {
   cd libtheora-${pkgver}
