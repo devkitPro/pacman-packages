@@ -1,0 +1,42 @@
+diff -Naur libmodplug-0.8.9.0.old/src/load_abc.cpp libmodplug-0.8.9.0/src/load_abc.cpp
+--- libmodplug-0.8.9.0.old/src/load_abc.cpp	2020-10-08 22:58:42.530000706 +0200
++++ libmodplug-0.8.9.0/src/load_abc.cpp	2020-10-08 22:59:20.744998238 +0200
+@@ -3597,8 +3597,10 @@
+ 	mm.mm = (char *)lpStream;
+ 	mm.sz = dwMemLength;
+ 	mm.pos = 0;
++#ifndef __3DS__
+ 	while( avoid_reentry ) sleep(1);
+ 	avoid_reentry = 1;
++#endif
+ 	pat_resetsmp();
+ 	pat_init_patnames();
+ 	m_nDefaultTempo = 0;
+diff -Naur libmodplug-0.8.9.0.old/src/load_mid.cpp libmodplug-0.8.9.0/src/load_mid.cpp
+--- libmodplug-0.8.9.0.old/src/load_mid.cpp	2020-10-08 22:58:42.530000706 +0200
++++ libmodplug-0.8.9.0/src/load_mid.cpp	2020-10-08 22:59:30.568997604 +0200
+@@ -1170,8 +1170,10 @@
+ 	BYTE midibyte[2];
+ 	long metalen, delta;
+ 	BYTE *p;
++#ifndef __3DS__
+ 	while( avoid_reentry ) sleep(1);
+ 	avoid_reentry = 1;
++#endif
+ 	if( !TestMID(lpStream, dwMemLength) ) {
+ 		avoid_reentry = 0;
+ 		return FALSE;
+diff -Naur libmodplug-0.8.9.0.old/src/load_pat.cpp libmodplug-0.8.9.0/src/load_pat.cpp
+--- libmodplug-0.8.9.0.old/src/load_pat.cpp	2020-10-08 22:58:42.531000706 +0200
++++ libmodplug-0.8.9.0/src/load_pat.cpp	2020-10-08 22:59:26.472997869 +0200
+@@ -1149,8 +1149,10 @@
+ 	mm.sz = dwMemLength;
+ 	mm.pos = 0;
+ 	mm.error = 0;
++#ifndef __3DS__
+ 	while( avoid_reentry ) sleep(1);
+ 	avoid_reentry = 1;
++#endif
+ 	pat_read_patname(h, mmfile);
+ 	h->samples = pat_read_numsmp(mmfile);
+ 	if( strlen(h->patname) )
