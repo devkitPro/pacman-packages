@@ -2,7 +2,7 @@
 # Contributor: cpasjuste <cpasjuste@gmail.com>
 # Contributor: oreo639 <oreo6391@gmail.com>
 
-pkgname=dkp-armv4t-flac
+pkgname=armv4t-flac
 pkgver=1.3.2
 pkgrel=1
 pkgdesc='Open source Free Lossless Audio Codec'
@@ -10,9 +10,9 @@ arch=('any')
 url='https://xiph.org/flac/'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
-depends=("dkp-armv4t-libogg")
+depends=("armv4t-libogg")
 makedepends=('devkitpro-pkgbuild-helpers')
-groups=('dkp-armv4t-portlibs')
+groups=('armv4t-portlibs')
 
 source=(
   "https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz"
