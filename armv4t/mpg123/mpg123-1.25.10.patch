@@ -1,0 +1,84 @@
+diff -Naur mpg123-1.25.10.old/configure.ac mpg123-1.25.10/configure.ac
+--- mpg123-1.25.10.old/configure.ac	2018-02-27 10:34:27.000000000 +0000
++++ mpg123-1.25.10/configure.ac	2018-03-28 15:37:59.296955042 +0100
+@@ -1217,6 +1217,20 @@
+ #	AC_DEFINE( 
+ #fi
+ 
++if test x"$ac_cv_header_sys_signal_h" = xyes; then
++	AC_CHECK_FUNCS( sigemptyset sigaddset sigprocmask sigaction )
++	if test x"$ac_cv_func_sigemptyset" = xno ||
++	   test x"$ac_cv_func_sigaddset" = xno ||
++	   test x"$ac_cv_func_sigprocmask" = xno ||
++	   test x"$ac_cv_func_sigaction" = xno; then
++		AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
++	fi
++else
++	AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
++fi
++
++AC_CHECK_FUNCS( sleep, [ have_sleep=yes ], [ have_sleep=no ] )
++
+ dnl ############## Choose compiler flags and CPU
+ 
+ # do not assume gcc here, so no flags by default
+diff -Naur mpg123-1.25.10.old/libmpg123.pc.in mpg123-1.25.10/libmpg123.pc.in
+--- mpg123-1.25.10.old/libmpg123.pc.in	2018-02-27 10:26:38.000000000 +0000
++++ mpg123-1.25.10/libmpg123.pc.in	2018-03-28 15:38:45.242144066 +0100
+@@ -7,5 +7,5 @@
+ Description: An optimised MPEG Audio decoder
+ Requires: 
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lmpg123 
++Libs: -L${libdir} -lmpg123 -lm
+ Cflags: -I${includedir} 
+diff -Naur mpg123-1.25.10.old/libout123.pc.in mpg123-1.25.10/libout123.pc.in
+--- mpg123-1.25.10.old/libout123.pc.in	2018-02-27 10:26:38.000000000 +0000
++++ mpg123-1.25.10/libout123.pc.in	2018-03-28 15:38:59.027716837 +0100
+@@ -7,5 +7,5 @@
+ Description: A streaming audio output API derived from mpg123
+ Requires: 
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lout123 
++Libs: -L${libdir} -lout123 -lm
+ Cflags: -I${includedir} 
+diff -Naur mpg123-1.25.10.old/src/control_generic.c mpg123-1.25.10/src/control_generic.c
+--- mpg123-1.25.10.old/src/control_generic.c	2018-02-27 10:26:38.000000000 +0000
++++ mpg123-1.25.10/src/control_generic.c	2018-03-28 15:37:59.296955042 +0100
+@@ -28,8 +28,10 @@
+ #include <ctype.h>
+ #if !defined (WIN32) || defined (__CYGWIN__)
+ #include <sys/wait.h>
++#ifdef NETWORK
+ #include <sys/socket.h>
+ #endif
++#endif
+ #include <errno.h>
+ #include <string.h>
+ 
+@@ -311,8 +313,11 @@
+  		outstream = stderr;
+  	else
+  		outstream = stdout;
+- 		
+-#ifndef WIN32
++
++#if 1
++	fprintf(outstream, "The control interface is not supported on this platform\n");
++	return 0;
++#elif !defined(WIN32)
+  	setlinebuf(outstream);
+ #else /* perhaps just use setvbuf as it's C89 */
+ 	/*
+diff -Naur mpg123-1.25.10.old/src/mpg123.c mpg123-1.25.10/src/mpg123.c
+--- mpg123-1.25.10.old/src/mpg123.c	2018-02-27 10:26:38.000000000 +0000
++++ mpg123-1.25.10/src/mpg123.c	2018-03-28 15:37:59.296955042 +0100
+@@ -1239,6 +1239,8 @@
+ 			if(param.verbose > 2) fprintf(stderr, "Note: pausing %i seconds before next track.\n", param.delay);
+ #ifdef WIN32
+ 			Sleep(param.delay*1000);
++#elif !defined(HAVE_SLEEP)
++			fprintf(stderr, "sleep not supported on this platform\n");
+ #else
+ 			sleep(param.delay);
+ #endif
