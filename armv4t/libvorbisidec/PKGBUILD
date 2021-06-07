@@ -1,6 +1,6 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=dkp-armv4t-libvorbisidec
+pkgname=armv4t-libvorbisidec
 pkgver=1.2.1
 pkgrel=1
 pkgdesc='Fixed-point version of the Ogg Vorbis decoder (for armv4t homebrew development)'
@@ -11,13 +11,12 @@ options=(!strip libtool staticlibs)
 source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.xz")
 sha256sums=('6ae33489ed40b54ab4a1cd0cf349e9b3b1d5c68d722485704d951f4bf80c64c6')
 makedepends=('devkitpro-pkgbuild-helpers')
-depends=('dkp-armv4t-libogg')
-groups=('dkp-armv4t-portlibs')
+depends=('armv4t-libogg')
+groups=('armv4t-portlibs')
 
 build() {
   cd libvorbisidec-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi 
@@ -28,7 +27,6 @@ build() {
 package() {
   cd libvorbisidec-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
 
   make DESTDIR="$pkgdir" install
