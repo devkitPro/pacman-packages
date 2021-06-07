@@ -1,4 +1,4 @@
-pkgname=dkp-armv4t-flite
+pkgname=armv4t-flite
 pkgver=2.1
 pkgrel=2
 pkgdesc='A small fast portable speech synthesis system'
@@ -8,7 +8,7 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 depends=()
 makedepends=('devkitpro-pkgbuild-helpers')
-groups=('dkp-armv4t-portlibs')
+groups=('armv4t-portlibs')
 
 source=("http://festvox.org/flite/packed/flite-${pkgver}/flite-${pkgver}-release.tar.bz2")
 
@@ -30,7 +30,6 @@ build() {
 package() {
   cd flite-$pkgver-release
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
 
   mkdir -p $pkgdir$PORTLIBS_PREFIX/lib
