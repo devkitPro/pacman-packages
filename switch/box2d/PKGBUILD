@@ -1,0 +1,38 @@
+# Maintainer:  cpasjuste <cpasjuste@gmail.com>
+
+pkgbasename=box2d
+pkgname=switch-$pkgbasename
+pkgver=2.4.1
+pkgrel=1
+pkgdesc='Box2D is a 2D physics engine for games.'
+arch=('any')
+url='https://github.com/erincatto/box2d'
+license=(MIT)
+options=(!strip libtool staticlibs)
+https://github.com/erincatto/box2d/archive/refs/tags/v2.4.1.zip
+source=("${url}/archive/refs/tags/v${pkgver}.zip")
+sha256sums=('0cb512dfa5be79ca227cd881b279adee61249c85c8b51caf5aa036b71e943002')
+makedepends=('devkitpro-pkgbuild-helpers')
+
+build() {
+
+  cd ${pkgbasename}-${pkgver}
+
+  source /opt/devkitpro/switchvars.sh
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
+    -DBOX2D_BUILD_DOCS=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DBOX2D_BUILD_TESTBED=OFF \
+    .
+
+  make
+
+}
+
+package() {
+  cd ${pkgbasename}-${pkgver}
+
+  make install DESTDIR="$pkgdir"
+}
