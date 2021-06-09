@@ -9,10 +9,9 @@ arch=('any')
 url='https://github.com/erincatto/box2d'
 license=(MIT)
 options=(!strip libtool staticlibs)
-https://github.com/erincatto/box2d/archive/refs/tags/v2.4.1.zip
 source=("${url}/archive/refs/tags/v${pkgver}.zip")
 sha256sums=('0cb512dfa5be79ca227cd881b279adee61249c85c8b51caf5aa036b71e943002')
-makedepends=('devkitpro-pkgbuild-helpers', '3ds-cmake')
+makedepends=('devkitpro-pkgbuild-helpers' '3ds-cmake')
 groups=('3ds-portlibs')
 
 build() {
