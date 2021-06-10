@@ -2,7 +2,7 @@
 
 pkgname=switch-libsamplerate
 pkgver=0.1.9
-pkgrel=1
+pkgrel=2
 pkgdesc='Secret Rabbit Code (aka libsamplerate) is a Sample Rate Converter for audio (for Nintendo Switch homebrew development)'
 arch=('any')
 url="http://www.mega-nerd.com/libsamplerate"
@@ -17,6 +17,7 @@ sha256sums=(
   'e11521959e926907ffbceff2abd4c509bab2e8d777575effc05dab41264e967c'
 )
 makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
 
 build() {
   cd libsamplerate-$pkgver
