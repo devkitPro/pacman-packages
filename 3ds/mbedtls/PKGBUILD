@@ -10,7 +10,7 @@ url='https://tls.mbed.org/'
 license=('apache')
 options=(!strip libtool staticlibs)
 depends=(3ds-zlib)
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
          '3ds-mbedtls.patch' )
 groups=('3ds-portlibs')

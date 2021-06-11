@@ -9,7 +9,7 @@ arch=('any')
 url='https://chromium.googlesource.com/webm/libvpx'
 license=('BSD')
 options=(!strip libtool staticlibs)
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 source=("https://github.com/webmproject/libvpx/archive/v$pkgver.tar.gz" "libvpx.patch")
 sha256sums=(
   '86df18c694e1c06cc8f83d2d816e9270747a0ce6abe316e93a4f4095689373f6'

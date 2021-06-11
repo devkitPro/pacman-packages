@@ -9,7 +9,7 @@ url="https://libgd.github.io"
 license=("custom")
 arch=("any")
 depends=("devkitPPC" "ppc-libjpeg-turbo" "ppc-libpng" "ppc-freetype")
-makedepends=("ppc-pkg-config" "devkitpro-pkgbuild-helpers")
+makedepends=("ppc-pkg-config" "dkp-toolchain-vars")
 options=("!buildflags" "staticlibs" "libtool" "!strip")
 source=("https://github.com/libgd/libgd/releases/download/gd-$pkgver/libgd-$pkgver.tar.xz"
         "libgd-2.2.5-nosyslog.patch")

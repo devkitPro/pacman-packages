@@ -14,7 +14,7 @@ source=(
 )
 sha256sums=('6c1337aee2e4bf993299851c70b7db11faec785303cfca3a5c3eb5f329ba7023'
             '444e46951f6270d926698718b3e52ec548088f1374f56bcd766d5b9783a41051')
-makedepends=('devkitpro-pkgbuild-helpers' 'ppc-pkg-config' 'devkitPPC')
+makedepends=('dkp-toolchain-vars' 'ppc-pkg-config' 'devkitPPC')
 groups=('ppc-portlibs')
 
 build() {

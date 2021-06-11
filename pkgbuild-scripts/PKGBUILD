@@ -1,5 +1,5 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=devkitpro-pkgbuild-helpers
+pkgname=dkp-toolchain-vars
 pkgver=2.2.4
 pkgrel=2
 

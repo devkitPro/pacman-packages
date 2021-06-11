@@ -13,7 +13,7 @@ depends=(
 )
 makedepends=(
  '3ds-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+ 'dkp-toolchain-vars'
 )
 source=("https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-${pkgver}.tar.gz")
 groups=('3ds-portlibs' '3ds-sdl-libs')

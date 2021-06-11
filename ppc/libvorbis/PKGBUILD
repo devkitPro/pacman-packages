@@ -9,7 +9,7 @@ url='https://wiki.xiph.org/Vorbis'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
 depends=('ppc-libogg')
-makedepends=('devkitpro-pkgbuild-helpers' 'ppc-pkg-config')
+makedepends=('dkp-toolchain-vars' 'ppc-pkg-config')
 groups=('ppc-portlibs')
 
 source=("https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-$pkgver.tar.gz")

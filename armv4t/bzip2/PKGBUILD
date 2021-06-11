@@ -15,7 +15,7 @@ options=('strip' 'staticlibs')
 source=("${url}/releases/download/${_realname}-${pkgver}/${_realname}-${pkgver}.tar.gz")
 sha256sums=('4f51c50c8da4bb48c81ca05fe02e8e44657402ad4bdfd2957eaf421bb43f5b7f')
 
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('armv4t-portlibs')
 
 options=(!strip staticlibs)

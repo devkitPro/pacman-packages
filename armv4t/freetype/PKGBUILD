@@ -12,7 +12,7 @@ depends=("armv4t-bzip2"
          "armv4t-libpng"
          "armv4t-zlib"
 )
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
 sha256sums=('bf380e4d7c4f3b5b1c1a7b2bf3abb967bda5e9ab480d0df656e0e08c5019c5e6')
 groups=("armv4t-portlibs")

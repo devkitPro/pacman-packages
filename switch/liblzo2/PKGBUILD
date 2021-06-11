@@ -9,7 +9,7 @@ arch=('any' )
 url='https://www.oberhumer.com/opensource/lzo/'
 license=('GPL v2+')
 options=(!strip libtool staticlibs)
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 source=("https://www.oberhumer.com/opensource/lzo/download/lzo-${pkgver}.tar.gz")
 sha256sums=('c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072')
 

@@ -9,7 +9,7 @@ url='http://leethomason.github.io/tinyxml2/'
 license=('apache')
 options=(!strip libtool staticlibs)
 source=( "https://github.com/leethomason/tinyxml2/archive/${pkgver}.tar.gz" )
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 sha256sums=('9444ba6322267110b4aca61cbe37d5dcab040344b5c97d0b36c119aa61319b0f')
 groups=('switch-portlibs')
 

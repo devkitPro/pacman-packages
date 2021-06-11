@@ -7,7 +7,7 @@ url='https://tls.mbed.org'
 license=('apache')
 options=(!strip libtool staticlibs)
 depends=(switch-zlib)
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 source=( 
     "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
     'switch-mbedtls.patch'

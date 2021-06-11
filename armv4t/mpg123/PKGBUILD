@@ -15,7 +15,7 @@ source=(
 )
 sha256sums=('90306848359c793fd43b9906e52201df18775742dc3c81c06ab67a806509890a'
             '444e46951f6270d926698718b3e52ec548088f1374f56bcd766d5b9783a41051')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 
 build() {
   cd mpg123-$pkgver

@@ -16,7 +16,7 @@ depends=("switch-bzip2"
          "switch-zlib"
 )
 groups=('switch-portlibs')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
 sha256sums=('3a60d391fd579440561bf0e7f31af2222bc610ad6ce4d9d7bd2165bca8669110')
 

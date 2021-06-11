@@ -10,7 +10,7 @@ license=('zlib')
 options=(!strip libtool staticlibs)
 source=("http://downloads.devkitpro.org/packages/sources/zlib-$pkgver.tar.xz")
 sha256sums=('4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('nds-portlibs')
 
 build() {

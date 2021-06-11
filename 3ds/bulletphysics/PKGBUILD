@@ -9,7 +9,7 @@ url='http://bulletphysics.org/'
 license=('apache')
 options=(!strip libtool staticlibs)
 source=( "https://github.com/bulletphysics/bullet3/archive/${pkgver}.tar.gz" "bulletphysics.patch")
-makedepends=('devkitARM' 'devkitpro-pkgbuild-helpers')
+makedepends=('devkitARM' 'dkp-toolchain-vars')
 sha256sums=(
   '438c151c48840fe3f902ec260d9496f8beb26dba4b17769a4a53212903935f95'
   '9028def91db84c88c37e8ce8e347c806746a0fcc66c7fd97019afe83c976f450'

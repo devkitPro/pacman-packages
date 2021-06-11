@@ -11,7 +11,7 @@ url='https://xiph.org/flac/'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
 depends=("armv4t-libogg")
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('armv4t-portlibs')
 
 source=(

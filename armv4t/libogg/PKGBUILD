@@ -10,7 +10,7 @@ license=(Xiph.org)
 options=(!strip libtool staticlibs)
 source=("https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-$pkgver.tar.gz")
 sha256sums=('fe5670640bd49e828d64d2879c31cb4dde9758681bb664f9bdbf159a01b0c76e')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('armv4t-portlibs')
 
 build() {

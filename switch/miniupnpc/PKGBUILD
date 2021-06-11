@@ -11,7 +11,7 @@ options=(!strip libtool staticlibs)
 source=("http://miniupnp.free.fr/files/download.php?file=miniupnpc-${pkgver}.tar.gz" "miniupnpc.patch")
 
 sha256sums=('1fadefea0ecdceb3e35bb5d901f0db880c826740e93148ddfb087b4b4389e165' 'a9e84bdd286f738f6022b5c04160bdf9e4a5a0bd034a9ec55dba0c41ce523852')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
 build() {
   cd miniupnpc-$pkgver

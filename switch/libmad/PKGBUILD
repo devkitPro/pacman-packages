@@ -11,7 +11,7 @@ source=("https://downloads.devkitpro.org/packages/sources/libmad/${pkgver}/libma
 sha256sums=(
  '7e8af486a31fa0dfd1f5d2457961b37a3a194ba0c8a375b07e8df983a6e5ca92'
 )
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 
 build() {
   cd libmad-$pkgver

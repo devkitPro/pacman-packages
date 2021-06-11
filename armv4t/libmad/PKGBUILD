@@ -16,7 +16,7 @@ sha256sums=(
  'bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690'
  'b8fd4477d793c1081bd1a4c5c6870fc088b593516c153d3d40bf5d22e7f38a7f'
 )
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('armv4t-portlibs')
 
 build() {

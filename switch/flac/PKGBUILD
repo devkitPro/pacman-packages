@@ -10,7 +10,7 @@ url='https://xiph.org/flac/'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
 depends=("switch-libogg")
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 source=(
   "https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz"
   "flac-${pkgver}.patch"

@@ -13,7 +13,7 @@ depends=("ppc-bzip2"
          "ppc-libpng"
          "ppc-zlib"
 )
-makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
 sha256sums=('ec391504e55498adceb30baceebd147a6e963f636eb617424bcfc47a169898ce')
 

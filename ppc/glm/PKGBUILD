@@ -11,7 +11,7 @@ license=(MIT)
 options=(!strip libtool staticlibs)
 source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip")
 sha256sums=('209b5943d393925e1a6ecb6734e7507b8f6add25e72a605b25d0d0d382e64fd4')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('ppc-portlibs')
 
 build() {

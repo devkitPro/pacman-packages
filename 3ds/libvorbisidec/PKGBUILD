@@ -10,7 +10,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.xz")
 sha256sums=('6ae33489ed40b54ab4a1cd0cf349e9b3b1d5c68d722485704d951f4bf80c64c6')
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 depends=('3ds-libogg')
 groups=('3ds-portlibs')
 

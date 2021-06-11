@@ -10,7 +10,7 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 source=("http://downloads.sourceforge.net/sourceforge/giflib/giflib-${pkgver}.tar.bz2")
 sha256sums=('df27ec3ff24671f80b29e6ab1c4971059c14ac3db95406884fc26574631ba8d5')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('switch-portlibs')
 build() {
   source /opt/devkitpro/switchvars.sh

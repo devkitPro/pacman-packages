@@ -17,7 +17,7 @@ sha256sums=(
   '7dcacf0ce7179276aee5c07e7b18ead1e1c23933b11506ccb74ce3513983ec9a'
 )
 
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 depends=('switch-sdl2')
 groups=('switch-portlibs')
 

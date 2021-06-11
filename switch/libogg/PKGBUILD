@@ -11,7 +11,7 @@ license=(Xiph.org)
 options=(!strip libtool staticlibs)
 source=("https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-$pkgver.tar.gz")
 sha256sums=('fe5670640bd49e828d64d2879c31cb4dde9758681bb664f9bdbf159a01b0c76e')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
 build() {
   cd libogg-$pkgver

@@ -10,7 +10,7 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 source=("https://github.com/tatsuhiro-t/wslay/releases/download/release-${pkgver}/wslay-${pkgver}.tar.gz")
 sha256sums=('0de975a31818f1c660fa3c674b17bbcbda6ad9c866402ac8ab46a1847325118e')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('switch-portlibs')
 build() {
   cd wslay-$pkgver

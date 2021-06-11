@@ -9,7 +9,7 @@ url="http://mikmod.sourceforge.net/"
 license=("LGPL")
 options=(!strip libtool staticlibs)
 makedepends=(
- 'devkitpro-pkgbuild-helpers'
+ 'dkp-toolchain-vars'
 )
 source=("https://sourceforge.net/projects/mikmod/files/libmikmod/$pkgver/libmikmod-$pkgver.tar.gz")
 sha256sums=(

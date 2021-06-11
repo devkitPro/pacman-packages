@@ -18,7 +18,7 @@ sha256sums=(
   'e3b581089c5dc1a87ae216f4c7ca39a5b1038d9e57836920eefb44a5f1562b3d'
 )
 depends=('switch-mesa')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 
 build() {
 

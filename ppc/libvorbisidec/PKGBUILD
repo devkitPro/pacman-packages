@@ -10,7 +10,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("https://downloads.devkitpro.org/packages/sources/libvorbisidec-${pkgver}.tar.bz2")
 sha256sums=('1afbc18e0104ca8c9e9943cfcfa995ea0100bf246c425962770d455d4ad03c65')
-makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
 depends=('ppc-libogg')
 groups=('ppc-portlibs')
 build() {

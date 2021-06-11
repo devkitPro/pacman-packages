@@ -7,7 +7,7 @@ url='http://festvox.org/flite/'
 license=('MIT')
 options=(!strip libtool staticlibs)
 depends=()
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 groups=('armv4t-portlibs')
 
 source=("http://festvox.org/flite/packed/flite-${pkgver}/flite-${pkgver}-release.tar.bz2")

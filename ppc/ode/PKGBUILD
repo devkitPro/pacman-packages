@@ -9,7 +9,7 @@ url='http://ode.org/'
 license=('BSD')
 options=(!strip libtool staticlibs)
 source=("https://bitbucket.org/odedevs/ode/downloads/ode-${pkgver}.tar.gz")
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 sha256sums=('b228acad81f33781d53eaf313437cc5d6f66aec5a4e56c515fc1b2d51e6e8eba')
 groups=('ppc-portlibs')
 

@@ -15,7 +15,7 @@ depends=(
 )
 makedepends=(
  'wii-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+ 'dkp-toolchain-vars'
 )
 
 groups=('wii-portlibs' 'wii-sdl-libs')

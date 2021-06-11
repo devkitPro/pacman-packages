@@ -8,7 +8,7 @@ url="https://libgd.github.io"
 license=("custom")
 arch=("any")
 depends=("switch-freetype" "switch-bzip2" "switch-libpng" "switch-zlib" "switch-libjpeg-turbo" "switch-libwebp")
-makedepends=("switch-pkg-config" "devkitpro-pkgbuild-helpers")
+makedepends=("switch-pkg-config" "dkp-toolchain-vars")
 options=("!buildflags" "staticlibs" "libtool" "!strip")
 source=("https://github.com/libgd/libgd/releases/download/gd-$pkgver/libgd-$pkgver.tar.xz"
         "libgd-2.2.5-nosyslog.patch")

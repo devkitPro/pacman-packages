@@ -15,7 +15,7 @@ depends=(
 )
 makedepends=(
  'gamecube-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+ 'dkp-toolchain-vars'
 )
 
 groups=('gamecube-portlibs' 'gamecube-sdl-libs')

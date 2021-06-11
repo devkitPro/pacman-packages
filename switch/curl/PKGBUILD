@@ -9,7 +9,7 @@ url='http://www.zlib.net/'
 license=('zlib')
 options=(!strip libtool staticlibs)
 depends=('switch-zlib' 'libnx')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 source=(
     "https://curl.haxx.se/download/curl-${pkgver}.tar.xz"
     'switch-curl.patch'

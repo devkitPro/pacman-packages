@@ -15,7 +15,7 @@ source=(
   'portlibs_prefix.sh'
 )
 
-conflicts=('devkitpro-pkgbuild-helpers')
+conflicts=('dkp-toolchain-vars')
 
 options=(!strip)
 
