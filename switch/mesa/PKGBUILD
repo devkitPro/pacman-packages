@@ -3,7 +3,7 @@
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
 pkgver=20.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
 url='https://mesa.freedesktop.org/archive'
@@ -19,6 +19,7 @@ sha256sums=(
 )
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars' 'dkp-meson-scripts')
 depends=('switch-libdrm_nouveau')
+groups=('switch-portlibs')
 
 build() {
   cd ${pkgbasename}-${pkgver}-rc3
