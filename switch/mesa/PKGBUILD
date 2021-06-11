@@ -17,7 +17,7 @@ sha256sums=(
   'c90b75ea34302ebde9b81b87c5642fa864c40fe9c4ad34ce0793170c1413168d'
   '950f93d3e5b6ae9c5a42c2918623fe9a80d7ee398d92d2e73abec86b62d75916'
 )
-makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars' 'dkp-meson-scripts')
 depends=('switch-libdrm_nouveau')
 
 build() {
