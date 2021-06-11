@@ -1,26 +1,28 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 pkgname=3ds-physfs
 pkgver=3.0.2
-pkgrel=2
-pkgdesc='PhysicsFS is a library to provide abstract access to various archives. (for Nintendo 3DS homebrew development)'
+pkgrel=3
+pkgdesc='A library to provide abstract access to various archives.'
 arch=('any')
 url='https://icculus.org/physfs/'
 license=('zlib')
 options=(!strip libtool staticlibs)
 source=( "https://icculus.org/physfs/downloads/physfs-${pkgver}.tar.bz2"
          "physfs-${pkgver}.patch")
-makedepends=('devkitARM' 'devkitpro-pkgbuild-helpers')
+makedepends=('devkitARM' 'dkp-toolchain-vars' '3ds-cmake')
 sha256sums=(
   '304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863'
-  'f6be88b61fa4bd7c396bfa87e1a19ed267e91505d735e2c557065721a9da09a1'
-  )
+  '2a1d40055fd4e83bffbb955a4c1b21753ad9611e31c1d18d7d738bdaa1f366de'
+)
 groups=('3ds-portlibs')
 build() {
   cd physfs-$pkgver
 
   patch -Np1 -i "$srcdir"/physfs-${pkgver}.patch
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/3ds.cmake \
+  source ${DEVKITPRO}/3dsvars.sh
+
+  arm-none-eabi-cmake  -G"Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/3ds \
     -DPHYSFS_BUILD_STATIC=ON -DPHYSFS_BUILD_SHARED=OFF \
     -DPHYSFS_BUILD_TEST=OFF \
