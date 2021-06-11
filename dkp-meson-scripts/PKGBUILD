@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-meson-scripts
-pkgver=1.0.0
+pkgver=1.0.1
 pkgrel=1
 
 pkgdesc='makepkg helpers for devkitPro portlibs'
@@ -17,7 +17,7 @@ options=(!strip)
 sha256sums=(
 
   'a6732e0c564c6b0955569433fd345a6b3e7e98d83542840d45e7ecf9dd9c7355' # meson-cross.sh
-  '3f28ad3ad7144169d1b6a13378d17098c79b5ca513a9f7edc80a0b82cd8d4ee1' # meson-toolchain.sh
+  '22e4636a04731745e1e4e8f7da92c66369a24bbe24c8434bdc1aa1d81fd3bb3a' # meson-toolchain.sh
 )
 
 package() {
