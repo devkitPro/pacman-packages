@@ -3,7 +3,7 @@
 pkgbasename=glfw
 pkgname=switch-$pkgbasename
 pkgver=3.3.2
-pkgrel=2
+pkgrel=3
 pkgdesc='Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop'
 arch=('any')
 url='https://github.com/glfw/glfw'
@@ -19,6 +19,7 @@ sha256sums=(
 )
 depends=('switch-mesa')
 makedepends=('dkp-toolchain-vars' 'switch-cmake')
+groups=('switch-portlibs')
 
 build() {
 

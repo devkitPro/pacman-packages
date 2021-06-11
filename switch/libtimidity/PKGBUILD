@@ -3,7 +3,7 @@
 
 pkgname=switch-libtimidity
 pkgver=0.2.6
-pkgrel=1
+pkgrel=2
 pkgdesc='A MIDI to WAVE converter library.'
 arch=('any')
 url='https://sf.net/p/libtimidity/'
@@ -12,6 +12,7 @@ options=(!strip libtool staticlibs)
 makedepends=('dkp-toolchain-vars')
 source=("https://downloads.sourceforge.net/project/libtimidity/libtimidity/${pkgver}/libtimidity-${pkgver}.tar.gz")
 sha256sums=('d53d688335cc9327747a2a0456904c88ca2270538982dcee0ff11d902ae8575c')
+groups=('switch-portlibs')
 
 build() {
   cd libtimidity-${pkgver}

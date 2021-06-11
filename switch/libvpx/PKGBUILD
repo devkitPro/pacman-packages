@@ -3,8 +3,8 @@
 
 pkgname=switch-libvpx
 pkgver=1.8.0
-pkgrel=1
-pkgdesc='libvpx is a free software video codec library from Google and the Alliance for Open Media (AOMedia). It serves as the reference software implementation for the VP8 and VP9 video coding formats.'
+pkgrel=2
+pkgdesc='A free software video codec library from Google and the Alliance for Open Media (AOMedia). It serves as the reference software implementation for the VP8 and VP9 video coding formats.'
 arch=('any')
 url='https://chromium.googlesource.com/webm/libvpx'
 license=('BSD')
@@ -15,6 +15,7 @@ sha256sums=(
   '86df18c694e1c06cc8f83d2d816e9270747a0ce6abe316e93a4f4095689373f6'
   'b51f4661334646beda13d8fc9dd8fcc27eb91813ae9cd76ab4ac6914efb0c9da'
 )
+groups=('switch-portlibs')
 
 build() {
   cd libvpx-$pkgver
