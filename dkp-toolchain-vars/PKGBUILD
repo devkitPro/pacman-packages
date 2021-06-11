@@ -1,0 +1,50 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=dkp-toolchain-vars
+pkgver=1.0.0
+pkgrel=1
+
+pkgdesc='helper scripts to set variables for devkitPro toolchains'
+
+arch=('any')
+url='http://devkitpro.org/'
+
+source=(
+  'devkitarm.sh' '3dsvars.sh' 'ndsvars.sh' 'armv4tvars.sh'
+  'devkitppc.sh' 'ppcvars.sh' 'cubevars.sh' 'wiivars.sh' 'wiiuvars.sh'
+  'devkita64.sh' 'switchvars.sh'
+  'portlibs_prefix.sh'
+)
+
+conflicts=('devkitpro-pkgbuild-helpers')
+
+options=(!strip)
+
+sha256sums=(
+
+  '000b49cce7a925cb096fbac43501ef1c89511861a3ea2091569ae71aa108369b' # devkitarm.sh
+  'bfdcd0cf6b8386a0db5a3c73abc790cf819369521dd1340338103aca84061dd6' # 3dsvars.sh
+  '84a6c7a8cc78137655f47b36f8f34556123a4fd30e62242b615548cc7b70f2d0' # ndsvars.sh
+  '1ec23c5e1f15fb18c9e4a4ee6896a2354ba21b4d1adf2c1f904f08665af78666' # armv4tvars.sh
+
+  'b69edeee95dfece986941531a7e2c314cc550ab578b300997e0d5de9e825597c' # devkitppc.sh
+  'a826637aa7f16cdda6f6c78f6c9c129ffdafe268e5ddfe03364a5d6c8f02c197' # ppcvars.sh
+  'c9c2ace9491cd80902ae10d9e68d3375e9419434dec5e8bf0b13ad868f876321' # cubevars.sh
+  'f344f696b1137b75b490a591453dc0d59421ee89d00de1f3abea88b4ff5bf65a' # wiivars.sh
+  '59d7da4a6692cf91469dcb64c362623e57bb9ede845792c92645d8c635728aa5' # wiiuvars.sh
+
+  'f3caba3a8864a31a50ff50131f39d160013b6d0b8a2e7e6ac90ca44b591fcb57' # devkita64.sh
+  'aca5788f73d2c1a8a59c266f2cff6cf01eb4d8702ff9057e9caa0f3922906fdc' # switchvars.sh
+
+  'ea4776bcbd859a3f6913ab428676e546d20febc7200ff136cb6cd41fdbfe5331' # portlibs_prefix.sh
+
+)
+
+package() {
+
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  install -Dm644 devkitarm.sh 3dsvars.sh ndsvars.sh armv4tvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkita64.sh switchvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitppc.sh ppcvars.sh wiivars.sh wiiuvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm755 portlibs_prefix.sh "$pkgdir"/opt/devkitpro
+
+}

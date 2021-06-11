@@ -1,0 +1,10 @@
+. "${BASH_SOURCE%/*}"/devkitppc.sh
+
+export PORTLIBS_PREFIX=${PORTLIBS_ROOT}/wiiu
+export PORTLIBS_PPC=${PORTLIBS_ROOT}/ppc
+export PORTLIBS_WIIU=${PORTLIBS_PREFIX}
+
+export CPPFLAGS="-D__WIIU__ -I${PORTLIBS_WIIU}/include -I${PORTLIBS_PPC}/include"
+export LDFLAGS="-L${PORTLIBS_WIIU}/lib -L${PORTLIBS_PPC}/lib"
+
+export PATH=${PORTLIBS_WIIU}/bin:${PORTLIBS_PPC}/bin:$PATH
