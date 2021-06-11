@@ -2,7 +2,7 @@
 
 pkgname=switch-openal-soft
 pkgver=1.21.1
-pkgrel=3
+pkgrel=4
 pkgdesc='OpenAL Soft is a software implementation of the OpenAL 3D audio API.'
 arch=('any')
 url='https://openal-soft.org/'
@@ -17,7 +17,7 @@ sha256sums=(
   '7dcacf0ce7179276aee5c07e7b18ead1e1c23933b11506ccb74ce3513983ec9a'
 )
 
-makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars' 'switch-cmake')
 depends=('switch-sdl2')
 groups=('switch-portlibs')
 
@@ -31,7 +31,7 @@ build() {
 
   source "${DEVKITPRO}/switchvars.sh"
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="${DEVKITPRO}/switch.cmake" \
+  aarch64-none-elf-cmake -G"Unix Makefiles" \
     -DUSE_SWITCH=ON -DALSOFT_UTILS=OFF -DLIBTYPE=STATIC -DALSOFT_EXAMPLES=OFF \
     -DALSOFT_REQUIRE_SDL2=ON -DALSOFT_BACKEND_SDL2=ON \
     -DSDL2_INCLUDE_DIR="${PORTLIBS_PREFIX}/include" \
