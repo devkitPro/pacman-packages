@@ -2,8 +2,8 @@
 # Maintainer: fincs <fincs.alt1@gmail.com>
 pkgname=switch-bulletphysics
 pkgver=2.88
-pkgrel=2
-pkgdesc='Bullet Physics SDK: real-time collision detection and multi-physics simulation for VR, games, visual effects, robotics, machine learning etc. (for Nintendo Switch homebrew development)'
+pkgrel=3
+pkgdesc='Bullet Physics SDK: real-time collision detection and multi-physics simulation for VR, games, visual effects, robotics, machine learning etc.'
 arch=('any')
 url='http://bulletphysics.org/'
 license=('apache')
@@ -17,11 +17,11 @@ groups=('switch-portlibs')
 build() {
   cd bullet3-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   patch -Np1 -i "$srcdir"/bulletphysics.patch
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+  aarch64-none-elf-cmake -G"Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="$CFLAGS" \
@@ -37,7 +37,7 @@ package() {
 
   cd bullet3-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make install DESTDIR="$pkgdir"
 
