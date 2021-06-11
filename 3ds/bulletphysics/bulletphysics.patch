@@ -6,7 +6,7 @@
  
 -FIND_PACKAGE(OpenGL)
 -IF (OPENGL_FOUND)
-+IF(NOT N3DS)
++IF(NOT NINTENDO_3DS)
 +  FIND_PACKAGE(OpenGL)
 +  IF (OPENGL_FOUND)
  	MESSAGE("OPENGL FOUND")
@@ -18,7 +18,7 @@
  	SET(OPENGL_glu_LIBRARY glu32)
 -ENDIF (OPENGL_FOUND)
 +  ENDIF (OPENGL_FOUND)
-+ENDIF(NOT N3DS)
++ENDIF(NOT NINTENDO_3DS)
  
  
  #FIND_PACKAGE(GLU)
@@ -26,7 +26,7 @@
  OPTION(BUILD_BULLET3 "Set when you want to build Bullet 3" ON)
  # Optional Python configuration
  # builds pybullet automatically if all the requirements are met
-+IF(NOT N3DS)
++IF(NOT NINTENDO_3DS)
  SET(PYTHON_VERSION_PYBULLET "" CACHE STRING "Python version pybullet will use.")
  SET(Python_ADDITIONAL_VERSIONS 3 3.6 3.5 3.4 3.3 3.2 3.1 3.0 2.7 2.7.12 2.7.10 2.7.3 )
  SET_PROPERTY(CACHE PYTHON_VERSION_PYBULLET PROPERTY STRINGS ${Python_ADDITIONAL_VERSIONS})
@@ -34,7 +34,7 @@
  	SET(DEFAULT_BUILD_PYBULLET ON)
  ENDIF(PYTHONLIBS_FOUND)
  OPTION(BUILD_PYBULLET "Set when you want to build pybullet (Python bindings for Bullet)" ${DEFAULT_BUILD_PYBULLET})
-+ENDIF(NOT N3DS)
++ENDIF(NOT NINTENDO_3DS)
  
  OPTION(BUILD_ENET "Set when you want to build apps with enet UDP networking support" ON)
  OPTION(BUILD_CLSOCKET "Set when you want to build apps with enet TCP networking support" ON)
