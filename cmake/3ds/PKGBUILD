@@ -14,7 +14,7 @@ depends=('devkitarm-cmake')
 groups=('3ds-dev')
 
 sha256sums=(
-  'b5ef10b0963f8b293adf11366496a52aa88b05c20e0d45cc47c2781b38411306'  # 3DS.cmake
+  '38eea879ad7263ab0e107c73c5aaefd61d270543977a1ba8f3453badbe2973dd'  # 3DS.cmake
   'f4bbf2fab22c7ecd091fb755464795e915a4f46269ae15a094bce7c21ddf2aa2'  # arm-none-eabi-cmake
 )
 
