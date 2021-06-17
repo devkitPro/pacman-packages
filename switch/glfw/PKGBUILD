@@ -2,8 +2,8 @@
 
 pkgbasename=glfw
 pkgname=switch-$pkgbasename
-pkgver=3.3.2
-pkgrel=3
+pkgver=3.3.4
+pkgrel=1
 pkgdesc='Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop'
 arch=('any')
 url='https://github.com/glfw/glfw'
@@ -14,8 +14,8 @@ source=(
   "${pkgname}-${pkgver}.patch"
 )
 sha256sums=(
-  '08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7'
-  '8ee1e2535016c44796896852bc06c11ddd7b24ccf61c6b7a97d33ed076383378'
+  'bbd2c42c660b725e9755eb417e40b373f0d4c03138c9b2e210d02cd308bd99cd'  # glfw-3.3.4.zip
+  'ea53b8b6818ff05e4e30bda5f551562d1ca6424737011b301821f2fb6e8616ba'  # switch-glfw-3.3.4.patch
 )
 depends=('switch-mesa')
 makedepends=('dkp-toolchain-vars' 'switch-cmake')
@@ -31,7 +31,6 @@ build() {
   aarch64-none-elf-cmake -G"Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
-    -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
     -DGLFW_BUILD_EXAMPLES:BOOL=OFF -DGLFW_BUILD_TESTS:BOOL=OFF -DGLFW_BUILD_DOCS:BOOL=OFF \
     -DGLFW_VULKAN_STATIC:BOOL=ON -DGLFW_EGL_STATIC:BOOL=ON \
     .

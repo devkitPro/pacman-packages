@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e9888624..6ec8970e 100644
+index e2962df9..f6a3abe7 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -20,6 +20,7 @@ option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
+@@ -24,6 +24,7 @@ option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
  option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
  option(GLFW_INSTALL "Generate installation target" ON)
  option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
@@ -10,7 +10,7 @@ index e9888624..6ec8970e 100644
  
  include(GNUInstallDirs)
  include(CMakeDependentOption)
-@@ -53,6 +54,13 @@ if (GLFW_VULKAN_STATIC)
+@@ -57,6 +58,13 @@ if (GLFW_VULKAN_STATIC)
      set(_GLFW_VULKAN_STATIC 1)
  endif()
  
@@ -24,7 +24,7 @@ index e9888624..6ec8970e 100644
  list(APPEND CMAKE_MODULE_PATH "${GLFW_SOURCE_DIR}/CMake/modules")
  
  find_package(Threads REQUIRED)
-@@ -148,6 +156,9 @@ elseif (APPLE)
+@@ -155,6 +163,9 @@ elseif (APPLE)
  elseif (UNIX)
      set(_GLFW_X11 1)
      message(STATUS "Using X11 for window creation")
@@ -34,7 +34,7 @@ index e9888624..6ec8970e 100644
  else()
      message(FATAL_ERROR "No supported platform was detected")
  endif()
-@@ -176,6 +187,15 @@ if (UNIX AND NOT APPLE)
+@@ -183,6 +194,15 @@ if (UNIX AND NOT APPLE)
      endif()
  endif()
  
@@ -50,7 +50,7 @@ index e9888624..6ec8970e 100644
  #--------------------------------------------------------------------
  # Use Win32 for window creation
  #--------------------------------------------------------------------
-@@ -288,13 +308,29 @@ if (_GLFW_COCOA)
+@@ -295,13 +315,29 @@ if (_GLFW_COCOA)
      set(glfw_PKG_LIBS "-framework Cocoa -framework IOKit -framework CoreFoundation")
  endif()
  
@@ -82,7 +82,7 @@ index e9888624..6ec8970e 100644
  # Export GLFW library dependencies
  #--------------------------------------------------------------------
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index 891302ed..e6aae465 100644
+index a409459b..1cec7407 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -60,6 +60,11 @@ elseif (_GLFW_OSMESA)
@@ -98,7 +98,7 @@ index 891302ed..e6aae465 100644
  
  if (_GLFW_X11 OR _GLFW_WAYLAND)
 diff --git a/src/egl_context.c b/src/egl_context.c
-index e458bfb8..14dda0b4 100644
+index 6288fb7c..3965da29 100644
 --- a/src/egl_context.c
 +++ b/src/egl_context.c
 @@ -252,6 +252,7 @@ static int extensionSupportedEGL(const char* extension)
@@ -165,7 +165,7 @@ index e458bfb8..14dda0b4 100644
  }
  
  #define setAttrib(a, v) \
-@@ -615,6 +626,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+@@ -613,6 +624,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
  
      window->context.egl.config = config;
  
@@ -173,7 +173,7 @@ index e458bfb8..14dda0b4 100644
      // Load the appropriate client library
      if (!_glfw.egl.KHR_get_all_proc_addresses)
      {
-@@ -692,6 +704,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+@@ -690,6 +702,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
              return GLFW_FALSE;
          }
      }
@@ -354,7 +354,7 @@ index 337d5cf0..44674352 100644
      return GLFW_TRUE;
  }
 diff --git a/src/internal.h b/src/internal.h
-index 92b9497a..a503390d 100644
+index 91631c06..b607cbbe 100644
 --- a/src/internal.h
 +++ b/src/internal.h
 @@ -190,6 +190,8 @@ typedef void (APIENTRY * PFN_vkVoidFunction)(void);
@@ -460,10 +460,10 @@ index 00000000..b2fef527
 +
 diff --git a/src/switch_init.c b/src/switch_init.c
 new file mode 100644
-index 00000000..aefd4f56
+index 00000000..4145a4a7
 --- /dev/null
 +++ b/src/switch_init.c
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,110 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
 +//------------------------------------------------------------------------
@@ -556,7 +556,8 @@ index 00000000..aefd4f56
 +    _glfwSwitchRefreshFocusState();
 +    _glfwSwitchRefreshScreenSize();
 +
-+    _glfwAllocMonitor("Default", 1920, 1080);
++    _GLFWmonitor* monitor = _glfwAllocMonitor("Default", 1920, 1080);
++    _glfwInputMonitor(monitor, GLFW_CONNECTED, _GLFW_INSERT_FIRST);
 +    _glfwInitSwitchJoysticks();
 +    return GLFW_TRUE;
 +}
