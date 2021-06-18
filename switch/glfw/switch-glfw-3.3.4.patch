@@ -576,10 +576,10 @@ index 00000000..4145a4a7
 +
 diff --git a/src/switch_joystick.c b/src/switch_joystick.c
 new file mode 100644
-index 00000000..3a529bfe
+index 00000000..e0054235
 --- /dev/null
 +++ b/src/switch_joystick.c
-@@ -0,0 +1,227 @@
+@@ -0,0 +1,230 @@
 +//========================================================================
 +// GLFW 3.3 - www.glfw.org
 +//------------------------------------------------------------------------
@@ -701,6 +701,9 @@ index 00000000..3a529bfe
 +    hidInitializeTouchScreen();
 +    
 +    js->mapping = &s_switchMapping;
++
++    padUpdate(&pad);
++    _glfwInputJoystick(js, GLFW_CONNECTED);
 +}
 +
 +void _glfwUpdateSwitchJoysticks(void)
