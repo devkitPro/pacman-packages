@@ -9,7 +9,7 @@ url='https://github.com/tatsuhiro-t/wslay'
 license=('MIT')
 options=(!strip libtool staticlibs)
 groups=('3ds-portlibs')
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 source=("https://github.com/tatsuhiro-t/wslay/releases/download/release-${pkgver}/wslay-${pkgver}.tar.gz")
 sha256sums=('90CE68C6DFD614722D44FBB14563A3F6DACC68B548B20AE382AC4F4952C55268')
 build() {
