@@ -1,12 +1,13 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-cmake
-pkgver=1.1.1
+pkgver=1.1.2
 pkgrel=1
 pkgdesc="switch cmake wrapper"
 arch=('any')
 url='https://devkitpro.org/'
 source=(
   'aarch64-none-elf-cmake'
+  'FindOpenGL.cmake'
   'Switch.cmake'
 )
 
@@ -15,14 +16,17 @@ groups=('switch-dev')
 options=('!strip')
 sha256sums=(
   '8d19a809aa1db2bb246890398f37c35254cd7a8f46a44dd312c92302352f5927' # aarch64-none-elf-cmake
-  '29c31e988e234c83cd88b32a197a0c76306bf983600f27b41ff271cb316a4d96' # Switch.cmake
+  '3465f4fba6e383f2328adb2cd2838bd673f623ac3ed40ae929f4d2233bbdbc69' # FindOpenGL.cmake
+  '131bdd5903a4993a94a349d08bbbb82973345528932cc6e0885a857297f1c990' # Switch.cmake
 )
 
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/bin
   cp "$srcdir"/aarch64-none-elf-cmake "$pkgdir"/opt/devkitpro/portlibs/switch/bin/
+  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/lib/cmake
+  cp "$srcdir"/FindOpenGL.cmake "$pkgdir"/opt/devkitpro/cmake/switch/
   install -d "$pkgdir"/opt/devkitpro/cmake
-  cp "${srcdir}"/Switch.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp "${srcdir}"/Switch.cmake "$pkgdir"/opt/devkitpro/cmake/
 
 }
