@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-cmake
-pkgver=1.1.0
+pkgver=1.1.1
 pkgrel=1
 pkgdesc="switch cmake wrapper"
 arch=('any')
@@ -15,7 +15,7 @@ groups=('switch-dev')
 options=('!strip')
 sha256sums=(
   '8d19a809aa1db2bb246890398f37c35254cd7a8f46a44dd312c92302352f5927' # aarch64-none-elf-cmake
-  '73ffcbab23b5ef36257095ae1d37a4610127a70a264512d87bd3ecc00c66e1f4' # Switch.cmake
+  '29c31e988e234c83cd88b32a197a0c76306bf983600f27b41ff271cb316a4d96' # Switch.cmake
 )
 
 package() {
