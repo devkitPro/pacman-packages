@@ -70,18 +70,23 @@ function(ctr_generate_smdh outfile)
 	)
 endfunction()
 
-function(ctr_create_3dsx prefix)
+function(ctr_create_3dsx target)
 	cmake_parse_arguments(CTR_3DSXTOOL "NOSMDH" "SMDH;ROMFS" "" ${ARGN})
 
-	set(CTR_3DSXTOOL_ARGS ${prefix} "${prefix}.3dsx")
-	set(CTR_3DSXTOOL_DEPS ${prefix})
+	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
+	if(NOT TARGET_OUTPUT_NAME)
+		set(TARGET_OUTPUT_NAME "${target}")
+	endif()
+
+	set(CTR_3DSXTOOL_ARGS "$<TARGET_FILE:${target}>" "${TARGET_OUTPUT_NAME}.3dsx")
+	set(CTR_3DSXTOOL_DEPS ${target})
 
 	if (DEFINED CTR_3DSXTOOL_SMDH AND CTR_3DSXTOOL_NOSMDH)
 		message(FATAL_ERROR "ctr_create_3dsx: cannot specify SMDH and NOSMDH at the same time")
 	endif()
 
 	if (NOT DEFINED CTR_3DSXTOOL_SMDH AND NOT CTR_3DSXTOOL_NOSMDH)
-		set(CTR_3DSXTOOL_SMDH "${prefix}.default.smdh")
+		set(CTR_3DSXTOOL_SMDH "${target}.default.smdh")
 		ctr_generate_smdh(${CTR_3DSXTOOL_SMDH})
 	endif()
 
@@ -110,15 +115,15 @@ function(ctr_create_3dsx prefix)
 	endif()
 
 	add_custom_command(
-		OUTPUT "${prefix}.3dsx"
+		OUTPUT "${TARGET_OUTPUT_NAME}.3dsx"
 		COMMAND "${CTR_3DSXTOOL_EXE}" ${CTR_3DSXTOOL_ARGS}
 		DEPENDS ${CTR_3DSXTOOL_DEPS}
 		VERBATIM
 	)
 
 	add_custom_target(
-		"${prefix}_3dsx" ALL
-		DEPENDS "${prefix}.3dsx"
+		"${TARGET_OUTPUT_NAME}_3dsx" ALL
+		DEPENDS "${target}.3dsx"
 	)
 endfunction()
 
