@@ -86,11 +86,16 @@ function(nx_generate_nacp outfile)
 	)
 endfunction()
 
-function(nx_create_nro prefix)
+function(nx_create_nro target)
 	cmake_parse_arguments(ELF2NRO "NOICON;NONACP" "ICON;NACP;ROMFS" "" ${ARGN})
 
-	set(ELF2NRO_ARGS ${prefix} "${prefix}.nro")
-	set(ELF2NRO_DEPS ${prefix})
+	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
+	if(NOT TARGET_OUTPUT_NAME)
+		set(TARGET_OUTPUT_NAME "${target}")
+	endif()
+
+	set(ELF2NRO_ARGS "$<TARGET_FILE:${target}>" "${TARGET_OUTPUT_NAME}.nro")
+	set(ELF2NRO_DEPS ${target})
 
 	if (DEFINED ELF2NRO_ICON AND ELF2NRO_NOICON)
 		message(FATAL_ERROR "nx_create_nro: cannot specify ICON and NOICON at the same time")
@@ -105,7 +110,7 @@ function(nx_create_nro prefix)
 	endif()
 
 	if (NOT DEFINED ELF2NRO_NACP AND NOT ELF2NRO_NONACP)
-		set(ELF2NRO_NACP "${prefix}.default.nacp")
+		set(ELF2NRO_NACP "${target}.default.nacp")
 		nx_generate_nacp(${ELF2NRO_NACP})
 	endif()
 
@@ -139,15 +144,15 @@ function(nx_create_nro prefix)
 	endif()
 
 	add_custom_command(
-		OUTPUT "${prefix}.nro"
+		OUTPUT "${TARGET_OUTPUT_NAME}.nro"
 		COMMAND "${NX_ELF2NRO_EXE}" ${ELF2NRO_ARGS}
 		DEPENDS ${ELF2NRO_DEPS}
 		VERBATIM
 	)
 
 	add_custom_target(
-		"${prefix}_nro" ALL
-		DEPENDS "${prefix}.nro"
+		"${target}_nro" ALL
+		DEPENDS "${TARGET_OUTPUT_NAME}.nro"
 	)
 endfunction()
 
