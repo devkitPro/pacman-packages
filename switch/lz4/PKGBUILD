@@ -1,0 +1,27 @@
+# Maintainer: TurtleP <jpostelnek@outlook.com>
+
+pkgname=switch-lz4
+pkgver=1.9.3
+pkgrel=1
+pkgdesc="Very fast lossless compression algorithm"
+arch=("any")
+url="https://lz4.github.io/lz4/"
+license=("BSD" "GPL2")
+options=("staticlibs" "!strip")
+source=("https://github.com/lz4/lz4/archive/refs/tags/v${pkgver}.zip")
+sha256sums=("4ec935d99aa4950eadfefbd49c9fad863185ac24c32001162c44a683ef61b580")
+makedepends=("dkp-toolchain-vars")
+groups=("switch-portlibs")
+
+package() {
+
+  source /opt/devkitpro/switchvars.sh
+
+  cd lz4-${pkgver}/lib
+
+  make BUILD_SHARED=no \
+   PREFIX=${PORTLIBS_PREFIX} \
+   DESTDIR=${pkgdir} \
+   install
+
+}
