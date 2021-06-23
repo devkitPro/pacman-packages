@@ -1,0 +1,625 @@
+diff --git a/CMake/InstallResources.cmake b/CMake/InstallResources.cmake
+index 1d593db..28cf15a 100644
+--- a/CMake/InstallResources.cmake
++++ b/CMake/InstallResources.cmake
+@@ -35,13 +35,15 @@ elseif (APPLE)
+   set(OGRE_PLUGIN_DIR_REL "Contents/Frameworks/")
+   set(OGRE_SAMPLES_DIR_REL "Contents/Plugins/")
+   set(OGRE_CFG_INSTALL_PATH "bin")
+-elseif (UNIX)
++elseif (UNIX OR SWITCH)
+   set(OGRE_MEDIA_PATH "share/OGRE/Media")
+   set(OGRE_MEDIA_DIR_REL "${CMAKE_INSTALL_PREFIX}/${OGRE_MEDIA_PATH}")
+   set(OGRE_TEST_MEDIA_DIR_REL "${CMAKE_INSTALL_PREFIX}/Tests/Media")
+   set(OGRE_PLUGIN_DIR_REL "${CMAKE_INSTALL_PREFIX}/${OGRE_LIB_DIRECTORY}/OGRE")
+   set(OGRE_SAMPLES_DIR_REL "${CMAKE_INSTALL_PREFIX}/${OGRE_LIB_DIRECTORY}/OGRE/Samples")
+   set(OGRE_CFG_INSTALL_PATH "share/OGRE")
++else()
++  message(FATAL_ERROR "Unknown platform!")
+ endif ()
+ 
+ # generate OgreConfigPaths.h
+diff --git a/CMake/Utils/OgreConfigTargets.cmake b/CMake/Utils/OgreConfigTargets.cmake
+index 86916a2..d5ee124 100644
+--- a/CMake/Utils/OgreConfigTargets.cmake
++++ b/CMake/Utils/OgreConfigTargets.cmake
+@@ -50,7 +50,7 @@ if (WIN32)
+   set(OGRE_LIB_DEBUG_PATH "")
+   set(OGRE_PLUGIN_PATH "/OGRE")
+   set(OGRE_SAMPLE_PATH "/OGRE/Samples")
+-elseif (UNIX)
++elseif (UNIX OR SWITCH)
+   set(OGRE_RELEASE_PATH "")
+   set(OGRE_RELWDBG_PATH "")
+   set(OGRE_MINSIZE_PATH "")
+@@ -74,6 +74,8 @@ elseif (UNIX)
+     set(OGRE_PLUGIN_PATH "/OGRE")
+   endif()
+   set(OGRE_SAMPLE_PATH "/OGRE/Samples")
++else()
++  message(FATAL_ERROR "Unknown platform!")
+ endif ()
+ 
+ # create vcproj.user file for Visual Studio to set debug working directory
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9a2819e..2bbf2b8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.3.0)
+ 
+ set(CMAKE_CXX_STANDARD 11)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+-set(CMAKE_CXX_EXTENSIONS OFF)
++set(CMAKE_CXX_EXTENSIONS ON)
+ 
+ if(CMAKE_VS_PLATFORM_NAME STREQUAL "Tegra-Android")
+ 	set(CMAKE_LINK_LIBRARY_FLAG "")
+@@ -175,7 +175,7 @@ if((CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU") AND NOT OGRE_STATIC)
+ endif()
+ 
+ # determine system endianess
+-if (MSVC OR ANDROID OR EMSCRIPTEN OR APPLE_IOS)
++if (MSVC OR ANDROID OR EMSCRIPTEN OR APPLE_IOS OR SWITCH)
+   # This doesn't work on VS 2010
+   # MSVC only builds for intel anyway
+   # all IOS devices are little endian
+diff --git a/OgreMain/CMakeLists.txt b/OgreMain/CMakeLists.txt
+index b2c63ba..e13b6a9 100644
+--- a/OgreMain/CMakeLists.txt
++++ b/OgreMain/CMakeLists.txt
+@@ -40,7 +40,7 @@ list(REMOVE_ITEM SOURCE_FILES
+ )
+ 
+ # Add platform specific files
+-if (EMSCRIPTEN)
++if (EMSCRIPTEN OR SWITCH)
+   set(PLATFORM_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/OgreFileSystemLayerNoOp.cpp")
+ elseif (WIN32)
+   file(GLOB PLATFORM_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/WIN32/*.cpp")
+diff --git a/OgreMain/include/OgreDynLib.h b/OgreMain/include/OgreDynLib.h
+index d221aa7..cfb6a54 100644
+--- a/OgreMain/include/OgreDynLib.h
++++ b/OgreMain/include/OgreDynLib.h
+@@ -62,6 +62,12 @@ typedef struct HINSTANCE__* hInstance;
+ #    define DYNLIB_GETSYM( a, b ) dlsym( a, b )
+ #    define DYNLIB_UNLOAD( a ) dlclose( a )
+ 
++#elif OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
++#    define DYNLIB_HANDLE void*
++#    define DYNLIB_LOAD( a ) 0
++#    define DYNLIB_GETSYM( a, b ) 0
++#    define DYNLIB_UNLOAD( a ) 0
++
+ #endif
+ 
+ namespace Ogre {
+diff --git a/OgreMain/include/OgrePlatform.h b/OgreMain/include/OgrePlatform.h
+index e53184c..29d86c5 100644
+--- a/OgreMain/include/OgrePlatform.h
++++ b/OgreMain/include/OgrePlatform.h
+@@ -41,6 +41,7 @@ namespace Ogre {
+ #define OGRE_PLATFORM_ANDROID 5
+ #define OGRE_PLATFORM_WINRT 7
+ #define OGRE_PLATFORM_EMSCRIPTEN 8
++#define OGRE_PLATFORM_SWITCH 9
+     
+ #define OGRE_COMPILER_MSVC 1
+ #define OGRE_COMPILER_GNUC 2
+@@ -152,6 +153,8 @@ namespace Ogre {
+ #   endif
+ #elif defined(__ANDROID__)
+ #   define OGRE_PLATFORM OGRE_PLATFORM_ANDROID
++#elif defined(__SWITCH__)
++#   define OGRE_PLATFORM OGRE_PLATFORM_SWITCH
+ #else
+ #   define OGRE_PLATFORM OGRE_PLATFORM_LINUX
+ #endif
+diff --git a/OgreMain/include/OgreString.h b/OgreMain/include/OgreString.h
+index a4ff3ba..b1196ce 100644
+--- a/OgreMain/include/OgreString.h
++++ b/OgreMain/include/OgreString.h
+@@ -59,6 +59,18 @@ THE SOFTWARE.
+ #   include <xlocale.h>
+ #endif
+ 
++#if OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
++#   include <stdlib.h>
++#   include <xlocale.h>
++#   include <strings.h>
++
++#   define strtod_l(ptr, end, l) strtod(ptr, end)
++#   define strtoul_l(ptr, end, base, l) strtoul(ptr, end, base)
++#   define strtol_l(ptr, end, base, l) strtol(ptr, end, base)
++#   define strtoll_l(ptr, end, base, l) strtoll(ptr, end, base)
++#   define strtoull_l(ptr, end, base, l) strtoull(ptr, end, base)
++#endif
++
+ namespace Ogre {
+     /** \addtogroup Core
+      *  @{
+diff --git a/OgreMain/src/OgreDeflate.cpp b/OgreMain/src/OgreDeflate.cpp
+index 56af65a..cedbdaa 100644
+--- a/OgreMain/src/OgreDeflate.cpp
++++ b/OgreMain/src/OgreDeflate.cpp
+@@ -155,6 +155,8 @@ namespace Ogre
+                 }
+ #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS || OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+                 mTempFileName = macTempFileName();
++#elif OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
++                OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "Temporary file name generation failed.", "DeflateStream::init");
+ #else
+                 char tmpname[] = "/tmp/ogreXXXXXX";
+                 if (mkstemp(tmpname) == -1)
+diff --git a/OgreMain/src/OgreFileSystem.cpp b/OgreMain/src/OgreFileSystem.cpp
+index 53b2af5..08446f4 100644
+--- a/OgreMain/src/OgreFileSystem.cpp
++++ b/OgreMain/src/OgreFileSystem.cpp
+@@ -32,7 +32,8 @@ THE SOFTWARE.
+ #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX || OGRE_PLATFORM == OGRE_PLATFORM_APPLE || \
+     OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS || \
+     OGRE_PLATFORM == OGRE_PLATFORM_ANDROID || \
+-    OGRE_PLATFORM == OGRE_PLATFORM_EMSCRIPTEN
++    OGRE_PLATFORM == OGRE_PLATFORM_EMSCRIPTEN || \
++    OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
+ #   include "OgreSearchOps.h"
+ #   include <sys/param.h>
+ #endif
+diff --git a/OgreMain/src/OgreStringConverter.cpp b/OgreMain/src/OgreStringConverter.cpp
+index 92c8ad0..0aa1ff6 100644
+--- a/OgreMain/src/OgreStringConverter.cpp
++++ b/OgreMain/src/OgreStringConverter.cpp
+@@ -32,7 +32,7 @@ THE SOFTWARE.
+ #   define newlocale(cat, loc, base) _create_locale(cat, loc)
+ #endif
+ 
+-#if OGRE_PLATFORM == OGRE_PLATFORM_ANDROID || OGRE_PLATFORM == OGRE_PLATFORM_EMSCRIPTEN || defined(__MINGW32__)
++#if OGRE_PLATFORM == OGRE_PLATFORM_ANDROID || OGRE_PLATFORM == OGRE_PLATFORM_EMSCRIPTEN || OGRE_PLATFORM == OGRE_PLATFORM_SWITCH || defined(__MINGW32__)
+ #   define newlocale(cat, loc, base) 0
+ #endif
+ 
+diff --git a/RenderSystems/GL3Plus/include/OgreGL3PlusPrerequisites.h b/RenderSystems/GL3Plus/include/OgreGL3PlusPrerequisites.h
+index 01fab6a..f813282 100644
+--- a/RenderSystems/GL3Plus/include/OgreGL3PlusPrerequisites.h
++++ b/RenderSystems/GL3Plus/include/OgreGL3PlusPrerequisites.h
+@@ -68,6 +68,8 @@ namespace Ogre {
+ #   include <GL/gl3w.h>
+ #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+ #   include <GL/gl3w.h>
++#elif OGRE_PLATFORM == OGRE_PLATFORM_SWITCH
++#   include <GL/gl3w.h>
+ #endif
+ 
+ // Lots of generated code in here which triggers the new VC CRT security warnings
+diff --git a/RenderSystems/GL3Plus/src/gl3w.c b/RenderSystems/GL3Plus/src/gl3w.c
+index 1d2e593..a88ddcc 100644
+--- a/RenderSystems/GL3Plus/src/gl3w.c
++++ b/RenderSystems/GL3Plus/src/gl3w.c
+@@ -72,6 +72,22 @@ static GL3WglProc get_proc(const char *proc)
+ 	*(void **)(&res) = dlsym(libgl, proc);
+ 	return res;
+ }
++#elif defined(__SWITCH__)
++#include <EGL/egl.h>
++#include <EGL/eglext.h>
++
++static void open_libgl(void)
++{
++}
++
++static void close_libgl(void)
++{
++}
++
++static GL3WglProc get_proc(const char *proc)
++{
++    return (GL3WglProc)eglGetProcAddress(proc);
++}
+ #else
+ #include <dlfcn.h>
+ #include <GL/glx.h>
+diff --git a/RenderSystems/GLSupport/CMakeLists.txt b/RenderSystems/GLSupport/CMakeLists.txt
+index 8026d1a..f63c9c5 100644
+--- a/RenderSystems/GLSupport/CMakeLists.txt
++++ b/RenderSystems/GLSupport/CMakeLists.txt
+@@ -82,6 +82,13 @@ elseif (UNIX)
+     
+     set(PLATFORM_LIBS ${X11_LIBRARIES} ${X11_Xrandr_LIB} ${OPENGL_gl_LIBRARY})
+   endif()
++elseif (SWITCH)
++  file(GLOB PLATFORM_HEADERS "include/EGL/Switch/*.h" "include/EGL/*.h")
++  file(GLOB PLATFORM_SOURCES "src/EGL/Switch/*.cpp" "src/EGL/*.cpp")
++
++  set(NATIVE_INCLUDES
++      ${CMAKE_CURRENT_SOURCE_DIR}/include/EGL
++      ${CMAKE_CURRENT_SOURCE_DIR}/include/EGL/Switch)
+ endif ()
+ 
+ file(GLOB GLSUPPORT_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+diff --git a/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLSupport.h b/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLSupport.h
+new file mode 100644
+index 0000000..d26129e
+--- /dev/null
++++ b/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLSupport.h
+@@ -0,0 +1,50 @@
++/*
++-----------------------------------------------------------------------------
++This source file is part of OGRE
++    (Object-oriented Graphics Rendering Engine)
++For the latest info, see http://www.ogre3d.org/
++
++Copyright (c) 2000-2014 Torus Knot Software Ltd
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-----------------------------------------------------------------------------
++*/
++
++#ifndef __SwitchEGLSupport_H__
++#define __SwitchEGLSupport_H__
++
++#include "OgreEGLSupport.h"
++
++namespace Ogre {
++    class _OgrePrivate SwitchEGLSupport : public EGLSupport
++    {
++    public:
++        SwitchEGLSupport();
++        virtual ~SwitchEGLSupport();
++
++        virtual void switchMode(uint& width, uint& height, short& frequency);
++
++        virtual RenderWindow* newWindow(const String& name,
++                                        unsigned int width, unsigned int height,
++                                        bool fullScreen,
++                                        const NameValuePairList *miscParams = 0);
++    };
++}
++
++#endif
+diff --git a/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLWindow.h b/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLWindow.h
+new file mode 100644
+index 0000000..1469bb4
+--- /dev/null
++++ b/RenderSystems/GLSupport/include/EGL/Switch/OgreSwitchEGLWindow.h
+@@ -0,0 +1,60 @@
++/*
++-----------------------------------------------------------------------------
++This source file is part of OGRE
++    (Object-oriented Graphics Rendering Engine)
++For the latest info, see http://www.ogre3d.org/
++
++Copyright (c) 2000-2014 Torus Knot Software Ltd
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-----------------------------------------------------------------------------
++*/
++
++#ifndef __SwitchEGLWindow_H__
++#define __SwitchEGLWindow_H__
++
++#include "OgreEGLWindow.h"
++#include "OgreSwitchEGLSupport.h"
++
++namespace Ogre {
++    class _OgrePrivate SwitchEGLWindow : public EGLWindow
++    {
++    private:
++        void _updateResolution();
++
++    protected:
++        virtual void getLeftAndTopFromNativeWindow(int & left, int & top, uint width, uint height);
++        virtual void initNativeCreatedWindow(const NameValuePairList *miscParams);
++        virtual void createNativeWindow( int &left, int &top, uint &width, uint &height, String &title );
++        virtual void reposition(int left, int top);
++        virtual void resize(unsigned int width, unsigned int height);
++        virtual void windowMovedOrResized();
++        virtual void switchFullScreen(bool fullscreen);
++
++    public:
++        SwitchEGLWindow(SwitchEGLSupport* glsupport);
++        void create(const String& name, unsigned int width, unsigned int height,
++                    bool fullScreen, const NameValuePairList *miscParams);
++
++        void _notifySurfaceDestroyed();
++        void _notifySurfaceCreated(void* window, void* config);
++    };
++}
++
++#endif
+diff --git a/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLSupport.cpp b/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLSupport.cpp
+new file mode 100644
+index 0000000..98227d4
+--- /dev/null
++++ b/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLSupport.cpp
+@@ -0,0 +1,74 @@
++/*
++-----------------------------------------------------------------------------
++This source file is part of OGRE
++    (Object-oriented Graphics Rendering Engine)
++For the latest info, see http://www.ogre3d.org/
++
++Copyright (c) 2000-2014 Torus Knot Software Ltd
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-----------------------------------------------------------------------------
++*/
++
++#include "OgreException.h"
++#include "OgreLogManager.h"
++#include "OgreStringConverter.h"
++#include "OgreRoot.h"
++
++#include "OgreSwitchEGLSupport.h"
++#include "OgreSwitchEGLWindow.h"
++#include "OgreGLUtil.h"
++
++namespace Ogre {
++
++    GLNativeSupport* getGLSupport(int)
++    {
++        return new SwitchEGLSupport();
++    }
++
++    SwitchEGLSupport::SwitchEGLSupport() : EGLSupport(CONTEXT_CORE)
++    {
++        mNativeDisplay = EGL_DEFAULT_DISPLAY;
++        mGLDisplay = getGLDisplay();
++
++        mCurrentMode.width = 1920;
++        mCurrentMode.height = 1080;
++        mCurrentMode.refreshRate = 0;
++        mCurrentMode.bpp = 24;
++        mOriginalMode = mCurrentMode;
++        mVideoModes.push_back(mCurrentMode);
++    }
++
++    SwitchEGLSupport::~SwitchEGLSupport()
++    {
++
++    }
++
++    void SwitchEGLSupport::switchMode( uint& width, uint& height, short& frequency )
++    {
++    }
++
++    RenderWindow* SwitchEGLSupport::newWindow( const String &name, unsigned int width, unsigned int height, bool fullScreen, const NameValuePairList *miscParams)
++    {
++        SwitchEGLWindow* window = new SwitchEGLWindow(this);
++        window->create(name, width, height, fullScreen, miscParams);
++
++        return window;
++    }
++}
+diff --git a/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLWindow.cpp b/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLWindow.cpp
+new file mode 100644
+index 0000000..d9610d3
+--- /dev/null
++++ b/RenderSystems/GLSupport/src/EGL/Switch/OgreSwitchEGLWindow.cpp
+@@ -0,0 +1,180 @@
++/*
++-----------------------------------------------------------------------------
++This source file is part of OGRE
++    (Object-oriented Graphics Rendering Engine)
++For the latest info, see http://www.ogre3d.org/
++
++Copyright (c) 2000-2014 Torus Knot Software Ltd
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++-----------------------------------------------------------------------------
++*/
++
++#include "OgreRoot.h"
++#include "OgreException.h"
++
++#include "OgreSwitchEGLSupport.h"
++#include "OgreSwitchEGLWindow.h"
++#include "OgreLogManager.h"
++#include "OgreViewport.h"
++
++#include <switch.h>
++
++namespace Ogre {
++    SwitchEGLWindow::SwitchEGLWindow(SwitchEGLSupport *glsupport)
++        : EGLWindow(glsupport)
++    {
++        mClosed = true;
++    }
++
++    void SwitchEGLWindow::getLeftAndTopFromNativeWindow( int & left, int & top, uint width, uint height )
++    {
++        // We are always fixed at (0, 0) for the Nintendo Switch.
++        left = top = 0;
++    }
++
++    void SwitchEGLWindow::initNativeCreatedWindow(const NameValuePairList *miscParams)
++    {
++    }
++
++    void SwitchEGLWindow::createNativeWindow( int &left, int &top, uint &width, uint &height, String &title )
++    {
++    }
++
++    void SwitchEGLWindow::reposition( int left, int top )
++    {
++    }
++
++    void SwitchEGLWindow::resize(uint width, uint height)
++    {
++    }
++
++    void SwitchEGLWindow::windowMovedOrResized()
++    {
++        _updateResolution();
++
++        // Notify viewports of resize
++        ViewportList::iterator it = mViewportList.begin();
++        while( it != mViewportList.end() )
++            (*it++).second->_updateDimensions();
++    }
++
++    void SwitchEGLWindow::switchFullScreen(bool fullscreen)
++    {
++
++    }
++
++    void SwitchEGLWindow::create(const String& name, uint width, uint height,
++                               bool fullScreen, const NameValuePairList *miscParams)
++    {
++        // Most of these are fixed for the Nintendo Switch.
++        mName = name;
++        mLeft = 0;
++        mTop = 0;
++        mIsFullScreen = true;
++        mIsExternal = false;
++        mHwGamma = false;
++        mWidth = 1920;
++        mHeight = 1080;
++
++        // Create the window and GL context.
++        _notifySurfaceDestroyed();
++        _notifySurfaceCreated(nwindowGetDefault(), 0);
++    }
++
++    void SwitchEGLWindow::_notifySurfaceDestroyed()
++    {
++        if(mClosed)
++            return;
++
++        mContext->setCurrent();
++        static_cast<EGLContext*>(mContext)->_destroyInternalResources();
++
++        eglDestroySurface(mEglDisplay, mEglSurface);
++        EGL_CHECK_ERROR
++        mEglSurface = 0;
++
++        eglTerminate(mEglDisplay);
++        EGL_CHECK_ERROR
++        mEglDisplay = 0;
++
++        mActive = false;
++        mVisible = false;
++        mClosed = true;
++    }
++
++    void SwitchEGLWindow::_notifySurfaceCreated(void* window, void* config)
++    {
++        // Set the new window.
++        mWindow = window;
++
++        nwindowSetDimensions((NWindow*)mWindow, mWidth, mHeight);
++
++        mEglDisplay = mGLSupport->getGLDisplay();
++
++        EGLint numConfigs;
++        static const EGLint framebufferAttributeList[] =
++        {
++            EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
++            EGL_RED_SIZE,     8,
++            EGL_GREEN_SIZE,   8,
++            EGL_BLUE_SIZE,    8,
++            EGL_ALPHA_SIZE,   8,
++            EGL_DEPTH_SIZE,   24,
++            EGL_STENCIL_SIZE, 8,
++            EGL_NONE
++        };
++
++        eglChooseConfig(mEglDisplay, framebufferAttributeList, &mEglConfig,
++            1, &numConfigs);
++
++        mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig,
++            mWindow, nullptr);
++
++        mContext = createEGLContext();
++        mContext->setCurrent();
++
++        // Crop and adjust the window size.
++        _updateResolution();
++
++        mActive = true;
++        mVisible = true;
++        mClosed = false;
++    }
++
++    void SwitchEGLWindow::_updateResolution()
++    {
++        switch(appletGetOperationMode())
++        {
++            default:
++            case AppletOperationMode_Handheld:
++                LogManager::getSingletonPtr()->logMessage("Switched to handheld mode.");
++                mWidth = 1280;
++                mHeight = 720;
++                break;
++            case AppletOperationMode_Docked:
++                LogManager::getSingletonPtr()->logMessage("Switched to docked mode.");
++                mWidth = 1920;
++                mHeight = 1080;
++                break;
++        }
++
++        nwindowSetCrop((NWindow*)mWindow, 0, 1080 - mHeight, mWidth, 1080);
++    }
++}
