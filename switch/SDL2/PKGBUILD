@@ -1,8 +1,8 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=switch-sdl2
-pkgver=2.0.12
-pkgrel=3
+pkgver=2.0.14
+pkgrel=1
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard (Nintendo Switch port)"
 arch=('any')
 url="https://libsdl.org"
@@ -13,8 +13,8 @@ depends=('switch-mesa' 'libnx')
 source=("${url}/release/SDL2-${pkgver}.tar.gz" "SDL2-${pkgver}.patch")
 groups=('switch-portlibs' 'switch-sdl2')
 sha256sums=(
-  '349268f695c02efbc9b9148a70b85e58cefbbf704abd3e91be654db7f1e2c863'
-  'b5bf129b9218f04632babbb32b4f74c2167df369646b94c5ff7e1aed4c38df85'
+  'd8215b571a581be1332d2106f8036fcb03d12a70bae01e20f424976d275432bc'
+  '151eb73ce989d446399cafbedad08d65a6020b9d76998807c5f9e3da6e53a900'
 )
 
 build() {
