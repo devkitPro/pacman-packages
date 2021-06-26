@@ -14,11 +14,13 @@ set(CMAKE_ASM_FLAGS_INIT "${NX_COMMON_FLAGS}")
 
 set(CMAKE_EXE_LINKER_FLAGS_INIT "${NX_ARCH_SETTINGS} ${NX_LIB_DIRS} -fPIE -specs=${DEVKITPRO}/libnx/switch.specs")
 
-set(CMAKE_FIND_ROOT_PATH
-	${CMAKE_FIND_ROOT_PATH}
+list(APPEND CMAKE_FIND_ROOT_PATH
 	${DEVKITPRO}/portlibs/switch
 	${DEVKITPRO}/libnx
 )
+
+# Start find_package in config mode
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
 
 # Set pkg-config for the same
 find_program(PKG_CONFIG_EXECUTABLE NAMES aarch64-none-elf-pkg-config HINTS "${DEVKITPRO}/portlibs/switch/bin")
