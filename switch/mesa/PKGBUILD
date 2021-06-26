@@ -3,7 +3,7 @@
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
 pkgver=20.1.0
-pkgrel=2
+pkgrel=4
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
 url='https://mesa.freedesktop.org/archive'
@@ -12,11 +12,15 @@ options=(!strip libtool staticlibs)
 source=(
   "${pkgbasename}-${pkgver}.tar.xz::${url}/${pkgbasename}-${pkgver}-rc3.tar.xz"
   "${pkgname}-${pkgver}-${pkgrel}.patch"
+  OpenGLConfig.cmake
 )
+
 sha256sums=(
   'c90b75ea34302ebde9b81b87c5642fa864c40fe9c4ad34ce0793170c1413168d'
   '950f93d3e5b6ae9c5a42c2918623fe9a80d7ee398d92d2e73abec86b62d75916'
+  '016b39536fa560b38cbb456e3e9146439401c0ea29f26400ea065bb9d76f2518'
 )
+
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars' 'dkp-meson-scripts')
 depends=('switch-libdrm_nouveau')
 groups=('switch-portlibs')
@@ -27,10 +31,14 @@ build() {
   patch -p1 -i ${srcdir}/${pkgname}-${pkgver}-${pkgrel}.patch
   /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build -Db_ndebug=true
   ninja -C build
+
 }
 
 package() {
   cd ${pkgbasename}-${pkgver}-rc3
 
   DESTDIR="$pkgdir" ninja -C build install
+
+  install -Dm644 $srcdir/OpenGLConfig.cmake $pkgdir/opt/devkitpro/portlibs/switch/lib/cmake/OpenGL/OpenGLConfig.cmake
+
 }
