@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-libmad
 pkgver=0.15.1b
-pkgrel=2
+pkgrel=3
 pkgdesc='A high-quality MPEG audio decoder. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://www.underbit.com'
