@@ -28,7 +28,7 @@ build() {
 
   source ${DEVKITPRO}/switchvars.sh
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf --disable-shared --enable-static
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf --disable-shared --enable-static --with-pic=yes
   make
 }
 
