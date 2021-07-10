@@ -3,7 +3,7 @@
 
 pkgname=('3ds-examples')
 pkgver=20210610
-pkgrel=1
+pkgrel=2
 pkgdesc="Nintendo 3DS example code."
 arch=('any')
 license=('custom')
