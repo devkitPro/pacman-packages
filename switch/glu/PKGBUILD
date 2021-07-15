@@ -1,0 +1,41 @@
+# Maintainer: Rhys Koedijk <rhys@koedijk.co.nz>
+
+pkgbasename=glu
+pkgname=switch-$pkgbasename
+pkgver=9.0.1
+pkgrel=1
+pkgdesc='SGI implementation of the OpenGL Utility library'
+arch=('any')
+url='https://mesa.freedesktop.org/archive/glu/'
+license=('custom')
+options=(!strip libtool staticlibs)
+source=("${url}/${pkgbasename}-${pkgver}.tar.xz")
+sha256sums=('fb5a4c2dd6ba6d1c21ab7c05129b0769544e1d68e1e3b0ffecb18e73c93055bc')
+depends=('switch-mesa')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+
+prepare() {
+  cd ${pkgbasename}-${pkgver}
+  patch -Np1 -i "${startdir}/${pkgbasename}-9.0.1-configure-ac-enable-egl-arg.patch"
+}
+
+build() {
+  cd ${pkgbasename}-${pkgver}
+
+  source /opt/devkitpro/switchvars.sh
+
+  autoconf
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static --enable-egl
+
+  make
+}
+
+package() {
+  cd ${pkgbasename}-${pkgver}
+
+  make DESTDIR="$pkgdir" install
+  install -Dm644 "${startdir}"/LICENSE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE 
+}
