@@ -1,0 +1,16 @@
+diff --git a/include/ntfs-3g/ntfstime.h b/include/ntfs-3g/ntfstime.h
+index f3a89dd..ce0d458 100644
+--- a/include/ntfs-3g/ntfstime.h
++++ b/include/ntfs-3g/ntfstime.h
+@@ -36,6 +36,10 @@
+ 
+ #include "types.h"
+ 
++#ifdef _SYS__TIMESPEC_H_
++#define __timespec_defined
++#endif
++
+ /*
+  * assume "struct timespec" is not defined if st_mtime is not defined
+  */
+  
