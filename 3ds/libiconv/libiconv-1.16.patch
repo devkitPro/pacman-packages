@@ -1,0 +1,123 @@
+diff --git a/srclib/binary-io.h b/srclib/binary-io.h
+index 720b08c..c6c9432 100644
+--- a/srclib/binary-io.h
++++ b/srclib/binary-io.h
+@@ -33,7 +33,14 @@ _GL_INLINE_HEADER_BEGIN
+ # define BINARY_IO_INLINE _GL_INLINE
+ #endif
+ 
+-#if O_BINARY
++#if defined(_3DS)
++BINARY_IO_INLINE int
++__gl_setmode (int fd _GL_UNUSED, int mode _GL_UNUSED)
++{
++  return O_BINARY;
++}
++
++#elif O_BINARY
+ # if defined __EMX__ || defined __DJGPP__ || defined __CYGWIN__
+ #  include <io.h> /* declares setmode() */
+ #  define __gl_setmode setmode
+diff --git a/srclib/getprogname.c b/srclib/getprogname.c
+index 22d71eb..4ab5fca 100644
+--- a/srclib/getprogname.c
++++ b/srclib/getprogname.c
+@@ -244,6 +244,8 @@ getprogname (void)
+         }
+     }
+   return NULL;
++# elif defined(_3DS)
++  return "?";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+diff --git a/srclib/signal.in.h b/srclib/signal.in.h
+index a6960a2..9be84b3 100644
+--- a/srclib/signal.in.h
++++ b/srclib/signal.in.h
+@@ -218,8 +218,12 @@ typedef int verify_NSIG_constraint[NSIG <= 32 ? 1 : -1];
+ #   undef sigismember
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigismember, int, (const sigset_t *set, int sig)
+                                     _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigismember, int, (const sigset_t *set, int sig));
+ _GL_CXXALIASWARN (sigismember);
+@@ -231,7 +235,11 @@ _GL_CXXALIASWARN (sigismember);
+ #   undef sigemptyset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigemptyset, int, (sigset_t *set) _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigemptyset, int, (sigset_t *set));
+ _GL_CXXALIASWARN (sigemptyset);
+@@ -243,8 +251,12 @@ _GL_CXXALIASWARN (sigemptyset);
+ #   undef sigaddset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigaddset, int, (sigset_t *set, int sig)
+                                   _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigaddset, int, (sigset_t *set, int sig));
+ _GL_CXXALIASWARN (sigaddset);
+@@ -256,8 +268,12 @@ _GL_CXXALIASWARN (sigaddset);
+ #   undef sigdelset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigdelset, int, (sigset_t *set, int sig)
+                                   _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigdelset, int, (sigset_t *set, int sig));
+ _GL_CXXALIASWARN (sigdelset);
+@@ -269,7 +285,11 @@ _GL_CXXALIASWARN (sigdelset);
+ #   undef sigfillset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigfillset, int, (sigset_t *set) _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigfillset, int, (sigset_t *set));
+ _GL_CXXALIASWARN (sigfillset);
+diff --git a/srclib/sigprocmask.c b/srclib/sigprocmask.c
+index d6cd3f8..cc10735 100644
+--- a/srclib/sigprocmask.c
++++ b/srclib/sigprocmask.c
+@@ -110,6 +110,9 @@ ext_signal (int sig, handler_t handler)
+ # define signal ext_signal
+ #endif
+ 
++
++#if !defined(_3DS)
++
+ int
+ sigismember (const sigset_t *set, int sig)
+ {
+@@ -181,6 +184,8 @@ sigfillset (sigset_t *set)
+   return 0;
+ }
+ 
++#endif
++
+ /* Set of currently blocked signals.  */
+ static volatile sigset_t blocked_set /* = 0 */;
+ 

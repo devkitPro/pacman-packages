@@ -1,0 +1,51 @@
+# Maintainer:  Tulio Beloqui <beloquitulio@gmail.com>
+
+pkgname=3ds-libiconv
+pkgver=1.16
+pkgrel=1
+pkgdesc="GNU libiconv provides an implementation of the iconv() function and the iconv program for character set conversion. For use on systems which don't have one, or whose implementation cannot convert from/to Unicode."
+arch=('any')
+url="https://www.gnu.org/software/libiconv/"
+license=(LGPL)
+options=(!strip libtool staticlibs)
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=('3ds-portlibs')
+
+source=(
+	"https://ftp.gnu.org/pub/gnu/libiconv/libiconv-${pkgver}.tar.gz"
+	"libiconv-${pkgver}.patch"
+)
+sha256sums=(
+	'e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04'
+	'3863abb39e1d8369912c761bd5e243a32d6cda51cd53abe5baf82a57b6a1fa86'
+)
+
+build() {
+  cd libiconv-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+
+  export LDFLAGS="${LDFLAGS} -lctru -specs=3dsx.specs"
+
+  patch -Np1 -i "$srcdir"/libiconv-$pkgver.patch
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+     --host=arm-none-eabi \
+     --disable-shared \
+     --enable-static \
+     --disable-rpath
+
+  make
+}
+
+package() {
+  cd libiconv-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="${pkgdir}" install
+
+  # license
+  install -Dm644 COPYING.LIB "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING.LIB
+}
+
