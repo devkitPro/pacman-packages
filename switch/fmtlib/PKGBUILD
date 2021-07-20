@@ -1,0 +1,43 @@
+# Contributor: Luis Scheurenbrand <Luisscheurenbrand@gmail.com>
+
+pkgname=switch-fmt
+pkgver=7.0.1
+pkgrel=1
+pkgdesc='Open-Source formatting library for C++'
+arch=('any')
+url='https://fmt.dev/'
+license=(MIT)
+source=(
+    "https://github.com/fmtlib/fmt/releases/download/${pkgver}/fmt-${pkgver}.zip"
+    "switch-fmt.patch"
+)
+sha256sums=(
+    "f5a836d3efd22f8c3821d798efadf76a6050671deb1492d7736f7ce58f9b4b36"
+    "febcaf2c8c4f515685f7f6df484c0338369572e3befeacc7046061c123dee3df"
+)
+makedepends=('devkitpro-pkgbuild-helpers')
+
+build() {
+    cd fmt-${pkgver}
+
+    patch -Np1 -i $srcdir/switch-fmt.patch
+
+    source /opt/devkitpro/switchvars.sh
+
+    cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+        -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+        -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+        -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
+        -DFMT_TEST=0 \
+        .
+
+    make
+}
+
+package() {
+    cd fmt-${pkgver}
+
+    make install DESTDIR="$pkgdir"
+
+    install -Dm 644 "$srcdir/fmt-$pkgver"/LICENSE.rst -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
+}

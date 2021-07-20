@@ -1,0 +1,12 @@
+diff -NBaur fmt-7.0.1.switch/CMakeLists.txt fmt-7.0.1/CMakeLists.txt
+--- fmt-7.0.1/CMakeLists.txt	2018-12-02 13:20:52.000000000 +0000
++++ fmt-7.0.1.switch/CMakeLists.txt	2018-12-23 18:49:07.178930622 +0000
+@@ -44,6 +44,8 @@ if (MASTER_PROJECT AND NOT CMAKE_BUILD_TYPE)
+               "CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.")
+ endif ()
+ 
++set(CMAKE_C_COMPILER_WORKS TRUE)
++set(CMAKE_CXX_COMPILER_WORKS TRUE)
+ project(FMT CXX)
+ include(GNUInstallDirs)
+ set_verbose(FMT_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE STRING
