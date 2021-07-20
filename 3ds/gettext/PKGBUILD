@@ -1,0 +1,66 @@
+# Maintainer:  Tulio Beloqui <beloquitulio@gmail.com>
+
+pkgname=3ds-gettext
+pkgver=0.21
+pkgrel=1
+pkgdesc="GNU internationalization (i18n) and localization (l10n) library"
+arch=('any')
+url="https://www.gnu.org/software/gettext/"
+license=(LGPL)
+options=(!strip libtool staticlibs)
+makedepends=('devkitpro-pkgbuild-helpers')
+groups=('3ds-portlibs')
+
+source=(
+  "https://ftp.gnu.org/pub/gnu/gettext/gettext-0.21.tar.gz"
+	"gettext-${pkgver}.patch"
+)
+sha256sums=(
+	'c77d0da3102aec9c07f43671e60611ebff89a996ef159497ce8e59d075786b12'
+	'5edbf7871529677c40a83aeeb2c5f12833a8d4fe871a63b4ce3fdbf3a18d93d3'
+)
+
+build() {
+  cd gettext-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+  export LDFLAGS="${LDFLAGS} -lctru -specs=3dsx.specs"
+
+  patch -Np1 -i "$srcdir"/gettext-$pkgver.patch
+
+  cd gettext-runtime
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+     --host=arm-none-eabi \
+     --disable-shared \
+     --enable-static \
+     --disable-rpath \
+     --disable-libasprintf \
+     --disable-java \
+     --disable-native-java \
+     --disable-openmp \
+     --disable-curses \
+     --disable-csharp \
+     --disable-dependency-tracking \
+     --disable-silent-rules \
+     --disable-debug \
+     --without-git \
+     --without-cvs \
+     --without-xz \
+     --with-included-gettext
+
+  make
+}
+
+package() {
+  cd gettext-$pkgver
+  cd gettext-runtime
+
+  source /opt/devkitpro/3dsvars.sh
+
+  make DESTDIR="${pkgdir}" install
+
+  # license
+  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+}
+

@@ -1,0 +1,157 @@
+diff --git a/gettext-runtime/gnulib-lib/binary-io.h b/gettext-runtime/gnulib-lib/binary-io.h
+index 477b4bf..c639111 100644
+--- a/gettext-runtime/gnulib-lib/binary-io.h
++++ b/gettext-runtime/gnulib-lib/binary-io.h
+@@ -33,7 +33,14 @@ _GL_INLINE_HEADER_BEGIN
+ # define BINARY_IO_INLINE _GL_INLINE
+ #endif
+ 
+-#if O_BINARY
++#if defined(_3DS)
++BINARY_IO_INLINE int
++__gl_setmode (int fd _GL_UNUSED, int mode _GL_UNUSED)
++{
++  return O_BINARY;
++}
++
++#elif O_BINARY
+ # if defined __EMX__ || defined __DJGPP__ || defined __CYGWIN__
+ #  include <io.h> /* declares setmode() */
+ #  define __gl_setmode setmode
+diff --git a/gettext-runtime/gnulib-lib/getdtablesize.c b/gettext-runtime/gnulib-lib/getdtablesize.c
+index 0fe7092..702e4f9 100644
+--- a/gettext-runtime/gnulib-lib/getdtablesize.c
++++ b/gettext-runtime/gnulib-lib/getdtablesize.c
+@@ -87,6 +87,16 @@ getdtablesize (void)
+   return dtablesize;
+ }
+ 
++#elif defined(_3DS)
++
++#include <limits.h>
++
++int
++getdtablesize (void)
++{
++  return INT_MAX;
++}
++
+ #else
+ 
+ # include <limits.h>
+diff --git a/gettext-runtime/gnulib-lib/getprogname.c b/gettext-runtime/gnulib-lib/getprogname.c
+index 5e6f764..2cd74b9 100644
+--- a/gettext-runtime/gnulib-lib/getprogname.c
++++ b/gettext-runtime/gnulib-lib/getprogname.c
+@@ -245,6 +245,8 @@ getprogname (void)
+         }
+     }
+   return NULL;
++#elif defined(_3DS)
++  return "?";
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif
+diff --git a/gettext-runtime/gnulib-lib/signal.in.h b/gettext-runtime/gnulib-lib/signal.in.h
+index c94b053..ea6bb5a 100644
+--- a/gettext-runtime/gnulib-lib/signal.in.h
++++ b/gettext-runtime/gnulib-lib/signal.in.h
+@@ -230,8 +230,12 @@ typedef int verify_NSIG_constraint[NSIG <= 32 ? 1 : -1];
+ #   undef sigismember
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigismember, int, (const sigset_t *set, int sig)
+                                     _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigismember, int, (const sigset_t *set, int sig));
+ _GL_CXXALIASWARN (sigismember);
+@@ -243,7 +247,11 @@ _GL_CXXALIASWARN (sigismember);
+ #   undef sigemptyset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigemptyset, int, (sigset_t *set) _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigemptyset, int, (sigset_t *set));
+ _GL_CXXALIASWARN (sigemptyset);
+@@ -255,8 +263,12 @@ _GL_CXXALIASWARN (sigemptyset);
+ #   undef sigaddset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigaddset, int, (sigset_t *set, int sig)
+                                   _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigaddset, int, (sigset_t *set, int sig));
+ _GL_CXXALIASWARN (sigaddset);
+@@ -268,8 +280,12 @@ _GL_CXXALIASWARN (sigaddset);
+ #   undef sigdelset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigdelset, int, (sigset_t *set, int sig)
+                                   _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigdelset, int, (sigset_t *set, int sig));
+ _GL_CXXALIASWARN (sigdelset);
+@@ -281,7 +297,11 @@ _GL_CXXALIASWARN (sigdelset);
+ #   undef sigfillset
+ #  endif
+ # else
++
++#if !defined(_3DS)
+ _GL_FUNCDECL_SYS (sigfillset, int, (sigset_t *set) _GL_ARG_NONNULL ((1)));
++#endif
++
+ # endif
+ _GL_CXXALIAS_SYS (sigfillset, int, (sigset_t *set));
+ _GL_CXXALIASWARN (sigfillset);
+diff --git a/gettext-runtime/gnulib-lib/sigprocmask.c b/gettext-runtime/gnulib-lib/sigprocmask.c
+index d186106..8ff80f7 100644
+--- a/gettext-runtime/gnulib-lib/sigprocmask.c
++++ b/gettext-runtime/gnulib-lib/sigprocmask.c
+@@ -110,6 +110,8 @@ ext_signal (int sig, handler_t handler)
+ # define signal ext_signal
+ #endif
+ 
++#if !defined(_3DS)
++
+ int
+ sigismember (const sigset_t *set, int sig)
+ {
+@@ -181,6 +183,8 @@ sigfillset (sigset_t *set)
+   return 0;
+ }
+ 
++#endif /* _3DS */
++
+ /* Set of currently blocked signals.  */
+ static volatile sigset_t blocked_set /* = 0 */;
+ 
+diff --git a/gettext-runtime/src/envsubst.c b/gettext-runtime/src/envsubst.c
+index ffe4ce7..5010608 100644
+--- a/gettext-runtime/src/envsubst.c
++++ b/gettext-runtime/src/envsubst.c
+@@ -140,7 +140,9 @@ There is NO WARRANTY, to the extent permitted by law.\n\
+ 
+       /* The result is most often used in shell `...` expressions.
+          Therefore, on native Windows, don't produce CR/LF newlines.  */
++  #if !defined(_3DS)
+       set_binary_mode (STDOUT_FILENO, O_BINARY);
++  #endif
+ 
+       print_variables (argv[optind++]);
+     }
