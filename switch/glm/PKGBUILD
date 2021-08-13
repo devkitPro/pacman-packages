@@ -1,15 +1,15 @@
 # Maintainer:  fincs <fincs.alt1@gmail.com>
 
 pkgname=switch-glm
-pkgver=0.9.9.7
-pkgrel=2
+pkgver=0.9.9.8
+pkgrel=1
 pkgdesc='OpenGL Mathematics (GLM) header only C++ library'
 arch=('any')
 url='https://github.com/g-truc/glm'
 license=(MIT)
 options=(!strip libtool staticlibs)
 source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip")
-sha256sums=('6b79c3d06d9745d1cce3f38c0c15666596f9aefff25ddb74df3af0a02f011ee1')
+sha256sums=('37e2a3d62ea3322e43593c34bae29f57e3e251ea89f4067506c94043769ade4c')
 makedepends=('dkp-toolchain-vars')
 groups=('switch-portlibs')
 
