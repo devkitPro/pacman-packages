@@ -136,8 +136,8 @@ function(ctr_create_3dsx target)
 	)
 
 	add_custom_target(
-		"${TARGET_OUTPUT_NAME}_3dsx" ALL
-		DEPENDS "${target}.3dsx"
+		"${target}_3dsx" ALL
+		DEPENDS "${TARGET_OUTPUT_NAME}.3dsx"
 	)
 endfunction()
 
