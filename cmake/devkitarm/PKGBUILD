@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitarm-cmake
 pkgver=1.0.0
-pkgrel=4
+pkgrel=5
 pkgdesc="devkitarm cmake wrapper"
 arch=('any')
 url='http://devkitpro.org/'
@@ -16,15 +16,15 @@ groups=('gp32-dev' 'gp2x-dev' 'gba-dev' 'nds-dev' '3ds-dev')
 depends=('dkp-cmake-common-utils')
 
 sha256sums=(
-  '895629e53eabb25e5abcf14bcbc3640e2267ad2e2b9965b68fd09b083e2b6593'  # devkitARM.cmake
+  '65597cc6f067d07e1c7a88e785dee27ac413dd7002584837c9239730917c99c2'  # devkitARM.cmake
   '49957ece046e578ae15cecf5ff87af501c50034af0d6a4f972454917255a0932'  # arm-none-eabi-cmake
 )
 
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/devkitARM/bin
-  cp "$srcdir"/arm-none-eabi-cmake "$pkgdir"/opt/devkitpro/devkitARM/bin/
+  cp arm-none-eabi-cmake "$pkgdir"/opt/devkitpro/devkitARM/bin
   install -d "$pkgdir"/opt/devkitpro/cmake
-  cp "${srcdir}"/devkitARM.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp devkitARM.cmake "$pkgdir"/opt/devkitpro/cmake
 
 }
