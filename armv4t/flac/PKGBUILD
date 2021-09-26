@@ -1,0 +1,46 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: cpasjuste <cpasjuste@gmail.com>
+# Contributor: oreo639 <oreo6391@gmail.com>
+
+pkgname=armv4t-flac
+pkgver=1.3.2
+pkgrel=1
+pkgdesc='Open source Free Lossless Audio Codec'
+arch=('any')
+url='https://xiph.org/flac/'
+license=(Xiph.org)
+options=(!strip libtool staticlibs)
+depends=("armv4t-libogg")
+makedepends=('dkp-toolchain-vars')
+groups=('armv4t-portlibs')
+
+source=(
+  "https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz"
+  "flac-${pkgver}.patch"
+)
+sha256sums=(
+  '91cfc3ed61dc40f47f050a109b08610667d73477af6ef36dcad31c31a4a8d53f'
+  '33032574b3a148daab60a5500be1811e64862b39851c6c326a0ee0a90b081edd'
+)
+
+build() {
+  cd flac-$pkgver
+
+  source /opt/devkitpro/armv4tvars.sh
+
+  patch -Np1 -i "$srcdir/flac-${pkgver}.patch"
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static --disable-examples \
+    --disable-xmms-plugin --disable-doxygen-docs \
+    --disable-sse
+
+  make -C src/libFLAC
+}
+
+package() {
+  cd flac-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}
+

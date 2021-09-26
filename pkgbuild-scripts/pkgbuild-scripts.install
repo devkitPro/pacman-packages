@@ -1,0 +1,4 @@
+post_install() {
+  echo "This package is no longer being used"
+  echo "Please use dkp-toolchain-vars and the cmake packages instead"
+}

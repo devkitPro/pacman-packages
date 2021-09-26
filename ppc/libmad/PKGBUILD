@@ -9,7 +9,7 @@ url="https://www.underbit.com/products/mad/"
 license=("GPLv2")
 arch=("any")
 depends=("devkitPPC")
-makedepends=("ppc-pkg-config" "devkitpro-pkgbuild-helpers")
+makedepends=("ppc-pkg-config" "dkp-toolchain-vars")
 options=("!buildflags" "staticlibs" "libtool" "!strip")
 source=("ftp://ftp.mars.org/pub/mpeg/libmad-${pkgver}.tar.gz"
         "frame_length.patch" "pkg-config.patch" "optimise.diff")

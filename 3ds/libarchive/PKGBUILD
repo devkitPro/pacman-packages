@@ -16,7 +16,7 @@ sha256sums=(
  'eb87eacd8fe49e8d90c8fdc189813023ccc319c5e752b01fb6ad0cc7b2c53d5e'
  '3d397bbd8d374a516cdedcae4b8e7b33cb07f3324a3baca629bc3b6fe097a0f5'
 )
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 depends=('3ds-bzip2' '3ds-zlib' '3ds-liblzma')
 groups=('3ds-portlibs')
 

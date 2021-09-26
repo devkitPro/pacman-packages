@@ -9,7 +9,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("https://github.com/gdraheim/zziplib/archive/v${pkgver}.tar.gz")
 depends=('switch-zlib')
-makedepends=('devkitA64' 'devkitpro-pkgbuild-helpers')
+makedepends=('devkitA64' 'dkp-toolchain-vars')
 sha256sums=('846246d7cdeee405d8d21e2922c6e97f55f24ecbe3b6dcf5778073a88f120544')
 groups=('switch-portlibs')
 

@@ -1,33 +1,41 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-libmad
 pkgver=0.15.1b
-pkgrel=1
+pkgrel=3
 pkgdesc='A high-quality MPEG audio decoder. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://www.underbit.com'
 license=('GPL')
 options=(!strip libtool staticlibs)
-source=("https://downloads.devkitpro.org/packages/sources/libmad/${pkgver}/libmad-${pkgver}.tar.bz2")
+source=("https://sourceforge.net/projects/mad/files/libmad/${pkgver}/libmad-${pkgver}.tar.gz")
 sha256sums=(
- '7e8af486a31fa0dfd1f5d2457961b37a3a194ba0c8a375b07e8df983a6e5ca92'
+ 'bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690'
 )
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+groups=('switch-portlibs')
+
+prepare() {
+  cd ${srcdir}/libmad-${pkgver}
+  sed -i 's,optimize="$optimize -fforce-mem",#optimize="$optimize -fforce-mem",'  configure.ac
+  # configury is too old for aarch64-none-elf
+  touch NEWS AUTHORS ChangeLog
+  autoreconf -fi
+  automake --foreign --add-missing --copy --force-missing
+}
 
 build() {
   cd libmad-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf --disable-shared --enable-static
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf --disable-shared --enable-static --with-pic=yes
   make
 }
 
 package() {
   cd libmad-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
 }

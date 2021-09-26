@@ -9,7 +9,7 @@ url="https://www.hyperrealm.com/libconfig/libconfig.html"
 license=('LGPL')
 options=(!strip libtool staticlibs)
 source=("https://hyperrealm.github.io/libconfig/dist/libconfig-${pkgver}.tar.gz" "libconfig.patch")
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 sha256sums=(
   '7c3c7a9c73ff3302084386e96f903eb62ce06953bb1666235fac74363a16fad9'
   '474c17940200d4aa286e486568a0ecaba2130a758f108e2a0b86c6fed5915d1f'

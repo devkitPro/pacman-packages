@@ -17,7 +17,7 @@ depends=(
 )
 makedepends=(
  '3ds-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+ 'dkp-toolchain-vars'
 )
 source=("${url}/projects/SDL_mixer/release/SDL_mixer-${pkgver}.tar.gz")
 sha256sums=(

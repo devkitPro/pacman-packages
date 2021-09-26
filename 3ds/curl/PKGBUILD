@@ -10,7 +10,7 @@ url='https://curl.haxx.se'
 license=('MIT')
 options=(!strip libtool staticlibs)
 depends=('3ds-zlib' '3ds-mbedtls')
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 
 source=("https://curl.haxx.se/download/curl-${pkgver}.tar.xz"
         '3ds-curl.patch'

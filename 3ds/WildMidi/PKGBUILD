@@ -11,7 +11,7 @@ license=('LGPL')
 options=(!strip libtool staticlibs)
 source=( "https://github.com/Mindwerks/wildmidi/archive/wildmidi-${pkgver}.tar.gz" "wildmidi-0.4.3.patch")
 groups=('3ds-portlibs')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 sha256sums=(
 '498e5a96455bb4b91b37188ad6dcb070824e92c44f5ed452b90adbaec8eef3c5'
 '2ff10193fe06e908b0658f9035711576a2781314e3f0cfe7969dde590f18b813')

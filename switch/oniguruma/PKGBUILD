@@ -3,13 +3,14 @@
 
 pkgname=switch-oniguruma
 pkgver=6.9.2
-pkgrel=1
+pkgrel=2
 pkgdesc='Oniguruma is a modern and flexible regular expressions library. It encompasses features from different regular expression implementations that traditionally exist in different languages.'
 arch=('any')
 url='https://github.com/kkos/oniguruma/'
 license=('BSD')
 options=(!strip libtool staticlibs)
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
+groups=('switch-portlibs')
 source=("https://github.com/kkos/oniguruma/releases/download/v$pkgver/onig-$pkgver.tar.gz")
 sha256sums=('db7addb196ecb34e9f38d8f9c97b29a3e962c0e17ea9636127b3e3c42f24976a')
 

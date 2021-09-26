@@ -3,21 +3,21 @@
 
 pkgname=switch-jansson
 pkgver=2.11
-pkgrel=1
+pkgrel=2
 pkgdesc='A C library for encoding, decoding and manipulating JSON data.'
 arch=('any')
 url='http://www.digip.org/jansson/'
 license=('custom')
 options=(!strip libtool staticlibs)
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 source=("http://www.digip.org/jansson/releases/jansson-$pkgver.tar.gz")
 sha256sums=('6e85f42dabe49a7831dbdd6d30dca8a966956b51a9a50ed534b82afc3fa5b2f4')
+groups=('switch-portlibs')
 
 build() {
   cd jansson-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
@@ -27,8 +27,7 @@ build() {
 package() {
   cd jansson-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
   # license

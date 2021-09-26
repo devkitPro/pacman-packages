@@ -2,7 +2,7 @@
 
 pkgname=switch-glm
 pkgver=0.9.9.7
-pkgrel=1
+pkgrel=2
 pkgdesc='OpenGL Mathematics (GLM) header only C++ library'
 arch=('any')
 url='https://github.com/g-truc/glm'
@@ -10,7 +10,8 @@ license=(MIT)
 options=(!strip libtool staticlibs)
 source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip")
 sha256sums=('6b79c3d06d9745d1cce3f38c0c15666596f9aefff25ddb74df3af0a02f011ee1')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
+groups=('switch-portlibs')
 
 package() {
   source $DEVKITPRO/switchvars.sh

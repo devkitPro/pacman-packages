@@ -11,7 +11,7 @@ url="http://www.bzip.org"
 options=(!strip libtool staticlibs)
 source=(http://http.debian.net/debian/pool/main/b/bzip2/bzip2_$pkgver.orig.tar.bz2)
 sha256sums=('d70a9ccd8bdf47e302d96c69fecd54925f45d9c7b966bb4ef5f56b770960afa7')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
 
 build() {

@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-libmad
 pkgver=0.15.1b
-pkgrel=1
+pkgrel=2
 pkgdesc='A high-quality MPEG audio decoder. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://www.underbit.com'
@@ -10,12 +10,15 @@ license=('GPL')
 options=(!strip libtool staticlibs)
 source=("https://sourceforge.net/projects/mad/files/libmad/${pkgver}/libmad-${pkgver}.tar.gz")
 sha256sums=('bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690')
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
+groups=('3ds-portlibs')
+
+prepare() {
+  sed -i 's,optimize="$optimize -fforce-mem",#optimize="$optimize -fforce-mem",'  ${srcdir}/libmad-${pkgver}/configure
+}
 
 build() {
   cd libmad-$pkgver
-
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi --disable-shared --enable-static
@@ -25,7 +28,6 @@ build() {
 package() {
   cd libmad-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
   make DESTDIR="$pkgdir" install

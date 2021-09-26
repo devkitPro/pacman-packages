@@ -7,7 +7,7 @@ url='http://festvox.org/flite/'
 license=('MIT')
 options=(!strip libtool staticlibs)
 depends=()
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 groups=('3ds-portlibs')
 
 source=("http://festvox.org/flite/packed/flite-${pkgver}/flite-${pkgver}-release.tar.bz2")

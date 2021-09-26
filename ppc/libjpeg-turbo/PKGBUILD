@@ -10,7 +10,7 @@ license=('IJG')
 options=(!strip libtool staticlibs)
 source=("https://sourceforge.net/projects/libjpeg-turbo/files/$pkgver/libjpeg-turbo-$pkgver.tar.gz")
 sha256sums=('b24890e2bb46e12e72a79f7e965f409f4e16466d00e1dd15d93d73ee6b592523')
-makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers' 'devkitPPC')
+makedepends=('ppc-pkg-config' 'dkp-toolchain-vars' 'devkitPPC')
 groups=('ppc-portlibs')
 
 build() {

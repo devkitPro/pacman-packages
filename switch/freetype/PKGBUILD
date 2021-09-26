@@ -5,7 +5,7 @@
 
 pkgname=switch-freetype
 pkgver=2.10.1
-pkgrel=1
+pkgrel=2
 pkgdesc='FreeType is a freely available software library to render fonts.'
 arch=('any')
 url='https://www.freetype.org/'
@@ -15,7 +15,8 @@ depends=("switch-bzip2"
          "switch-libpng"
          "switch-zlib"
 )
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.gz")
 sha256sums=('3a60d391fd579440561bf0e7f31af2222bc610ad6ce4d9d7bd2165bca8669110')
 

@@ -10,7 +10,7 @@ license=(GPL2+ custom:FreeType)
 depends=("3ds-bzip2"
          "3ds-libpng"
          "3ds-zlib")
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 options=('!strip' '!libtool' 'staticlibs')
 source=(https://downloads.sourceforge.net/sourceforge/freetype/freetype-${pkgver}.tar.bz2)
 sha256sums=('e6ffba3c8cef93f557d1f767d7bc3dee860ac7a3aaff588a521e081bc36f4c8a')

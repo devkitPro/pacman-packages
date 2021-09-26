@@ -2,8 +2,8 @@
 
 pkgbasename=glfw
 pkgname=switch-$pkgbasename
-pkgver=3.3.2
-pkgrel=1
+pkgver=3.3.4
+pkgrel=2
 pkgdesc='Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan development on the desktop'
 arch=('any')
 url='https://github.com/glfw/glfw'
@@ -14,23 +14,23 @@ source=(
   "${pkgname}-${pkgver}.patch"
 )
 sha256sums=(
-  '08a33a512f29d7dbf78eab39bd7858576adcc95228c9efe8e4bc5f0f3261efc7'
-  'e3b581089c5dc1a87ae216f4c7ca39a5b1038d9e57836920eefb44a5f1562b3d'
+  'bbd2c42c660b725e9755eb417e40b373f0d4c03138c9b2e210d02cd308bd99cd'  # glfw-3.3.4.zip
+  '3af95bc53a11472f024ad8518a2013b52ce3b93c73d66691da992279306663f9'  # switch-glfw-3.3.4.patch
 )
 depends=('switch-mesa')
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars' 'switch-cmake')
+groups=('switch-portlibs')
 
 build() {
 
   cd ${pkgbasename}-${pkgver}
   patch -p1 -i ${srcdir}/${pkgname}-${pkgver}.patch
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
-  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+  aarch64-none-elf-cmake -G"Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
-    -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
     -DGLFW_BUILD_EXAMPLES:BOOL=OFF -DGLFW_BUILD_TESTS:BOOL=OFF -DGLFW_BUILD_DOCS:BOOL=OFF \
     -DGLFW_VULKAN_STATIC:BOOL=ON -DGLFW_EGL_STATIC:BOOL=ON \
     .

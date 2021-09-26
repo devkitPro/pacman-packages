@@ -11,7 +11,7 @@ license=('MIT')
 options=(!strip libtool staticlibs)
 source=("https://s3.amazonaws.com/json-c_releases/releases/json-c-${pkgver}.tar.gz")
 sha256sums=('b87e608d4d3f7bfdd36ef78d56d53c74e66ab278d318b71e6002a369d36f4873')
-makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 groups=('3ds-portlibs')
 build() {
   cd json-c-$pkgver

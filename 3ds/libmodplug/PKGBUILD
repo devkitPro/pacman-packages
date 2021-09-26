@@ -1,0 +1,40 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: TurtleP <jpostelnek@outlook.com>
+
+pkgname=3ds-libmodplug
+pkgver=0.8.9.0
+pkgrel=1
+pkgdesc='Play various .mod formats'
+arch=('any')
+url='http://modplug-xmms.sourceforge.net/'
+license=(public domain)
+options=(!strip libtool staticlibs)
+depends=("3ds-zlib")
+groups=('3ds-portlibs')
+source=(
+  "https://sourceforge.net/projects/modplug-xmms/files/libmodplug/$pkgver/libmodplug-$pkgver.tar.gz"
+  "libmodplug-${pkgver}.patch"
+)
+sha256sums=(
+  '457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de'
+  '21b02fafbde542e969fc41514bca7e544794110678d874fae49ce9e21cd4b342'
+)
+
+build() {
+  cd libmodplug-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+
+  patch -Np1 -i "$srcdir/libmodplug-${pkgver}.patch"
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd libmodplug-$pkgver
+
+  make DESTDIR="$pkgdir" install
+}

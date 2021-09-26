@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -e
+
+exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/devkitARM.cmake "$@"

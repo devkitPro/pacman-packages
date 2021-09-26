@@ -2,7 +2,7 @@
 
 pkgname=switch-mpg123
 pkgver=1.25.10
-pkgrel=3
+pkgrel=4
 pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
 arch=('any')
 url="http://sourceforge.net/projects/mpg123"
@@ -14,8 +14,8 @@ source=(
 )
 sha256sums=('6c1337aee2e4bf993299851c70b7db11faec785303cfca3a5c3eb5f329ba7023'
             '444e46951f6270d926698718b3e52ec548088f1374f56bcd766d5b9783a41051')
-makedepends=('devkitpro-pkgbuild-helpers' 'switch-pkg-config')
-
+makedepends=('dkp-toolchain-vars' 'switch-pkg-config')
+groups=('switch-portlibs')
 build() {
   cd mpg123-$pkgver
 

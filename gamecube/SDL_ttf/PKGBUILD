@@ -14,7 +14,7 @@ depends=(
 )
 makedepends=(
  'gamecube-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+ 'dkp-toolchain-vars'
 )
 source=("${url}/projects/SDL_ttf/release/SDL_ttf-${pkgver}.tar.gz")
 groups=('gamecube-portlibs' 'gamecube-sdl-libs')

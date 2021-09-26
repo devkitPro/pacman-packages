@@ -1,0 +1,1541 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e2962df9..f6a3abe7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -24,6 +24,7 @@ option(GLFW_BUILD_TESTS "Build the GLFW test programs" ON)
+ option(GLFW_BUILD_DOCS "Build the GLFW documentation" ON)
+ option(GLFW_INSTALL "Generate installation target" ON)
+ option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
++option(GLFW_EGL_STATIC "Statically link to EGL" OFF)
+ 
+ include(GNUInstallDirs)
+ include(CMakeDependentOption)
+@@ -57,6 +58,13 @@ if (GLFW_VULKAN_STATIC)
+     set(_GLFW_VULKAN_STATIC 1)
+ endif()
+ 
++if (GLFW_EGL_STATIC)
++    if (BUILD_SHARED_LIBS)
++        message(FATAL_ERROR "You are trying to link the EGL static library into the GLFW shared library")
++    endif()
++    set(_GLFW_EGL_STATIC 1)
++endif()
++
+ list(APPEND CMAKE_MODULE_PATH "${GLFW_SOURCE_DIR}/CMake/modules")
+ 
+ find_package(Threads REQUIRED)
+@@ -155,6 +163,9 @@ elseif (APPLE)
+ elseif (UNIX)
+     set(_GLFW_X11 1)
+     message(STATUS "Using X11 for window creation")
++elseif (NINTENDO_SWITCH)
++    set(_GLFW_SWITCH 1)
++    message(STATUS "Using Switch for window creation")
+ else()
+     message(FATAL_ERROR "No supported platform was detected")
+ endif()
+@@ -183,6 +194,15 @@ if (UNIX AND NOT APPLE)
+     endif()
+ endif()
+ 
++if (NINTENDO_SWITCH)
++    find_library(MATH_LIBRARY m)
++    mark_as_advanced(MATH_LIBRARY)
++    if (MATH_LIBRARY)
++        list(APPEND glfw_LIBRARIES "${MATH_LIBRARY}")
++        list(APPEND glfw_PKG_LIBS "-lm")
++    endif()
++endif()
++
+ #--------------------------------------------------------------------
+ # Use Win32 for window creation
+ #--------------------------------------------------------------------
+@@ -295,13 +315,29 @@ if (_GLFW_COCOA)
+     set(glfw_PKG_LIBS "-framework Cocoa -framework IOKit -framework CoreFoundation")
+ endif()
+ 
++#--------------------------------------------------------------------
++# Use Switch for window creation
++#--------------------------------------------------------------------
++if (_GLFW_SWITCH)
++
++    list(APPEND glfw_PKG_LIBS "-lnx")
++
++endif()
++
+ #--------------------------------------------------------------------
+ # Add the Vulkan loader as a dependency if necessary
+ #--------------------------------------------------------------------
+-if (GLFW_VULKAN_STATIC)
++if (GLFW_VULKAN_STATIC AND NOT SWITCH_LIBNX)
+     list(APPEND glfw_PKG_DEPS "vulkan")
+ endif()
+ 
++#--------------------------------------------------------------------
++# Add EGL as a dependency if necessary
++#--------------------------------------------------------------------
++if (GLFW_EGL_STATIC)
++    list(APPEND glfw_PKG_DEPS "egl")
++endif()
++
+ #--------------------------------------------------------------------
+ # Export GLFW library dependencies
+ #--------------------------------------------------------------------
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index a409459b..1cec7407 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -60,6 +60,11 @@ elseif (_GLFW_OSMESA)
+                      posix_time.h posix_thread.h osmesa_context.h)
+     set(glfw_SOURCES ${common_SOURCES} null_init.c null_monitor.c null_window.c
+                      null_joystick.c posix_time.c posix_thread.c osmesa_context.c)
++elseif (_GLFW_SWITCH)
++    set(glfw_HEADERS ${common_HEADERS} switch_platform.h switch_joystick.h
++                     posix_time.h posix_thread.h egl_context.h)
++    set(glfw_SOURCES ${common_SOURCES} switch_init.c switch_monitor.c switch_window.c
++                     switch_joystick.c switch_context.c switch_time.c posix_thread.c egl_context.c)
+ endif()
+ 
+ if (_GLFW_X11 OR _GLFW_WAYLAND)
+diff --git a/src/egl_context.c b/src/egl_context.c
+index 6288fb7c..3965da29 100644
+--- a/src/egl_context.c
++++ b/src/egl_context.c
+@@ -252,6 +252,7 @@ static int extensionSupportedEGL(const char* extension)
+ 
+ static GLFWglproc getProcAddressEGL(const char* procname)
+ {
++#if !defined(_GLFW_EGL_STATIC)
+     _GLFWwindow* window = _glfwPlatformGetTls(&_glfw.contextSlot);
+ 
+     if (window->context.egl.client)
+@@ -261,12 +262,14 @@ static GLFWglproc getProcAddressEGL(const char* procname)
+         if (proc)
+             return proc;
+     }
++#endif
+ 
+     return eglGetProcAddress(procname);
+ }
+ 
+ static void destroyContextEGL(_GLFWwindow* window)
+ {
++#if !defined(_GLFW_EGL_STATIC)
+ #if defined(_GLFW_X11)
+     // NOTE: Do not unload libGL.so.1 while the X11 display is still open,
+     //       as it will make XCloseDisplay segfault
+@@ -279,6 +282,7 @@ static void destroyContextEGL(_GLFWwindow* window)
+             window->context.egl.client = NULL;
+         }
+     }
++#endif
+ 
+     if (window->context.egl.surface)
+     {
+@@ -302,6 +306,7 @@ static void destroyContextEGL(_GLFWwindow* window)
+ //
+ GLFWbool _glfwInitEGL(void)
+ {
++#if !defined(_GLFW_EGL_STATIC)
+     int i;
+     const char* sonames[] =
+     {
+@@ -394,6 +399,10 @@ GLFWbool _glfwInitEGL(void)
+         _glfwTerminateEGL();
+         return GLFW_FALSE;
+     }
++#else
++    if (_glfw.egl.display)
++        return GLFW_TRUE;
++#endif
+ 
+     _glfw.egl.display = eglGetDisplay(_GLFW_EGL_NATIVE_DISPLAY);
+     if (_glfw.egl.display == EGL_NO_DISPLAY)
+@@ -440,11 +449,13 @@ void _glfwTerminateEGL(void)
+         _glfw.egl.display = EGL_NO_DISPLAY;
+     }
+ 
++#if !defined(_GLFW_EGL_STATIC)
+     if (_glfw.egl.handle)
+     {
+         _glfw_dlclose(_glfw.egl.handle);
+         _glfw.egl.handle = NULL;
+     }
++#endif
+ }
+ 
+ #define setAttrib(a, v) \
+@@ -613,6 +624,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+ 
+     window->context.egl.config = config;
+ 
++#if !defined(_GLFW_EGL_STATIC)
+     // Load the appropriate client library
+     if (!_glfw.egl.KHR_get_all_proc_addresses)
+     {
+@@ -690,6 +702,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
+             return GLFW_FALSE;
+         }
+     }
++#endif
+ 
+     window->context.makeCurrent = makeContextCurrentEGL;
+     window->context.swapBuffers = swapBuffersEGL;
+diff --git a/src/egl_context.h b/src/egl_context.h
+index 6d42e11c..04f92f27 100644
+--- a/src/egl_context.h
++++ b/src/egl_context.h
+@@ -43,6 +43,10 @@ typedef Window EGLNativeWindowType;
+  #define EGLAPIENTRY
+ typedef struct wl_display* EGLNativeDisplayType;
+ typedef struct wl_egl_window* EGLNativeWindowType;
++#elif defined(_GLFW_SWITCH)
++ #define EGLAPIENTRY
++typedef void* EGLNativeDisplayType;
++typedef void* EGLNativeWindowType;
+ #else
+  #error "No supported EGL platform selected"
+ #endif
+@@ -115,6 +119,24 @@ typedef void* EGLContext;
+ typedef void* EGLDisplay;
+ typedef void* EGLSurface;
+ 
++#if defined(_GLFW_EGL_STATIC)
++EGLBoolean EGLAPIENTRY eglGetConfigAttrib(EGLDisplay,EGLConfig,EGLint,EGLint*);
++EGLBoolean EGLAPIENTRY eglGetConfigs(EGLDisplay,EGLConfig*,EGLint,EGLint*);
++EGLDisplay EGLAPIENTRY eglGetDisplay(EGLNativeDisplayType);
++EGLint EGLAPIENTRY eglGetError(void);
++EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay,EGLint*,EGLint*);
++EGLBoolean EGLAPIENTRY eglTerminate(EGLDisplay);
++EGLBoolean EGLAPIENTRY eglBindAPI(EGLenum);
++EGLContext EGLAPIENTRY eglCreateContext(EGLDisplay,EGLConfig,EGLContext,const EGLint*);
++EGLBoolean EGLAPIENTRY eglDestroySurface(EGLDisplay,EGLSurface);
++EGLBoolean EGLAPIENTRY eglDestroyContext(EGLDisplay,EGLContext);
++EGLSurface EGLAPIENTRY eglCreateWindowSurface(EGLDisplay,EGLConfig,EGLNativeWindowType,const EGLint*);
++EGLBoolean EGLAPIENTRY eglMakeCurrent(EGLDisplay,EGLSurface,EGLSurface,EGLContext);
++EGLBoolean EGLAPIENTRY eglSwapBuffers(EGLDisplay,EGLSurface);
++EGLBoolean EGLAPIENTRY eglSwapInterval(EGLDisplay,EGLint);
++const char* EGLAPIENTRY eglQueryString(EGLDisplay,EGLint);
++GLFWglproc EGLAPIENTRY eglGetProcAddress(const char*);
++#else
+ // EGL function pointer typedefs
+ typedef EGLBoolean (EGLAPIENTRY * PFN_eglGetConfigAttrib)(EGLDisplay,EGLConfig,EGLint,EGLint*);
+ typedef EGLBoolean (EGLAPIENTRY * PFN_eglGetConfigs)(EGLDisplay,EGLConfig*,EGLint,EGLint*);
+@@ -148,6 +170,7 @@ typedef GLFWglproc (EGLAPIENTRY * PFN_eglGetProcAddress)(const char*);
+ #define eglSwapInterval _glfw.egl.SwapInterval
+ #define eglQueryString _glfw.egl.QueryString
+ #define eglGetProcAddress _glfw.egl.GetProcAddress
++#endif
+ 
+ #define _GLFW_EGL_CONTEXT_STATE            _GLFWcontextEGL egl
+ #define _GLFW_EGL_LIBRARY_CONTEXT_STATE    _GLFWlibraryEGL egl
+@@ -161,7 +184,9 @@ typedef struct _GLFWcontextEGL
+    EGLContext       handle;
+    EGLSurface       surface;
+ 
++#if !defined(_GLFW_EGL_STATIC)
+    void*            client;
++#endif
+ 
+ } _GLFWcontextEGL;
+ 
+@@ -179,6 +204,7 @@ typedef struct _GLFWlibraryEGL
+     GLFWbool        KHR_get_all_proc_addresses;
+     GLFWbool        KHR_context_flush_control;
+ 
++#if !defined(_GLFW_EGL_STATIC)
+     void*           handle;
+ 
+     PFN_eglGetConfigAttrib      GetConfigAttrib;
+@@ -197,6 +223,7 @@ typedef struct _GLFWlibraryEGL
+     PFN_eglSwapInterval         SwapInterval;
+     PFN_eglQueryString          QueryString;
+     PFN_eglGetProcAddress       GetProcAddress;
++#endif
+ 
+ } _GLFWlibraryEGL;
+ 
+diff --git a/src/glfw_config.h.in b/src/glfw_config.h.in
+index f418c995..08673eab 100644
+--- a/src/glfw_config.h.in
++++ b/src/glfw_config.h.in
+@@ -44,11 +44,15 @@
+ #cmakedefine _GLFW_WAYLAND
+ // Define this to 1 if building GLFW for OSMesa
+ #cmakedefine _GLFW_OSMESA
++// Define this to 1 if building GLFW for Switch
++#cmakedefine _GLFW_SWITCH
+ 
+ // Define this to 1 if building as a shared library / dynamic library / DLL
+ #cmakedefine _GLFW_BUILD_DLL
+ // Define this to 1 to use Vulkan loader linked statically into application
+ #cmakedefine _GLFW_VULKAN_STATIC
++// Define this to 1 to use EGL linked statically into application
++#cmakedefine _GLFW_EGL_STATIC
+ 
+ // Define this to 1 to force use of high-performance GPU on hybrid systems
+ #cmakedefine _GLFW_USE_HYBRID_HPG
+diff --git a/src/init.c b/src/init.c
+index e44d0ca2..8706b22d 100644
+--- a/src/init.c
++++ b/src/init.c
+@@ -28,7 +28,9 @@
+ //========================================================================
+ 
+ #include "internal.h"
++#if !defined(_GLFW_SWITCH)
+ #include "mappings.h"
++#endif
+ 
+ #include <string.h>
+ #include <stdlib.h>
+@@ -250,6 +252,7 @@ GLFWAPI int glfwInit(void)
+ 
+     glfwDefaultWindowHints();
+ 
++#if !defined(_GLFW_SWITCH)
+     {
+         int i;
+ 
+@@ -262,6 +265,7 @@ GLFWAPI int glfwInit(void)
+             }
+         }
+     }
++#endif
+ 
+     return GLFW_TRUE;
+ }
+diff --git a/src/input.c b/src/input.c
+index 337d5cf0..44674352 100644
+--- a/src/input.c
++++ b/src/input.c
+@@ -43,6 +43,8 @@
+ #define _GLFW_JOYSTICK_BUTTON   2
+ #define _GLFW_JOYSTICK_HATBIT   3
+ 
++#if !defined(_GLFW_SWITCH)
++
+ // Finds a mapping based on joystick GUID
+ //
+ static _GLFWmapping* findMapping(const char* guid)
+@@ -251,6 +253,8 @@ static GLFWbool parseMapping(_GLFWmapping* mapping, const char* string)
+     return GLFW_TRUE;
+ }
+ 
++#endif
++
+ 
+ //////////////////////////////////////////////////////////////////////////
+ //////                         GLFW event API                       //////
+@@ -439,7 +443,9 @@ _GLFWjoystick* _glfwAllocJoystick(const char* name,
+     js->hatCount    = hatCount;
+ 
+     strncpy(js->guid, guid, sizeof(js->guid) - 1);
++#if !defined(_GLFW_SWITCH)
+     js->mapping = findValidMapping(js);
++#endif
+ 
+     return js;
+ }
+@@ -1114,6 +1120,7 @@ GLFWAPI GLFWjoystickfun glfwSetJoystickCallback(GLFWjoystickfun cbfun)
+ 
+ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
+ {
++#if !defined(_GLFW_SWITCH)
+     int jid;
+     const char* c = string;
+ 
+@@ -1168,6 +1175,7 @@ GLFWAPI int glfwUpdateGamepadMappings(const char* string)
+         if (js->present)
+             js->mapping = findValidMapping(js);
+     }
++#endif
+ 
+     return GLFW_TRUE;
+ }
+diff --git a/src/internal.h b/src/internal.h
+index 91631c06..b607cbbe 100644
+--- a/src/internal.h
++++ b/src/internal.h
+@@ -190,6 +190,8 @@ typedef void (APIENTRY * PFN_vkVoidFunction)(void);
+  #include "wl_platform.h"
+ #elif defined(_GLFW_OSMESA)
+  #include "null_platform.h"
++#elif defined(_GLFW_SWITCH)
++ #include "switch_platform.h"
+ #else
+  #error "No supported window creation API selected"
+ #endif
+@@ -563,6 +565,8 @@ struct _GLFWlibrary
+         GLFWbool        KHR_xcb_surface;
+ #elif defined(_GLFW_WAYLAND)
+         GLFWbool        KHR_wayland_surface;
++#elif defined(_GLFW_SWITCH)
++        GLFWbool        NN_vi_surface;
+ #endif
+     } vk;
+ 
+diff --git a/src/switch_context.c b/src/switch_context.c
+new file mode 100644
+index 00000000..b2fef527
+--- /dev/null
++++ b/src/switch_context.c
+@@ -0,0 +1,77 @@
++//========================================================================
++// GLFW 3.3 - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2016 Google Inc.
++// Copyright (c) 2016-2019 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#define _GLFW_SWITCH_NO_CONTEXT_WRAPPER
++#include "internal.h"
++
++
++int _glfwPlatformCreateContext(_GLFWwindow* window,
++                                   const _GLFWctxconfig* ctxconfig,
++                                   const _GLFWfbconfig* fbconfig)
++{
++    if (!_glfwInitEGL())
++        return GLFW_FALSE;
++    if (!_glfwCreateContextEGL(window, ctxconfig, fbconfig))
++        return GLFW_FALSE;
++    return GLFW_TRUE;
++}
++
++void _glfwPlatformTerminateContextApi(void)
++{
++    _glfwTerminateEGL();
++}
++
++GLFWAPI void glfwMakeContextCurrent(GLFWwindow* handle)
++{
++    _glfwMakeContextCurrentImpl(handle);
++}
++
++GLFWAPI GLFWwindow* glfwGetCurrentContext(void)
++{
++    return _glfwGetCurrentContextImpl();
++}
++
++GLFWAPI void glfwSwapBuffers(GLFWwindow* handle)
++{
++    _glfwSwapBuffersImpl(handle);
++}
++
++GLFWAPI void glfwSwapInterval(int interval)
++{
++    _glfwSwapIntervalImpl(interval);
++}
++
++GLFWAPI int glfwExtensionSupported(const char* extension)
++{
++    return _glfwExtensionSupportedImpl(extension);
++}
++
++GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname)
++{
++    return _glfwGetProcAddressImpl(procname);
++}
++
+diff --git a/src/switch_init.c b/src/switch_init.c
+new file mode 100644
+index 00000000..4145a4a7
+--- /dev/null
++++ b/src/switch_init.c
+@@ -0,0 +1,110 @@
++//========================================================================
++// GLFW 3.3 - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2016 Google Inc.
++// Copyright (c) 2016-2017 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#include "internal.h"
++
++
++static AppletHookCookie s_glfwAppletHookCookie;
++
++static void _glfwSwitchRefreshFocusState(void)
++{
++    int is_focused = appletGetFocusState() == AppletFocusState_InFocus ? GLFW_TRUE : GLFW_FALSE;
++    if (is_focused != _glfw.nx.is_focused)
++    {
++        _glfw.nx.event_mask |= _GLFW_SWITCH_EVENT_FOCUS_CHANGED;
++        _glfw.nx.is_focused = is_focused;
++    }
++}
++
++static void _glfwSwitchRefreshScreenSize(void)
++{
++    _glfw.nx.event_mask |= _GLFW_SWITCH_EVENT_SCREEN_SIZE_CHANGED;
++    switch (appletGetOperationMode())
++    {
++        default:
++        case AppletOperationMode_Handheld:
++            _glfw.nx.scr_width = 1280;
++            _glfw.nx.scr_height = 720;
++            break;
++        case AppletOperationMode_Console:
++            _glfw.nx.scr_width = 1920;
++            _glfw.nx.scr_height = 1080;
++            break;
++    }
++}
++
++static void _glfwSwitchAppletHook(AppletHookType hook, void* param)
++{
++    switch (hook)
++    {
++        default:
++            break;
++        case AppletHookType_OnFocusState:
++            _glfwSwitchRefreshFocusState();
++            break;
++        case AppletHookType_OnOperationMode:
++            _glfwSwitchRefreshScreenSize();
++            break;
++    }
++}
++
++__attribute__ ((weak))
++void _glfwPlatformTerminateContextApi(void)
++{
++}
++
++
++//////////////////////////////////////////////////////////////////////////
++//////                       GLFW platform API                      //////
++//////////////////////////////////////////////////////////////////////////
++
++int _glfwPlatformInit(void)
++{
++    appletLockExit();
++    appletSetFocusHandlingMode(AppletFocusHandlingMode_NoSuspend);
++    appletHook(&s_glfwAppletHookCookie, _glfwSwitchAppletHook, NULL);
++    _glfwSwitchRefreshFocusState();
++    _glfwSwitchRefreshScreenSize();
++
++    _GLFWmonitor* monitor = _glfwAllocMonitor("Default", 1920, 1080);
++    _glfwInputMonitor(monitor, GLFW_CONNECTED, _GLFW_INSERT_FIRST);
++    _glfwInitSwitchJoysticks();
++    return GLFW_TRUE;
++}
++
++void _glfwPlatformTerminate(void)
++{
++    _glfwPlatformTerminateContextApi();
++    appletUnhook(&s_glfwAppletHookCookie);
++    appletUnlockExit();
++}
++
++const char* _glfwPlatformGetVersionString(void)
++{
++    return _GLFW_VERSION_NUMBER " Switch EGL";
++}
++
+diff --git a/src/switch_joystick.c b/src/switch_joystick.c
+new file mode 100644
+index 00000000..e0054235
+--- /dev/null
++++ b/src/switch_joystick.c
+@@ -0,0 +1,230 @@
++//========================================================================
++// GLFW 3.3 - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2016-2017 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#include "internal.h"
++
++// Built-in soft-reset combo that triggers a GLFW window close event
++#define SOFT_RESET_COMBO (HidNpadButton_Plus|HidNpadButton_Minus|HidNpadButton_L|HidNpadButton_R)
++
++// Internal constants for gamepad mapping source types
++#define _GLFW_JOYSTICK_AXIS     1
++#define _GLFW_JOYSTICK_BUTTON   2
++#define _GLFW_JOYSTICK_HATBIT   3
++
++#define TOUCH_WIDTH             1280
++#define TOUCH_HEIGHT            720
++
++enum
++{
++    _SWITCH_AXIS_LEFT_X,
++    _SWITCH_AXIS_LEFT_Y,
++    _SWITCH_AXIS_RIGHT_X,
++    _SWITCH_AXIS_RIGHT_Y,
++
++    _SWITCH_AXIS_COUNT
++};
++
++enum
++{
++    _SWITCH_BUTTON_A,
++    _SWITCH_BUTTON_B,
++    _SWITCH_BUTTON_X,
++    _SWITCH_BUTTON_Y,
++    _SWITCH_BUTTON_LSTICK,
++    _SWITCH_BUTTON_RSTICK,
++    _SWITCH_BUTTON_L,
++    _SWITCH_BUTTON_R,
++    _SWITCH_BUTTON_ZL,
++    _SWITCH_BUTTON_ZR,
++    _SWITCH_BUTTON_PLUS,
++    _SWITCH_BUTTON_MINUS,
++
++    _SWITCH_BUTTON_COUNT
++};
++
++enum
++{
++    _SWITCH_HAT_DPAD,
++    _SWITCH_HAT_LEFT_STICK,
++    _SWITCH_HAT_RIGHT_STICK,
++
++    _SWITCH_HAT_COUNT
++};
++
++static _GLFWmapping s_switchMapping =
++{
++    .name = "Nintendo Switch Controller",
++    .guid = "",
++    .buttons =
++    {
++        [GLFW_GAMEPAD_BUTTON_A]            = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_A },
++        [GLFW_GAMEPAD_BUTTON_B]            = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_B },
++        [GLFW_GAMEPAD_BUTTON_X]            = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_X },
++        [GLFW_GAMEPAD_BUTTON_Y]            = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_Y },
++        [GLFW_GAMEPAD_BUTTON_BACK]         = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_MINUS },
++        [GLFW_GAMEPAD_BUTTON_START]        = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_PLUS },
++        //[GLFW_GAMEPAD_BUTTON_GUIDE]        = { .type = _GLFW_JOYSTICK_BUTTON, .index = 0 },
++        [GLFW_GAMEPAD_BUTTON_LEFT_BUMPER]  = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_L },
++        [GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_R },
++        [GLFW_GAMEPAD_BUTTON_LEFT_THUMB]   = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_LSTICK },
++        [GLFW_GAMEPAD_BUTTON_RIGHT_THUMB]  = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_RSTICK },
++        [GLFW_GAMEPAD_BUTTON_DPAD_UP]      = { .type = _GLFW_JOYSTICK_HATBIT, .index = (_SWITCH_HAT_DPAD<<4) | 0x1 },
++        [GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]   = { .type = _GLFW_JOYSTICK_HATBIT, .index = (_SWITCH_HAT_DPAD<<4) | 0x2 },
++        [GLFW_GAMEPAD_BUTTON_DPAD_DOWN]    = { .type = _GLFW_JOYSTICK_HATBIT, .index = (_SWITCH_HAT_DPAD<<4) | 0x4 },
++        [GLFW_GAMEPAD_BUTTON_DPAD_LEFT]    = { .type = _GLFW_JOYSTICK_HATBIT, .index = (_SWITCH_HAT_DPAD<<4) | 0x8 },
++    },
++    .axes =
++    {
++        [GLFW_GAMEPAD_AXIS_LEFT_TRIGGER]   = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_ZL },
++        [GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER]  = { .type = _GLFW_JOYSTICK_BUTTON, .index = _SWITCH_BUTTON_ZR },
++        [GLFW_GAMEPAD_AXIS_LEFT_X]         = { .type = _GLFW_JOYSTICK_AXIS,   .index = _SWITCH_AXIS_LEFT_X,  .axisScale = 1, .axisOffset = 0 },
++        [GLFW_GAMEPAD_AXIS_LEFT_Y]         = { .type = _GLFW_JOYSTICK_AXIS,   .index = _SWITCH_AXIS_LEFT_Y,  .axisScale = 1, .axisOffset = 0 },
++        [GLFW_GAMEPAD_AXIS_RIGHT_X]        = { .type = _GLFW_JOYSTICK_AXIS,   .index = _SWITCH_AXIS_RIGHT_X, .axisScale = 1, .axisOffset = 0 },
++        [GLFW_GAMEPAD_AXIS_RIGHT_Y]        = { .type = _GLFW_JOYSTICK_AXIS,   .index = _SWITCH_AXIS_RIGHT_Y, .axisScale = 1, .axisOffset = 0 },
++    },
++};
++
++PadState pad;
++
++void _glfwInitSwitchJoysticks(void)
++{
++    _GLFWjoystick* js = _glfwAllocJoystick(s_switchMapping.name, s_switchMapping.guid,
++        _SWITCH_AXIS_COUNT, _SWITCH_BUTTON_COUNT, _SWITCH_HAT_COUNT);
++
++    padConfigureInput(1, HidNpadStyleSet_NpadStandard);
++    padInitializeDefault(&pad);
++    hidInitializeTouchScreen();
++    
++    js->mapping = &s_switchMapping;
++
++    padUpdate(&pad);
++    _glfwInputJoystick(js, GLFW_CONNECTED);
++}
++
++void _glfwUpdateSwitchJoysticks(void)
++{
++    u64 down, held, up;
++
++    // Read input state
++    padUpdate(&pad);
++    down = padGetButtonsDown(&pad);
++    held = padGetButtons(&pad);
++    up   = padGetButtonsUp(&pad);
++
++    // Check for soft-reset combo
++    if ((held & SOFT_RESET_COMBO) == SOFT_RESET_COMBO)
++    {
++        _glfwInputWindowCloseRequest(_glfw.nx.cur_window);
++        return;
++    }
++
++#define MAP_KEY(_libnx_key, _glfw_key, _scancode) \
++    do { \
++        if (down & (_libnx_key)) _glfwInputKey(_glfw.nx.cur_window, (_glfw_key), (_scancode), GLFW_PRESS, 0); \
++        else if (up & (_libnx_key)) _glfwInputKey(_glfw.nx.cur_window, (_glfw_key), (_scancode), GLFW_RELEASE, 0); \
++    } while (0)
++
++    // Map common keyboard keys to the controller
++    // TODO: Only do this mapping if a keyboard isn't connected
++    MAP_KEY(HidNpadButton_Up, GLFW_KEY_UP, HidKeyboardKey_UpArrow);
++    MAP_KEY(HidNpadButton_Down, GLFW_KEY_DOWN, HidKeyboardKey_DownArrow);
++    MAP_KEY(HidNpadButton_Left, GLFW_KEY_LEFT, HidKeyboardKey_LeftArrow);
++    MAP_KEY(HidNpadButton_Right, GLFW_KEY_RIGHT, HidKeyboardKey_RightArrow);
++    MAP_KEY(HidNpadButton_A, GLFW_KEY_X, HidKeyboardKey_X);
++    MAP_KEY(HidNpadButton_B, GLFW_KEY_Z, HidKeyboardKey_Z);
++    MAP_KEY(HidNpadButton_X, GLFW_KEY_S, HidKeyboardKey_S);
++    MAP_KEY(HidNpadButton_Y, GLFW_KEY_A, HidKeyboardKey_A);
++    MAP_KEY(HidNpadButton_Plus, GLFW_KEY_ENTER, HidKeyboardKey_Return);
++    MAP_KEY(HidNpadButton_Minus, GLFW_KEY_ESCAPE, HidKeyboardKey_Escape);
++
++    // Report touch inputs as mouse clicks
++    HidTouchScreenState state={0};
++    if (hidGetTouchScreenStates(&state, 1)) {
++        if (state.count > 0)
++        {
++
++            double scaledXPos = (double)state.touches[0].x / TOUCH_WIDTH * _glfw.nx.scr_width;
++            double scaledYPos = (double)state.touches[0].y / TOUCH_HEIGHT * _glfw.nx.scr_height;
++
++            _glfwInputCursorPos(_glfw.nx.cur_window, scaledXPos, scaledYPos);
++
++            if (_glfw.nx.cur_window->mouseButtons[GLFW_MOUSE_BUTTON_LEFT] == GLFW_RELEASE)
++                _glfwInputMouseClick(_glfw.nx.cur_window, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
++
++        }
++        else if (_glfw.nx.cur_window->mouseButtons[GLFW_MOUSE_BUTTON_LEFT] == GLFW_PRESS)
++            _glfwInputMouseClick(_glfw.nx.cur_window, GLFW_MOUSE_BUTTON_LEFT, GLFW_RELEASE, 0);
++    }
++}
++
++//////////////////////////////////////////////////////////////////////////
++//////                       GLFW platform API                      //////
++//////////////////////////////////////////////////////////////////////////
++
++int _glfwPlatformPollJoystick(_GLFWjoystick* js, int mode)
++{
++    // Detect presence
++    if (!padIsConnected(&pad))
++        return GLFW_FALSE;
++
++    if (mode & _GLFW_POLL_AXES)
++    {
++        HidAnalogStickState left, right;
++        left = padGetStickPos(&pad, 0);
++        right = padGetStickPos(&pad, 1);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_LEFT_X,   left.x  / 32768.0f);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_LEFT_Y,  -left.y  / 32768.0f);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_RIGHT_X,  right.x / 32768.0f);
++        _glfwInputJoystickAxis(js, _SWITCH_AXIS_RIGHT_Y, -right.y / 32768.0f);
++    }
++
++    if (mode & _GLFW_POLL_BUTTONS)
++    {
++        int i;
++        u64 keys = padGetButtons(&pad);
++        keys |= ((keys >> 24) & 0x3) << _SWITCH_BUTTON_L; // Map KEY_SL/SR_LEFT  into HidNpadButton_L/R
++        keys |= ((keys >> 26) & 0x3) << _SWITCH_BUTTON_L; // Map KEY_SL/SR_RIGHT into HidNpadButton_L/R
++        for (i = 0; i < _SWITCH_BUTTON_COUNT; i ++)
++            _glfwInputJoystickButton(js, i, (keys & BIT(i)) ? GLFW_PRESS : GLFW_RELEASE);
++        for (i = 0; i < _SWITCH_HAT_COUNT; i ++)
++        {
++            // Extract hat values. A small ROR operation is necessary
++            // in order to convert Switch DRUL into glfw LDRU
++            char hatbits = (keys >> (12 + 4*i)) & 0xF;
++            hatbits = (hatbits >> 1) | ((hatbits & 1) << 3);
++            _glfwInputJoystickHat(js, i, hatbits);
++        }
++    }
++
++    return GLFW_TRUE;
++}
++
++/* Not used on Switch
++void _glfwPlatformUpdateGamepadGUID(char* guid)
++{
++}
++*/
++
+diff --git a/src/switch_joystick.h b/src/switch_joystick.h
+new file mode 100644
+index 00000000..9314b376
+--- /dev/null
++++ b/src/switch_joystick.h
+@@ -0,0 +1,40 @@
++//========================================================================
++// GLFW 3.3 - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2006-2017 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#define _GLFW_PLATFORM_JOYSTICK_STATE         _GLFWjoystickNX nx
++#define _GLFW_PLATFORM_LIBRARY_JOYSTICK_STATE
++
++#define _GLFW_PLATFORM_MAPPING_NAME "Switch"
++
++// Switch-specific per-joystick data
++//
++typedef struct _GLFWjoystickNX
++{
++} _GLFWjoystickNX;
++
++void _glfwInitSwitchJoysticks(void);
++void _glfwUpdateSwitchJoysticks(void);
++
+diff --git a/src/switch_monitor.c b/src/switch_monitor.c
+new file mode 100644
+index 00000000..4a7df359
+--- /dev/null
++++ b/src/switch_monitor.c
+@@ -0,0 +1,91 @@
++//========================================================================
++// GLFW 3.3 - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2016 Google Inc.
++// Copyright (c) 2016-2019 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#include "internal.h"
++#include <stdlib.h>
++
++
++//////////////////////////////////////////////////////////////////////////
++//////                       GLFW platform API                      //////
++//////////////////////////////////////////////////////////////////////////
++
++void _glfwPlatformFreeMonitor(_GLFWmonitor* monitor)
++{
++}
++
++void _glfwPlatformGetMonitorPos(_GLFWmonitor* monitor, int* xpos, int* ypos)
++{
++}
++
++void _glfwPlatformGetMonitorContentScale(_GLFWmonitor* monitor,
++                                         float* xscale, float* yscale)
++{
++    if (xscale)
++        *xscale = 1.f;
++    if (yscale)
++        *yscale = 1.f;
++}
++
++void _glfwPlatformGetMonitorWorkarea(_GLFWmonitor* monitor,
++                                     int* xpos, int* ypos,
++                                     int* width, int* height)
++{
++    GLFWvidmode mode;
++    _glfwPlatformGetVideoMode(monitor, &mode);
++    if (width)
++        *width = mode.width;
++    if (height)
++        *height = mode.height;
++}
++
++GLFWvidmode* _glfwPlatformGetVideoModes(_GLFWmonitor* monitor, int* found)
++{
++    GLFWvidmode* modes = calloc(1, sizeof(GLFWvidmode));
++    _glfwPlatformGetVideoMode(monitor, modes);
++    *found = 1;
++    return modes;
++}
++
++void _glfwPlatformGetVideoMode(_GLFWmonitor* monitor, GLFWvidmode* mode)
++{
++    mode->width = _glfw.nx.scr_width;
++    mode->height = _glfw.nx.scr_height;
++    mode->redBits = 8;
++    mode->greenBits = 8;
++    mode->blueBits = 8;
++    mode->refreshRate = 60;
++}
++
++GLFWbool _glfwPlatformGetGammaRamp(_GLFWmonitor* monitor, GLFWgammaramp* ramp)
++{
++    return GLFW_FALSE;
++}
++
++void _glfwPlatformSetGammaRamp(_GLFWmonitor* monitor, const GLFWgammaramp* ramp)
++{
++}
++
+diff --git a/src/switch_platform.h b/src/switch_platform.h
+new file mode 100644
+index 00000000..1158b6cf
+--- /dev/null
++++ b/src/switch_platform.h
+@@ -0,0 +1,99 @@
++//========================================================================
++// GLFW 3.3 - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2016 Google Inc.
++// Copyright (c) 2016-2017 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#include <switch.h>
++
++// Internally rename GLFW OpenGL context management functions
++// This is necessary in order to avoid a linker dependency to EGL/mesa when
++// GLFW's OpenGL context management functions aren't called by user code
++//
++#if !defined(_GLFW_SWITCH_NO_CONTEXT_WRAPPER)
++#define glfwMakeContextCurrent _glfwMakeContextCurrentImpl
++#define glfwGetCurrentContext _glfwGetCurrentContextImpl
++#define glfwSwapBuffers _glfwSwapBuffersImpl
++#define glfwSwapInterval _glfwSwapIntervalImpl
++#define glfwExtensionSupported _glfwExtensionSupportedImpl
++#define glfwGetProcAddress _glfwGetProcAddressImpl
++#endif
++
++#define _GLFW_EGL_NATIVE_WINDOW  ((EGLNativeWindowType) window->nx.nwin)
++#define _GLFW_EGL_NATIVE_DISPLAY EGL_DEFAULT_DISPLAY
++
++#define _GLFW_PLATFORM_WINDOW_STATE         _GLFWwindowNX nx
++#define _GLFW_PLATFORM_LIBRARY_WINDOW_STATE _GLFWlibraryNX nx
++
++#define _GLFW_PLATFORM_CONTEXT_STATE
++#define _GLFW_PLATFORM_LIBRARY_CONTEXT_STATE
++
++#define _GLFW_OSMESA_CONTEXT_STATE
++#define _GLFW_OSMESA_LIBRARY_CONTEXT_STATE
++
++#define _GLFW_PLATFORM_LIBRARY_TIMER_STATE
++#define _GLFW_PLATFORM_MONITOR_STATE
++#define _GLFW_PLATFORM_CURSOR_STATE
++
++#include "egl_context.h"
++#include "posix_thread.h"
++#include "switch_joystick.h"
++
++#define _GLFW_SWITCH_EVENT_FOCUS_CHANGED       0x01
++#define _GLFW_SWITCH_EVENT_SCREEN_SIZE_CHANGED 0x02
++
++// Switch-specific per-window data
++//
++typedef struct _GLFWwindowNX
++{
++    NWindow* nwin;
++    int width, height;
++} _GLFWwindowNX;
++
++// Switch-specific global data
++//
++typedef struct _GLFWlibraryNX
++{
++    _GLFWwindow* cur_window;
++    int event_mask;
++    int is_focused;
++    int scr_width, scr_height;
++} _GLFWlibraryNX;
++
++// Switch-specific context management functions
++//
++int _glfwPlatformCreateContext(_GLFWwindow* window,
++                                   const _GLFWctxconfig* ctxconfig,
++                                   const _GLFWfbconfig* fbconfig);
++void _glfwPlatformTerminateContextApi(void);
++
++// Wrapped names of GLFW context management functions
++//
++GLFWAPI void _glfwMakeContextCurrentImpl(GLFWwindow* handle);
++GLFWAPI GLFWwindow* _glfwGetCurrentContextImpl(void);
++GLFWAPI void _glfwSwapBuffersImpl(GLFWwindow* handle);
++GLFWAPI void _glfwSwapIntervalImpl(int interval);
++GLFWAPI int _glfwExtensionSupportedImpl(const char* extension);
++GLFWAPI GLFWglproc _glfwGetProcAddressImpl(const char* procname);
++
+diff --git a/src/switch_time.c b/src/switch_time.c
+new file mode 100644
+index 00000000..bd38d67d
+--- /dev/null
++++ b/src/switch_time.c
+@@ -0,0 +1,44 @@
++//========================================================================
++// GLFW 3.3 POSIX - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2002-2006 Marcus Geelnard
++// Copyright (c) 2006-2017 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#include "internal.h"
++
++
++//////////////////////////////////////////////////////////////////////////
++//////                       GLFW platform API                      //////
++//////////////////////////////////////////////////////////////////////////
++
++uint64_t _glfwPlatformGetTimerValue(void)
++{
++    return armGetSystemTick();
++}
++
++uint64_t _glfwPlatformGetTimerFrequency(void)
++{
++    return 19200000; // 19.2 MHz
++}
++
+diff --git a/src/switch_window.c b/src/switch_window.c
+new file mode 100644
+index 00000000..594a1397
+--- /dev/null
++++ b/src/switch_window.c
+@@ -0,0 +1,411 @@
++//========================================================================
++// GLFW 3.3 - www.glfw.org
++//------------------------------------------------------------------------
++// Copyright (c) 2016 Google Inc.
++// Copyright (c) 2016-2019 Camilla Löwy <elmindreda@glfw.org>
++//
++// This software is provided 'as-is', without any express or implied
++// warranty. In no event will the authors be held liable for any damages
++// arising from the use of this software.
++//
++// Permission is granted to anyone to use this software for any purpose,
++// including commercial applications, and to alter it and redistribute it
++// freely, subject to the following restrictions:
++//
++// 1. The origin of this software must not be misrepresented; you must not
++//    claim that you wrote the original software. If you use this software
++//    in a product, an acknowledgment in the product documentation would
++//    be appreciated but is not required.
++//
++// 2. Altered source versions must be plainly marked as such, and must not
++//    be misrepresented as being the original software.
++//
++// 3. This notice may not be removed or altered from any source
++//    distribution.
++//
++//========================================================================
++
++#include "internal.h"
++
++
++#define FB_WIDTH  1920
++#define FB_HEIGHT 1080
++
++
++static int resizeNativeWindow(_GLFWwindow* window, int width, int height)
++{
++    if (width > FB_WIDTH)
++    {
++        _glfwInputError(GLFW_INVALID_VALUE, "Invalid width (%d > %d)", width, FB_WIDTH);
++        return GLFW_FALSE;
++    }
++    if (height > FB_HEIGHT)
++    {
++        _glfwInputError(GLFW_INVALID_VALUE, "Invalid height (%d > %d)", height, FB_HEIGHT);
++        return GLFW_FALSE;
++    }
++
++    nwindowSetCrop(window->nx.nwin, 0, FB_HEIGHT-height, width, FB_HEIGHT);
++    window->nx.width = width;
++    window->nx.height = height;
++
++    _glfwInputFramebufferSize(window, width, height);
++    _glfwInputWindowSize(window, width, height);
++    _glfwInputWindowDamage(window);
++
++    return GLFW_TRUE;
++}
++
++static int createNativeWindow(_GLFWwindow* window,
++                              const _GLFWwndconfig* wndconfig)
++{
++    window->nx.nwin = nwindowGetDefault();
++    nwindowSetDimensions(window->nx.nwin, FB_WIDTH, FB_HEIGHT);
++    return resizeNativeWindow(window, wndconfig->width, wndconfig->height);
++}
++
++__attribute__ ((weak))
++int _glfwPlatformCreateContext(_GLFWwindow* window,
++                                      const _GLFWctxconfig* ctxconfig,
++                                      const _GLFWfbconfig* fbconfig)
++{
++    _glfwInputError(GLFW_API_UNAVAILABLE, "Switch: EGL library not loaded");
++    return GLFW_FALSE;
++}
++
++
++//////////////////////////////////////////////////////////////////////////
++//////                       GLFW platform API                      //////
++//////////////////////////////////////////////////////////////////////////
++
++int _glfwPlatformCreateWindow(_GLFWwindow* window,
++                              const _GLFWwndconfig* wndconfig,
++                              const _GLFWctxconfig* ctxconfig,
++                              const _GLFWfbconfig* fbconfig)
++{
++    if (_glfw.nx.cur_window)
++    {
++        _glfwInputError(GLFW_PLATFORM_ERROR, "Switch: Cannot create more than one window");
++        return GLFW_FALSE;
++    }
++
++    if (!createNativeWindow(window, wndconfig))
++        return GLFW_FALSE;
++
++    if (ctxconfig->client != GLFW_NO_API)
++    {
++        if (ctxconfig->source == GLFW_NATIVE_CONTEXT_API ||
++            ctxconfig->source == GLFW_EGL_CONTEXT_API)
++        {
++            if (!_glfwPlatformCreateContext(window, ctxconfig, fbconfig))
++                return GLFW_FALSE;
++        }
++        else
++        {
++            _glfwInputError(GLFW_API_UNAVAILABLE, "Switch: OSMesa not available");
++            return GLFW_FALSE;
++        }
++    }
++
++    _glfw.nx.cur_window = window;
++    return GLFW_TRUE;
++}
++
++void _glfwPlatformDestroyWindow(_GLFWwindow* window)
++{
++    if (window->context.destroy)
++        window->context.destroy(window);
++    _glfw.nx.cur_window = NULL;
++}
++
++void _glfwPlatformSetWindowTitle(_GLFWwindow* window, const char* title)
++{
++}
++
++void _glfwPlatformSetWindowIcon(_GLFWwindow* window, int count,
++                                const GLFWimage* images)
++{
++}
++
++void _glfwPlatformSetWindowMonitor(_GLFWwindow* window,
++                                   _GLFWmonitor* monitor,
++                                   int xpos, int ypos,
++                                   int width, int height,
++                                   int refreshRate)
++{
++}
++
++void _glfwPlatformGetWindowPos(_GLFWwindow* window, int* xpos, int* ypos)
++{
++}
++
++void _glfwPlatformSetWindowPos(_GLFWwindow* window, int xpos, int ypos)
++{
++}
++
++void _glfwPlatformGetWindowSize(_GLFWwindow* window, int* width, int* height)
++{
++    if (width)
++        *width = window->nx.width;
++    if (height)
++        *height = window->nx.height;
++}
++
++void _glfwPlatformSetWindowSize(_GLFWwindow* window, int width, int height)
++{
++    if (window->resizable)
++        resizeNativeWindow(window, width, height);
++}
++
++void _glfwPlatformSetWindowSizeLimits(_GLFWwindow* window,
++                                      int minwidth, int minheight,
++                                      int maxwidth, int maxheight)
++{
++}
++
++void _glfwPlatformSetWindowAspectRatio(_GLFWwindow* window, int n, int d)
++{
++}
++
++void _glfwPlatformGetFramebufferSize(_GLFWwindow* window, int* width, int* height)
++{
++    // Applications rely on framebuffer size == window size; so let's do it that way.
++    _glfwPlatformGetWindowSize(window, width, height);
++}
++
++void _glfwPlatformGetWindowFrameSize(_GLFWwindow* window,
++                                     int* left, int* top,
++                                     int* right, int* bottom)
++{
++    _glfwPlatformGetWindowSize(window, right, bottom);
++}
++
++void _glfwPlatformGetWindowContentScale(_GLFWwindow* window,
++                                        float* xscale, float* yscale)
++{
++    if (xscale)
++        *xscale = 1.f;
++    if (yscale)
++        *yscale = 1.f;
++}
++
++void _glfwPlatformIconifyWindow(_GLFWwindow* window)
++{
++}
++
++void _glfwPlatformRestoreWindow(_GLFWwindow* window)
++{
++}
++
++void _glfwPlatformMaximizeWindow(_GLFWwindow* window)
++{
++}
++
++int _glfwPlatformWindowMaximized(_GLFWwindow* window)
++{
++    return GLFW_FALSE; // "Full screen windows cannot be maximized"
++}
++
++int _glfwPlatformWindowHovered(_GLFWwindow* window)
++{
++    return _glfw.nx.is_focused;
++}
++
++int _glfwPlatformFramebufferTransparent(_GLFWwindow* window)
++{
++    return GLFW_FALSE;
++}
++
++void _glfwPlatformSetWindowResizable(_GLFWwindow* window, GLFWbool enabled)
++{
++}
++
++void _glfwPlatformSetWindowDecorated(_GLFWwindow* window, GLFWbool enabled)
++{
++}
++
++void _glfwPlatformSetWindowFloating(_GLFWwindow* window, GLFWbool enabled)
++{
++}
++
++float _glfwPlatformGetWindowOpacity(_GLFWwindow* window)
++{
++    return 1.f;
++}
++
++void _glfwPlatformSetWindowOpacity(_GLFWwindow* window, float opacity)
++{
++}
++
++void _glfwPlatformSetRawMouseMotion(_GLFWwindow *window, GLFWbool enabled)
++{
++}
++
++GLFWbool _glfwPlatformRawMouseMotionSupported(void)
++{
++    return GLFW_FALSE;
++}
++
++void _glfwPlatformShowWindow(_GLFWwindow* window)
++{
++}
++
++void _glfwPlatformRequestWindowAttention(_GLFWwindow* window)
++{
++}
++
++void _glfwPlatformUnhideWindow(_GLFWwindow* window)
++{
++}
++
++void _glfwPlatformHideWindow(_GLFWwindow* window)
++{
++}
++
++void _glfwPlatformFocusWindow(_GLFWwindow* window)
++{
++}
++
++int _glfwPlatformWindowFocused(_GLFWwindow* window)
++{
++    return GLFW_TRUE; // We always have input focus
++}
++
++int _glfwPlatformWindowIconified(_GLFWwindow* window)
++{
++    return !_glfw.nx.is_focused;
++}
++
++int _glfwPlatformWindowVisible(_GLFWwindow* window)
++{
++    return _glfw.nx.is_focused;
++}
++
++void _glfwPlatformPollEvents(void)
++{
++    u32 msg;
++    Result res;
++
++    if (!_glfw.nx.cur_window)
++        return;
++
++    int events;
++    do
++    {
++        res = appletGetMessage(&msg);
++        if (R_SUCCEEDED(res))
++        {
++            bool should_close = !appletProcessMessage(msg);
++            if (should_close)
++            {
++                _glfwInputWindowCloseRequest(_glfw.nx.cur_window);
++                return;
++            }
++        }
++
++        events = _glfw.nx.event_mask;
++        _glfw.nx.event_mask = 0;
++        if (events & _GLFW_SWITCH_EVENT_FOCUS_CHANGED)
++        {
++            _glfwInputWindowIconify(_glfw.nx.cur_window, !_glfw.nx.is_focused);
++            if (_glfw.nx.is_focused)
++                appletSetFocusHandlingMode(AppletFocusHandlingMode_NoSuspend);
++            else
++                appletSetFocusHandlingMode(AppletFocusHandlingMode_SuspendHomeSleepNotify);
++        }
++        if (events & _GLFW_SWITCH_EVENT_SCREEN_SIZE_CHANGED)
++            _glfwPlatformSetWindowSize(_glfw.nx.cur_window, _glfw.nx.scr_width, _glfw.nx.scr_height);
++    } while (events);
++
++    // Update joysticks
++    _glfwUpdateSwitchJoysticks();
++}
++
++void _glfwPlatformWaitEvents(void)
++{
++    _glfwPlatformPollEvents();
++}
++
++void _glfwPlatformWaitEventsTimeout(double timeout)
++{
++    _glfwPlatformPollEvents();
++}
++
++void _glfwPlatformPostEmptyEvent(void)
++{
++}
++
++void _glfwPlatformGetCursorPos(_GLFWwindow* window, double* xpos, double* ypos)
++{
++}
++
++void _glfwPlatformSetCursorPos(_GLFWwindow* window, double x, double y)
++{
++}
++
++void _glfwPlatformSetCursorMode(_GLFWwindow* window, int mode)
++{
++}
++
++int _glfwPlatformCreateCursor(_GLFWcursor* cursor,
++                              const GLFWimage* image,
++                              int xhot, int yhot)
++{
++    return GLFW_TRUE;
++}
++
++int _glfwPlatformCreateStandardCursor(_GLFWcursor* cursor, int shape)
++{
++    return GLFW_TRUE;
++}
++
++void _glfwPlatformDestroyCursor(_GLFWcursor* cursor)
++{
++}
++
++void _glfwPlatformSetCursor(_GLFWwindow* window, _GLFWcursor* cursor)
++{
++}
++
++void _glfwPlatformSetClipboardString(const char* string)
++{
++}
++
++const char* _glfwPlatformGetClipboardString(void)
++{
++    return NULL;
++}
++
++const char* _glfwPlatformGetScancodeName(int scancode)
++{
++    return "";
++}
++
++int _glfwPlatformGetKeyScancode(int key)
++{
++    return -1;
++}
++
++void _glfwPlatformGetRequiredInstanceExtensions(char** extensions)
++{
++    extensions[0] = "VK_KHR_surface";
++    extensions[1] = "VK_NN_vi_surface";
++}
++
++int _glfwPlatformGetPhysicalDevicePresentationSupport(VkInstance instance,
++                                                      VkPhysicalDevice device,
++                                                      uint32_t queuefamily)
++{
++    return GLFW_FALSE;
++}
++
++VkResult _glfwPlatformCreateWindowSurface(VkInstance instance,
++                                          _GLFWwindow* window,
++                                          const VkAllocationCallbacks* allocator,
++                                          VkSurfaceKHR* surface)
++{
++    // TODO: Actually use VK_NN_vi_surface to create a VkSurfaceKHR from a NWindow
++    // (wishful thinking though - I have no idea when will Vulkan be supported)
++    return VK_ERROR_INITIALIZATION_FAILED;
++}
++
+diff --git a/src/vulkan.c b/src/vulkan.c
+index 22c54e4a..e186dd03 100644
+--- a/src/vulkan.c
++++ b/src/vulkan.c
+@@ -142,6 +142,9 @@ GLFWbool _glfwInitVulkan(int mode)
+ #elif defined(_GLFW_WAYLAND)
+         else if (strcmp(ep[i].extensionName, "VK_KHR_wayland_surface") == 0)
+             _glfw.vk.KHR_wayland_surface = GLFW_TRUE;
++#elif defined(_GLFW_SWITCH)
++        else if (strcmp(ep[i].extensionName, "VK_NN_vi_surface") == 0)
++            _glfw.vk.NN_vi_surface = GLFW_TRUE;
+ #endif
+     }
+ 

@@ -292,7 +292,7 @@ index d4e4bfd..2385433 100644
  #elif defined(__QNX__)
  #  define PHYSFS_PLATFORM_QNX 1
  #  define PHYSFS_PLATFORM_POSIX 1
-+#elif defined(_3DS)
++#elif defined(__3DS__)
 +#  define PHYSFS_PLATFORM_POSIX 1
 +#  define PHYSFS_PLATFORM_3DS 1
 +#  define PHYSFS_NO_CDROM_SUPPORT 1

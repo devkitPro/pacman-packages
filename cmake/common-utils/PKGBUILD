@@ -1,0 +1,28 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=dkp-cmake-common-utils
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="cmake script for devkitPro common utilities"
+arch=('any')
+url='http://devkitpro.org/'
+source=(
+  'dkp-initialize-path.cmake'
+  'dkp-custom-target.cmake'
+  'dkp-embedded-binary.cmake'
+  'dkp-asset-folder.cmake'
+)
+
+sha256sums=(
+  '091a0d08998c7e02db833913a010fdd5ba42f56e49cd62c40503d2e3d2ee6f21'  # dkp-initialize-path.cmake
+  '9093de06c85c22f6b4d8777247d1efdf6834ca9e6efbff559b5f108aec5d9449'  # dkp-custom-target.cmake
+  'f6138dc78410f7e6664de6adbe02c5ae8b5c43d4c3b9d258d5af63e6e71a44de'  # dkp-embedded-binary.cmake
+  'c7e5305159fbee4e881743ad19c6e50c58e2bcadcff88aa29b5314ac559d368d'  # dkp-asset-folder.cmake
+)
+
+package() {
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-initialize-path.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-custom-target.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-embedded-binary.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-asset-folder.cmake "$pkgdir"/opt/devkitpro/cmake
+}

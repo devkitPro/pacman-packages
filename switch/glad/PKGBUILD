@@ -13,6 +13,7 @@ source=(${url}/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.
 sha256sums=('b59cf95c542b19947e0595daef7da9b5b541f4e8ce3cb6995ea3470298b7ccb9')
 makedepends=('devkitA64')
 depends=('switch-mesa')
+groups=('switch-portlibs')
 
 build() {
 

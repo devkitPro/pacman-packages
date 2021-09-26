@@ -13,7 +13,7 @@ depends=(
 )
 makedepends=(
  'wii-pkg-config'
- 'devkitpro-pkgbuild-helpers'
+ 'dkp-toolchain-vars'
 )
 source=("https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-${pkgver}.tar.gz")
 groups=('wii-portlibs' 'wii-sdl-libs')

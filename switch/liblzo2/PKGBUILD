@@ -3,20 +3,21 @@
 
 pkgname=switch-liblzo2
 pkgver=2.10
-pkgrel=1
+pkgrel=2
 pkgdesc='A real-time data compression library'
 arch=('any' )
 url='https://www.oberhumer.com/opensource/lzo/'
 license=('GPL v2+')
 options=(!strip libtool staticlibs)
-makedepends=('devkitpro-pkgbuild-helpers')
+makedepends=('dkp-toolchain-vars')
 source=("https://www.oberhumer.com/opensource/lzo/download/lzo-${pkgver}.tar.gz")
 sha256sums=('c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072')
+groups=('switch-portlibs')
 
 build() {
   cd lzo-${pkgver}
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
@@ -26,7 +27,7 @@ build() {
 package() {
   cd lzo-${pkgver}
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="${pkgdir}" install
 }

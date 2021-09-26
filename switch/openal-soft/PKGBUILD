@@ -1,0 +1,48 @@
+# Maintainer:  Mary Strodl <ipadlover8322@gmail.com>
+
+pkgname=switch-openal-soft
+pkgver=1.21.1
+pkgrel=4
+pkgdesc='OpenAL Soft is a software implementation of the OpenAL 3D audio API.'
+arch=('any')
+url='https://openal-soft.org/'
+license=(LGPL)
+options=(!strip libtool staticlibs)
+source=(
+  "https://openal-soft.org/openal-releases/openal-soft-$pkgver.tar.bz2"
+  "avoid-readlink.patch"
+)
+sha256sums=(
+  'c8ad767e9a3230df66756a21cc8ebf218a9d47288f2514014832204e666af5d8'
+  '7dcacf0ce7179276aee5c07e7b18ead1e1c23933b11506ccb74ce3513983ec9a'
+)
+
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars' 'switch-cmake')
+depends=('switch-sdl2')
+groups=('switch-portlibs')
+
+prepare() {
+  cd openal-soft-${pkgver}
+  patch -Np1 -i ${srcdir}/avoid-readlink.patch
+}
+
+build() {
+  cd openal-soft-${pkgver}/build
+
+  source "${DEVKITPRO}/switchvars.sh"
+
+  aarch64-none-elf-cmake -G"Unix Makefiles" \
+    -DUSE_SWITCH=ON -DALSOFT_UTILS=OFF -DLIBTYPE=STATIC -DALSOFT_EXAMPLES=OFF \
+    -DALSOFT_REQUIRE_SDL2=ON -DALSOFT_BACKEND_SDL2=ON \
+    -DSDL2_INCLUDE_DIR="${PORTLIBS_PREFIX}/include" \
+    -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}"  \
+    ../
+
+  make
+}
+
+package() {
+  cd openal-soft-${pkgver}/build
+
+  make install DESTDIR="${pkgdir}"
+}

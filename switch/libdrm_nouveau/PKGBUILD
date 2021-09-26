@@ -4,7 +4,7 @@
 pkgbasename=libdrm_nouveau
 pkgname=switch-$pkgbasename
 pkgver=1.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Interface between mesa/nouveau and Nintendo Switch Nvidia GPU driver"
 arch=('any')
 license=('MIT')
@@ -13,6 +13,7 @@ options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/${pkgbasename}/archive/v${pkgver}/${pkgbasename}-src-${pkgver}.tar.gz)
 sha256sums=('b069bf8029abb120294bd2dd988dc4d6ce2be3f1016c88c26c73c87b6f312136')
 makedepends=('devkitA64')
+groups=('switch-portlibs')
 
 build() {
 

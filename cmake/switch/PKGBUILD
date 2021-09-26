@@ -1,0 +1,28 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=switch-cmake
+pkgver=1.1.3
+pkgrel=1
+pkgdesc="switch cmake wrapper"
+arch=('any')
+url='https://devkitpro.org/'
+source=(
+  'aarch64-none-elf-cmake'
+  'Switch.cmake'
+)
+
+depends=('switch-pkg-config' 'devkita64-cmake' 'switch-tools' 'libnx')
+groups=('switch-dev')
+options=('!strip')
+sha256sums=(
+  '8d19a809aa1db2bb246890398f37c35254cd7a8f46a44dd312c92302352f5927' # aarch64-none-elf-cmake
+  'c5755f90b54c7ac31345b364ba1eecf260a77a95fc7d83c55b9c12436ecd7607' # Switch.cmake
+)
+
+package() {
+
+  install -d "$pkgdir"/opt/devkitpro/portlibs/switch/bin
+  cp "$srcdir"/aarch64-none-elf-cmake "$pkgdir"/opt/devkitpro/portlibs/switch/bin/
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "${srcdir}"/Switch.cmake "$pkgdir"/opt/devkitpro/cmake
+
+}

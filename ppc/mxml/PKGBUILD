@@ -12,7 +12,7 @@ license=('custom')
 options=(!strip libtool staticlibs)
 source=("${url}/releases/download/v${pkgver}/mxml-${pkgver}.tar.gz")
 sha256sums=('aaf68aac637dd06ba73ae5bb0537a3c4e89ca86f8c09a2d806a1f5b937e2ba8f')
-makedepends=('ppc-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
 groups=('ppc-portlibs')
 
 build() {

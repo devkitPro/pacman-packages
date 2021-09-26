@@ -15,7 +15,7 @@ source=(
 sha256sums=(
   '0b74e51595654f958148759cfef0993114ddccccbb6f31aee018f3558e8e2732'
 )
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
 build() {
   cd libxml2-$pkgver
