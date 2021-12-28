@@ -1,13 +1,14 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-cmake
-pkgver=1.1.3
+pkgver=1.2.0
 pkgrel=1
-pkgdesc="switch cmake wrapper"
+pkgdesc="CMake support for Nintendo Switch"
 arch=('any')
 url='https://devkitpro.org/'
 source=(
   'aarch64-none-elf-cmake'
   'Switch.cmake'
+  'NintendoSwitch.cmake'
 )
 
 depends=('switch-pkg-config' 'devkita64-cmake' 'switch-tools' 'libnx')
@@ -15,7 +16,8 @@ groups=('switch-dev')
 options=('!strip')
 sha256sums=(
   '8d19a809aa1db2bb246890398f37c35254cd7a8f46a44dd312c92302352f5927' # aarch64-none-elf-cmake
-  'c5755f90b54c7ac31345b364ba1eecf260a77a95fc7d83c55b9c12436ecd7607' # Switch.cmake
+  '09bd12b2c5a79d0cc6292ecc3c9c647310b6faae4555ab670807fc5fd5da9aec' # Switch.cmake
+  '832d1b7775462350aa00b6fca3469c6aceb5493a8ccd0a54bbb7bf51d8eba13d' # NintendoSwitch.cmake
 )
 
 package() {
@@ -24,5 +26,7 @@ package() {
   cp "$srcdir"/aarch64-none-elf-cmake "$pkgdir"/opt/devkitpro/portlibs/switch/bin/
   install -d "$pkgdir"/opt/devkitpro/cmake
   cp "${srcdir}"/Switch.cmake "$pkgdir"/opt/devkitpro/cmake
+  install -d "$pkgdir"/opt/devkitpro/cmake/Platform
+  cp "${srcdir}"/NintendoSwitch.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
 
 }
