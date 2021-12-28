@@ -1,12 +1,13 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-cmake
-pkgver=1.1.1
+pkgver=1.2.0
 pkgrel=1
-pkgdesc="3ds cmake wrapper"
+pkgdesc="CMake support for Nintendo 3DS"
 arch=('any')
 url='http://devkitpro.org/'
 source=(
   '3DS.cmake'
+  'Nintendo3DS.cmake'
   'arm-none-eabi-cmake'
 )
 options=('!strip')
@@ -14,7 +15,8 @@ depends=('devkitarm-cmake')
 groups=('3ds-dev')
 
 sha256sums=(
-  '241d788ec8e73a770cea5d8ee60c39f5e074b5b8eb4c8b18d94abc3997bd0ce9'  # 3DS.cmake
+  '46773c8eea47cfd2f2b82186f1e22d90483d67b4a9849fddb3582146ae9e9e73'  # 3DS.cmake
+  '4a900c252ee66c30b67ede445d37a086aa8871fa49f9122ebb601e8502d549c8'  # Nintendo3DS.cmake
   'f4bbf2fab22c7ecd091fb755464795e915a4f46269ae15a094bce7c21ddf2aa2'  # arm-none-eabi-cmake
 )
 
@@ -24,5 +26,7 @@ package() {
   cp "$srcdir"/arm-none-eabi-cmake "$pkgdir"/opt/devkitpro/portlibs/3ds/bin/
   install -d "$pkgdir"/opt/devkitpro/cmake
   cp "${srcdir}"/3DS.cmake "$pkgdir"/opt/devkitpro/cmake
+  install -d "$pkgdir"/opt/devkitpro/cmake/Platform
+  cp "${srcdir}"/Nintendo3DS.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
 
 }
