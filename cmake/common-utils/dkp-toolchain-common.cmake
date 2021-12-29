@@ -24,6 +24,9 @@ macro(__dkp_toolchain name arch triplet)
 		set(CMAKE_SYSTEM_PROCESSOR ${arch})
 	endif()
 
+	# Prevent standard build configurations from loading default flags (CMake 3.11+)
+	set(CMAKE_NOT_USING_CONFIG_FLAGS TRUE)
+
 	set(TOOL_PREFIX ${DEVKITPRO}/${name}/bin/${triplet}-)
 
 	set(CMAKE_ASM_COMPILER ${TOOL_PREFIX}gcc        CACHE PATH "")
@@ -50,4 +53,9 @@ macro(__dkp_toolchain name arch triplet)
 	set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 	set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available")
+
+	find_program(DKP_BIN2S NAMES bin2s HINTS "${DEVKITPRO}/tools/bin")
+	if (NOT DKP_BIN2S)
+		message(WARNING "Could not find bin2s: try installing general-tools")
+	endif()
 endmacro()
