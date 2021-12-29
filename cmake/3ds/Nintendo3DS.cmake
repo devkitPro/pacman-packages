@@ -1,6 +1,11 @@
 # -----------------------------------------------------------------------------
 # Platform configuration
 
+# Include guard
+if(NINTENDO_3DS)
+	return()
+endif()
+
 # Inherit settings from CMake's built-in Generic platform
 include(Platform/Generic)
 
@@ -112,8 +117,8 @@ function(ctr_create_3dsx target)
 	)
 
 	add_custom_target(
-		"${TARGET_OUTPUT_NAME}_3dsx" ALL
-		DEPENDS "${target}.3dsx"
+		"${target}_3dsx" ALL
+		DEPENDS "${TARGET_OUTPUT_NAME}.3dsx"
 	)
 endfunction()
 
@@ -137,4 +142,60 @@ function(ctr_add_shader_library target)
 	dkp_set_target_file(${target}
 		"${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin"
 	)
+endfunction()
+
+function(ctr_add_graphics_target target kind)
+	cmake_parse_arguments(CTR_TEX3DS "" "" "INPUTS;OPTIONS" ${ARGN})
+
+	set(CTR_TEX3DS_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.t3x")
+	set(CTR_TEX3DS_ARGS -o "${CTR_TEX3DS_OUTPUT}")
+	set(CTR_TEX3DS_DEPS "")
+
+	string(TOUPPER "${kind}" kind)
+	if(kind STREQUAL "IMAGE")
+		# Nothing on purpose
+	elseif(kind STREQUAL "CUBEMAP")
+		list(APPEND CTR_TEX3DS_ARGS "--cubemap")
+	elseif(kind STREQUAL "SKYBOX")
+		list(APPEND CTR_TEX3DS_ARGS "--skybox")
+	elseif(kind STREQUAL "ATLAS")
+		list(APPEND CTR_TEX3DS_ARGS "--atlas")
+	else()
+		message(FATAL_ERROR "ctr_add_graphics_target: invalid mode: ${kind}")
+	endif()
+
+	list(LENGTH CTR_TEX3DS_INPUTS numinputs)
+	if(numinputs LESS 1)
+		message(FATAL_ERROR "ctr_add_graphics_target: must provide at least one input")
+	endif()
+	if(NOT kind STREQUAL "ATLAS" AND numinputs GREATER 1)
+		message(FATAL_ERROR "ctr_add_graphics_target: multiple inputs only supported with atlas mode")
+	endif()
+
+	list(APPEND CTR_TEX3DS_ARGS ${CTR_TEX3DS_OPTIONS})
+	foreach(input ${CTR_TEX3DS_INPUTS})
+		if (NOT TARGET "${input}" AND NOT IS_ABSOLUTE "${input}")
+			set(input "${CMAKE_CURRENT_LIST_DIR}/${input}")
+		endif()
+
+		dkp_resolve_file(infile ${input})
+		list(APPEND CTR_TEX3DS_ARGS "${infile}")
+
+		if (TARGET "${input}")
+			list(APPEND CTR_TEX3DS_DEPS ${input} "${infile}")
+		else()
+			list(APPEND CTR_TEX3DS_DEPS "${infile}")
+		endif()
+	endforeach()
+
+	add_custom_command(
+		OUTPUT "${CTR_TEX3DS_OUTPUT}"
+		COMMAND "${CTR_TEX3DS_EXE}" ${CTR_TEX3DS_ARGS}
+		DEPENDS ${CTR_3DSXTOOL_DEPS}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+		COMMENT "Converting graphics target ${target}"
+	)
+
+	add_custom_target(${target} DEPENDS "${CTR_TEX3DS_OUTPUT}")
+	dkp_set_target_file(${target} "${CTR_TEX3DS_OUTPUT}")
 endfunction()

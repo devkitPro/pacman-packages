@@ -36,6 +36,11 @@ if (NOT CTR_PICASSO_EXE)
 	message(WARNING "Could not find picasso: try installing picasso")
 endif()
 
+find_program(CTR_TEX3DS_EXE NAMES tex3ds HINTS "${DEVKITPRO}/tools/bin")
+if (NOT CTR_TEX3DS_EXE)
+	message(WARNING "Could not find tex3ds: try installing tex3ds")
+endif()
+
 find_file(CTR_DEFAULT_ICON NAMES default_icon.png HINTS "${DEVKITPRO}/libctru" NO_CMAKE_FIND_ROOT_PATH)
 if (NOT CTR_DEFAULT_ICON)
 	message(WARNING "Could not find default icon: try installing libctru")
