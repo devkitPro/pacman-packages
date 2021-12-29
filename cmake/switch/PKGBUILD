@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-cmake
 pkgver=1.2.0
-pkgrel=1
+pkgrel=2
 pkgdesc="CMake support for Nintendo Switch"
 arch=('any')
 url='https://devkitpro.org/'
@@ -17,7 +17,7 @@ options=('!strip')
 sha256sums=(
   '8d19a809aa1db2bb246890398f37c35254cd7a8f46a44dd312c92302352f5927' # aarch64-none-elf-cmake
   '09bd12b2c5a79d0cc6292ecc3c9c647310b6faae4555ab670807fc5fd5da9aec' # Switch.cmake
-  '832d1b7775462350aa00b6fca3469c6aceb5493a8ccd0a54bbb7bf51d8eba13d' # NintendoSwitch.cmake
+  'f381750de57490e350063411c471b0677ee55a76db2abd95a960fc485ba70b54' # NintendoSwitch.cmake
 )
 
 package() {

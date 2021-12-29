@@ -1,6 +1,11 @@
 # -----------------------------------------------------------------------------
 # Platform configuration
 
+# Include guard
+if(NINTENDO_SWITCH)
+	return()
+endif()
+
 # Inherit settings from CMake's built-in Generic platform
 include(Platform/Generic)
 
@@ -21,7 +26,7 @@ set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE) # Start find_package in config mode
 set(CMAKE_C_FLAGS_INIT   "${NX_COMMON_FLAGS}")
 set(CMAKE_CXX_FLAGS_INIT "${NX_COMMON_FLAGS}")
 set(CMAKE_ASM_FLAGS_INIT "${NX_COMMON_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${NX_ARCH_SETTINGS} ${NX_LIB_DIRS} -fPIE -specs=${DEVKITPRO}/libnx/switch.specs")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${NX_ARCH_SETTINGS} ${NX_LIB_DIRS} -fPIE -specs=${NX_ROOT}/switch.specs")
 
 set(CMAKE_C_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
 set(CMAKE_CXX_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
