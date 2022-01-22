@@ -24,7 +24,12 @@ macro(__dkp_toolchain name arch triplet)
 		set(CMAKE_SYSTEM_PROCESSOR ${arch})
 	endif()
 
-	# Prevent standard build configurations from loading default flags (CMake 3.11+)
+	if(NOT CMAKE_USER_MAKE_RULES_OVERRIDE)
+		# Load platform information overrides
+		set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_LIST_DIR}/dkp-rule-overrides.cmake)
+	endif()
+
+	# Prevent standard build configurations from loading default flags
 	set(CMAKE_NOT_USING_CONFIG_FLAGS TRUE)
 
 	set(TOOL_PREFIX ${DEVKITPRO}/${name}/bin/${triplet}-)

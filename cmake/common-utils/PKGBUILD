@@ -1,13 +1,14 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-cmake-common-utils
 pkgver=1.2.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Common utilities and infrastructure for devkitPro CMake"
 arch=('any')
 url='http://devkitpro.org/'
 source=(
   'dkp-initialize-path.cmake'
   'dkp-toolchain-common.cmake'
+  'dkp-rule-overrides.cmake'
   'dkp-linker-utils.cmake'
   'dkp-custom-target.cmake'
   'dkp-embedded-binary.cmake'
@@ -16,7 +17,8 @@ source=(
 
 sha256sums=(
   'b6e954c1f2597d52091d787cafa0ae5dd2df90e999cd61ebef458bd3cb5e2dbd'  # dkp-initialize-path.cmake
-  '9db0901a131d27d4a3373c1eaeb8d22fa39096c8f13ffe60e4b2465d87025384'  # dkp-toolchain-common.cmake
+  'a9ede6cffce7deae30463834ece8e71c923f0b8c5ac27b2d5026cad2a9ea33fe'  # dkp-toolchain-common.cmake
+  'cace25ed99312e094072706435b6448f7e87769ab7250ab4292ca150054bbc55'  # dkp-rule-overrides.cmake
   '22bc6a8eaf3a379d6c544d82298773a534ae7c00c861d973bd31ec47fae1855c'  # dkp-linker-utils.cmake
   '9093de06c85c22f6b4d8777247d1efdf6834ca9e6efbff559b5f108aec5d9449'  # dkp-custom-target.cmake
   '7705b57db68a335b605387fa4408fca724f1029574f614f7c43f54c9ef532bda'  # dkp-embedded-binary.cmake
@@ -27,6 +29,7 @@ package() {
   install -d "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-initialize-path.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-toolchain-common.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-rule-overrides.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-linker-utils.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-custom-target.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-embedded-binary.cmake "$pkgdir"/opt/devkitpro/cmake
