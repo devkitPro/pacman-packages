@@ -1,16 +1,19 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=switch-libjpeg-turbo
-pkgver=1.5.3
-pkgrel=2
+_libname=libjpeg-turbo
+pkgname=switch-${_libname}
+pkgver=2.1.2
+pkgrel=1
 pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression'
 arch=('any')
-url='https://sourceforge.net/projects/libjpeg-turbo'
+url='https://github.com/libjpeg-turbo/libjpeg-turbo'
 license=('IJG')
 options=(!strip libtool staticlibs)
-source=("http://downloads.devkitpro.org/packages/sources/libjpeg-turbo-$pkgver.tar.xz")
-sha256sums=('7c650554cc7742db41ebb014e183ee69d5a1b2f010fbf8a4de11cf783319a42c')
-makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+source=("${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz")
+sha256sums=(
+  'e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed'
+)
+makedepends=('switch-cmake' 'switch-pkg-config' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
 
 build() {
@@ -19,7 +22,7 @@ build() {
 
   source /opt/devkitpro/switchvars.sh
 
-    ./configure --prefix="/opt/devkitpro/portlibs/switch" --host=aarch64-none-elf --disable-shared --enable-static
+  aarch64-none-elf-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
 
   make
 
@@ -33,4 +36,6 @@ package() {
   cp -v LICENSE.md "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/
   # remove useless stuff
   rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
+  rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/bin
+
 }
