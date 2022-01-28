@@ -2,24 +2,22 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libnds')
-pkgver=1.8.1
-pkgrel=2
+pkgver=1.8.2
+pkgrel=1
 pkgdesc="Nintendo DS library."
 arch=('any')
 license=('zlib')
 url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
-source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz 0001-fix-within-comment.patch)
-sha256sums=('af784548591b86129d0ff1b354300fa37d98c37fce53e292f48f818a5e902e3a' '1c600d8227ab124be37a3e4e72e9596cef8aecc0aa4473996575c080786740c4')
+source=(
+  ${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz
+)
+sha256sums=(
+  '5ce3d64c931de3599adc3bb2a6ead0fca86c3bb873e5aa10788568cc5e0a0e4f'
+)
 depends=('devkitARM' 'devkitarm-rules' 'devkitarm-crtls')
 
 groups=('nds-dev')
-
-prepare() {
-
-  cd ${srcdir}/${pkgname}-${pkgver}
-  patch -p1 -i ${srcdir}/0001-fix-within-comment.patch
-}
 
 package() {
 
