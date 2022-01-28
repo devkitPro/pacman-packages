@@ -2,7 +2,7 @@
 # Maintainer: Adan Scotney <adan.scotney@gmail.com
 
 pkgname=('gp2x-examples')
-pkgver=1.2.0
+pkgver=1.2.1
 pkgrel=1
 pkgdesc="GP2X example code."
 arch=('any')
@@ -10,7 +10,9 @@ license=('MIT')
 url="https://github.com/devkitPro/gp2x-examples"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('eb84d9cf193d9eb4edfa7f0256a44dce15615a2c2de7712e2bf0185213b1d9db')
+sha256sums=(
+  '353e59a3b1f6398f8b2d5222af43a8f7fefcea0139beea6d0a145131ee695683'
+)
 makedepends=('devkitARM' 'orcus')
 
 groups=('gp2x-dev')
