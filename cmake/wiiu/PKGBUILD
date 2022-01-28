@@ -1,7 +1,7 @@
 # Maintainer: fincs <fincs@devkitpro.org>
 pkgname=wiiu-cmake
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="CMake support for Nintendo Wii U"
 arch=('any')
 url='https://devkitpro.org/'
