@@ -1,0 +1,32 @@
+# Contributor: Cameron Cawley <ccawley2011@gmail.com>
+pkgname=nds-cmake
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="CMake support for Nintendo DS"
+arch=('any')
+url='https://devkitpro.org/'
+source=(
+  'arm-none-eabi-cmake'
+  'NDS.cmake'
+  'NintendoDS.cmake'
+)
+options=('!strip')
+depends=('devkitarm-cmake')
+groups=('nds-dev')
+
+sha256sums=(
+  '4e4eb21c4de42f18caffff9d97eb47e9f368991fd6e429b00dee9edf20a721ae'  # arm-none-eabi-cmake
+  '9a244a483bfabf891bfcbfbc4965845c6621e1a7a1bb225621724cb210876dce'  # NDS.cmake
+  '734bd59e37dbc0883c42393db90502eea8e4840455576920bffc0e4285b60c12'  # NintendoDS.cmake
+)
+
+package() {
+
+  install -d "$pkgdir"/opt/devkitpro/portlibs/nds/bin
+  cp "$srcdir"/arm-none-eabi-cmake "$pkgdir"/opt/devkitpro/portlibs/nds/bin/
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "${srcdir}"/NDS.cmake "$pkgdir"/opt/devkitpro/cmake
+  install -d "$pkgdir"/opt/devkitpro/cmake/Platform
+  cp "${srcdir}"/NintendoDS.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
+
+}
