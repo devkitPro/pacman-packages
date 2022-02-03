@@ -12,11 +12,24 @@ include(Platform/Generic)
 set(NINTENDO_DS TRUE)
 set(NDS_ROOT ${DEVKITPRO}/libnds)
 
-set(NDS_ARCH_SETTINGS "-march=armv5te -mtune=arm946e-s")
-set(NDS_COMMON_FLAGS  "${NDS_ARCH_SETTINGS} -ffunction-sections -fdata-sections -D__NDS__ -DARM9")
-set(NDS_LIB_DIRS      "-L${DEVKITPRO}/libnds/lib -L${DEVKITPRO}/portlibs/nds/lib")
+if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
+	set(NDS_ARCH_SETTINGS "-march=armv5te -mtune=arm946e-s")
+	set(NDS_COMMON_FLAGS  "${NDS_ARCH_SETTINGS} -ffunction-sections -fdata-sections -D__NDS__ -DARM9")
+	set(NDS_LIB_DIRS      "-L${DEVKITPRO}/libnds/lib -L${DEVKITPRO}/portlibs/nds/lib")
 
-set(NDS_STANDARD_LIBRARIES "-lnds9")
+	set(NDS_STANDARD_LIBRARIES "-lnds9")
+	set(NDS_LINKER_FLAGS "-specs=ds_arm9.specs")
+elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv4t")
+	set(NDS_ARCH_SETTINGS "-march=armv4t -mthumb -mthumb-interwork")
+	set(NDS_COMMON_FLAGS  "${NDS_ARCH_SETTINGS} -ffunction-sections -fdata-sections -D__NDS__ -DARM7")
+	set(NDS_LIB_DIRS      "-L${DEVKITPRO}/libnds/lib")
+
+	set(NDS_STANDARD_LIBRARIES "-lnds7")
+	set(NDS_LINKER_FLAGS "-specs=ds_arm7.specs")
+else()
+	message(FATAL_ERROR "Unknown value for CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
 set(NDS_STANDARD_INCLUDE_DIRECTORIES "${NDS_ROOT}/include")
 
 set(CMAKE_EXECUTABLE_SUFFIX .elf)
@@ -24,7 +37,7 @@ set(CMAKE_EXECUTABLE_SUFFIX .elf)
 set(CMAKE_C_FLAGS_INIT   "${NDS_COMMON_FLAGS}")
 set(CMAKE_CXX_FLAGS_INIT "${NDS_COMMON_FLAGS}")
 set(CMAKE_ASM_FLAGS_INIT "${NDS_COMMON_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${NDS_ARCH_SETTINGS} ${NDS_LIB_DIRS} -specs=ds_arm9.specs")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${NDS_ARCH_SETTINGS} ${NDS_LIB_DIRS} ${NDS_LINKER_FLAGS}")
 
 set(CMAKE_C_STANDARD_LIBRARIES "${NDS_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
 set(CMAKE_CXX_STANDARD_LIBRARIES "${NDS_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
@@ -44,14 +57,43 @@ include(dkp-embedded-binary)
 include(dkp-asset-folder)
 
 function(nds_create_rom target)
-	cmake_parse_arguments(NDSTOOL "" "NAME;SUBTITLE1;SUBTITLE2;ICON;ROMFS" "" ${ARGN})
-	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
-	if(NOT TARGET_OUTPUT_NAME)
-		set(TARGET_OUTPUT_NAME "${target}")
-	endif()
+	cmake_parse_arguments(NDSTOOL "" "ARM9;ARM7;NAME;SUBTITLE1;SUBTITLE2;ICON;ROMFS" "" ${ARGN})
 
-	set(NDSTOOL_ARGS -c "${TARGET_OUTPUT_NAME}.nds" -9 "$<TARGET_FILE:${target}>")
-	set(NDSTOOL_DEPS ${target})
+	if (TARGET "${target}")
+		get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
+		if(NOT TARGET_OUTPUT_NAME)
+			set(TARGET_OUTPUT_NAME "${target}")
+		endif()
+	else ()
+		set(TARGET_OUTPUT_NAME "${target}")
+	endif ()
+
+	set(NDSTOOL_ARGS -c "${TARGET_OUTPUT_NAME}.nds")
+	set(NDSTOOL_DEPS)
+
+	if (DEFINED NDSTOOL_ARM9)
+		if (TARGET "${NDSTOOL_ARM9}")
+			list(APPEND NDSTOOL_ARGS -9 "$<TARGET_FILE:${NDSTOOL_ARM9}>")
+			list(APPEND NDSTOOL_DEPS ${NDSTOOL_ARM9})
+		else()
+			list(APPEND NDSTOOL_ARGS -9 "${NDSTOOL_ARM9}")
+		endif()
+	elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
+		list(APPEND NDSTOOL_ARGS -9 "$<TARGET_FILE:${target}>")
+		list(APPEND NDSTOOL_DEPS ${target})
+	endif ()
+
+	if (DEFINED NDSTOOL_ARM7)
+		if (TARGET "${NDSTOOL_ARM7}")
+			list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${NDSTOOL_ARM7}>")
+			list(APPEND NDSTOOL_DEPS ${NDSTOOL_ARM7})
+		else()
+			list(APPEND NDSTOOL_ARGS -7 "${NDSTOOL_ARM7}")
+		endif()
+	elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv4t")
+		list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${target}>")
+		list(APPEND NDSTOOL_DEPS ${target})
+	endif ()
 
 	if (NOT DEFINED NDSTOOL_NAME)
 		set(NDSTOOL_NAME "${CMAKE_PROJECT_NAME}")
@@ -98,4 +140,25 @@ function(nds_create_rom target)
 		"${target}_nds" ALL
 		DEPENDS "${TARGET_OUTPUT_NAME}.nds"
 	)
+endfunction()
+
+function(nds_build_arm7 target)
+	cmake_parse_arguments(ARM7 "" "CMAKE_ARGS;SOURCE_DIR;OUTPUT_NAME" "" ${ARGN})
+
+	if(NOT ARM7_OUTPUT_NAME)
+		set(ARM7_OUTPUT_NAME "${target}")
+	endif()
+
+	include(ExternalProject)
+	ExternalProject_Add(${target}_project
+		CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE};-DCMAKE_SYSTEM_PROCESSOR=armv4t;${ARM7_CMAKE_ARGS}"
+		SOURCE_DIR "${ARM7_SOURCE_DIR}"
+		UPDATE_COMMAND ""
+		INSTALL_COMMAND ""
+	)
+	ExternalProject_Get_Property(${target}_project BINARY_DIR)
+
+	add_executable(${target} IMPORTED)
+	add_dependencies(${target} ${target}_project)
+	set_target_properties(${target} PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/${ARM7_OUTPUT_NAME}${CMAKE_EXECUTABLE_SUFFIX})
 endfunction()
