@@ -3,15 +3,19 @@
 _libname=libjpeg-turbo
 pkgname=switch-${_libname}
 pkgver=2.1.2
-pkgrel=1
+pkgrel=2
 pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression'
 arch=('any')
 url='https://github.com/libjpeg-turbo/libjpeg-turbo'
 license=('IJG')
 options=(!strip libtool staticlibs)
-source=("${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz")
+source=(
+  "${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz"
+  "libjpeg-turbo.patch"
+)
 sha256sums=(
   'e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed'
+  '79fb3d6acdc9b405a1695a7c6248c420b40e63c115e4a5cab913eb7c2b0c38e4'
 )
 makedepends=('switch-cmake' 'switch-pkg-config' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
@@ -20,9 +24,11 @@ build() {
 
   cd libjpeg-turbo-$pkgver
 
+  patch -Np1 -i ${srcdir}/libjpeg-turbo.patch
+
   source /opt/devkitpro/switchvars.sh
 
-  aarch64-none-elf-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
+  aarch64-none-elf-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG_TESTS:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
 
   make
 
