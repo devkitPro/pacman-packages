@@ -22,7 +22,7 @@ build() {
 
   source /opt/devkitpro/switchvars.sh
 
-  aarch64-none-elf-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
+  aarch64-none-elf-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG:BOOLEAN=true -DUNIX:BOOLEAN=true -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
 
   make
 
