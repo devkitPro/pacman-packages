@@ -1,50 +1,29 @@
 # -----------------------------------------------------------------------------
 # Platform configuration
 
-# Include guard
-if(CAFEOS)
-	return()
-endif()
+cmake_minimum_required(VERSION 3.13)
+include_guard(GLOBAL)
 
-# Inherit settings from CMake's built-in Generic platform
-include(Platform/Generic)
+# Inherit default devkitPro platform configuration
+include(Platform/Generic-dkP)
 
+# Platform identification flags
 set(CAFEOS TRUE)
 set(NINTENDO_WIIU TRUE)
 set(WIIU TRUE)
 set(WUT TRUE)
-set(WUT_ROOT ${DEVKITPRO}/wut)
 
+# Platform settings
 set(WUT_ARCH_SETTINGS "-mcpu=750 -meabi -mhard-float")
-set(WUT_COMMON_FLAGS  "${WUT_ARCH_SETTINGS} -ffunction-sections -fdata-sections -DESPRESSO -D__WIIU__ -D__WUT__")
-set(WUT_LIB_DIRS      "-L${DEVKITPRO}/wut/lib -L${DEVKITPRO}/portlibs/wiiu/lib")
-
-set(WUT_STANDARD_LIBRARIES "-lwut")
+set(WUT_COMMON_FLAGS  "-ffunction-sections -fdata-sections -DESPRESSO -D__WIIU__ -D__WUT__")
+set(WUT_LINKER_FLAGS  "-L${WUT_ROOT}/lib -L${DEVKITPRO}/portlibs/wiiu/lib -specs=${WUT_ROOT}/share/wut.specs")
+set(WUT_STANDARD_LIBRARIES "-lwut -lm")
 set(WUT_STANDARD_INCLUDE_DIRECTORIES "${WUT_ROOT}/include")
 
-set(CMAKE_EXECUTABLE_SUFFIX .elf)
-
-set(CMAKE_C_FLAGS_INIT   "${WUT_COMMON_FLAGS}")
-set(CMAKE_CXX_FLAGS_INIT "${WUT_COMMON_FLAGS}")
-set(CMAKE_ASM_FLAGS_INIT "${WUT_COMMON_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${WUT_ARCH_SETTINGS} ${WUT_LIB_DIRS} -specs=${WUT_ROOT}/share/wut.specs")
-
-set(CMAKE_C_STANDARD_LIBRARIES "${WUT_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-set(CMAKE_CXX_STANDARD_LIBRARIES "${WUT_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-set(CMAKE_ASM_STANDARD_LIBRARIES "${WUT_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-
-set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES "${WUT_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${WUT_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
-set(CMAKE_ASM_STANDARD_INCLUDE_DIRECTORIES "${WUT_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
+__dkp_init_platform_settings(WUT)
 
 # -----------------------------------------------------------------------------
 # Platform-specific helper utilities
-
-# Include common devkitPro bits and pieces
-include(dkp-linker-utils)
-include(dkp-custom-target)
-include(dkp-embedded-binary)
-include(dkp-asset-folder)
 
 function(wut_create_rpl target)
 	cmake_parse_arguments(ELF2RPL "IS_RPX" "" "" ${ARGN})
@@ -56,7 +35,7 @@ function(wut_create_rpl target)
 	else()
 		set(RPL_SUFFIX ".rpl")
 		list(APPEND ELF2RPL_FLAGS "--rpl")
-		dkp_target_link_options(${target} "-specs=${WUT_ROOT}/share/rpl.specs")
+		target_link_options(${target} PRIVATE "-specs=${WUT_ROOT}/share/rpl.specs")
 	endif()
 
 	get_target_property(RPL_OUTPUT ${target} OUTPUT_NAME)
@@ -202,6 +181,6 @@ function(wut_link_rpl target)
 		endif()
 
 		target_sources(${target} PRIVATE $<TARGET_OBJECTS:${libname}_imports>)
-		dkp_target_link_options(${target} -T ${RPL_IMPORT_LD})
+		target_link_options(${target} PRIVATE "-T${RPL_IMPORT_LD}")
 	endforeach()
 endfunction()

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.13)
 
 if(NOT CMAKE_SYSTEM_NAME)
 	set(CMAKE_SYSTEM_NAME Nintendo3DS)
@@ -11,37 +11,39 @@ endif()
 # Import devkitARM toolchain
 include(${CMAKE_CURRENT_LIST_DIR}/devkitARM.cmake)
 
-list(APPEND CMAKE_FIND_ROOT_PATH
+set(CTR_ROOT ${DEVKITPRO}/libctru)
+
+__dkp_platform_prefix(
 	${DEVKITPRO}/portlibs/3ds
-	${DEVKITPRO}/libctru
+	${CTR_ROOT}
 )
 
 find_program(PKG_CONFIG_EXECUTABLE NAMES arm-none-eabi-pkg-config HINTS "${DEVKITPRO}/portlibs/3ds/bin")
 if (NOT PKG_CONFIG_EXECUTABLE)
-	message(WARNING "Could not find arm-none-eabi-pkg-config: try installing 3ds-pkg-config")
+	message(FATAL_ERROR "Could not find arm-none-eabi-pkg-config: try installing 3ds-pkg-config")
 endif()
 
 find_program(CTR_SMDHTOOL_EXE NAMES smdhtool HINTS "${DEVKITPRO}/tools/bin")
 if (NOT CTR_SMDHTOOL_EXE)
-	message(WARNING "Could not find smdhtool: try installing 3ds-tools")
+	message(FATAL_ERROR "Could not find smdhtool: try installing 3ds-tools")
 endif()
 
 find_program(CTR_3DSXTOOL_EXE NAMES 3dsxtool HINTS "${DEVKITPRO}/tools/bin")
 if (NOT CTR_3DSXTOOL_EXE)
-	message(WARNING "Could not find 3dsxtool: try installing 3ds-tools")
+	message(FATAL_ERROR "Could not find 3dsxtool: try installing 3ds-tools")
 endif()
 
 find_program(CTR_PICASSO_EXE NAMES picasso HINTS "${DEVKITPRO}/tools/bin")
 if (NOT CTR_PICASSO_EXE)
-	message(WARNING "Could not find picasso: try installing picasso")
+	message(FATAL_ERROR "Could not find picasso: try installing picasso")
 endif()
 
 find_program(CTR_TEX3DS_EXE NAMES tex3ds HINTS "${DEVKITPRO}/tools/bin")
 if (NOT CTR_TEX3DS_EXE)
-	message(WARNING "Could not find tex3ds: try installing tex3ds")
+	message(FATAL_ERROR "Could not find tex3ds: try installing tex3ds")
 endif()
 
-find_file(CTR_DEFAULT_ICON NAMES default_icon.png HINTS "${DEVKITPRO}/libctru" NO_CMAKE_FIND_ROOT_PATH)
+find_file(CTR_DEFAULT_ICON NAMES default_icon.png HINTS "${CTR_ROOT}" NO_CMAKE_FIND_ROOT_PATH)
 if (NOT CTR_DEFAULT_ICON)
-	message(WARNING "Could not find default icon: try installing libctru")
+	message(FATAL_ERROR "Could not find default icon: try installing libctru")
 endif()

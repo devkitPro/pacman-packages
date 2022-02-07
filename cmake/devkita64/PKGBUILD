@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkita64-cmake
-pkgver=1.1.0
+pkgver=1.1.1
 pkgrel=1
 pkgdesc="CMake support files for devkitA64"
 arch=('any')
@@ -15,7 +15,7 @@ depends=('dkp-cmake-common-utils')
 groups=('switch-dev')
 
 sha256sums=(
-  '529a43be519ce3129874629ce3052b148f01203c9e0e0b9d3984e317da31d5db'  # devkitA64.cmake
+  '77ae74676eaa8fdefec3249a39b884de9d41cbb68463bb93c63682b77460840b'  # devkitA64.cmake
   'dafcffebdaa9c789d6bfb7c51acd51285c23720b1be3fe6b65ee9c514973061a'  # aarch64-none-elf-cmake
 )
 

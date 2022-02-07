@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-cmake-common-utils
-pkgver=1.2.0
-pkgrel=3
+pkgver=1.3.0
+pkgrel=1
 pkgdesc="Common utilities and infrastructure for devkitPro CMake"
 arch=('any')
 url='http://devkitpro.org/'
@@ -13,16 +13,18 @@ source=(
   'dkp-custom-target.cmake'
   'dkp-embedded-binary.cmake'
   'dkp-asset-folder.cmake'
+  'Generic-dkP.cmake'
 )
 
 sha256sums=(
-  'b6e954c1f2597d52091d787cafa0ae5dd2df90e999cd61ebef458bd3cb5e2dbd'  # dkp-initialize-path.cmake
-  'a9ede6cffce7deae30463834ece8e71c923f0b8c5ac27b2d5026cad2a9ea33fe'  # dkp-toolchain-common.cmake
+  'ec758b41e5a58b288cf08ef27ce9b8791ff0411aa957141f1f73ca3e97fcdf6f'  # dkp-initialize-path.cmake
+  '367b9bdc1bbc4164504ff8548a4363209a27584c0843a360f8b4bf74ef0f5c07'  # dkp-toolchain-common.cmake
   'cace25ed99312e094072706435b6448f7e87769ab7250ab4292ca150054bbc55'  # dkp-rule-overrides.cmake
-  '22bc6a8eaf3a379d6c544d82298773a534ae7c00c861d973bd31ec47fae1855c'  # dkp-linker-utils.cmake
-  '9093de06c85c22f6b4d8777247d1efdf6834ca9e6efbff559b5f108aec5d9449'  # dkp-custom-target.cmake
-  '7705b57db68a335b605387fa4408fca724f1029574f614f7c43f54c9ef532bda'  # dkp-embedded-binary.cmake
-  'c7e5305159fbee4e881743ad19c6e50c58e2bcadcff88aa29b5314ac559d368d'  # dkp-asset-folder.cmake
+  '24f0d66c643ea7145ad9d5698f00b18b30583145c63642da553429075f4cf556'  # dkp-linker-utils.cmake
+  'e5d720c0af5e7a47296cbefc9adbc8660e58893fb9faa78dfa51dfd8f6d88248'  # dkp-custom-target.cmake
+  '6f9227a5f35b941134a4245a2a145377c3e646e8b796b838d40d570c494caeff'  # dkp-embedded-binary.cmake
+  'fdedf65e230616028d617dde7c393548cf977ab8809e303b9bf1ea0efa7c175e'  # dkp-asset-folder.cmake
+  '43ec2cd8549c52bf1f29a877a3796c54e9fbe41aace4ed14dc6afcec8409f90f'  # Generic-dkP.cmake
 )
 
 package() {
@@ -34,4 +36,6 @@ package() {
   cp "$srcdir"/dkp-custom-target.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-embedded-binary.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-asset-folder.cmake "$pkgdir"/opt/devkitpro/cmake
+  install -d "$pkgdir"/opt/devkitpro/cmake/Platform
+  cp "$srcdir"/Generic-dkP.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
 }

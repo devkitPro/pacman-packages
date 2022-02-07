@@ -1,47 +1,26 @@
 # -----------------------------------------------------------------------------
 # Platform configuration
 
-# Include guard
-if(NINTENDO_3DS)
-	return()
-endif()
+cmake_minimum_required(VERSION 3.13)
+include_guard(GLOBAL)
 
-# Inherit settings from CMake's built-in Generic platform
-include(Platform/Generic)
+# Inherit default devkitPro platform configuration
+include(Platform/Generic-dkP)
 
+# Platform identification flags
 set(NINTENDO_3DS TRUE)
-set(CTR_ROOT ${DEVKITPRO}/libctru)
 
+# Platform settings
 set(CTR_ARCH_SETTINGS "-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft")
-set(CTR_COMMON_FLAGS  "${CTR_ARCH_SETTINGS} -mword-relocations -ffunction-sections -D__3DS__")
-set(CTR_LIB_DIRS      "-L${DEVKITPRO}/libctru/lib -L${DEVKITPRO}/portlibs/3ds/lib")
-
+set(CTR_COMMON_FLAGS  "-mword-relocations -ffunction-sections -D__3DS__")
+set(CTR_LINKER_FLAGS  "-L${CTR_ROOT}/lib -L${DEVKITPRO}/portlibs/3ds/lib -specs=3dsx.specs")
 set(CTR_STANDARD_LIBRARIES "-lctru -lm")
 set(CTR_STANDARD_INCLUDE_DIRECTORIES "${CTR_ROOT}/include")
 
-set(CMAKE_EXECUTABLE_SUFFIX .elf)
-
-set(CMAKE_C_FLAGS_INIT   "${CTR_COMMON_FLAGS}")
-set(CMAKE_CXX_FLAGS_INIT "${CTR_COMMON_FLAGS}")
-set(CMAKE_ASM_FLAGS_INIT "${CTR_COMMON_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${CTR_ARCH_SETTINGS} ${CTR_LIB_DIRS} -specs=3dsx.specs")
-
-set(CMAKE_C_STANDARD_LIBRARIES "${CTR_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-set(CMAKE_CXX_STANDARD_LIBRARIES "${CTR_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-set(CMAKE_ASM_STANDARD_LIBRARIES "${CTR_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-
-set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES "${CTR_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${CTR_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
-set(CMAKE_ASM_STANDARD_INCLUDE_DIRECTORIES "${CTR_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
+__dkp_init_platform_settings(CTR)
 
 # -----------------------------------------------------------------------------
 # Platform-specific helper utilities
-
-# Include common devkitPro bits and pieces
-include(dkp-linker-utils)
-include(dkp-custom-target)
-include(dkp-embedded-binary)
-include(dkp-asset-folder)
 
 function(ctr_generate_smdh outfile)
 	cmake_parse_arguments(SMDH "" "NAME;DESCRIPTION;AUTHOR;ICON" "" ${ARGN})

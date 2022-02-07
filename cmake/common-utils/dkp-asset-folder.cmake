@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.13)
+include_guard(GLOBAL)
+
 include(dkp-custom-target)
 
 function(dkp_add_asset_target target folder)

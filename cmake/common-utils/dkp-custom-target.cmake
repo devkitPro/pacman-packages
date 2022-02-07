@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.13)
+include_guard(GLOBAL)
 
 function(dkp_set_target_file target file)
 	set_target_properties(${target} PROPERTIES DKP_FILE "${file}")

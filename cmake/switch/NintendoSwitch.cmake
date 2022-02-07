@@ -1,49 +1,29 @@
 # -----------------------------------------------------------------------------
 # Platform configuration
 
-# Include guard
-if(NINTENDO_SWITCH)
-	return()
-endif()
+cmake_minimum_required(VERSION 3.13)
+include_guard(GLOBAL)
 
-# Inherit settings from CMake's built-in Generic platform
-include(Platform/Generic)
+# Inherit default devkitPro platform configuration
+include(Platform/Generic-dkP)
 
+# Platform identification flags
 set(NINTENDO_SWITCH TRUE)
-set(NX_ROOT ${DEVKITPRO}/libnx)
 
+# Platform settings
 set(NX_ARCH_SETTINGS "-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec")
-set(NX_COMMON_FLAGS  "${NX_ARCH_SETTINGS} -ffunction-sections -fdata-sections -D__SWITCH__")
-set(NX_LIB_DIRS      "-L${DEVKITPRO}/libnx/lib -L${DEVKITPRO}/portlibs/switch/lib")
-
-set(NX_STANDARD_LIBRARIES "-lnx")
+set(NX_COMMON_FLAGS  "-ffunction-sections -fdata-sections -D__SWITCH__")
+set(NX_LINKER_FLAGS  "-L${NX_ROOT}/lib -L${DEVKITPRO}/portlibs/switch/lib -fPIE -specs=${NX_ROOT}/switch.specs")
+set(NX_STANDARD_LIBRARIES "-lnx -lm")
 set(NX_STANDARD_INCLUDE_DIRECTORIES "${NX_ROOT}/include")
 
-set(CMAKE_EXECUTABLE_SUFFIX .elf)
+# Enable position-independent code
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE) # Start find_package in config mode
 
-set(CMAKE_C_FLAGS_INIT   "${NX_COMMON_FLAGS}")
-set(CMAKE_CXX_FLAGS_INIT "${NX_COMMON_FLAGS}")
-set(CMAKE_ASM_FLAGS_INIT "${NX_COMMON_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${NX_ARCH_SETTINGS} ${NX_LIB_DIRS} -fPIE -specs=${NX_ROOT}/switch.specs")
-
-set(CMAKE_C_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-set(CMAKE_CXX_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-set(CMAKE_ASM_STANDARD_LIBRARIES "${NX_STANDARD_LIBRARIES}" CACHE STRING "" FORCE)
-
-set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
-set(CMAKE_ASM_STANDARD_INCLUDE_DIRECTORIES "${NX_STANDARD_INCLUDE_DIRECTORIES}" CACHE STRING "")
+__dkp_init_platform_settings(NX)
 
 # -----------------------------------------------------------------------------
 # Platform-specific helper utilities
-
-# Include common devkitPro bits and pieces
-include(dkp-linker-utils)
-include(dkp-custom-target)
-include(dkp-embedded-binary)
-include(dkp-asset-folder)
 
 function(nx_generate_nacp outfile)
 	cmake_parse_arguments(NACP "" "NAME;AUTHOR;VERSION" "" ${ARGN})
