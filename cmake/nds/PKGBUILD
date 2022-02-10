@@ -17,7 +17,7 @@ groups=('nds-dev')
 sha256sums=(
   '4e4eb21c4de42f18caffff9d97eb47e9f368991fd6e429b00dee9edf20a721ae'  # arm-none-eabi-cmake
   '9a244a483bfabf891bfcbfbc4965845c6621e1a7a1bb225621724cb210876dce'  # NDS.cmake
-  '1e2ade8a227eb2e6d9c0b0534de874b6bafda198b8631a1382778e1a5e7fd3a7'  # NintendoDS.cmake
+  'f17b3324ca39713a2debfb349fc7663d96ea1eccbbf346584390b3bf01bd2af2'  # NintendoDS.cmake
 )
 
 package() {

@@ -57,7 +57,7 @@ include(dkp-embedded-binary)
 include(dkp-asset-folder)
 
 function(nds_create_rom target)
-	cmake_parse_arguments(NDSTOOL "" "ARM9;ARM7;NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "" ${ARGN})
+	cmake_parse_arguments(NDSTOOL "" "NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "" ${ARGN})
 
 	if (TARGET "${target}")
 		get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
@@ -71,25 +71,9 @@ function(nds_create_rom target)
 	set(NDSTOOL_ARGS -c "${TARGET_OUTPUT_NAME}.nds")
 	set(NDSTOOL_DEPS)
 
-	if (DEFINED NDSTOOL_ARM9)
-		if (TARGET "${NDSTOOL_ARM9}")
-			list(APPEND NDSTOOL_ARGS -9 "$<TARGET_FILE:${NDSTOOL_ARM9}>")
-			list(APPEND NDSTOOL_DEPS ${NDSTOOL_ARM9})
-		else()
-			list(APPEND NDSTOOL_ARGS -9 "${NDSTOOL_ARM9}")
-		endif()
-	elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
+	if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
 		list(APPEND NDSTOOL_ARGS -9 "$<TARGET_FILE:${target}>")
 		list(APPEND NDSTOOL_DEPS ${target})
-	endif ()
-
-	if (DEFINED NDSTOOL_ARM7)
-		if (TARGET "${NDSTOOL_ARM7}")
-			list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${NDSTOOL_ARM7}>")
-			list(APPEND NDSTOOL_DEPS ${NDSTOOL_ARM7})
-		else()
-			list(APPEND NDSTOOL_ARGS -7 "${NDSTOOL_ARM7}")
-		endif()
 	elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv4t")
 		list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${target}>")
 		list(APPEND NDSTOOL_DEPS ${target})
@@ -140,25 +124,4 @@ function(nds_create_rom target)
 		"${target}_nds" ALL
 		DEPENDS "${TARGET_OUTPUT_NAME}.nds"
 	)
-endfunction()
-
-function(nds_build_arm7 target)
-	cmake_parse_arguments(ARM7 "" "CMAKE_ARGS;SOURCE_DIR;OUTPUT_NAME" "" ${ARGN})
-
-	if(NOT ARM7_OUTPUT_NAME)
-		set(ARM7_OUTPUT_NAME "${target}")
-	endif()
-
-	include(ExternalProject)
-	ExternalProject_Add(${target}_project
-		CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE};-DCMAKE_SYSTEM_PROCESSOR=armv4t;${ARM7_CMAKE_ARGS}"
-		SOURCE_DIR "${ARM7_SOURCE_DIR}"
-		UPDATE_COMMAND ""
-		INSTALL_COMMAND ""
-	)
-	ExternalProject_Get_Property(${target}_project BINARY_DIR)
-
-	add_executable(${target} IMPORTED)
-	add_dependencies(${target} ${target}_project)
-	set_target_properties(${target} PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/${ARM7_OUTPUT_NAME}${CMAKE_EXECUTABLE_SUFFIX})
 endfunction()
