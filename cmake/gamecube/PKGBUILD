@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=gamecube-cmake
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="CMake support for Nintendo GameCube"
 arch=('any')
 url='http://devkitpro.org/'
@@ -11,7 +11,7 @@ source=(
   'powerpc-eabi-cmake'
 )
 options=('!strip')
-depends=('devkitppc-cmake')
+depends=('devkitppc-cmake' 'ogc-cmake')
 groups=('gamecube-dev')
 
 sha256sums=(
