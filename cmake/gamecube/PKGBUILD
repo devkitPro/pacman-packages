@@ -1,0 +1,32 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=gamecube-cmake
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="CMake support for Nintendo GameCube"
+arch=('any')
+url='http://devkitpro.org/'
+source=(
+  'GameCube.cmake'
+  'NintendoGameCube.cmake'
+  'powerpc-eabi-cmake'
+)
+options=('!strip')
+depends=('devkitppc-cmake')
+groups=('gamecube-dev')
+
+sha256sums=(
+  'ee258d8dc60fc6526116563c755ede223916c883e9a5266270855bcabb9f8c81'  # GameCube.cmake
+  '8f05eecc60bdfe6315e05be8cabbf7a5c882ce73e14a4d0efb4bcef4ece69553'  # NintendoGameCube.cmake
+  'e4a8ff6cf0efb88e181ffc1b8930625943aa36cebd2b98909f4925e1d5b25722'  # powerpc-eabi-cmake
+)
+
+package() {
+
+  install -d "$pkgdir"/opt/devkitpro/portlibs/gamecube/bin
+  cp "$srcdir"/powerpc-eabi-cmake "$pkgdir"/opt/devkitpro/portlibs/gamecube/bin/
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  cp "${srcdir}"/GameCube.cmake "$pkgdir"/opt/devkitpro/cmake
+  install -d "$pkgdir"/opt/devkitpro/cmake/Platform
+  cp "${srcdir}"/NintendoGameCube.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
+
+}
