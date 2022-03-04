@@ -23,18 +23,6 @@ macro(__dkp_toolchain name arch triplet)
 		set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_LIST_DIR}/dkp-rule-overrides.cmake)
 	endif()
 
-	set(TOOL_PREFIX ${DEVKITPRO}/${name}/bin/${triplet}-)
-
-	set(CMAKE_ASM_COMPILER ${TOOL_PREFIX}gcc        CACHE PATH "")
-	set(CMAKE_C_COMPILER   ${TOOL_PREFIX}gcc        CACHE PATH "")
-	set(CMAKE_CXX_COMPILER ${TOOL_PREFIX}g++        CACHE PATH "")
-	set(CMAKE_LINKER       ${TOOL_PREFIX}ld         CACHE PATH "")
-	set(CMAKE_AR           ${TOOL_PREFIX}gcc-ar     CACHE PATH "")
-	set(CMAKE_RANLIB       ${TOOL_PREFIX}gcc-ranlib CACHE PATH "")
-	set(CMAKE_STRIP        ${TOOL_PREFIX}strip      CACHE PATH "")
-	set(DKP_OBJCOPY        ${TOOL_PREFIX}objcopy    CACHE PATH "")
-	set(DKP_NM             ${TOOL_PREFIX}nm         CACHE PATH "")
-
 	set(CMAKE_LIBRARY_ARCHITECTURE ${triplet} CACHE INTERNAL "abi")
 
 	# [CMake 3.15+] Start find_package in config mode
@@ -65,6 +53,19 @@ macro(__dkp_toolchain name arch triplet)
 	if (NOT DKP_BIN2S)
 		message(WARNING "Could not find bin2s: try installing general-tools")
 	endif()
+
+	set(TOOL_HINT ${DEVKITPRO}/${name}/bin)
+
+	find_program(CMAKE_ASM_COMPILER ${triplet}-gcc        HINT ${TOOL_HINT})
+	find_program(CMAKE_C_COMPILER   ${triplet}-gcc        HINT ${TOOL_HINT})
+	find_program(CMAKE_CXX_COMPILER ${triplet}-g++        HINT ${TOOL_HINT})
+	find_program(CMAKE_LINKER       ${triplet}-ld         HINT ${TOOL_HINT})
+	find_program(CMAKE_AR           ${triplet}-gcc-ar     HINT ${TOOL_HINT})
+	find_program(CMAKE_RANLIB       ${triplet}-gcc-ranlib HINT ${TOOL_HINT})
+	find_program(CMAKE_STRIP        ${triplet}-strip      HINT ${TOOL_HINT})
+	find_program(DKP_OBJCOPY        ${triplet}-objcopy    HINT ${TOOL_HINT})
+	find_program(DKP_NM             ${triplet}-nm         HINT ${TOOL_HINT})
+
 endmacro()
 
 macro(__dkp_platform_prefix)
