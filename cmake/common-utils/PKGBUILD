@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-cmake-common-utils
 pkgver=1.3.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Common utilities and infrastructure for devkitPro CMake"
 arch=('any')
 url='http://devkitpro.org/'
@@ -18,7 +18,7 @@ source=(
 
 sha256sums=(
   'ec758b41e5a58b288cf08ef27ce9b8791ff0411aa957141f1f73ca3e97fcdf6f'  # dkp-initialize-path.cmake
-  '9baae33c7e424aac1fd57dd06217ebdc6a45ff0f8248b3a51549bb426d37b751'  # dkp-toolchain-common.cmake
+  '6bc88ff01d63cbed885dc964fae95667211c1f3fae897e6e24d6fc380ea632f7'  # dkp-toolchain-common.cmake
   'cace25ed99312e094072706435b6448f7e87769ab7250ab4292ca150054bbc55'  # dkp-rule-overrides.cmake
   '24f0d66c643ea7145ad9d5698f00b18b30583145c63642da553429075f4cf556'  # dkp-linker-utils.cmake
   'e5d720c0af5e7a47296cbefc9adbc8660e58893fb9faa78dfa51dfd8f6d88248'  # dkp-custom-target.cmake
