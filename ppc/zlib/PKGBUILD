@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=ppc-zlib
 pkgver=1.2.11
-pkgrel=2
+pkgrel=3
 pkgdesc='Deflate compression method library (for Nintendo gamecube/wii homebrew development)'
 arch=('any')
 url='http://www.zlib.net/'
@@ -18,8 +18,16 @@ build() {
   source /opt/devkitpro/ppcvars.sh
 
   CHOST=powerpc-eabi \
-    ./configure --prefix="/opt/devkitpro/portlibs/ppc" --static
+    ./configure --prefix="${PORTLIBS_PREFIX}" --static
   make libz.a # only build library, no programs
+
+  # libminizip
+  cd contrib/minizip
+  autoreconf --force --verbose --install
+  CFLAGS="${CFLAGS} -DUSE_FILE32API"
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
+    --disable-shared --enable-static
+  make
 }
 
 package() {
@@ -29,8 +37,12 @@ package() {
 
   make DESTDIR="$pkgdir" install
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname
-  tail -n 31 README > "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname/LICENSE
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  tail -n 31 README > "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+
+  # libminizip
+  cd contrib/minizip
+  make DESTDIR="$pkgdir" install
 }
