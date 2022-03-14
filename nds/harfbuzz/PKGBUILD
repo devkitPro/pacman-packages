@@ -24,7 +24,7 @@ build() {
   cd harfbuzz-${pkgver}
   patch -Np1 -i ${srcdir}/harfbuzz-${pkgver}.patch
 
-  ${DEVKITPRO}/meson-cross.sh nds ../crossfile.txt build -Db_ndebug=true -Dthreads=disabled
+  ${DEVKITPRO}/meson-cross.sh nds ../crossfile.txt build -Db_ndebug=true -Dthreads=disabled -Dthreads=disabled
   ninja -C build
 }
 
