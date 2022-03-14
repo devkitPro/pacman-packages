@@ -1,0 +1,47 @@
+pkgname=('3ds-ffmpeg')
+pkgver=5.0
+pkgrel=1
+pkgdesc="A complete, cross-platform solution to record, convert and stream audio and video."
+arch=('any')
+license=('GPLv3')
+url="https://ffmpeg.org/"
+source=('https://www.ffmpeg.org/releases/ffmpeg-5.0.tar.gz')
+sha256sums=('7bf52bc242b5db8df67c62cb826df134d917dedcf6abf1289e15e4057bcc1750')
+options=(!strip libtool staticlibs)
+makedepends=('devkitARM')
+
+groups=('3ds-portlibs')
+
+package() {
+  cd FFmpeg-5.0
+  export PATH=$DEVKITARM/bin:$PATH
+  export ARCH="-march=armv6k -mtune=mpcore -mfloat-abi=hard"
+  ./configure --prefix=$DEVKITPRO/portlibs/3ds/ \
+  --enable-cross-compile \
+  --cross-prefix=$DEVKITARM/bin/arm-none-eabi- \
+  --disable-shared \
+  --disable-runtime-cpudetect \
+  --disable-armv5te \
+  --disable-programs \
+  --disable-doc \
+  --enable-bsfs \
+  --enable-static \
+  --arch=armv6k \
+  --cpu=mpcore \
+  --disable-armv6t2 \
+  --disable-neon \
+  --target-os=none \
+  --extra-cflags=" -O3 -DARM11 -D_3DS -mword-relocations -fomit-frame-pointer -ffast-math $ARCH" \
+  --extra-cxxflags=" -O3 -DARM11 -D_3DS -mword-relocations -fomit-frame-pointer -ffast-math -fno-rtti -fno-exceptions -std=gnu++11 $ARCH" \
+  --extra-ldflags=" -specs=3dsx.specs $ARCH -L$DEVKITARM/lib  -L$DEVKITPRO/libctru/lib  -L$DEVKITPRO/portlibs/3ds/lib -lctru " \
+  --disable-bzlib \
+  --disable-iconv \
+  --disable-lzma \
+  --disable-securetransport \
+  --disable-xlib \
+  --disable-zlib \
+  --disable-debug \
+  --enable-gpl \
+  --enable-version3 
+  make install
+}
