@@ -1,0 +1,34 @@
+diff -ur harfbuzz-4.0.1/meson.build harfbuzz-4.0.1.patched/meson.build
+--- harfbuzz-4.0.1/meson.build	2022-03-11 18:20:12.000000000 +0000
++++ harfbuzz-4.0.1.patched/meson.build	2022-03-14 20:58:12.000000000 +0000
+@@ -269,11 +269,14 @@
+ 
+ # threads
+ thread_dep = null_dep
+-if host_machine.system() != 'windows'
+-  thread_dep = dependency('threads', required: false)
+ 
+-  if thread_dep.found()
+-    conf.set('HAVE_PTHREAD', 1)
++if get_option('threads').enabled()
++  if host_machine.system() != 'windows'
++    thread_dep = dependency('threads', required: false)
++
++    if thread_dep.found()
++      conf.set('HAVE_PTHREAD', 1)
++    endif
+   endif
+ endif
+ 
+diff -ur harfbuzz-4.0.1/meson_options.txt harfbuzz-4.0.1.patched/meson_options.txt
+--- harfbuzz-4.0.1/meson_options.txt	2022-03-11 18:20:12.000000000 +0000
++++ harfbuzz-4.0.1.patched/meson_options.txt	2022-03-14 20:56:08.000000000 +0000
+@@ -21,6 +21,8 @@
+   description: 'Enable DirectWrite shaper backend on Windows (experimental)')
+ option('coretext', type: 'feature', value: 'disabled',
+   description: 'Enable CoreText shaper backend on macOS')
++option('threads', type: 'feature', value: 'enabled',
++  description: 'Enable thread safety')
+ 
+ # Common feature options
+ option('tests', type: 'feature', value: 'enabled', yield: true,

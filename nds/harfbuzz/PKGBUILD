@@ -1,0 +1,36 @@
+pkgname=nds-harfbuzz
+pkgver=4.0.1
+pkgrel=1
+pkgdesc='HarfBuzz is a text shaping library. Using the HarfBuzz library allows programs to convert a sequence of Unicode input into properly formatted and positioned glyph output—for any writing system and language.'
+arch=('any')
+url='https://harfbuzz.github.io/'
+license=(LGPL)
+options=(!strip libtool staticlibs)
+source=(
+  "https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz"
+  "harfbuzz-${pkgver}.patch"
+)
+
+sha256sums=(
+  '98f68777272db6cd7a3d5152bac75083cd52a26176d87bc04c8b3929d33bce49'
+  '0bb49c909fe06b6ecbe3c76fd3e99c668dcaf38029aebdf5fc8376b68d84a575'
+)
+makedepends=('nds-pkg-config' 'dkp-toolchain-vars' 'dkp-meson-scripts')
+depends=('nds-freetype')
+
+groups=('nds-portlibs')
+
+build() {
+  cd harfbuzz-${pkgver}
+  patch -Np1 -i ${srcdir}/harfbuzz-${pkgver}.patch
+
+  ${DEVKITPRO}/meson-cross.sh nds ../crossfile.txt build -Db_ndebug=true -Dthreads=disabled
+  ninja -C build
+}
+
+package() {
+
+  cd harfbuzz-${pkgver}
+  DESTDIR="$pkgdir" ninja -C build install
+
+}
