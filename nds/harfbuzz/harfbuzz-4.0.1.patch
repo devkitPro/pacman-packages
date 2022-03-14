@@ -1,6 +1,6 @@
-diff -ur harfbuzz-4.0.1/meson.build harfbuzz-4.0.1.patched/meson.build
+diff -NBaur harfbuzz-4.0.1/meson.build harfbuzz-4.0.1.patched/meson.build
 --- harfbuzz-4.0.1/meson.build	2022-03-11 18:20:12.000000000 +0000
-+++ harfbuzz-4.0.1.patched/meson.build	2022-03-14 20:58:12.000000000 +0000
++++ harfbuzz-4.0.1.patched/meson.build	2022-03-14 22:44:50.000000000 +0000
 @@ -269,12 +269,17 @@
  
  # threads
@@ -23,9 +23,9 @@ diff -ur harfbuzz-4.0.1/meson.build harfbuzz-4.0.1.patched/meson.build
  endif
  
  conf.set_quoted('PACKAGE_NAME', 'HarfBuzz')
-diff -ur harfbuzz-4.0.1/meson_options.txt harfbuzz-4.0.1.patched/meson_options.txt
+diff -NBaur harfbuzz-4.0.1/meson_options.txt harfbuzz-4.0.1.patched/meson_options.txt
 --- harfbuzz-4.0.1/meson_options.txt	2022-03-11 18:20:12.000000000 +0000
-+++ harfbuzz-4.0.1.patched/meson_options.txt	2022-03-14 20:56:08.000000000 +0000
++++ harfbuzz-4.0.1.patched/meson_options.txt	2022-03-14 22:44:50.000000000 +0000
 @@ -21,6 +21,8 @@
    description: 'Enable DirectWrite shaper backend on Windows (experimental)')
  option('coretext', type: 'feature', value: 'disabled',
@@ -35,3 +35,33 @@ diff -ur harfbuzz-4.0.1/meson_options.txt harfbuzz-4.0.1.patched/meson_options.t
  
  # Common feature options
  option('tests', type: 'feature', value: 'enabled', yield: true,
+diff -NBaur harfbuzz-4.0.1/src/hb-repacker.hh harfbuzz-4.0.1.patched/src/hb-repacker.hh
+--- harfbuzz-4.0.1/src/hb-repacker.hh	2022-03-11 18:20:12.000000000 +0000
++++ harfbuzz-4.0.1.patched/src/hb-repacker.hh	2022-03-14 22:45:46.000000000 +0000
+@@ -388,7 +388,7 @@
+ 
+     while (roots)
+     {
+-      unsigned next = HB_SET_VALUE_INVALID;
++      uint32_t next = HB_SET_VALUE_INVALID;
+       if (unlikely (!check_success (!roots.in_error ()))) break;
+       if (!roots.next (&next)) break;
+ 
+@@ -479,7 +479,7 @@
+     remap_obj_indices (index_map, parents.iter (), true);
+ 
+     // Update roots set with new indices as needed.
+-    unsigned next = HB_SET_VALUE_INVALID;
++    uint32_t next = HB_SET_VALUE_INVALID;
+     while (roots.next (&next))
+     {
+       if (index_map.has (next))
+@@ -1129,7 +1129,7 @@
+     // Only move at most half of the roots in a space at a time.
+     unsigned extra = roots_to_isolate.get_population () - maximum_to_move;
+     while (extra--) {
+-      unsigned root = HB_SET_VALUE_INVALID;
++      uint32_t root = HB_SET_VALUE_INVALID;
+       roots_to_isolate.previous (&root);
+       roots_to_isolate.del (root);
+     }

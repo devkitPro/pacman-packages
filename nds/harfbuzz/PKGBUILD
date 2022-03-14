@@ -13,7 +13,7 @@ source=(
 
 sha256sums=(
   '98f68777272db6cd7a3d5152bac75083cd52a26176d87bc04c8b3929d33bce49'
-  '1c2f98f9efac5c32cfe89ac6692d20c5ef12512225d3442b8cdb3a33c4686c12'
+  'c2326251bff6153d8354b39d946e4176e960f92e9bb9a6e9148a090bc28d5271'
 )
 makedepends=('nds-pkg-config' 'dkp-toolchain-vars' 'dkp-meson-scripts')
 depends=('nds-freetype')
