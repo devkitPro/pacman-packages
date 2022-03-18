@@ -21,6 +21,8 @@ depends=('nds-freetype')
 groups=('nds-portlibs')
 
 build() {
+
+  source /opt/devkitpro/ndsvars.sh
   cd harfbuzz-${pkgver}
   patch -Np1 -i ${srcdir}/harfbuzz-${pkgver}.patch
 
