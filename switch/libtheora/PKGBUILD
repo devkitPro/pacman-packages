@@ -2,7 +2,7 @@
 
 pkgname=switch-libtheora
 pkgver=1.2.0alpha1
-pkgrel=3
+pkgrel=1
 pkgdesc='Free and open video compression codec from the Xiph.org Foundation'
 arch=('any')
 url='https://www.theora.org/'
