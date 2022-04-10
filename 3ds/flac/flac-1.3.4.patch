@@ -1,0 +1,57 @@
+diff -Naur flac-1.3.4.orig/include/share/compat.h flac-1.3.4/include/share/compat.h
+--- flac-1.3.4.orig/include/share/compat.h	2021-07-09 13:24:42.168553000 -0700
++++ flac-1.3.4/include/share/compat.h	2022-04-10 14:46:25.896436562 -0700
+@@ -163,17 +163,27 @@
+ #define flac_vfprintf vfprintf
+ 
+ #define flac_fopen fopen
+-#define flac_chmod chmod
+ #define flac_unlink unlink
+ #define flac_rename rename
+ #define flac_stat stat
+ 
++#ifdef __3DS__
++#define flac_chmod(a, b) printf("flac_chmod: not implemented\n")
++#define chown(a, b, c) printf("flac_chown: not implemented\n")
++#else
++ #define flac_chmod chmod
++#endif
++
++#ifdef __3DS__
++#define flac_utime(a, b) printf("flac_utime: not implemented\n")
++#else
+ #if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L)
+ #define flac_utime(a, b) utimensat (AT_FDCWD, a, *b, 0)
+ #else
+ #define flac_utime utime
+ #endif
+ #endif
++#endif
+ 
+ #ifdef _WIN32
+ #define flac_stat_s __stat64 /* stat struct */
+diff -Naur flac-1.3.4.orig/Makefile.in flac-1.3.4/Makefile.in
+--- flac-1.3.4.orig/Makefile.in	2022-02-20 10:55:03.025219000 -0800
++++ flac-1.3.4/Makefile.in	2022-04-10 15:03:22.399528198 -0700
+@@ -403,7 +403,7 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = doc include m4 man src test build microbench oss-fuzz \
++SUBDIRS = include m4 src test build microbench oss-fuzz \
+ 	$(am__append_1)
+ EXTRA_DIST = \
+ 	CMakeLists.txt \
+diff -Naur flac-1.3.4.orig/src/Makefile.in flac-1.3.4/src/Makefile.in
+--- flac-1.3.4.orig/src/Makefile.in	2022-02-20 10:55:03.619219000 -0800
++++ flac-1.3.4/src/Makefile.in	2022-04-10 15:03:34.442552908 -0700
+@@ -371,8 +371,6 @@
+ SUBDIRS = \
+ 	libFLAC \
+ 	share \
+-	flac \
+-	metaflac \
+ 	$(XMMS_DIRS) \
+ 	test_grabbag \
+ 	test_libs_common \
+
