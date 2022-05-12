@@ -1,8 +1,8 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=switch-libarchive
-pkgver=3.1.2
-pkgrel=3
+pkgver=3.3.2
+pkgrel=4
 pkgdesc='library that can create and read several streaming archive format (for Nintendo Switch homebrew development)'
 arch=('any')
 url="https://www.libarchive.org"
@@ -10,29 +10,28 @@ license=('Simplified BSD')
 options=(!strip libtool staticlibs)
 source=(
  "http://www.libarchive.org/downloads/libarchive-${pkgver}.tar.gz"
- "libarchive-3.1.2.patch"
+ "libarchive-3.3.2.patch"
 )
 sha256sums=(
- 'eb87eacd8fe49e8d90c8fdc189813023ccc319c5e752b01fb6ad0cc7b2c53d5e'
- '3d397bbd8d374a516cdedcae4b8e7b33cb07f3324a3baca629bc3b6fe097a0f5'
+ 'ed2dbd6954792b2c054ccf8ec4b330a54b85904a80cef477a1c74643ddafa0ce'
+ '85e8b67dcae86ea865bd6eb6a16c806744ed0a2580d82b035508752bdc87ecd4'
 )
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
-depends=('switch-bzip2' 'switch-zlib' 'switch-liblzma')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+depends=('switch-bzip2' 'switch-zlib' 'switch-liblzma' 'switch-lz4' 'switch-libexpat')
 groups=('switch-portlibs')
 
 build() {
   cd libarchive-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   patch -Np1 -i "$srcdir"/libarchive-${pkgver}.patch
 
-  ./configure --disable-shared --enable-static \
-    --prefix="$DEVKITPRO/portlibs/switch" --host=aarch64-none-elf \
-    --without-nettle --without-openssl --without-xml2 \
-    --without-expat --without-iconv --disable-bsdtar \
-    --disable-bsdcpio --disable-acl
+  CFLAGS="${CFLAGS} -DHAVE_ARC4RANDOM_BUF" \
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static \
+    --disable-bsdtar --disable-bsdcat \
+    --disable-bsdcpio --disable-acl --without-xml2
 
   make
 }
@@ -40,14 +39,13 @@ build() {
 package() {
   cd libarchive-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
-  source /opt/devkitpro/3dsvars.sh
+  source /opt/devkitpro/switchvars.sh
 
   make DESTDIR="$pkgdir" install
   # license
-  install -Dm644 "$srcdir"/libarchive-${pkgver}/COPYING  "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
+  install -Dm644 "$srcdir"/libarchive-${pkgver}/COPYING  "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/bin
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/bin
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }
 
