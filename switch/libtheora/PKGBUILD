@@ -11,8 +11,8 @@ options=(!strip libtool staticlibs)
 source=("https://ftp.osuosl.org/pub/xiph/releases/theora/libtheora-${pkgver}.tar.gz" "config.sub" "config.guess")
 sha256sums=(
  '538305e6efa484ba740616b521f0d8c4428a0a995193c5e6af9b20f488f3c497'
- '20a4eaedc9fb93161c214379e22e2bc60f238b1caef352c04b4e2df79e8a3ead'
- '754b72ef1172b2ecf6ed167d731fcb7ff19a4c2786ff0f24a8ce5c36be8d7783'
+ '72e02ea93447038f8ced24f296b31e0f397bbcc6b32abdcf9b38c80f153433fd'
+ 'fbc2337aa59a204f5d74743b82c8be7aab8b39853b4e54a888008f70430c4305'
 )
 
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
