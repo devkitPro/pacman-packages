@@ -12,7 +12,7 @@ if [ "$PLATFORM" = "gba" ]; then
   groups=('gba-dev')
 elif [ "$PLATFORM" = "nds" ]; then
   platdesc="Nintendo NDS"
-  depends=('devkitARM' 'libnds')
+  depends=('libnds')
   groups=('nds-dev')
 else
   echo "$PLATFORM unsupported"
@@ -20,7 +20,7 @@ else
 fi
 
 pkgname=("${pkgbasename}-${PLATFORM}")
-pkgver=1.0.14
+pkgver=1.0.15
 pkgrel=1
 pkgdesc="${platdesc} Audio library."
 arch=('any')
@@ -28,7 +28,9 @@ license=('custom')
 url="http://github.com/devkitpro"
 options=(!strip libtool staticlibs)
 source=($pkgbasename-$pkgver.tar.gz::${url}/${pkgbasename}/archive/v${pkgver}.tar.gz)
-sha256sums=('2d268641240fb1c27366380e15829c52a366f93072e8afa689f6ca72c8e09ac6')
+sha256sums=(
+  'c7310aea8adf0c9ea33223289119a406e31294959c67904449a9313b9cfd30f5'
+)
 
 package() {
 
