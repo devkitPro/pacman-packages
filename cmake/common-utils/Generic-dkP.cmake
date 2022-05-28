@@ -8,7 +8,9 @@ include_guard(GLOBAL)
 set(CMAKE_EXECUTABLE_SUFFIX .elf)
 
 # Prevent standard build configurations from loading unwanted "default" flags
-set(CMAKE_NOT_USING_CONFIG_FLAGS TRUE)
+if(DKP_NO_BUILTIN_CMAKE_CONFIGS)
+	set(CMAKE_NOT_USING_CONFIG_FLAGS TRUE)
+endif()
 
 # Disable shared library support
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Shared libs not available")
