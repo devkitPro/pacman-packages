@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-toolchain-vars
-pkgver=1.0.0
-pkgrel=2
+pkgver=1.0.1
+pkgrel=1
 
 pkgdesc='helper scripts to set variables for devkitPro toolchains'
 
@@ -30,7 +30,7 @@ sha256sums=(
   'a826637aa7f16cdda6f6c78f6c9c129ffdafe268e5ddfe03364a5d6c8f02c197' # ppcvars.sh
   'c9c2ace9491cd80902ae10d9e68d3375e9419434dec5e8bf0b13ad868f876321' # cubevars.sh
   'f344f696b1137b75b490a591453dc0d59421ee89d00de1f3abea88b4ff5bf65a' # wiivars.sh
-  '59d7da4a6692cf91469dcb64c362623e57bb9ede845792c92645d8c635728aa5' # wiiuvars.sh
+  'd99fb990cea960f7b8c09b85f5966024bd1b8b9e969650ed59065eaa0c496892' # wiiuvars.sh
 
   'f3caba3a8864a31a50ff50131f39d160013b6d0b8a2e7e6ac90ca44b591fcb57' # devkita64.sh
   '3c65507df9ed4e76f4ce137ed32d4226a4829f6c38cd0d7324d8c0a550c49212' # switchvars.sh
