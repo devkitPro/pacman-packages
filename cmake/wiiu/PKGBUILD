@@ -1,6 +1,6 @@
 # Maintainer: fincs <fincs@devkitpro.org>
 pkgname=wiiu-cmake
-pkgver=1.1.0
+pkgver=1.1.1
 pkgrel=1
 pkgdesc="CMake support for Nintendo Wii U"
 arch=('any')
@@ -16,7 +16,7 @@ groups=('wiiu-dev')
 options=('!strip')
 sha256sums=(
   'f17d338c2c6416099a264855336d915ce2d70071b356e9d13b8f712b9daa1730' # powerpc-eabi-cmake
-  '590a90cf8fcd1e23c3a7234df78a4593f09a50eadc84999376509307b4f46447' # WiiU.cmake
+  '00b58a68455f1395001b538e29d018026da48751247d8da7a36e63a165ea1032' # WiiU.cmake
   '37e95ed2e99b12b3bca8401de0715072c6c4d4276b8e0fe5a0061fed14f0cdb4' # CafeOS.cmake
 )
 

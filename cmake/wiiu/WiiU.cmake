@@ -11,6 +11,7 @@ set(WUT_ROOT ${DEVKITPRO}/wut)
 
 __dkp_platform_prefix(
 	${DEVKITPRO}/portlibs/wiiu
+	${DEVKITPRO}/portlibs/ppc
 	${WUT_ROOT}
 )
 
