@@ -17,7 +17,7 @@ source=(
 )
 
 sha256sums=(
-  'ec758b41e5a58b288cf08ef27ce9b8791ff0411aa957141f1f73ca3e97fcdf6f'  # dkp-initialize-path.cmake
+  'f20279873542e4e50e64036f8b68a33fd1e4aa3d45a98e233e5dd9d0ebd97ca3'  # dkp-initialize-path.cmake
   '6bc88ff01d63cbed885dc964fae95667211c1f3fae897e6e24d6fc380ea632f7'  # dkp-toolchain-common.cmake
   '77d8afc4add9aa90bfda1eae71904ae17c51464acb98b36f441cfba544b258ce'  # dkp-rule-overrides.cmake
   '24f0d66c643ea7145ad9d5698f00b18b30583145c63642da553429075f4cf556'  # dkp-linker-utils.cmake
