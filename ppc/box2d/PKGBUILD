@@ -18,10 +18,8 @@ build() {
 
     cd ${pkgbasename}-${pkgver}
 
-    source $DEVKITPRO/ppcvars.sh
-
-    powerpc-eabi-cmake \
-      -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -G"Unix Makefiles" \
+      -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc \
       -DBOX2D_BUILD_DOCS=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DBOX2D_BUILD_TESTBED=OFF \
       .
 
