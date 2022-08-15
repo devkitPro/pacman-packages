@@ -1,0 +1,34 @@
+# Maintainer: TurtleP <jpostelnek@outlook.com>
+
+pkgbasename=box2d
+pkgname=ppc-$pkgbasename
+pkgver=2.4.1
+pkgrel=1
+pkgdesc='Box2D is a 2D physics engine for games.'
+arch=('any')
+url='https://github.com/erincatto/box2d'
+license=(MIT)
+options=(!strip libtool staticlibs)
+source=("${url}/archive/refs/tags/v${pkgver}.zip")
+sha256sums=('0cb512dfa5be79ca227cd881b279adee61249c85c8b51caf5aa036b71e943002')
+makedepends=('dkp-toolchain-vars' 'devkitppc-cmake')
+groups=('ppc-portlibs')
+
+build() {
+
+    cd ${pkgbasename}-${pkgver}
+
+    /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -G"Unix Makefiles" \
+      -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc \
+      -DBOX2D_BUILD_DOCS=OFF -DBOX2D_BUILD_UNIT_TESTS=OFF -DBOX2D_BUILD_TESTBED=OFF \
+      .
+
+    make
+
+}
+
+package() {
+  cd ${pkgbasename}-${pkgver}
+
+  make install DESTDIR="$pkgdir"
+}
