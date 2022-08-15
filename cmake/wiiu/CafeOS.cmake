@@ -16,7 +16,7 @@ set(WUT TRUE)
 # Platform settings
 set(WUT_ARCH_SETTINGS "-mcpu=750 -meabi -mhard-float")
 set(WUT_COMMON_FLAGS  "-ffunction-sections -fdata-sections -DESPRESSO -D__WIIU__ -D__WUT__")
-set(WUT_LINKER_FLAGS  "-L${WUT_ROOT}/lib -L${DEVKITPRO}/portlibs/wiiu/lib -specs=${WUT_ROOT}/share/wut.specs")
+set(WUT_LINKER_FLAGS  "-L${WUT_ROOT}/lib -L${DEVKITPRO}/portlibs/wiiu/lib -L${DEVKITPRO}/portlibs/ppc/lib -specs=${WUT_ROOT}/share/wut.specs")
 set(WUT_STANDARD_LIBRARIES "-lwut -lm")
 set(WUT_STANDARD_INCLUDE_DIRECTORIES "${WUT_ROOT}/include")
 
