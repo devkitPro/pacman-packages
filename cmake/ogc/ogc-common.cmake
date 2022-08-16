@@ -16,6 +16,7 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/devkitPPC.cmake)
 
 set(OGC_ROOT ${DEVKITPRO}/libogc)
+set(DKP_INSTALL_PREFIX_INIT ${DEVKITPRO}/portlibs/${OGC_CONSOLE})
 
 __dkp_platform_prefix(
     ${DEVKITPRO}/portlibs/${OGC_CONSOLE}

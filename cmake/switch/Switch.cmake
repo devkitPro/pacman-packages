@@ -8,6 +8,7 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/devkitA64.cmake)
 
 set(NX_ROOT ${DEVKITPRO}/libnx)
+set(DKP_INSTALL_PREFIX_INIT ${DEVKITPRO}/portlibs/switch)
 
 __dkp_platform_prefix(
 	${DEVKITPRO}/portlibs/switch

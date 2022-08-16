@@ -8,6 +8,7 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/devkitPPC.cmake)
 
 set(WUT_ROOT ${DEVKITPRO}/wut)
+set(DKP_INSTALL_PREFIX_INIT ${DEVKITPRO}/portlibs/wiiu)
 
 __dkp_platform_prefix(
 	${DEVKITPRO}/portlibs/wiiu

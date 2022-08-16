@@ -4,6 +4,9 @@
 cmake_minimum_required(VERSION 3.13)
 include_guard(GLOBAL)
 
+# Set default build type
+set(CMAKE_BUILD_TYPE_INIT "Release")
+
 # Use .elf extension for compiled binaries
 set(CMAKE_EXECUTABLE_SUFFIX .elf)
 
@@ -32,6 +35,11 @@ macro(__dkp_init_platform_settings platform)
 	else()
 		set(CMAKE_EXE_LINKER_FLAGS_INIT "${${platform}_ARCH_SETTINGS}")
 		set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+	endif()
+
+	if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND DEFINED DKP_INSTALL_PREFIX_INIT)
+		set(CMAKE_INSTALL_PREFIX "${DKP_INSTALL_PREFIX_INIT}" CACHE PATH
+			"Install path prefix, prepended onto install directories." FORCE)
 	endif()
 endmacro()
 

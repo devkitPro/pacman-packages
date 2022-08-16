@@ -12,6 +12,7 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/devkitARM.cmake)
 
 set(CTR_ROOT ${DEVKITPRO}/libctru)
+set(DKP_INSTALL_PREFIX_INIT ${DEVKITPRO}/portlibs/3ds)
 
 __dkp_platform_prefix(
 	${DEVKITPRO}/portlibs/3ds

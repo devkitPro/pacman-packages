@@ -12,6 +12,7 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/devkitARM.cmake)
 
 set(NDS_ROOT ${DEVKITPRO}/libnds)
+set(DKP_INSTALL_PREFIX_INIT ${DEVKITPRO}/portlibs/nds)
 
 __dkp_platform_prefix(
 	${DEVKITPRO}/portlibs/nds
