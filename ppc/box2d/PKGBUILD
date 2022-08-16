@@ -3,7 +3,7 @@
 pkgbasename=box2d
 pkgname=ppc-$pkgbasename
 pkgver=2.4.1
-pkgrel=1
+pkgrel=2
 pkgdesc='Box2D is a 2D physics engine for games.'
 arch=('any')
 url='https://github.com/erincatto/box2d'
