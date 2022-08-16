@@ -31,6 +31,7 @@ __dkp_init_platform_settings(NDS)
 # -----------------------------------------------------------------------------
 # Platform-specific helper utilities
 
+if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
 
 function(nds_create_rom target)
 	cmake_parse_arguments(PARSE_ARGV 1 NDSTOOL "" "ARM7;NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "")
@@ -44,16 +45,17 @@ function(nds_create_rom target)
 		set(TARGET_OUTPUT_NAME "${target}")
 	endif ()
 
-	set(NDSTOOL_ARGS -c "${TARGET_OUTPUT_NAME}.nds")
-	set(NDSTOOL_DEPS)
+	set(NDSTOOL_ARGS -c "${TARGET_OUTPUT_NAME}.nds" -9 "$<TARGET_FILE:${target}>")
+	set(NDSTOOL_DEPS ${target})
 
-	if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
-		list(APPEND NDSTOOL_ARGS -9 "$<TARGET_FILE:${target}>")
-		list(APPEND NDSTOOL_DEPS ${target})
-	elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv4t")
-		list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${target}>")
-		list(APPEND NDSTOOL_DEPS ${target})
-	endif ()
+	if (DEFINED NDSTOOL_ARM7)
+		if (TARGET "${NDSTOOL_ARM7}")
+			list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${NDSTOOL_ARM7}>")
+		else()
+			list(APPEND NDSTOOL_ARGS -7 "${NDSTOOL_ARM7}")
+		endif()
+		list(APPEND NDSTOOL_DEPS "${NDSTOOL_ARM7}")
+	endif()
 
 	if (NOT DEFINED NDSTOOL_NAME)
 		set(NDSTOOL_NAME "${CMAKE_PROJECT_NAME}")
@@ -101,3 +103,5 @@ function(nds_create_rom target)
 		DEPENDS "${TARGET_OUTPUT_NAME}.nds"
 	)
 endfunction()
+
+endif()
