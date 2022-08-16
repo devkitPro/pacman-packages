@@ -23,7 +23,7 @@ __dkp_init_platform_settings(CTR)
 # Platform-specific helper utilities
 
 function(ctr_generate_smdh outfile)
-	cmake_parse_arguments(SMDH "" "NAME;DESCRIPTION;AUTHOR;ICON" "" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 SMDH "" "NAME;DESCRIPTION;AUTHOR;ICON" "")
 	if (NOT DEFINED SMDH_NAME)
 		set(SMDH_NAME "${CMAKE_PROJECT_NAME}")
 	endif()
@@ -45,7 +45,7 @@ function(ctr_generate_smdh outfile)
 endfunction()
 
 function(ctr_create_3dsx target)
-	cmake_parse_arguments(CTR_3DSXTOOL "NOSMDH" "SMDH;ROMFS" "" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 CTR_3DSXTOOL "NOSMDH" "SMDH;ROMFS" "")
 
 	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
 	if(NOT TARGET_OUTPUT_NAME)
@@ -124,7 +124,7 @@ function(ctr_add_shader_library target)
 endfunction()
 
 function(ctr_add_graphics_target target kind)
-	cmake_parse_arguments(CTR_TEX3DS "" "" "INPUTS;OPTIONS" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 2 CTR_TEX3DS "" "" "INPUTS;OPTIONS")
 
 	set(CTR_TEX3DS_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.t3x")
 	set(CTR_TEX3DS_ARGS -o "${CTR_TEX3DS_OUTPUT}")

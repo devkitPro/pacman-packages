@@ -31,8 +31,9 @@ __dkp_init_platform_settings(NDS)
 # -----------------------------------------------------------------------------
 # Platform-specific helper utilities
 
+
 function(nds_create_rom target)
-	cmake_parse_arguments(NDSTOOL "" "NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 NDSTOOL "" "ARM7;NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "")
 
 	if (TARGET "${target}")
 		get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)

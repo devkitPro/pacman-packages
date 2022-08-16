@@ -26,7 +26,7 @@ __dkp_init_platform_settings(WUT)
 # Platform-specific helper utilities
 
 function(wut_create_rpl target)
-	cmake_parse_arguments(ELF2RPL "IS_RPX" "" "" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 ELF2RPL "IS_RPX" "" "")
 
 	set(ELF2RPL_FLAGS "")
 	if(ELF2RPL_IS_RPX)
@@ -61,7 +61,7 @@ function(wut_create_rpx)
 endfunction()
 
 function(wut_create_wuhb target)
-	cmake_parse_arguments(WUHBTOOL "" "CONTENT;NAME;SHORTNAME;AUTHOR;ICON;TVSPLASH;DRCSPLASH" "" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 WUHBTOOL "" "CONTENT;NAME;SHORTNAME;AUTHOR;ICON;TVSPLASH;DRCSPLASH" "")
 
 	get_target_property(RPL_PATH   ${target} WUT_RPL)
 	get_target_property(RPL_IS_RPX ${target} WUT_IS_RPX)

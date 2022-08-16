@@ -26,7 +26,7 @@ __dkp_init_platform_settings(NX)
 # Platform-specific helper utilities
 
 function(nx_generate_nacp outfile)
-	cmake_parse_arguments(NACP "" "NAME;AUTHOR;VERSION" "" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 NACP "" "NAME;AUTHOR;VERSION" "")
 	if (NOT DEFINED NACP_NAME)
 		set(NACP_NAME "${CMAKE_PROJECT_NAME}")
 	endif()
@@ -49,7 +49,7 @@ function(nx_generate_nacp outfile)
 endfunction()
 
 function(nx_create_nro target)
-	cmake_parse_arguments(ELF2NRO "NOICON;NONACP" "ICON;NACP;ROMFS" "" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 ELF2NRO "NOICON;NONACP" "ICON;NACP;ROMFS" "")
 
 	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
 	if(NOT TARGET_OUTPUT_NAME)

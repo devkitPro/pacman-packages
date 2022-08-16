@@ -21,7 +21,7 @@ function(dkp_install_assets target)
 		message(FATAL_ERROR "dkp_install_assets: ${target} is not a valid asset target")
 	endif()
 
-	cmake_parse_arguments(ASSET "" "DESTINATION" "TARGETS" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 ASSET "" "DESTINATION" "TARGETS")
 
 	if (DEFINED ASSET_DESTINATION)
 		set(_dest "${_dest}/${ASSET_DESTINATION}")
@@ -68,7 +68,7 @@ function(dkp_track_assets target)
 		message(FATAL_ERROR "dkp_track_assets: ${target} is not a valid asset target")
 	endif()
 
-	cmake_parse_arguments(ASSET "" "FOLDER" "FILES" ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 ASSET "" "FOLDER" "FILES")
 
 	if (DEFINED ASSET_FOLDER)
 		set(_dest "${_dest}/${ASSET_FOLDER}")
