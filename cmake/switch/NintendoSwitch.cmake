@@ -52,11 +52,13 @@ function(nx_create_nro target)
 	cmake_parse_arguments(PARSE_ARGV 1 ELF2NRO "NOICON;NONACP" "ICON;NACP;ROMFS" "")
 
 	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
+	get_target_property(TARGET_BINARY_DIR  ${target} BINARY_DIR)
 	if(NOT TARGET_OUTPUT_NAME)
 		set(TARGET_OUTPUT_NAME "${target}")
 	endif()
 
-	set(ELF2NRO_ARGS "$<TARGET_FILE:${target}>" "${TARGET_OUTPUT_NAME}.nro")
+	set(ELF2NRO_OUTPUT "${TARGET_BINARY_DIR}/${TARGET_OUTPUT_NAME}.nro")
+	set(ELF2NRO_ARGS "$<TARGET_FILE:${target}>" "${ELF2NRO_OUTPUT}")
 	set(ELF2NRO_DEPS ${target})
 
 	if (DEFINED ELF2NRO_ICON AND ELF2NRO_NOICON)
@@ -77,6 +79,7 @@ function(nx_create_nro target)
 	endif()
 
 	if (DEFINED ELF2NRO_ICON)
+		get_filename_component(ELF2NRO_ICON "${ELF2NRO_ICON}" ABSOLUTE)
 		list(APPEND ELF2NRO_ARGS "--icon=${ELF2NRO_ICON}")
 		list(APPEND ELF2NRO_DEPS "${ELF2NRO_ICON}")
 	endif()
@@ -96,7 +99,7 @@ function(nx_create_nro target)
 			list(APPEND ELF2NRO_DEPS ${ELF2NRO_ROMFS} $<TARGET_PROPERTY:${ELF2NRO_ROMFS},DKP_ASSET_FILES>)
 		else()
 			if (NOT IS_ABSOLUTE "${ELF2NRO_ROMFS}")
-				set(ELF2NRO_ROMFS "${CMAKE_CURRENT_LIST_DIR}/${ELF2NRO_ROMFS}")
+				set(ELF2NRO_ROMFS "${CMAKE_CURRENT_SOURCE_DIR}/${ELF2NRO_ROMFS}")
 			endif()
 			if (NOT IS_DIRECTORY "${ELF2NRO_ROMFS}")
 				message(FATAL_ERROR "nx_create_nro: cannot find romfs dir: ${ELF2NRO_ROMFS}")
@@ -106,30 +109,30 @@ function(nx_create_nro target)
 	endif()
 
 	add_custom_command(
-		OUTPUT "${TARGET_OUTPUT_NAME}.nro"
+		OUTPUT "${ELF2NRO_OUTPUT}"
 		COMMAND "${NX_ELF2NRO_EXE}" ${ELF2NRO_ARGS}
 		DEPENDS ${ELF2NRO_DEPS}
+		COMMENT "Building NRO executable for ${target}"
 		VERBATIM
 	)
 
 	add_custom_target(
 		"${target}_nro" ALL
-		DEPENDS "${TARGET_OUTPUT_NAME}.nro"
+		DEPENDS "${ELF2NRO_OUTPUT}"
 	)
 endfunction()
 
 function(nx_add_shader_program target source type)
-	if(NOT IS_ABSOLUTE ${source})
-		set(source "${CMAKE_CURRENT_LIST_DIR}/${source}")
-	endif()
-
 	set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.dksh")
 	add_custom_command(
 		OUTPUT "${outfile}"
 		COMMAND "${NX_UAM_EXE}" -o "${outfile}" -s ${type} "${source}"
 		DEPENDS "${source}"
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Building shader program ${target}"
+		VERBATIM
 	)
+
 	add_custom_target(${target} DEPENDS "${outfile}")
 	dkp_set_target_file(${target} "${outfile}")
 endfunction()

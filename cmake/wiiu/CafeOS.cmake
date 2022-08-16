@@ -38,16 +38,18 @@ function(wut_create_rpl target)
 		target_link_options(${target} PRIVATE "-specs=${WUT_ROOT}/share/rpl.specs")
 	endif()
 
-	get_target_property(RPL_OUTPUT ${target} OUTPUT_NAME)
-	if(NOT RPL_OUTPUT)
-		set(RPL_OUTPUT "${target}")
+	get_target_property(RPL_OUTPUT_NAME ${target} OUTPUT_NAME)
+	get_target_property(RPL_BINARY_DIR  ${target} BINARY_DIR)
+	if(NOT RPL_OUTPUT_NAME)
+		set(RPL_OUTPUT_NAME "${target}")
 	endif()
-	set(RPL_OUTPUT "${RPL_OUTPUT}${RPL_SUFFIX}")
+	set(RPL_OUTPUT "${RPL_BINARY_DIR}/${RPL_OUTPUT_NAME}${RPL_SUFFIX}")
 
 	add_custom_command(TARGET ${target} POST_BUILD
-		COMMAND ${WUT_ELF2RPL_EXE} ${ELF2RPL_FLAGS} $<TARGET_FILE:${target}> ${RPL_OUTPUT}
-		BYPRODUCTS ${RPL_OUTPUT}
-		COMMENT "Creating ${RPL_OUTPUT}"
+		COMMAND ${WUT_ELF2RPL_EXE} ${ELF2RPL_FLAGS} "$<TARGET_FILE:${target}>" "${RPL_OUTPUT}"
+		BYPRODUCTS "${RPL_OUTPUT}"
+		COMMENT "Converting ${target} to ${RPL_SUFFIX} format"
+		VERBATIM
 	)
 
 	set_target_properties(${target} PROPERTIES WUT_RPL "${RPL_OUTPUT}")
@@ -70,11 +72,13 @@ function(wut_create_wuhb target)
 	endif()
 
 	get_target_property(RPL_OUTPUT_NAME ${target} OUTPUT_NAME)
+	get_target_property(RPL_BINARY_DIR  ${target} BINARY_DIR)
 	if(NOT RPL_OUTPUT_NAME)
 		set(RPL_OUTPUT_NAME "${target}")
 	endif()
 
-	set(WUHBTOOL_ARGS "${RPL_PATH}" "${RPL_OUTPUT_NAME}.wuhb")
+	set(WUHBTOOL_OUTPUT "${RPL_BINARY_DIR}/${RPL_OUTPUT_NAME}.wuhb")
+	set(WUHBTOOL_ARGS "${RPL_PATH}" "${WUHBTOOL_OUTPUT}")
 	set(WUHBTOOL_DEPS ${target})
 
 	if(DEFINED WUHBTOOL_CONTENT)
@@ -87,7 +91,7 @@ function(wut_create_wuhb target)
 			list(APPEND WUHBTOOL_DEPS ${WUHBTOOL_CONTENT} $<TARGET_PROPERTY:${WUHBTOOL_CONTENT},DKP_ASSET_FILES>)
 		else()
 			if (NOT IS_ABSOLUTE "${WUHBTOOL_CONTENT}")
-				set(WUHBTOOL_CONTENT "${CMAKE_CURRENT_LIST_DIR}/${WUHBTOOL_CONTENT}")
+				set(WUHBTOOL_CONTENT "${CMAKE_CURRENT_SOURCE_DIR}/${WUHBTOOL_CONTENT}")
 			endif()
 			if (NOT IS_DIRECTORY "${WUHBTOOL_CONTENT}")
 				message(FATAL_ERROR "wut_create_wuhb: cannot find content dir: ${WUHBTOOL_CONTENT}")
@@ -109,60 +113,63 @@ function(wut_create_wuhb target)
 	endif()
 
 	if(DEFINED WUHBTOOL_ICON)
+		get_filename_component(WUHBTOOL_ICON "${WUHBTOOL_ICON}" ABSOLUTE)
 		list(APPEND WUHBTOOL_ARGS "--icon=${WUHBTOOL_ICON}")
 		list(APPEND WUHBTOOL_DEPS "${WUHBTOOL_ICON}")
 	endif()
 
 	if(DEFINED WUHBTOOL_TVSPLASH)
+		get_filename_component(WUHBTOOL_TVSPLASH "${WUHBTOOL_TVSPLASH}" ABSOLUTE)
 		list(APPEND WUHBTOOL_ARGS "--tv-image=${WUHBTOOL_TVSPLASH}")
 		list(APPEND WUHBTOOL_DEPS "${WUHBTOOL_TVSPLASH}")
 	endif()
 
 	if(DEFINED WUHBTOOL_DRCSPLASH)
+		get_filename_component(WUHBTOOL_DRCSPLASH "${WUHBTOOL_DRCSPLASH}" ABSOLUTE)
 		list(APPEND WUHBTOOL_ARGS "--drc-image=${WUHBTOOL_DRCSPLASH}")
 		list(APPEND WUHBTOOL_DEPS "${WUHBTOOL_DRCSPLASH}")
 	endif()
 
 	add_custom_command(
-		OUTPUT "${RPL_OUTPUT_NAME}.wuhb"
+		OUTPUT "${WUHBTOOL_OUTPUT}"
 		COMMAND "${WUT_WUHBTOOL_EXE}" ${WUHBTOOL_ARGS}
 		DEPENDS ${WUHBTOOL_DEPS}
+		COMMENT "Building WUHB bundle for ${target}"
 		VERBATIM
 	)
 
 	add_custom_target(
 		"${target}_wuhb" ALL
-		DEPENDS "${RPL_OUTPUT_NAME}.wuhb"
+		DEPENDS "${WUHBTOOL_OUTPUT}"
 	)
 endfunction()
 
 function(wut_add_exports target exports_file)
-	if(NOT IS_ABSOLUTE ${exports_file})
-		set(exports_file "${CMAKE_CURRENT_SOURCE_DIR}/${exports_file}")
-	endif()
-
+	get_filename_component(exports_file "${exports_file}" ABSOLUTE)
 	get_target_property(RPL_NAME ${target} OUTPUT_NAME)
+	get_target_property(RPL_BINARY_DIR ${target} BINARY_DIR)
 	if(NOT RPL_NAME)
 		set(RPL_NAME "${target}")
 	endif()
 
+	set(genfolder "${RPL_BINARY_DIR}/.dkp-generated")
+	set(genbase "${genfolder}/${RPL_NAME}")
 	add_custom_command(
-		OUTPUT ${RPL_NAME}_exports.s
-		COMMAND ${WUT_RPLEXPORTGEN_EXE} ${exports_file} ${RPL_NAME}_exports.s
-		DEPENDS ${exports_file}
+		OUTPUT "${genbase}_exports.s" "${genbase}_imports.s" "${genbase}_imports.ld"
+		COMMAND ${CMAKE_COMMAND} -E make_directory "${genfolder}"
+		COMMAND ${WUT_RPLEXPORTGEN_EXE} "${exports_file}" "${genbase}_exports.s"
+		COMMAND ${WUT_RPLIMPORTGEN_EXE} "${exports_file}" "${genbase}_imports.s" "${genbase}_imports.ld"
+		DEPENDS "${exports_file}"
+		COMMENT "Generating import/export stubs for ${target}"
+		VERBATIM
 	)
-	target_sources(${target} PRIVATE ${RPL_NAME}_exports.s)
-	set_source_files_properties(${RPL_NAME}_exports.s PROPERTIES LANGUAGE C)
 
-	get_filename_component(RPL_IMPORT_LD ${target}_imports.ld ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-	add_custom_command(
-		OUTPUT ${RPL_NAME}_imports.s ${RPL_NAME}_imports.ld
-		COMMAND ${WUT_RPLIMPORTGEN_EXE} ${exports_file} ${RPL_NAME}_imports.s ${RPL_NAME}_imports.ld
-		DEPENDS ${exports_file}
-	)
-	add_library(${target}_imports OBJECT ${RPL_NAME}_imports.s)
-	set_source_files_properties(${RPL_NAME}_imports.s PROPERTIES LANGUAGE C)
-	set_target_properties(${target}_imports PROPERTIES WUT_RPL_IMPORT_LD "${RPL_IMPORT_LD}")
+	target_sources(${target} PRIVATE "${genbase}_exports.s")
+	set_source_files_properties("${genbase}_exports.s" PROPERTIES LANGUAGE C)
+
+	add_library(${target}_imports OBJECT "${genbase}_imports.s")
+	set_source_files_properties("${genbase}_imports.s" PROPERTIES LANGUAGE C)
+	set_target_properties(${target}_imports PROPERTIES WUT_RPL_IMPORT_LD "${genbase}_imports.ld")
 endfunction()
 
 function(wut_link_rpl target)

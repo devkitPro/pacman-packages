@@ -4,10 +4,7 @@ include_guard(GLOBAL)
 include(dkp-custom-target)
 
 function(dkp_add_asset_target target folder)
-	if (NOT IS_ABSOLUTE "${folder}")
-		set(folder "${CMAKE_CURRENT_LIST_DIR}/${folder}")
-	endif()
-
+	get_filename_component(folder "${folder}" ABSOLUTE)
 	add_custom_target(${target})
 	set_target_properties(${target} PROPERTIES
 		DKP_ASSET_FOLDER "${folder}"

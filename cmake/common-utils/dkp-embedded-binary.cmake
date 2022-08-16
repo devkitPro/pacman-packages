@@ -3,12 +3,13 @@ include_guard(GLOBAL)
 
 include(dkp-custom-target)
 
-function(dkp_generate_binary_embed_sources outvar)
+function(dkp_add_embedded_binary_library target)
 	if (NOT ${ARGC} GREATER 1)
-		message(FATAL_ERROR "dkp_generate_binary_embed_sources: must provide at least one input file")
+		message(FATAL_ERROR "dkp_add_embedded_binary_library: must provide at least one input file")
 	endif()
 
-	set(outlist "")
+	set(genfolder "${CMAKE_CURRENT_BINARY_DIR}/.dkp-generated/${target}")
+	set(intermediates "")
 	foreach (inname ${ARGN})
 		dkp_resolve_file(infile "${inname}")
 		get_filename_component(basename "${infile}" NAME)
@@ -21,23 +22,18 @@ function(dkp_generate_binary_embed_sources outvar)
 		endif()
 
 		add_custom_command(
-			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${basename}.s" "${CMAKE_CURRENT_BINARY_DIR}/${basename}.h"
-			COMMAND ${DKP_BIN2S} -H "${CMAKE_CURRENT_BINARY_DIR}/${basename}.h" "${infile}" > "${CMAKE_CURRENT_BINARY_DIR}/${basename}.s"
+			OUTPUT "${genfolder}/${basename}.s" "${genfolder}/${basename}.h"
+			COMMAND ${CMAKE_COMMAND} -E make_directory "${genfolder}"
+			COMMAND ${DKP_BIN2S} -H "${genfolder}/${basename}.h" "${infile}" > "${genfolder}/${basename}.s"
 			DEPENDS ${indeps}
-			WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 			COMMENT "Generating binary embedding source for ${inname}"
 		)
 
-		list(APPEND outlist "${CMAKE_CURRENT_BINARY_DIR}/${basename}.s" "${CMAKE_CURRENT_BINARY_DIR}/${basename}.h")
+		list(APPEND intermediates "${genfolder}/${basename}.s" "${genfolder}/${basename}.h")
 	endforeach()
 
-	set(${outvar} "${outlist}" PARENT_SCOPE)
-endfunction()
-
-function(dkp_add_embedded_binary_library target)
-	dkp_generate_binary_embed_sources(intermediates ${ARGN})
 	add_library(${target} OBJECT ${intermediates})
-	target_include_directories(${target} INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
+	target_include_directories(${target} INTERFACE "${genfolder}")
 endfunction()
 
 function(dkp_target_use_embedded_binary_libraries target)

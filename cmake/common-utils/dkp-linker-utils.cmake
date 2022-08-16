@@ -8,12 +8,13 @@ function(dkp_target_generate_symbol_list target)
 	endif()
 
 	target_link_options(${target} PRIVATE
-		-Wl,-Map,${outputname}.map
+		-Wl,-Map,$<TARGET_FILE_DIR:${target}>/${outputname}.map
 	)
 
 	add_custom_command(
 		TARGET ${target} POST_BUILD
 		COMMAND ${DKP_NM} -CSn $<TARGET_FILE:${target}> > ${outputname}.lst
+		WORKING_DIRECTORY $<TARGET_FILE_DIR:${target}>
 		BYPRODUCTS ${outputname}.lst ${outputname}.map
 	)
 endfunction()

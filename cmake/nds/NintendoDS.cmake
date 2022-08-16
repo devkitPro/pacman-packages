@@ -38,6 +38,8 @@ function(nds_create_rom target)
 
 	if (TARGET "${target}")
 		get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
+		get_target_property(TARGET_BINARY_DIR  ${target} BINARY_DIR)
+
 		if(NOT TARGET_OUTPUT_NAME)
 			set(TARGET_OUTPUT_NAME "${target}")
 		endif()
@@ -45,7 +47,8 @@ function(nds_create_rom target)
 		set(TARGET_OUTPUT_NAME "${target}")
 	endif ()
 
-	set(NDSTOOL_ARGS -c "${TARGET_OUTPUT_NAME}.nds" -9 "$<TARGET_FILE:${target}>")
+	set(NDSTOOL_OUTPUT "${TARGET_BINARY_DIR}/${TARGET_OUTPUT_NAME}.nds")
+	set(NDSTOOL_ARGS -c "${NDSTOOL_OUTPUT}" -9 "$<TARGET_FILE:${target}>")
 	set(NDSTOOL_DEPS ${target})
 
 	if (DEFINED NDSTOOL_ARM7)
@@ -68,6 +71,8 @@ function(nds_create_rom target)
 	endif()
 	if (NOT DEFINED NDSTOOL_ICON)
 		set(NDSTOOL_ICON "${NDS_DEFAULT_ICON}")
+	else()
+		get_filename_component(NDSTOOL_ICON "${NDSTOOL_ICON}" ABSOLUTE)
 	endif()
 	list(APPEND NDSTOOL_ARGS -b "${NDSTOOL_ICON}" "${NDSTOOL_NAME}\;${NDSTOOL_SUBTITLE1}\;${NDSTOOL_SUBTITLE2}")
 	list(APPEND NDSTOOL_DEPS "${NDSTOOL_ICON}")
@@ -82,7 +87,7 @@ function(nds_create_rom target)
 			list(APPEND NDSTOOL_DEPS ${NDSTOOL_NITROFS} $<TARGET_PROPERTY:${NDSTOOL_NITROFS},DKP_ASSET_FILES>)
 		else()
 			if (NOT IS_ABSOLUTE "${NDSTOOL_NITROFS}")
-				set(NDSTOOL_NITROFS "${CMAKE_CURRENT_LIST_DIR}/${NDSTOOL_NITROFS}")
+				set(NDSTOOL_NITROFS "${CMAKE_CURRENT_SOURCE_DIR}/${NDSTOOL_NITROFS}")
 			endif()
 			if (NOT IS_DIRECTORY "${NDSTOOL_NITROFS}")
 				message(FATAL_ERROR "nds_create_rom: cannot find romfs dir: ${NDSTOOL_NITROFS}")
@@ -92,15 +97,16 @@ function(nds_create_rom target)
 	endif()
 
 	add_custom_command(
-		OUTPUT "${TARGET_OUTPUT_NAME}.nds"
+		OUTPUT "${NDSTOOL_OUTPUT}"
 		COMMAND "${NDS_NDSTOOL_EXE}" ${NDSTOOL_ARGS}
 		DEPENDS ${NDSTOOL_DEPS}
+		COMMENT "Building NDS ROM for ${target}"
 		VERBATIM
 	)
 
 	add_custom_target(
 		"${target}_nds" ALL
-		DEPENDS "${TARGET_OUTPUT_NAME}.nds"
+		DEPENDS "${NDSTOOL_OUTPUT}"
 	)
 endfunction()
 
