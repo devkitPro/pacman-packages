@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-cmake-common-utils
-pkgver=1.4.0
+pkgver=1.4.1
 pkgrel=1
 pkgdesc="Common utilities and infrastructure for devkitPro CMake"
 arch=('any')
@@ -18,13 +18,13 @@ source=(
 
 sha256sums=(
   'ec758b41e5a58b288cf08ef27ce9b8791ff0411aa957141f1f73ca3e97fcdf6f'  # dkp-initialize-path.cmake
-  '6bc88ff01d63cbed885dc964fae95667211c1f3fae897e6e24d6fc380ea632f7'  # dkp-toolchain-common.cmake
+  '03a4bc8a0e25066778bba54cd69f881864202de4bcfab2d16c15693fa7c51bbf'  # dkp-toolchain-common.cmake
   '77d8afc4add9aa90bfda1eae71904ae17c51464acb98b36f441cfba544b258ce'  # dkp-rule-overrides.cmake
   '297f5f92c5fdbb62a350f61eea0c7f4a6262d2a8f58aff8c2d0eceea6aab2a70'  # dkp-linker-utils.cmake
   'd0a79c868f855320e1f2234fd77809f18c99f37511630a64afee47208250bd4d'  # dkp-custom-target.cmake
   '8f49757da2c95b7b1b89fdf20805285889c67861dc2a79ec8bfd1c204e15456f'  # dkp-embedded-binary.cmake
   'a49facd17bc0b1a42bd4344cf1aa927cee4394a0fc1de632268b0a49d854de11'  # dkp-asset-folder.cmake
-  '7803b2bdc75de2f836035d8349652d8a9036fa2963839e1207233ed5f8dacbca'  # Generic-dkP.cmake
+  '5b730c457e28555da60fd8f8c5eb6c0d2ec762f252c664affc8f3188e5fc7605'  # Generic-dkP.cmake
 )
 
 package() {

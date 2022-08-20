@@ -43,6 +43,25 @@ macro(__dkp_init_platform_settings platform)
 		set(CMAKE_INSTALL_PREFIX "${DKP_INSTALL_PREFIX_INIT}" CACHE PATH
 			"Install path prefix, prepended onto install directories." FORCE)
 	endif()
+
+	if(NOT CMAKE_LIBRARY_ARCHITECTURE)
+		string(REPLACE " " ";" _dkp_arch "${${platform}_ARCH_SETTINGS}")
+		if(CMAKE_POSITION_INDEPENDENT_CODE)
+			list(APPEND _dkp_arch "-fPIC")
+		endif()
+
+		execute_process(
+			COMMAND "${CMAKE_C_COMPILER}" ${_dkp_arch} -print-multi-directory
+			OUTPUT_VARIABLE _dkp_multidir
+			RESULT_VARIABLE _dkp_retval
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+		)
+
+		if(NOT _dkp_retval AND NOT _dkp_multidir STREQUAL ".")
+			set(CMAKE_LIBRARY_ARCHITECTURE "${_dkp_multidir}" CACHE INTERNAL "abi")
+			message(STATUS "Detected multilib folder: ${CMAKE_LIBRARY_ARCHITECTURE}")
+		endif()
+	endif()
 endmacro()
 
 # -----------------------------------------------------------------------------
