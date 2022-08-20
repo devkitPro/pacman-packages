@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitppc-cmake
-pkgver=1.1.1
+pkgver=1.1.2
 pkgrel=1
 pkgdesc="CMake support files for devkitPPC"
 arch=('any')
@@ -15,7 +15,7 @@ groups=('gamecube-dev' 'wii-dev' 'wiiu-dev')
 depends=('dkp-cmake-common-utils')
 
 sha256sums=(
-  'b8bfdd0ce8bc73b4d6de4ee7edfd05420a63f8becf25bba6880252392004a9be'  # devkitPPC.cmake
+  'a893ddf939ebf3b4b13ac177ecacbc99885092f32aaeba819ee3235882dcc009'  # devkitPPC.cmake
   'f6f5c6028f1b90e3fcdc8f34bac1573cd2c8a6ada72578189a28785a68613508'  # powerpc-eabi-cmake
 )
 

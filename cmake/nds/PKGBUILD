@@ -1,6 +1,6 @@
 # Contributor: Cameron Cawley <ccawley2011@gmail.com>
 pkgname=nds-cmake
-pkgver=1.0.0
+pkgver=1.1.0
 pkgrel=1
 pkgdesc="CMake support for Nintendo DS"
 arch=('any')
@@ -16,8 +16,8 @@ groups=('nds-dev')
 
 sha256sums=(
   '4e4eb21c4de42f18caffff9d97eb47e9f368991fd6e429b00dee9edf20a721ae'  # arm-none-eabi-cmake
-  '02294c2c23fed182aa9713462d89b6ab9c10a59888463d4a70b2baecd79d9310'  # NDS.cmake
-  '58d4d1204c4a333fb771278ec2be90a4758b4c4feaa36625d7796054fb2c2f8c'  # NintendoDS.cmake
+  '3711808f797b21ac12bd0f6e6683a5b73b5d5c5c1f987f3b8ef51a6027b235ec'  # NDS.cmake
+  '7b912a258b9aeba55c67a3942974271b50aa72cdcfe3992db72df925424c1799'  # NintendoDS.cmake
 )
 
 package() {
