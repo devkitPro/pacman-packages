@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-toolchain-vars
 pkgver=1.0.1
-pkgrel=1
+pkgrel=2
 
 pkgdesc='helper scripts to set variables for devkitPro toolchains'
 
@@ -44,7 +44,7 @@ package() {
   install -d "$pkgdir"/opt/devkitpro/cmake
   install -Dm644 devkitarm.sh 3dsvars.sh ndsvars.sh armv4tvars.sh "$pkgdir"/opt/devkitpro
   install -Dm644 devkita64.sh switchvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitppc.sh ppcvars.sh wiivars.sh wiiuvars.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 devkitppc.sh ppcvars.sh cubevars.sh wiivars.sh wiiuvars.sh "$pkgdir"/opt/devkitpro
   install -Dm755 portlibs_prefix.sh "$pkgdir"/opt/devkitpro
 
 }
