@@ -22,8 +22,15 @@ __dkp_init_platform_settings(CTR)
 # -----------------------------------------------------------------------------
 # Platform-specific helper utilities
 
-function(ctr_generate_smdh outfile)
-	cmake_parse_arguments(PARSE_ARGV 1 SMDH "" "NAME;DESCRIPTION;AUTHOR;ICON" "")
+function(ctr_generate_smdh)
+	cmake_parse_arguments(PARSE_ARGV 0 SMDH "" "OUTPUT;NAME;DESCRIPTION;AUTHOR;ICON" "")
+	if (NOT DEFINED SMDH_OUTPUT)
+		if(DEFINED SMDH_UNPARSED_ARGUMENTS)
+			list(GET SMDH_UNPARSED_ARGUMENTS 0 SMDH_OUTPUT)
+		else()
+			message(FATAL_ERROR "ctr_generate_smdh: missing OUTPUT argument")
+		endif()
+	endif()
 	if (NOT DEFINED SMDH_NAME)
 		set(SMDH_NAME "${CMAKE_PROJECT_NAME}")
 	endif()
@@ -39,36 +46,52 @@ function(ctr_generate_smdh outfile)
 		get_filename_component(SMDH_ICON "${SMDH_ICON}" ABSOLUTE)
 	endif()
 
+	get_filename_component(SMDH_OUTPUT "${SMDH_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 	add_custom_command(
-		OUTPUT "${outfile}"
-		COMMAND ${CTR_SMDHTOOL_EXE} --create "${SMDH_NAME}" "${SMDH_DESCRIPTION}" "${SMDH_AUTHOR}" "${SMDH_ICON}" "${outfile}"
+		OUTPUT "${SMDH_OUTPUT}"
+		COMMAND ${CTR_SMDHTOOL_EXE} --create "${SMDH_NAME}" "${SMDH_DESCRIPTION}" "${SMDH_AUTHOR}" "${SMDH_ICON}" "${SMDH_OUTPUT}"
+		DEPENDS "${SMDH_ICON}"
 		VERBATIM
 	)
 endfunction()
 
 function(ctr_create_3dsx target)
-	cmake_parse_arguments(PARSE_ARGV 1 CTR_3DSXTOOL "NOSMDH" "SMDH;ROMFS" "")
+	cmake_parse_arguments(PARSE_ARGV 1 CTR_3DSXTOOL "NOSMDH" "TARGET;OUTPUT;SMDH;ROMFS" "")
 
-	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
-	get_target_property(TARGET_BINARY_DIR  ${target} BINARY_DIR)
-	if(NOT TARGET_OUTPUT_NAME)
-		set(TARGET_OUTPUT_NAME "${target}")
+	if(DEFINED CTR_3DSXTOOL_TARGET)
+		set(intarget "${CTR_3DSXTOOL_TARGET}")
+		set(outtarget "${target}")
+	else()
+		set(intarget "${target}")
+		set(outtarget "${target}_3dsx")
 	endif()
 
-	set(CTR_3DSXTOOL_OUTPUT "${TARGET_BINARY_DIR}/${TARGET_OUTPUT_NAME}.3dsx")
-	set(CTR_3DSXTOOL_ARGS "$<TARGET_FILE:${target}>" "${CTR_3DSXTOOL_OUTPUT}")
-	set(CTR_3DSXTOOL_DEPS ${target})
+	if(NOT TARGET "${intarget}")
+		message(FATAL_ERROR "ctr_create_3dsx: target '${intarget}' not defined")
+	endif()
+
+	if(DEFINED CTR_3DSXTOOL_OUTPUT)
+		get_filename_component(CTR_3DSXTOOL_OUTPUT "${CTR_3DSXTOOL_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	elseif(DEFINED CTR_3DSXTOOL_TARGET)
+		set(CTR_3DSXTOOL_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.3dsx")
+	else()
+		__dkp_target_derive_name(CTR_3DSXTOOL_OUTPUT ${intarget} ".3dsx")
+	endif()
+
+	set(CTR_3DSXTOOL_ARGS "$<TARGET_FILE:${intarget}>" "${CTR_3DSXTOOL_OUTPUT}")
+	set(CTR_3DSXTOOL_DEPS ${intarget})
 
 	if (DEFINED CTR_3DSXTOOL_SMDH AND CTR_3DSXTOOL_NOSMDH)
 		message(FATAL_ERROR "ctr_create_3dsx: cannot specify SMDH and NOSMDH at the same time")
 	endif()
 
 	if (NOT DEFINED CTR_3DSXTOOL_SMDH AND NOT CTR_3DSXTOOL_NOSMDH)
-		set(CTR_3DSXTOOL_SMDH "${target}.default.smdh")
-		ctr_generate_smdh(${CTR_3DSXTOOL_SMDH})
+		set(CTR_3DSXTOOL_SMDH "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.default.smdh")
+		ctr_generate_smdh(OUTPUT "${CTR_3DSXTOOL_SMDH}")
 	endif()
 
 	if (DEFINED CTR_3DSXTOOL_SMDH)
+		get_filename_component(CTR_3DSXTOOL_SMDH "${CTR_3DSXTOOL_SMDH}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 		list(APPEND CTR_3DSXTOOL_ARGS "--smdh=${CTR_3DSXTOOL_SMDH}")
 		list(APPEND CTR_3DSXTOOL_DEPS "${CTR_3DSXTOOL_SMDH}")
 	endif()
@@ -82,9 +105,7 @@ function(ctr_create_3dsx target)
 			list(APPEND CTR_3DSXTOOL_ARGS "--romfs=${_folder}")
 			list(APPEND CTR_3DSXTOOL_DEPS ${CTR_3DSXTOOL_ROMFS} $<TARGET_PROPERTY:${CTR_3DSXTOOL_ROMFS},DKP_ASSET_FILES>)
 		else()
-			if (NOT IS_ABSOLUTE "${CTR_3DSXTOOL_ROMFS}")
-				set(CTR_3DSXTOOL_ROMFS "${CMAKE_CURRENT_SOURCE_DIR}/${CTR_3DSXTOOL_ROMFS}")
-			endif()
+			get_filename_component(CTR_3DSXTOOL_ROMFS "${CTR_3DSXTOOL_ROMFS}" ABSOLUTE)
 			if (NOT IS_DIRECTORY "${CTR_3DSXTOOL_ROMFS}")
 				message(FATAL_ERROR "ctr_create_3dsx: cannot find romfs dir: ${CTR_3DSXTOOL_ROMFS}")
 			endif()
@@ -96,39 +117,51 @@ function(ctr_create_3dsx target)
 		OUTPUT "${CTR_3DSXTOOL_OUTPUT}"
 		COMMAND "${CTR_3DSXTOOL_EXE}" ${CTR_3DSXTOOL_ARGS}
 		DEPENDS ${CTR_3DSXTOOL_DEPS}
-		COMMENT "Building 3DSX executable for ${target}"
+		COMMENT "Building 3DSX executable target ${outtarget}"
 		VERBATIM
 	)
 
-	add_custom_target(
-		"${target}_3dsx" ALL
-		DEPENDS "${CTR_3DSXTOOL_OUTPUT}"
-	)
+	add_custom_target(${outtarget} ALL DEPENDS "${CTR_3DSXTOOL_OUTPUT}")
+	dkp_set_target_file(${outtarget} "${CTR_3DSXTOOL_OUTPUT}")
 endfunction()
 
 function(ctr_add_shader_library target)
-	if (NOT ${ARGC} GREATER 1)
-		message(FATAL_ERROR "ctr_add_shader_library: must provide at least one input file")
+	cmake_parse_arguments(PARSE_ARGV 1 CTR_PICASSO "" "OUTPUT" "SOURCES")
+
+	if(DEFINED CTR_PICASSO_OUTPUT)
+		get_filename_component(CTR_PICASSO_OUTPUT "${CTR_PICASSO_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	else()
+		set(CTR_PICASSO_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin")
 	endif()
 
-	set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin")
+	if(NOT DEFINED CTR_PICASSO_SOURCES AND DEFINED CTR_PICASSO_UNPARSED_ARGUMENTS)
+		set(CTR_PICASSO_SOURCES "${CTR_PICASSO_UNPARSED_ARGUMENTS}")
+	else()
+		message(FATAL_ERROR "ctr_add_shader_library: must provide at least one source code file")
+	endif()
+
 	add_custom_command(
-		OUTPUT "${outfile}"
-		COMMAND "${CTR_PICASSO_EXE}" -o "${CMAKE_CURRENT_BINARY_DIR}/${target}.shbin" ${ARGN}
-		DEPENDS ${ARGN}
+		OUTPUT "${CTR_PICASSO_OUTPUT}"
+		COMMAND "${CTR_PICASSO_EXE}" -o "${CTR_PICASSO_OUTPUT}" ${CTR_PICASSO_SOURCES}
+		DEPENDS ${CTR_PICASSO_SOURCES}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Building shader library ${target}"
 		VERBATIM
 	)
 
-	add_custom_target(${target} DEPENDS "${outfile}")
-	dkp_set_target_file(${target} "${outfile}")
+	add_custom_target(${target} DEPENDS "${CTR_PICASSO_OUTPUT}")
+	dkp_set_target_file(${target} "${CTR_PICASSO_OUTPUT}")
 endfunction()
 
 function(ctr_add_graphics_target target kind)
-	cmake_parse_arguments(PARSE_ARGV 2 CTR_TEX3DS "" "" "INPUTS;OPTIONS")
+	cmake_parse_arguments(PARSE_ARGV 2 CTR_TEX3DS "" "OUTPUT" "INPUTS;OPTIONS")
 
-	set(CTR_TEX3DS_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.t3x")
+	if(DEFINED CTR_TEX3DS_OUTPUT)
+		get_filename_component(CTR_TEX3DS_OUTPUT "${CTR_TEX3DS_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	else()
+		set(CTR_TEX3DS_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.t3x")
+	endif()
+
 	set(CTR_TEX3DS_ARGS -o "${CTR_TEX3DS_OUTPUT}")
 	set(CTR_TEX3DS_DEPS "")
 
@@ -154,7 +187,7 @@ function(ctr_add_graphics_target target kind)
 	endif()
 
 	list(APPEND CTR_TEX3DS_ARGS ${CTR_TEX3DS_OPTIONS})
-	foreach(input ${CTR_TEX3DS_INPUTS})
+	foreach(input IN LISTS CTR_TEX3DS_INPUTS)
 		dkp_resolve_file(infile "${input}")
 		list(APPEND CTR_TEX3DS_ARGS "${infile}")
 
@@ -168,7 +201,7 @@ function(ctr_add_graphics_target target kind)
 	add_custom_command(
 		OUTPUT "${CTR_TEX3DS_OUTPUT}"
 		COMMAND "${CTR_TEX3DS_EXE}" ${CTR_TEX3DS_ARGS}
-		DEPENDS ${CTR_3DSXTOOL_DEPS}
+		DEPENDS ${CTR_TEX3DS_DEPS}
 		COMMENT "Converting graphics target ${target}"
 		VERBATIM
 	)

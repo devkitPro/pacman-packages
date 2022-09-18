@@ -25,8 +25,15 @@ __dkp_init_platform_settings(NX)
 # -----------------------------------------------------------------------------
 # Platform-specific helper utilities
 
-function(nx_generate_nacp outfile)
-	cmake_parse_arguments(PARSE_ARGV 1 NACP "" "NAME;AUTHOR;VERSION" "")
+function(nx_generate_nacp)
+	cmake_parse_arguments(PARSE_ARGV 0 NACP "" "OUTPUT;NAME;AUTHOR;VERSION" "")
+	if (NOT DEFINED NACP_OUTPUT)
+		if(DEFINED NACP_UNPARSED_ARGUMENTS)
+			list(GET NACP_UNPARSED_ARGUMENTS 0 NACP_OUTPUT)
+		else()
+			message(FATAL_ERROR "nx_generate_nacp: missing OUTPUT argument")
+		endif()
+	endif()
 	if (NOT DEFINED NACP_NAME)
 		set(NACP_NAME "${CMAKE_PROJECT_NAME}")
 	endif()
@@ -41,25 +48,39 @@ function(nx_generate_nacp outfile)
 		endif()
 	endif()
 
+	get_filename_component(NACP_OUTPUT "${NACP_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 	add_custom_command(
-		OUTPUT "${outfile}"
-		COMMAND "${NX_NACPTOOL_EXE}" --create "${NACP_NAME}" "${NACP_AUTHOR}" "${NACP_VERSION}" "${outfile}"
+		OUTPUT "${NACP_OUTPUT}"
+		COMMAND "${NX_NACPTOOL_EXE}" --create "${NACP_NAME}" "${NACP_AUTHOR}" "${NACP_VERSION}" "${NACP_OUTPUT}"
 		VERBATIM
 	)
 endfunction()
 
 function(nx_create_nro target)
-	cmake_parse_arguments(PARSE_ARGV 1 ELF2NRO "NOICON;NONACP" "ICON;NACP;ROMFS" "")
+	cmake_parse_arguments(PARSE_ARGV 1 ELF2NRO "NOICON;NONACP" "TARGET;OUTPUT;ICON;NACP;ROMFS" "")
 
-	get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
-	get_target_property(TARGET_BINARY_DIR  ${target} BINARY_DIR)
-	if(NOT TARGET_OUTPUT_NAME)
-		set(TARGET_OUTPUT_NAME "${target}")
+	if(DEFINED ELF2NRO_TARGET)
+		set(intarget "${ELF2NRO_TARGET}")
+		set(outtarget "${target}")
+	else()
+		set(intarget "${target}")
+		set(outtarget "${target}_nro")
 	endif()
 
-	set(ELF2NRO_OUTPUT "${TARGET_BINARY_DIR}/${TARGET_OUTPUT_NAME}.nro")
-	set(ELF2NRO_ARGS "$<TARGET_FILE:${target}>" "${ELF2NRO_OUTPUT}")
-	set(ELF2NRO_DEPS ${target})
+	if(NOT TARGET "${intarget}")
+		message(FATAL_ERROR "nx_create_nro: target '${intarget}' not defined")
+	endif()
+
+	if(DEFINED ELF2NRO_OUTPUT)
+		get_filename_component(ELF2NRO_OUTPUT "${ELF2NRO_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	elseif(DEFINED ELF2NRO_TARGET)
+		set(ELF2NRO_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.nro")
+	else()
+		__dkp_target_derive_name(ELF2NRO_OUTPUT ${intarget} ".nro")
+	endif()
+
+	set(ELF2NRO_ARGS "$<TARGET_FILE:${intarget}>" "${ELF2NRO_OUTPUT}")
+	set(ELF2NRO_DEPS ${intarget})
 
 	if (DEFINED ELF2NRO_ICON AND ELF2NRO_NOICON)
 		message(FATAL_ERROR "nx_create_nro: cannot specify ICON and NOICON at the same time")
@@ -74,8 +95,8 @@ function(nx_create_nro target)
 	endif()
 
 	if (NOT DEFINED ELF2NRO_NACP AND NOT ELF2NRO_NONACP)
-		set(ELF2NRO_NACP "${target}.default.nacp")
-		nx_generate_nacp(${ELF2NRO_NACP})
+		set(ELF2NRO_NACP "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.default.nacp")
+		nx_generate_nacp(OUTPUT "${ELF2NRO_NACP}")
 	endif()
 
 	if (DEFINED ELF2NRO_ICON)
@@ -85,6 +106,7 @@ function(nx_create_nro target)
 	endif()
 
 	if (DEFINED ELF2NRO_NACP)
+		get_filename_component(ELF2NRO_NACP "${ELF2NRO_NACP}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 		list(APPEND ELF2NRO_ARGS "--nacp=${ELF2NRO_NACP}")
 		list(APPEND ELF2NRO_DEPS "${ELF2NRO_NACP}")
 	endif()
@@ -98,9 +120,7 @@ function(nx_create_nro target)
 			list(APPEND ELF2NRO_ARGS "--romfsdir=${_folder}")
 			list(APPEND ELF2NRO_DEPS ${ELF2NRO_ROMFS} $<TARGET_PROPERTY:${ELF2NRO_ROMFS},DKP_ASSET_FILES>)
 		else()
-			if (NOT IS_ABSOLUTE "${ELF2NRO_ROMFS}")
-				set(ELF2NRO_ROMFS "${CMAKE_CURRENT_SOURCE_DIR}/${ELF2NRO_ROMFS}")
-			endif()
+			get_filename_component(ELF2NRO_ROMFS "${ELF2NRO_ROMFS}" ABSOLUTE)
 			if (NOT IS_DIRECTORY "${ELF2NRO_ROMFS}")
 				message(FATAL_ERROR "nx_create_nro: cannot find romfs dir: ${ELF2NRO_ROMFS}")
 			endif()
@@ -112,14 +132,12 @@ function(nx_create_nro target)
 		OUTPUT "${ELF2NRO_OUTPUT}"
 		COMMAND "${NX_ELF2NRO_EXE}" ${ELF2NRO_ARGS}
 		DEPENDS ${ELF2NRO_DEPS}
-		COMMENT "Building NRO executable for ${target}"
+		COMMENT "Building NRO executable target ${outtarget}"
 		VERBATIM
 	)
 
-	add_custom_target(
-		"${target}_nro" ALL
-		DEPENDS "${ELF2NRO_OUTPUT}"
-	)
+	add_custom_target(${outtarget} ALL DEPENDS "${ELF2NRO_OUTPUT}")
+	dkp_set_target_file(${outtarget} "${ELF2NRO_OUTPUT}")
 endfunction()
 
 function(nx_add_shader_program target source type)

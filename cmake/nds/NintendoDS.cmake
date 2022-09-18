@@ -34,30 +34,41 @@ __dkp_init_platform_settings(NDS)
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
 
 function(nds_create_rom target)
-	cmake_parse_arguments(PARSE_ARGV 1 NDSTOOL "" "ARM7;NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "")
+	cmake_parse_arguments(PARSE_ARGV 1 NDSTOOL "" "OUTPUT;ARM9;ARM7;NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "FLAGS")
 
-	if (TARGET "${target}")
-		get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
-		get_target_property(TARGET_BINARY_DIR  ${target} BINARY_DIR)
+	if(DEFINED NDSTOOL_ARM9)
+		set(intarget "${NDSTOOL_ARM9}")
+		set(outtarget "${target}")
+	else()
+		set(intarget "${target}")
+		set(outtarget "${target}_nds")
+	endif()
 
-		if(NOT TARGET_OUTPUT_NAME)
-			set(TARGET_OUTPUT_NAME "${target}")
-		endif()
-	else ()
-		set(TARGET_OUTPUT_NAME "${target}")
-	endif ()
+	if(NOT DEFINED NDSTOOL_ARM7)
+		set(NDSTOOL_ARM7 "${NDS_DEFAULT_ARM7}")
+	elseif(NOT TARGET "${NDSTOOL_ARM7}" AND NOT IS_ABSOLUTE "${NDSTOOL_ARM7}")
+		message(FATAL_ERROR "nds_create_rom: ARM7 component must either be an imported target or an absolute path")
+	endif()
 
-	set(NDSTOOL_OUTPUT "${TARGET_BINARY_DIR}/${TARGET_OUTPUT_NAME}.nds")
-	set(NDSTOOL_ARGS -c "${NDSTOOL_OUTPUT}" -9 "$<TARGET_FILE:${target}>")
-	set(NDSTOOL_DEPS ${target})
+	if(NOT TARGET "${intarget}")
+		message(FATAL_ERROR "nds_create_rom: ARM9 target '${intarget}' not defined")
+	endif()
 
-	if (DEFINED NDSTOOL_ARM7)
-		if (TARGET "${NDSTOOL_ARM7}")
-			list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${NDSTOOL_ARM7}>")
-		else()
-			list(APPEND NDSTOOL_ARGS -7 "${NDSTOOL_ARM7}")
-		endif()
-		list(APPEND NDSTOOL_DEPS "${NDSTOOL_ARM7}")
+	if(DEFINED NDSTOOL_OUTPUT)
+		get_filename_component(NDSTOOL_OUTPUT "${NDSTOOL_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	elseif(DEFINED NDSTOOL_ARM9)
+		set(NDSTOOL_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.nds")
+	else()
+		__dkp_target_derive_name(NDSTOOL_OUTPUT ${intarget} ".nds")
+	endif()
+
+	set(NDSTOOL_ARGS -c "${NDSTOOL_OUTPUT}" -9 "$<TARGET_FILE:${intarget}>")
+	set(NDSTOOL_DEPS ${intarget} "${NDSTOOL_ARM7}")
+
+	if (TARGET "${NDSTOOL_ARM7}")
+		list(APPEND NDSTOOL_ARGS -7 "$<TARGET_FILE:${NDSTOOL_ARM7}>")
+	else()
+		list(APPEND NDSTOOL_ARGS -7 "${NDSTOOL_ARM7}")
 	endif()
 
 	if (NOT DEFINED NDSTOOL_NAME)
@@ -72,7 +83,10 @@ function(nds_create_rom target)
 	if (NOT DEFINED NDSTOOL_ICON)
 		set(NDSTOOL_ICON "${NDS_DEFAULT_ICON}")
 	else()
-		get_filename_component(NDSTOOL_ICON "${NDSTOOL_ICON}" ABSOLUTE)
+		if(TARGET "${NDSTOOL_ICON}")
+			list(APPEND NDSTOOL_DEPS ${NDSTOOL_ICON})
+		endif()
+		dkp_resolve_file(NDSTOOL_ICON "${NDSTOOL_ICON}")
 	endif()
 	list(APPEND NDSTOOL_ARGS -b "${NDSTOOL_ICON}" "${NDSTOOL_NAME}\;${NDSTOOL_SUBTITLE1}\;${NDSTOOL_SUBTITLE2}")
 	list(APPEND NDSTOOL_DEPS "${NDSTOOL_ICON}")
@@ -86,28 +100,28 @@ function(nds_create_rom target)
 			list(APPEND NDSTOOL_ARGS -d "${_folder}")
 			list(APPEND NDSTOOL_DEPS ${NDSTOOL_NITROFS} $<TARGET_PROPERTY:${NDSTOOL_NITROFS},DKP_ASSET_FILES>)
 		else()
-			if (NOT IS_ABSOLUTE "${NDSTOOL_NITROFS}")
-				set(NDSTOOL_NITROFS "${CMAKE_CURRENT_SOURCE_DIR}/${NDSTOOL_NITROFS}")
-			endif()
+			get_filename_component(NDSTOOL_NITROFS "${NDSTOOL_NITROFS}" ABSOLUTE)
 			if (NOT IS_DIRECTORY "${NDSTOOL_NITROFS}")
-				message(FATAL_ERROR "nds_create_rom: cannot find romfs dir: ${NDSTOOL_NITROFS}")
+				message(FATAL_ERROR "nds_create_rom: cannot find nitrofs dir: ${NDSTOOL_NITROFS}")
 			endif()
 			list(APPEND NDSTOOL_ARGS -d "${NDSTOOL_NITROFS}")
 		endif()
+	endif()
+
+	if (DEFINED NDSTOOL_FLAGS)
+		list(APPEND NDSTOOL_ARGS ${NDSTOOL_FLAGS})
 	endif()
 
 	add_custom_command(
 		OUTPUT "${NDSTOOL_OUTPUT}"
 		COMMAND "${NDS_NDSTOOL_EXE}" ${NDSTOOL_ARGS}
 		DEPENDS ${NDSTOOL_DEPS}
-		COMMENT "Building NDS ROM for ${target}"
+		COMMENT "Building NDS ROM target ${outtarget}"
 		VERBATIM
 	)
 
-	add_custom_target(
-		"${target}_nds" ALL
-		DEPENDS "${NDSTOOL_OUTPUT}"
-	)
+	add_custom_target(${outtarget} ALL DEPENDS "${NDSTOOL_OUTPUT}")
+	dkp_set_target_file(${outtarget} "${NDSTOOL_OUTPUT}")
 endfunction()
 
 endif()

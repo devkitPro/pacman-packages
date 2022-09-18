@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 include_guard(GLOBAL)
 
+include(dkp-impl-helpers)
 include(dkp-custom-target)
 
 function(dkp_add_embedded_binary_library target)
@@ -8,9 +9,10 @@ function(dkp_add_embedded_binary_library target)
 		message(FATAL_ERROR "dkp_add_embedded_binary_library: must provide at least one input file")
 	endif()
 
+	__dkp_asm_lang(lang dkp_add_embedded_binary_library)
 	set(genfolder "${CMAKE_CURRENT_BINARY_DIR}/.dkp-generated/${target}")
 	set(intermediates "")
-	foreach (inname ${ARGN})
+	foreach (inname IN LISTS ARGN)
 		dkp_resolve_file(infile "${inname}")
 		get_filename_component(basename "${infile}" NAME)
 		string(REPLACE "." "_" basename "${basename}")
@@ -30,6 +32,7 @@ function(dkp_add_embedded_binary_library target)
 		)
 
 		list(APPEND intermediates "${genfolder}/${basename}.s" "${genfolder}/${basename}.h")
+		set_source_files_properties("${genfolder}/${basename}.s" PROPERTIES LANGUAGE "${lang}")
 	endforeach()
 
 	add_library(${target} OBJECT ${intermediates})
@@ -37,12 +40,10 @@ function(dkp_add_embedded_binary_library target)
 endfunction()
 
 function(dkp_target_use_embedded_binary_libraries target)
+	message(DEPRECATION "dkp_target_use_embedded_binary_libraries is deprecated, please use target_link_libraries(${target} PRIVATE ...) instead")
 	if (NOT ${ARGC} GREATER 1)
 		message(FATAL_ERROR "dkp_target_use_embedded_binary_libraries: must provide at least one input library")
 	endif()
 
-	foreach (libname ${ARGN})
-		target_sources(${target} PRIVATE $<TARGET_OBJECTS:${libname}>)
-		target_include_directories(${target} PRIVATE $<TARGET_PROPERTY:${libname},INTERFACE_INCLUDE_DIRECTORIES>)
-	endforeach()
+	target_link_libraries(${target} PRIVATE ${ARGN})
 endfunction()

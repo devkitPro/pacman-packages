@@ -23,6 +23,8 @@ macro(__dkp_toolchain name arch triplet)
 		set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_LIST_DIR}/dkp-rule-overrides.cmake)
 	endif()
 
+	set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES DKP_PLATFORM_BOOTSTRAP)
+
 	# [CMake 3.15+] Start find_package in config mode
 	set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
 

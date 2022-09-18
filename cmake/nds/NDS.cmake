@@ -30,6 +30,11 @@ if (NOT NDS_NDSTOOL_EXE)
 endif()
 
 find_file(NDS_DEFAULT_ICON NAMES icon.bmp HINTS "${DEVKITPRO}/libnds" NO_CMAKE_FIND_ROOT_PATH)
-if (NOT NDS_DEFAULT_ICON)
+if (NOT NDS_DEFAULT_ICON AND NOT DKP_PLATFORM_BOOTSTRAP)
 	message(WARNING "Could not find default icon: try installing libnds")
+endif()
+
+find_file(NDS_DEFAULT_ARM7 NAMES default.elf HINTS "${DEVKITPRO}/libnds" NO_CMAKE_FIND_ROOT_PATH)
+if (NOT NDS_DEFAULT_ARM7 AND NOT DKP_PLATFORM_BOOTSTRAP)
+	message(WARNING "Could not find default ARM7 component: try installing default-arm7")
 endif()

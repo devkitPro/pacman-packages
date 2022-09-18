@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 
 if(NOT DEFINED ENV{DEVKITPRO})
-	set(DEVKITPRO /opt/devkitpro)
+	set(DEVKITPRO "/opt/devkitpro")
 else()
-	set(DEVKITPRO $ENV{DEVKITPRO})
+	set(DEVKITPRO "$ENV{DEVKITPRO}")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${DEVKITPRO}/cmake")

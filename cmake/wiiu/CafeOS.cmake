@@ -38,13 +38,7 @@ function(wut_create_rpl target)
 		target_link_options(${target} PRIVATE "-specs=${WUT_ROOT}/share/rpl.specs")
 	endif()
 
-	get_target_property(RPL_OUTPUT_NAME ${target} OUTPUT_NAME)
-	get_target_property(RPL_BINARY_DIR  ${target} BINARY_DIR)
-	if(NOT RPL_OUTPUT_NAME)
-		set(RPL_OUTPUT_NAME "${target}")
-	endif()
-	set(RPL_OUTPUT "${RPL_BINARY_DIR}/${RPL_OUTPUT_NAME}${RPL_SUFFIX}")
-
+	__dkp_target_derive_name(RPL_OUTPUT ${target} "${RPL_SUFFIX}")
 	add_custom_command(TARGET ${target} POST_BUILD
 		COMMAND ${WUT_ELF2RPL_EXE} ${ELF2RPL_FLAGS} "$<TARGET_FILE:${target}>" "${RPL_OUTPUT}"
 		BYPRODUCTS "${RPL_OUTPUT}"
@@ -63,23 +57,36 @@ function(wut_create_rpx)
 endfunction()
 
 function(wut_create_wuhb target)
-	cmake_parse_arguments(PARSE_ARGV 1 WUHBTOOL "" "CONTENT;NAME;SHORTNAME;AUTHOR;ICON;TVSPLASH;DRCSPLASH" "")
+	cmake_parse_arguments(PARSE_ARGV 1 WUHBTOOL "" "TARGET;OUTPUT;CONTENT;NAME;SHORTNAME;AUTHOR;ICON;TVSPLASH;DRCSPLASH" "")
 
-	get_target_property(RPL_PATH   ${target} WUT_RPL)
-	get_target_property(RPL_IS_RPX ${target} WUT_IS_RPX)
+	if(DEFINED WUHBTOOL_TARGET)
+		set(intarget "${WUHBTOOL_TARGET}")
+		set(outtarget "${target}")
+	else()
+		set(intarget "${target}")
+		set(outtarget "${target}_wuhb")
+	endif()
+
+	if(NOT TARGET "${intarget}")
+		message(FATAL_ERROR "wut_create_wuhb: target '${intarget}' not defined")
+	endif()
+
+	get_target_property(RPL_PATH   ${intarget} WUT_RPL)
+	get_target_property(RPL_IS_RPX ${intarget} WUT_IS_RPX)
 	if(NOT RPL_IS_RPX OR NOT RPL_PATH)
 		message(FATAL_ERROR "wut_create_wuhb: target must be a valid .rpx (use wut_create_rpx)")
 	endif()
 
-	get_target_property(RPL_OUTPUT_NAME ${target} OUTPUT_NAME)
-	get_target_property(RPL_BINARY_DIR  ${target} BINARY_DIR)
-	if(NOT RPL_OUTPUT_NAME)
-		set(RPL_OUTPUT_NAME "${target}")
+	if(DEFINED WUHBTOOL_OUTPUT)
+		get_filename_component(WUHBTOOL_OUTPUT "${WUHBTOOL_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	elseif(DEFINED WUHBTOOL_TARGET)
+		set(WUHBTOOL_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.wuhb")
+	else()
+		__dkp_target_derive_name(WUHBTOOL_OUTPUT ${intarget} ".wuhb")
 	endif()
 
-	set(WUHBTOOL_OUTPUT "${RPL_BINARY_DIR}/${RPL_OUTPUT_NAME}.wuhb")
 	set(WUHBTOOL_ARGS "${RPL_PATH}" "${WUHBTOOL_OUTPUT}")
-	set(WUHBTOOL_DEPS ${target})
+	set(WUHBTOOL_DEPS ${intarget})
 
 	if(DEFINED WUHBTOOL_CONTENT)
 		if (TARGET "${WUHBTOOL_CONTENT}")
@@ -90,9 +97,7 @@ function(wut_create_wuhb target)
 			list(APPEND WUHBTOOL_ARGS "--content=${_folder}")
 			list(APPEND WUHBTOOL_DEPS ${WUHBTOOL_CONTENT} $<TARGET_PROPERTY:${WUHBTOOL_CONTENT},DKP_ASSET_FILES>)
 		else()
-			if (NOT IS_ABSOLUTE "${WUHBTOOL_CONTENT}")
-				set(WUHBTOOL_CONTENT "${CMAKE_CURRENT_SOURCE_DIR}/${WUHBTOOL_CONTENT}")
-			endif()
+			get_filename_component(WUHBTOOL_CONTENT "${WUHBTOOL_CONTENT}" ABSOLUTE)
 			if (NOT IS_DIRECTORY "${WUHBTOOL_CONTENT}")
 				message(FATAL_ERROR "wut_create_wuhb: cannot find content dir: ${WUHBTOOL_CONTENT}")
 			endif()
@@ -134,26 +139,21 @@ function(wut_create_wuhb target)
 		OUTPUT "${WUHBTOOL_OUTPUT}"
 		COMMAND "${WUT_WUHBTOOL_EXE}" ${WUHBTOOL_ARGS}
 		DEPENDS ${WUHBTOOL_DEPS}
-		COMMENT "Building WUHB bundle for ${target}"
+		COMMENT "Building WUHB bundle target ${outtarget}"
 		VERBATIM
 	)
 
-	add_custom_target(
-		"${target}_wuhb" ALL
-		DEPENDS "${WUHBTOOL_OUTPUT}"
-	)
+	add_custom_target(${outtarget} ALL DEPENDS "${WUHBTOOL_OUTPUT}")
+	dkp_set_target_file(${outtarget} "${WUHBTOOL_OUTPUT}")
 endfunction()
 
 function(wut_add_exports target exports_file)
 	get_filename_component(exports_file "${exports_file}" ABSOLUTE)
-	get_target_property(RPL_NAME ${target} OUTPUT_NAME)
 	get_target_property(RPL_BINARY_DIR ${target} BINARY_DIR)
-	if(NOT RPL_NAME)
-		set(RPL_NAME "${target}")
-	endif()
 
+	__dkp_asm_lang(lang wut_add_exports)
 	set(genfolder "${RPL_BINARY_DIR}/.dkp-generated")
-	set(genbase "${genfolder}/${RPL_NAME}")
+	set(genbase "${genfolder}/${target}")
 	add_custom_command(
 		OUTPUT "${genbase}_exports.s" "${genbase}_imports.s" "${genbase}_imports.ld"
 		COMMAND ${CMAKE_COMMAND} -E make_directory "${genfolder}"
@@ -165,11 +165,11 @@ function(wut_add_exports target exports_file)
 	)
 
 	target_sources(${target} PRIVATE "${genbase}_exports.s")
-	set_source_files_properties("${genbase}_exports.s" PROPERTIES LANGUAGE C)
+	set_source_files_properties("${genbase}_exports.s" PROPERTIES LANGUAGE "${lang}")
 
 	add_library(${target}_imports OBJECT "${genbase}_imports.s")
-	set_source_files_properties("${genbase}_imports.s" PROPERTIES LANGUAGE C)
-	set_target_properties(${target}_imports PROPERTIES WUT_RPL_IMPORT_LD "${genbase}_imports.ld")
+	set_source_files_properties("${genbase}_imports.s" PROPERTIES LANGUAGE "${lang}")
+	target_link_options(${target}_imports INTERFACE "-T${genbase}_imports.ld")
 endfunction()
 
 function(wut_link_rpl target)
@@ -177,17 +177,11 @@ function(wut_link_rpl target)
 		message(FATAL_ERROR "wut_link_rpl: must provide at least one input RPL")
 	endif()
 
-	foreach(libname ${ARGN})
+	foreach(libname IN LISTS ARGN)
 		if(NOT TARGET ${libname}_imports)
 			message(FATAL_ERROR "wut_link_rpl: library ${libname} is not a valid target")
 		endif()
 
-		get_target_property(RPL_IMPORT_LD ${libname}_imports WUT_RPL_IMPORT_LD)
-		if(NOT RPL_IMPORT_LD)
-			message(FATAL_ERROR "wut_link_rpl: library ${libname} does not contain RPL exports")
-		endif()
-
-		target_sources(${target} PRIVATE $<TARGET_OBJECTS:${libname}_imports>)
-		target_link_options(${target} PRIVATE "-T${RPL_IMPORT_LD}")
+		target_link_libraries(${target} PRIVATE ${libname}_imports)
 	endforeach()
 endfunction()

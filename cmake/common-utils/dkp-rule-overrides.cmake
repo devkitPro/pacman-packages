@@ -1,5 +1,5 @@
 
-foreach(lang C CXX ASM)
+foreach(lang IN ITEMS C CXX ASM)
 	# Set object file extension back to the default for Unix-like platforms
 	set(CMAKE_${lang}_OUTPUT_EXTENSION .o)
 
@@ -17,11 +17,9 @@ foreach(lang C CXX ASM)
 		# - Use -O2 instead of -O3 for Release (O3 enables aggressive loop unrolling which can be
 		#     extremely detrimental to code size, especially for platforms such as GBA/DS)
 		# - Emit debug metadata on all configurations
-		foreach(lang C CXX ASM)
-			set(CMAKE_${lang}_FLAGS_DEBUG_INIT          " -g -Og -DDEBUG")
-			set(CMAKE_${lang}_FLAGS_MINSIZEREL_INIT     " -g -Oz -DNDEBUG")
-			set(CMAKE_${lang}_FLAGS_RELEASE_INIT        " -g -O2 -DNDEBUG")
-			set(CMAKE_${lang}_FLAGS_RELWITHDEBINFO_INIT " -g -O2 -DNDEBUG")
-		endforeach()
+		set(CMAKE_${lang}_FLAGS_DEBUG_INIT          " -g -Og -DDEBUG")
+		set(CMAKE_${lang}_FLAGS_MINSIZEREL_INIT     " -g -Oz -DNDEBUG")
+		set(CMAKE_${lang}_FLAGS_RELEASE_INIT        " -g -O2 -DNDEBUG")
+		set(CMAKE_${lang}_FLAGS_RELWITHDEBINFO_INIT " -g -O2 -DNDEBUG")
 	endif()
 endforeach()

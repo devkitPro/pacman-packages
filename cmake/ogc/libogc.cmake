@@ -16,22 +16,15 @@ set(OGC_STANDARD_INCLUDE_DIRECTORIES "${OGC_ROOT}/include")
 
 __dkp_init_platform_settings(OGC)
 
+# -----------------------------------------------------------------------------
+# Platform-specific helper utilities
+
 function(ogc_create_dol target)
-
-    get_target_property(TARGET_OUTPUT_NAME ${target} OUTPUT_NAME)
-    get_target_property(TARGET_BINARY_DIR  ${target} BINARY_DIR)
-
-    if(NOT TARGET_OUTPUT_NAME)
-        set(TARGET_OUTPUT_NAME "${target}")
-    endif()
-
-    set(DOL_OUTPUT "${TARGET_BINARY_DIR}/${TARGET_OUTPUT_NAME}.dol")
-
+    __dkp_target_derive_name(DOL_OUTPUT ${target} ".dol")
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${ELF2DOL_EXE}" "$<TARGET_FILE:${target}>" "${DOL_OUTPUT}"
         BYPRODUCTS "${DOL_OUTPUT}"
         COMMENT "Converting ${target} to .dol format"
         VERBATIM
     )
-
 endfunction()

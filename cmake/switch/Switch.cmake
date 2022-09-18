@@ -36,6 +36,6 @@ if (NOT NX_UAM_EXE)
 endif()
 
 find_file(NX_DEFAULT_ICON NAMES default_icon.jpg HINTS "${NX_ROOT}" NO_CMAKE_FIND_ROOT_PATH)
-if (NOT NX_DEFAULT_ICON)
+if (NOT NX_DEFAULT_ICON AND NOT DKP_PLATFORM_BOOTSTRAP)
 	message(FATAL_ERROR "Could not find default icon: try installing libnx")
 endif()

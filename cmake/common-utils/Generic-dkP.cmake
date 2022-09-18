@@ -21,7 +21,7 @@ set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS FALSE)
 
 # Helper macro for platform settings initialization
 macro(__dkp_init_platform_settings platform)
-	foreach(lang C CXX ASM)
+	foreach(lang IN ITEMS C CXX ASM)
 		set(CMAKE_${lang}_FLAGS_INIT "${${platform}_ARCH_SETTINGS} ${${platform}_COMMON_FLAGS}")
 
 		if(NOT DKP_PLATFORM_BOOTSTRAP)
@@ -68,7 +68,16 @@ endmacro()
 # Helper utilities
 
 # Include common devkitPro bits and pieces
+include(dkp-impl-helpers)
 include(dkp-linker-utils)
 include(dkp-custom-target)
 include(dkp-embedded-binary)
 include(dkp-asset-folder)
+
+# Build tool hook
+if(DEFINED ENV{DKP_BUILD_TOOL_HOOK})
+	set(DKP_BUILD_TOOL_HOOK "$ENV{DKP_BUILD_TOOL_HOOK}" CACHE INTERNAL "")
+endif()
+if(DEFINED DKP_BUILD_TOOL_HOOK)
+	include(${DKP_BUILD_TOOL_HOOK})
+endif()
