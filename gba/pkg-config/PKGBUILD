@@ -1,0 +1,15 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=gba-pkg-config
+pkgver=0.28
+pkgrel=4
+pkgdesc='pkg-config wrapper (for Nintendo GBA homebrew development)'
+arch=('any')
+url='http://devkitpro.org/'
+source=('pkg-config.in')
+sha256sums=('25604f805c33ac129188a16863ffc36a7d8f4a762c238c8a2e068bd538c1e0cf')
+groups=('gba-dev')
+
+package() {
+  install -d "$pkgdir"/opt/devkitpro/portlibs/gba/bin
+  cp "$srcdir"/pkg-config.in "$pkgdir"/opt/devkitpro/portlibs/gba/bin/arm-none-eabi-pkg-config
+}
