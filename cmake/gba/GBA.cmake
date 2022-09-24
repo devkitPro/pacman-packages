@@ -35,12 +35,12 @@ __dkp_platform_prefix(
 
 find_program(PKG_CONFIG_EXECUTABLE NAMES arm-none-eabi-pkg-config HINTS "${DEVKITPRO}/portlibs/gba/bin")
 if (NOT PKG_CONFIG_EXECUTABLE)
-	message(WARNING "Could not find arm-none-eabi-pkg-config: try installing gba-pkg-config")
+	message(FATAL_ERROR "Could not find arm-none-eabi-pkg-config: try installing gba-pkg-config")
 endif()
 
 find_program(GBA_GBAFIX_EXE NAMES gbafix HINTS "${DEVKITPRO}/tools/bin")
 if (NOT GBA_GBAFIX_EXE)
-	message(WARNING "Could not find gbafix: try installing gba-tools")
+	message(FATAL_ERROR "Could not find gbafix: try installing gba-tools")
 endif()
 
 include(dkp-gba-ds-common)

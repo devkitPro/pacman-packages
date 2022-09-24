@@ -91,6 +91,9 @@ function(nx_create_nro target)
 	endif()
 
 	if (NOT DEFINED ELF2NRO_ICON AND NOT ELF2NRO_NOICON)
+		if(NOT NX_DEFAULT_ICON)
+			message(FATAL_ERROR "nx_create_nro: could not find default icon, try installing libnx")
+		endif()
 		set(ELF2NRO_ICON "${NX_DEFAULT_ICON}")
 	endif()
 

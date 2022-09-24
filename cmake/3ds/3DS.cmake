@@ -45,6 +45,3 @@ if (NOT CTR_TEX3DS_EXE)
 endif()
 
 find_file(CTR_DEFAULT_ICON NAMES default_icon.png HINTS "${CTR_ROOT}" NO_CMAKE_FIND_ROOT_PATH)
-if (NOT CTR_DEFAULT_ICON AND NOT DKP_PLATFORM_BOOTSTRAP)
-	message(FATAL_ERROR "Could not find default icon: try installing libctru")
-endif()
