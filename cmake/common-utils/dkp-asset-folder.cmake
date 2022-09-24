@@ -38,24 +38,26 @@ function(dkp_install_assets target)
 			continue()
 		endif()
 
-		dkp_resolve_file(_srcfile ${srctarget})
-		get_filename_component(_name "${_srcfile}" NAME)
-		set(_destfile "${_dest}/${_name}")
+		dkp_resolve_file(_srcfiles ${srctarget} MULTI)
+		foreach(_srcfile IN LISTS _srcfiles)
+			get_filename_component(_name "${_srcfile}" NAME)
+			set(_destfile "${_dest}/${_name}")
 
-		add_custom_command(
-			OUTPUT "${_destfile}"
-			COMMAND ${CMAKE_COMMAND} -E make_directory "${_dest}"
-			COMMAND ${CMAKE_COMMAND} -E copy "${_srcfile}" "${_destfile}"
-			COMMENT "Installing ${srctarget} to ${target}"
-			DEPENDS ${srctarget} "${_srcfile}"
-		)
+			add_custom_command(
+				OUTPUT "${_destfile}"
+				COMMAND ${CMAKE_COMMAND} -E make_directory "${_dest}"
+				COMMAND ${CMAKE_COMMAND} -E copy "${_srcfile}" "${_destfile}"
+				COMMENT "Installing ${srctarget} to ${target}"
+				DEPENDS ${srctarget} "${_srcfile}"
+			)
 
-		add_custom_target(${srctarget}_install_to_${target}
-			DEPENDS "${_destfile}"
-		)
+			add_custom_target(${srctarget}_install_to_${target}
+				DEPENDS "${_destfile}"
+			)
 
-		add_dependencies(${target} ${srctarget}_install_to_${target})
-		set_property(TARGET ${target} APPEND PROPERTY DKP_ASSET_FILES "${_destfile}")
+			add_dependencies(${target} ${srctarget}_install_to_${target})
+			set_property(TARGET ${target} APPEND PROPERTY DKP_ASSET_FILES "${_destfile}")
+		endforeach()
 	endforeach()
 endfunction()
 

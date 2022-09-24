@@ -27,4 +27,5 @@ function(ogc_create_dol target)
         COMMENT "Converting ${target} to .dol format"
         VERBATIM
     )
+    dkp_set_target_file(${target} "${DOL_OUTPUT}")
 endfunction()

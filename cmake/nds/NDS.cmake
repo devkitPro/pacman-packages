@@ -38,3 +38,5 @@ find_file(NDS_DEFAULT_ARM7 NAMES default.elf HINTS "${DEVKITPRO}/libnds" NO_CMAK
 if (NOT NDS_DEFAULT_ARM7 AND NOT DKP_PLATFORM_BOOTSTRAP)
 	message(WARNING "Could not find default ARM7 component: try installing default-arm7")
 endif()
+
+include(dkp-gba-ds-common)

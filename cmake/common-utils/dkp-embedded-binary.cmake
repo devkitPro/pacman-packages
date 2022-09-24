@@ -13,26 +13,28 @@ function(dkp_add_embedded_binary_library target)
 	set(genfolder "${CMAKE_CURRENT_BINARY_DIR}/.dkp-generated/${target}")
 	set(intermediates "")
 	foreach (inname IN LISTS ARGN)
-		dkp_resolve_file(infile "${inname}")
-		get_filename_component(basename "${infile}" NAME)
-		string(REPLACE "." "_" basename "${basename}")
+		dkp_resolve_file(infiles "${inname}" MULTI)
+		foreach(infile IN LISTS infiles)
+			get_filename_component(basename "${infile}" NAME)
+			string(REPLACE "." "_" basename "${basename}")
 
-		if (TARGET "${inname}")
-			set(indeps ${inname} ${infile})
-		else()
-			set(indeps ${infile})
-		endif()
+			if (TARGET "${inname}")
+				set(indeps ${inname} ${infile})
+			else()
+				set(indeps ${infile})
+			endif()
 
-		add_custom_command(
-			OUTPUT "${genfolder}/${basename}.s" "${genfolder}/${basename}.h"
-			COMMAND ${CMAKE_COMMAND} -E make_directory "${genfolder}"
-			COMMAND ${DKP_BIN2S} -H "${genfolder}/${basename}.h" "${infile}" > "${genfolder}/${basename}.s"
-			DEPENDS ${indeps}
-			COMMENT "Generating binary embedding source for ${inname}"
-		)
+			add_custom_command(
+				OUTPUT "${genfolder}/${basename}.s" "${genfolder}/${basename}.h"
+				COMMAND ${CMAKE_COMMAND} -E make_directory "${genfolder}"
+				COMMAND ${DKP_BIN2S} -H "${genfolder}/${basename}.h" "${infile}" > "${genfolder}/${basename}.s"
+				DEPENDS ${indeps}
+				COMMENT "Generating binary embedding source for ${inname}"
+			)
 
-		list(APPEND intermediates "${genfolder}/${basename}.s" "${genfolder}/${basename}.h")
-		set_source_files_properties("${genfolder}/${basename}.s" PROPERTIES LANGUAGE "${lang}")
+			list(APPEND intermediates "${genfolder}/${basename}.s" "${genfolder}/${basename}.h")
+			set_source_files_properties("${genfolder}/${basename}.s" PROPERTIES LANGUAGE "${lang}")
+		endforeach()
 	endforeach()
 
 	add_library(${target} OBJECT ${intermediates})

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e
+shopt -s extglob
+
+args=()
+argmode=""
+filemode=""
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+	-marm|-mthumb)
+		argmode="$1"
+		;;
+	-*)
+		args+=("$1")
+		;;
+	*.@(32|arm|iwram|itcm).@(c|m|C|M|c++|cc|cpp|cxx|mm|CPP))
+		args+=("$1")
+		filemode="-marm"
+		;;
+	*.@(16|thumb).@(c|m|C|M|c++|cc|cpp|cxx|mm|CPP))
+		args+=("$1")
+		filemode="-mthumb"
+		;;
+	*)
+		args+=("$1")
+		;;
+	esac
+	shift
+done
+
+if [ ! -z "$filemode" ]; then
+	args+=("$filemode")
+elif [ ! -z "$argmode" ]; then
+	args+=("$argmode")
+fi
+
+exec "${args[@]}"

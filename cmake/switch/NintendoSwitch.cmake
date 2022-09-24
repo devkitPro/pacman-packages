@@ -141,16 +141,23 @@ function(nx_create_nro target)
 endfunction()
 
 function(nx_add_shader_program target source type)
-	set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.dksh")
+	cmake_parse_arguments(PARSE_ARGV 3 NX_UAM "" "OUTPUT" "")
+
+	if(DEFINED NX_UAM_OUTPUT)
+		get_filename_component(NX_UAM_OUTPUT "${NX_UAM_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	else()
+		set(NX_UAM_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.dksh")
+	endif()
+
+	get_filename_component(source "${source}" ABSOLUTE)
 	add_custom_command(
-		OUTPUT "${outfile}"
-		COMMAND "${NX_UAM_EXE}" -o "${outfile}" -s ${type} "${source}"
+		OUTPUT "${NX_UAM_OUTPUT}"
+		COMMAND "${NX_UAM_EXE}" -o "${NX_UAM_OUTPUT}" -s ${type} "${source}"
 		DEPENDS "${source}"
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Building shader program ${target}"
 		VERBATIM
 	)
 
-	add_custom_target(${target} DEPENDS "${outfile}")
-	dkp_set_target_file(${target} "${outfile}")
+	add_custom_target(${target} DEPENDS "${NX_UAM_OUTPUT}")
+	dkp_set_target_file(${target} "${NX_UAM_OUTPUT}")
 endfunction()
