@@ -8,7 +8,7 @@ include_guard(GLOBAL)
 include(Platform/Generic-dkP)
 
 # Platform identification flags
-set(NINTENDO_SWITCH TRUE)
+set(NINTENDO_SWITCH CACHE BOOL TRUE)
 
 # Platform settings
 set(NX_ARCH_SETTINGS "-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -ftls-model=local-exec")
