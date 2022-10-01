@@ -8,7 +8,7 @@ include_guard(GLOBAL)
 include(Platform/Generic-dkP)
 
 # Platform identification flags
-set(NINTENDO_DS TRUE)
+set(NINTENDO_DS CACHE BOOL TRUE)
 
 # Platform settings
 set(NDS_STANDARD_INCLUDE_DIRECTORIES "${NDS_ROOT}/include")
