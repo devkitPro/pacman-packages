@@ -8,10 +8,10 @@ include_guard(GLOBAL)
 include(Platform/Generic-dkP)
 
 # Platform identification flags
-set(CAFEOS TRUE)
-set(NINTENDO_WIIU TRUE)
-set(WIIU TRUE)
-set(WUT TRUE)
+set(CAFEOS CACHE BOOL TRUE)
+set(NINTENDO_WIIU CACHE BOOL TRUE)
+set(WIIU CACHE BOOL TRUE)
+set(WUT CACHE BOOL TRUE)
 
 # Platform settings
 set(WUT_ARCH_SETTINGS "-mcpu=750 -meabi -mhard-float")
