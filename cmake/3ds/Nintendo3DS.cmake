@@ -8,7 +8,7 @@ include_guard(GLOBAL)
 include(Platform/Generic-dkP)
 
 # Platform identification flags
-set(NINTENDO_3DS TRUE)
+set(NINTENDO_3DS CACHE BOOL TRUE)
 
 # Platform settings
 set(CTR_ARCH_SETTINGS "-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft")
