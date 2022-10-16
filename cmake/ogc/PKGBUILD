@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=ogc-cmake
-pkgver=1.1.0
+pkgver=1.2.0
 pkgrel=1
 pkgdesc="CMake support for Nintendo Wii"
 arch=('any')
@@ -11,12 +11,12 @@ source=(
 )
 
 options=('!strip')
-depends=('devkitppc-cmake')
+depends=('devkitppc-cmake' 'gamecube-tools')
 groups=('wii-dev' 'gamecube-dev')
 
 sha256sums=(
-  '93dc8bb7854202d0ae78809bbd481412452bd68432b294ffb92f7d4e01ddeb6a'  # libogc.cmake
-  '2ec55a52e4c1c5cb673fbb8192b2e4f17d0c65cfb78f49237a43c6e6c349c492'  # ogc-common.cmake
+  '795f37152d8b07a8a47ae9a3566b0f1111ba1520d91a5359da9a2065c20b6db3'  # libogc.cmake
+  '0cab4ebcf3d081978ac63ec0ad6b25ed51434392fcf97dc7b9079e4b22853758'  # ogc-common.cmake
 )
 
 package() {

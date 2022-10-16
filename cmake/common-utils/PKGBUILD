@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-cmake-common-utils
-pkgver=1.4.1
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="Common utilities and infrastructure for devkitPro CMake"
 arch=('any')
@@ -8,6 +8,7 @@ url='http://devkitpro.org/'
 source=(
   'dkp-initialize-path.cmake'
   'dkp-toolchain-common.cmake'
+  'dkp-impl-helpers.cmake'
   'dkp-rule-overrides.cmake'
   'dkp-linker-utils.cmake'
   'dkp-custom-target.cmake'
@@ -17,20 +18,22 @@ source=(
 )
 
 sha256sums=(
-  'ec758b41e5a58b288cf08ef27ce9b8791ff0411aa957141f1f73ca3e97fcdf6f'  # dkp-initialize-path.cmake
-  '03a4bc8a0e25066778bba54cd69f881864202de4bcfab2d16c15693fa7c51bbf'  # dkp-toolchain-common.cmake
-  '77d8afc4add9aa90bfda1eae71904ae17c51464acb98b36f441cfba544b258ce'  # dkp-rule-overrides.cmake
-  '297f5f92c5fdbb62a350f61eea0c7f4a6262d2a8f58aff8c2d0eceea6aab2a70'  # dkp-linker-utils.cmake
-  'd0a79c868f855320e1f2234fd77809f18c99f37511630a64afee47208250bd4d'  # dkp-custom-target.cmake
-  '8f49757da2c95b7b1b89fdf20805285889c67861dc2a79ec8bfd1c204e15456f'  # dkp-embedded-binary.cmake
-  'a49facd17bc0b1a42bd4344cf1aa927cee4394a0fc1de632268b0a49d854de11'  # dkp-asset-folder.cmake
-  '5b730c457e28555da60fd8f8c5eb6c0d2ec762f252c664affc8f3188e5fc7605'  # Generic-dkP.cmake
+  '758b8cc680112d87870f84e8d69abfadc0cbcd1b0987e88329d1fafa7470f9f4'  # dkp-initialize-path.cmake
+  '784ef22d848b20cc7ea2e6eaaa3ad3416188c5810b42832e884c7c089eced2ad'  # dkp-toolchain-common.cmake
+  'b775c77dbc3128885f4db0a04f751ea592d3b8924b8c78e7f246f91b0e5b89b6'  # dkp-impl-helpers.cmake
+  'c52a1b59e132d18f432883ef748db7b2e2b15d9a7c75208e02a01f8d29149392'  # dkp-rule-overrides.cmake
+  'beabc5b2c53de05adbc26b7264080041c84578a76a5783f02d771ac0790f5db2'  # dkp-linker-utils.cmake
+  '0f0ac9a7a92c6dff4975c2204433d4b7515893bc461b3022a135b0ed4728b32d'  # dkp-custom-target.cmake
+  '165a21d4c50794d28ac5f773259e922f7f87680f9b971fdf0d029e7478106b2c'  # dkp-embedded-binary.cmake
+  '0caae38f5e3e1fefa7310c1aa48141251a153d9f34fe59964e479183a8db6e7f'  # dkp-asset-folder.cmake
+  '3c2d2e688f9fdab46f0761d4f14799c6d730e156db2a961a822816feb5d1cd76'  # Generic-dkP.cmake
 )
 
 package() {
   install -d "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-initialize-path.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-toolchain-common.cmake "$pkgdir"/opt/devkitpro/cmake
+  cp "$srcdir"/dkp-impl-helpers.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-rule-overrides.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-linker-utils.cmake "$pkgdir"/opt/devkitpro/cmake
   cp "$srcdir"/dkp-custom-target.cmake "$pkgdir"/opt/devkitpro/cmake
