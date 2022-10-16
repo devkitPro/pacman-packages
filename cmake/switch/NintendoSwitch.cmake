@@ -143,6 +143,110 @@ function(nx_create_nro target)
 	dkp_set_target_file(${outtarget} "${ELF2NRO_OUTPUT}")
 endfunction()
 
+function(nx_create_exefs target)
+	cmake_parse_arguments(PARSE_ARGV 1 NX_EXEFS "" "TARGET;OUTPUT;CONFIG" "")
+
+	if(DEFINED NX_EXEFS_TARGET)
+		set(intarget "${NX_EXEFS_TARGET}")
+		set(outtarget "${target}")
+	else()
+		set(intarget "${target}")
+		set(outtarget "${target}_nsp")
+	endif()
+
+	if(NOT TARGET "${intarget}")
+		message(FATAL_ERROR "nx_create_exefs: target '${intarget}' not defined")
+	endif()
+
+	if(DEFINED NX_EXEFS_OUTPUT)
+		get_filename_component(NX_EXEFS_OUTPUT "${NX_EXEFS_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	elseif(DEFINED NX_EXEFS_TARGET)
+		set(NX_EXEFS_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.nsp")
+	else()
+		__dkp_target_derive_name(NX_EXEFS_OUTPUT ${intarget} ".nsp")
+	endif()
+
+	if(DEFINED NX_EXEFS_CONFIG)
+		get_filename_component(NX_EXEFS_CONFIG "${NX_EXEFS_CONFIG}" ABSOLUTE)
+	else()
+		message(FATAL_ERROR "nx_create_exefs: must provide a CONFIG file in json format")
+	endif()
+
+	set(NX_EXEFS_TEMP_DIR "${CMAKE_CURRENT_BINARY_DIR}/.dkp-generated/${outtarget}")
+	set(NX_EXEFS_MAIN "${NX_EXEFS_TEMP_DIR}/main")
+	set(NX_EXEFS_NPDM "${NX_EXEFS_TEMP_DIR}/main.npdm")
+
+	add_custom_command(
+		OUTPUT "${NX_EXEFS_MAIN}"
+		COMMAND ${CMAKE_COMMAND} -E make_directory "${NX_EXEFS_TEMP_DIR}"
+		COMMAND ${NX_ELF2NSO_EXE} "$<TARGET_FILE:${intarget}>" "${NX_EXEFS_MAIN}"
+		DEPENDS ${intarget}
+		COMMENT "Converting ${intarget} to NSO format"
+		VERBATIM
+	)
+
+	add_custom_command(
+		OUTPUT "${NX_EXEFS_NPDM}"
+		COMMAND ${CMAKE_COMMAND} -E make_directory "${NX_EXEFS_TEMP_DIR}"
+		COMMAND ${NX_NPDMTOOL_EXE} "${NX_EXEFS_CONFIG}" "${NX_EXEFS_NPDM}"
+		DEPENDS "${NX_EXEFS_CONFIG}"
+		COMMENT "Generating NPDM for ${outtarget}"
+		VERBATIM
+	)
+
+	add_custom_command(
+		OUTPUT "${NX_EXEFS_OUTPUT}"
+		COMMAND ${NX_BUILD_PFS0_EXE} "${NX_EXEFS_TEMP_DIR}" "${NX_EXEFS_OUTPUT}"
+		DEPENDS "${NX_EXEFS_MAIN}" "${NX_EXEFS_NPDM}"
+		COMMENT "Building ExeFS target ${outtarget}"
+		VERBATIM
+	)
+
+	add_custom_target(${outtarget} ALL DEPENDS "${NX_EXEFS_OUTPUT}")
+	dkp_set_target_file(${outtarget} "${NX_EXEFS_OUTPUT}")
+endfunction()
+
+function(nx_create_kip target)
+	cmake_parse_arguments(PARSE_ARGV 1 NX_ELF2KIP "" "TARGET;OUTPUT;CONFIG" "")
+
+	if(DEFINED NX_ELF2KIP_TARGET)
+		set(intarget "${NX_ELF2KIP_TARGET}")
+		set(outtarget "${target}")
+	else()
+		set(intarget "${target}")
+		set(outtarget "${target}_kip")
+	endif()
+
+	if(NOT TARGET "${intarget}")
+		message(FATAL_ERROR "nx_create_kip: target '${intarget}' not defined")
+	endif()
+
+	if(DEFINED NX_ELF2KIP_OUTPUT)
+		get_filename_component(NX_ELF2KIP_OUTPUT "${NX_ELF2KIP_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+	elseif(DEFINED NX_ELF2KIP_TARGET)
+		set(NX_ELF2KIP_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${outtarget}.kip")
+	else()
+		__dkp_target_derive_name(NX_ELF2KIP_OUTPUT ${intarget} ".kip")
+	endif()
+
+	if(DEFINED NX_ELF2KIP_CONFIG)
+		get_filename_component(NX_ELF2KIP_CONFIG "${NX_ELF2KIP_CONFIG}" ABSOLUTE)
+	else()
+		message(FATAL_ERROR "nx_create_kip: must provide a CONFIG file in json format")
+	endif()
+
+	add_custom_command(
+		OUTPUT "${NX_ELF2KIP_OUTPUT}"
+		COMMAND ${NX_ELF2KIP_EXE} "$<TARGET_FILE:${intarget}>" "${NX_ELF2KIP_CONFIG}" "${NX_ELF2KIP_OUTPUT}"
+		DEPENDS ${intarget} "${NX_ELF2KIP_CONFIG}"
+		COMMENT "Building KIP target ${outtarget}"
+		VERBATIM
+	)
+
+	add_custom_target(${outtarget} ALL DEPENDS "${NX_ELF2KIP_OUTPUT}")
+	dkp_set_target_file(${outtarget} "${NX_ELF2KIP_OUTPUT}")
+endfunction()
+
 function(nx_add_shader_program target source type)
 	cmake_parse_arguments(PARSE_ARGV 3 NX_UAM "" "OUTPUT" "")
 

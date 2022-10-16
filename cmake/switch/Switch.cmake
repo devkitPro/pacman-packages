@@ -25,9 +25,29 @@ if (NOT NX_ELF2NRO_EXE)
 	message(FATAL_ERROR "Could not find elf2nro: try installing switch-tools")
 endif()
 
+find_program(NX_ELF2KIP_EXE NAMES elf2kip HINTS "${DEVKITPRO}/tools/bin")
+if (NOT NX_ELF2KIP_EXE)
+	message(FATAL_ERROR "Could not find elf2kip: try installing switch-tools")
+endif()
+
+find_program(NX_ELF2NSO_EXE NAMES elf2nso HINTS "${DEVKITPRO}/tools/bin")
+if (NOT NX_ELF2NSO_EXE)
+	message(FATAL_ERROR "Could not find elf2nso: try installing switch-tools")
+endif()
+
+find_program(NX_BUILD_PFS0_EXE NAMES build_pfs0 HINTS "${DEVKITPRO}/tools/bin")
+if (NOT NX_BUILD_PFS0_EXE)
+	message(FATAL_ERROR "Could not find build_pfs0: try installing switch-tools")
+endif()
+
 find_program(NX_NACPTOOL_EXE NAMES nacptool HINTS "${DEVKITPRO}/tools/bin")
 if (NOT NX_NACPTOOL_EXE)
 	message(FATAL_ERROR "Could not find nacptool: try installing switch-tools")
+endif()
+
+find_program(NX_NPDMTOOL_EXE NAMES npdmtool HINTS "${DEVKITPRO}/tools/bin")
+if (NOT NX_NPDMTOOL_EXE)
+	message(FATAL_ERROR "Could not find npdmtool: try installing switch-tools")
 endif()
 
 find_program(NX_UAM_EXE NAMES uam HINTS "${DEVKITPRO}/tools/bin")
