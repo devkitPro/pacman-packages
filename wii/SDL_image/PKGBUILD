@@ -2,8 +2,8 @@
 
 pkgname=wii-sdl_image
 pkgver=1.2.12
-pkgrel=3
-pkgdesc="A simple library to load images of various formats as SDL surfaces (Nintendo 3DS port)"
+pkgrel=4
+pkgdesc="A simple library to load images of various formats as SDL surfaces."
 arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
