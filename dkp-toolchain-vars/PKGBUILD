@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-toolchain-vars
-pkgver=1.0.1
-pkgrel=2
+pkgver=1.0.2
+pkgrel=1
 
 pkgdesc='helper scripts to set variables for devkitPro toolchains'
 
