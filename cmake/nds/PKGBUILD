@@ -1,7 +1,7 @@
 # Contributor: Cameron Cawley <ccawley2011@gmail.com>
 pkgname=nds-cmake
-pkgver=1.2.1
-pkgrel=1
+pkgver=1.3.0
+pkgrel=6
 pkgdesc="CMake support for Nintendo DS"
 arch=('any')
 url='https://devkitpro.org/'
@@ -15,8 +15,8 @@ depends=('devkitarm-cmake' 'ndstool' 'grit' 'mmutil' 'nds-pkg-config')
 groups=('nds-dev')
 
 sha256sums=('4e4eb21c4de42f18caffff9d97eb47e9f368991fd6e429b00dee9edf20a721ae'
-            'a14dfbf6947cb90e80ce593db8392d270037f80ec636b102ebda6d49960f9e43'
-            '6b33cfd879136f854e1be25adb3c131b033fd85212db95f4bb598d0c1982f8b7')
+            '718c74ee919c786e58f82d5a7f450eda6b18bf09cff526645db118fa160932c3'
+            '416718d0693459863ff8c87e6040f8857bd3c8e5a980a3ce5f89e297591330eb')
 
 package() {
 

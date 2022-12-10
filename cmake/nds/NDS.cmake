@@ -11,12 +11,19 @@ endif()
 # Import devkitARM toolchain
 include(${CMAKE_CURRENT_LIST_DIR}/devkitARM.cmake)
 
-set(NDS_ROOT ${DEVKITPRO}/libnds)
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES NDS_ARCH_THUMB)
+
+set(CALICO_ROOT "${DEVKITPRO}/calico")
+set(NDS_ROOT    "${DEVKITPRO}/libnds")
+
 set(DKP_INSTALL_PREFIX_INIT ${DEVKITPRO}/portlibs/nds)
 
 __dkp_platform_prefix(
 	${DEVKITPRO}/portlibs/nds
+	${DEVKITPRO}/portlibs/${CMAKE_SYSTEM_PROCESSOR}
+	${DEVKITPRO}/portlibs/armv4t
 	${NDS_ROOT}
+	${CALICO_ROOT}
 )
 
 find_program(PKG_CONFIG_EXECUTABLE NAMES arm-none-eabi-pkg-config HINTS "${DEVKITPRO}/portlibs/nds/bin")
@@ -26,7 +33,6 @@ endif()
 
 find_program(NDS_NDSTOOL_EXE NAMES ndstool HINTS "${DEVKITPRO}/tools/bin")
 
-find_file(NDS_DEFAULT_ICON NAMES icon.bmp HINTS "${DEVKITPRO}/libnds" NO_CMAKE_FIND_ROOT_PATH)
-find_file(NDS_DEFAULT_ARM7 NAMES default.elf HINTS "${DEVKITPRO}/libnds" NO_CMAKE_FIND_ROOT_PATH)
+find_file(NDS_DEFAULT_ICON NAMES nds-icon.bmp HINTS "${CALICO_ROOT}/share" NO_CMAKE_FIND_ROOT_PATH)
 
 include(dkp-gba-ds-common)
