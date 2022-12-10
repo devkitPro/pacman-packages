@@ -1,0 +1,35 @@
+# Maintainer: fincs <fincs@devkitpro.org>
+
+pkgname=('catnip')
+pkgver=0.0.3
+pkgrel=1
+pkgdesc="Helper tool for devkitPro CMake"
+arch=('any')
+license=('custom')
+url="http://github.com/devkitPro/${pkgname}"
+options=(!strip libtool staticlibs)
+source=(
+  ${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz
+)
+sha256sums=(
+  'a3a885c2c3261c0298c1f0cf425d5af3e3f324a65718a0c6c9847f9484cf08ad'
+)
+depends=('dkp-cmake-common-utils')
+
+groups=('3ds-dev' 'switch-dev' 'wiiu-dev' 'gba-dev' 'nds-dev' 'gamecube-dev' 'wii-dev')
+
+package() {
+
+  cd ${srcdir}/${pkgname}-${pkgver}
+
+  install -d "$pkgdir"/opt/devkitpro/tools/bin
+  install -d "$pkgdir"/opt/devkitpro/cmake
+  install -d "$pkgdir"/opt/devkitpro/cmake/Catnip
+
+  install -m 755 -t "$pkgdir"/opt/devkitpro/tools/bin catnip
+  install -m 644 -t "$pkgdir"/opt/devkitpro/tools/bin catnip.cmd
+
+  install -m 644 -t "$pkgdir"/opt/devkitpro/cmake cmake/*.cmake
+  install -m 644 -t "$pkgdir"/opt/devkitpro/cmake/Catnip cmake/Catnip/*.cmake
+
+}
