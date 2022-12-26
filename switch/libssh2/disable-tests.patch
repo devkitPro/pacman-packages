@@ -1,0 +1,127 @@
+--- a/configure
++++ b/configure
+@@ -675,6 +675,8 @@ USE_OSSFUZZERS_FALSE
+ USE_OSSFUZZERS_TRUE
+ BUILD_EXAMPLES_FALSE
+ BUILD_EXAMPLES_TRUE
++BUILD_TESTS_FALSE
++BUILD_TESTS_TRUE
+ CPP
+ LIBSREQUIRED
+ LIBZ_PREFIX
+@@ -871,6 +873,7 @@ enable_clear_memory
+ enable_debug
+ enable_hidden_symbols
+ enable_examples_build
++enable_tests_build
+ enable_ossfuzzers
+ enable_werror
+ '
+@@ -1544,6 +1547,9 @@ Optional Features:
+   --enable-examples-build Build example applications (this is the default)
+   --disable-examples-build
+                           Do not build example applications
++  --enable-tests-build    Build test applications (this is the default)
++  --disable-tests-build
++                          Do not build test applications
+   --enable-ossfuzzers     Whether to generate the fuzzers for OSS-Fuzz
+   --enable-werror         Enable compiler warnings as errors
+   --disable-werror        Disable compiler warnings as errors
+@@ -23210,6 +23216,35 @@ else
+ fi
+ 
+ 
++# Build tests applications?
++{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to build tests applications" >&5
++printf %s "checking whether to build tests applications... " >&6; }
++# Check whether --enable-tests-build was given.
++if test ${enable_tests_build+y}
++then :
++  enableval=$enable_tests_build; case "$enableval" in
++  no | false)
++    build_tests='no'
++    ;;
++  *)
++    build_tests='yes'
++    ;;
++esac
++else $as_nop
++  build_tests='yes'
++fi
++
++{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $build_tests" >&5
++printf "%s\n" "$build_tests" >&6; }
++ if test "x$build_tests" != "xno"; then
++  BUILD_TESTS_TRUE=
++  BUILD_TESTS_FALSE='#'
++else
++  BUILD_TESTS_TRUE='#'
++  BUILD_TESTS_FALSE=
++fi
++
++
+ 
+ # Build OSS fuzzing targets?
+ # Check whether --enable-ossfuzzers was given.
+@@ -24183,6 +24218,10 @@ if test -z "${BUILD_EXAMPLES_TRUE}" && test -z "${BUILD_EXAMPLES_FALSE}"; then
+   as_fn_error $? "conditional \"BUILD_EXAMPLES\" was never defined.
+ Usually this means the macro was only invoked conditionally." "$LINENO" 5
+ fi
++if test -z "${BUILD_TESTS_TRUE}" && test -z "${BUILD_TESTS_FALSE}"; then
++  as_fn_error $? "conditional \"BUILD_TESTS\" was never defined.
++Usually this means the macro was only invoked conditionally." "$LINENO" 5
++fi
+ if test -z "${USE_OSSFUZZERS_TRUE}" && test -z "${USE_OSSFUZZERS_FALSE}"; then
+   as_fn_error $? "conditional \"USE_OSSFUZZERS\" was never defined.
+ Usually this means the macro was only invoked conditionally." "$LINENO" 5
+@@ -26634,6 +26673,7 @@ fi
+   Clear memory:     $enable_clear_memory
+   Debug build:      $enable_debug
+   Build examples:   $build_examples
++  Build tests:      $build_tests
+   Path to sshd:     $ac_cv_path_SSHD (only for self-tests)
+   zlib compression: ${found_libz}
+ " >&5
+@@ -26649,6 +26689,7 @@ printf "%s\n" "$as_me: summary of build options:
+   Clear memory:     $enable_clear_memory
+   Debug build:      $enable_debug
+   Build examples:   $build_examples
++  Build tests:      $build_tests
+   Path to sshd:     $ac_cv_path_SSHD (only for self-tests)
+   zlib compression: ${found_libz}
+ " >&6;}
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -90,6 +90,7 @@ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
+ @BUILD_EXAMPLES_TRUE@am__append_1 = example
++@BUILD_TESTS_TRUE@am__append_1 = tests
+ subdir = .
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+ am__aclocal_m4_deps = $(top_srcdir)/m4/autobuild.m4 \
+@@ -396,7 +397,7 @@ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ AUTOMAKE_OPTIONS = foreign nostdinc
+-SUBDIRS = src tests docs $(am__append_1)
++SUBDIRS = src docs $(am__append_1)
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = libssh2.pc
+ include_HEADERS = \
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,9 +1,12 @@
+ AUTOMAKE_OPTIONS = foreign nostdinc
+ 
+-SUBDIRS = src tests docs
++SUBDIRS = src docs
+ if BUILD_EXAMPLES
+ SUBDIRS += example
+ endif
++if BUILD_TESTS
++SUBDIRS += tests
++endif
+ 
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = libssh2.pc

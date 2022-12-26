@@ -1,16 +1,24 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-libssh2
-pkgver=1.9.0
+pkgver=1.10.0
 pkgrel=1
 pkgdesc="A library implementing the SSH2 protocol as defined by Internet Drafts"
-url="https://www.libssh2.org"
+url="https://github.com/libssh2/libssh2"
 license=('BSD')
 arch=('any')
 options=(!strip libtool staticlibs)
 depends=('switch-mbedtls' 'switch-zlib')
 groups=('switch-portlibs')
-source=("${url}/libssh2-${pkgver}.tar.gz")
-sha256sums=('d5fb8bd563305fd1074dda90bd053fb2d29fc4bce048d182f96eaa466dfadafd')
+source=("${url}/releases/download/libssh2-${pkgver}/libssh2-${pkgver}.tar.gz" "disable-tests.patch")
+sha256sums=(
+  '2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51'
+  '829c4a08da7d29cd975e1837882cfe2defcb6f181bb10059bf19936fd3a19196'
+)
+
+prepare() {
+  cd "libssh2-${pkgver}"
+  patch -Np1 -i "$srcdir/disable-tests.patch"
+}
 
 build() {
   cd "libssh2-${pkgver}"
@@ -21,7 +29,8 @@ build() {
 	--disable-shared --enable-static \
 	--host=aarch64-none-elf \
 	--with-crypto=mbedtls \
-	--disable-examples-build
+	--disable-examples-build \
+	--disable-tests-build
 
   make
 }
