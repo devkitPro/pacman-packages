@@ -3,7 +3,7 @@
 
 pkgname=3ds-curl
 pkgver=7.69.1
-pkgrel=1
+pkgrel=2
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://curl.haxx.se'
@@ -43,7 +43,7 @@ package() {
 
   make DESTDIR="$pkgdir" -C lib install
   make DESTDIR="$pkgdir" -C include install
-  make DESTDIR="$pkgdir" install-binSCRIPTS
+  make DESTDIR="$pkgdir" install-binSCRIPTS install-pkgconfigDATA
 
   install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
 }
