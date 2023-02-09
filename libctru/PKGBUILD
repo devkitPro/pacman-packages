@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libctru')
-pkgver=2.1.1
-pkgrel=2
+pkgver=2.1.2
+pkgrel=1
 pkgdesc="Nintendo 3DS userland library."
 arch=('any')
 license=('custom')
@@ -10,11 +10,9 @@ url="http://github.com/devkitPro/${pkgname}"
 options=(!strip libtool staticlibs)
 source=(
   ${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz
-  0001-Fix-PMAPP_TerminateTitle.patch
 )
 sha256sums=(
-  'ab0fdf246757a3711c0708f757bd0b1240945ac2fccb3fd8746845329d4ab34e'
-  'defefd35d0a04bef36a857178c7b2b0647e0fc7a021f6ef7a90bdebcf398ea59'
+  '5679af4a124b241e4180ce2e2a975425b2cd0f60008ed2f85a02b33b3e9c8016'
 )
 depends=('devkitARM')
 
@@ -23,7 +21,6 @@ groups=('3ds-dev')
 build() {
 
   cd ${srcdir}/libctru-${pkgver}/libctru
-  patch -p2 -i ${srcdir}/0001-Fix-PMAPP_TerminateTitle.patch
   make
 
 }
