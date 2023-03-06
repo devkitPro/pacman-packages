@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname="3ds-freetype"
-pkgver=2.9
-pkgrel=2
+pkgver=2.13.0
+pkgrel=1
 pkgdesc="TrueType font rendering library (mingw-w64)"
 arch=('any')
 url="https://www.freetype.org/"
@@ -12,8 +12,10 @@ depends=("3ds-bzip2"
          "3ds-zlib")
 makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 options=('!strip' '!libtool' 'staticlibs')
-source=(https://downloads.sourceforge.net/sourceforge/freetype/freetype-${pkgver}.tar.bz2)
-sha256sums=('e6ffba3c8cef93f557d1f767d7bc3dee860ac7a3aaff588a521e081bc36f4c8a')
+source=(https://downloads.sourceforge.net/sourceforge/freetype/freetype-${pkgver}.tar.xz)
+sha256sums=(
+  '5ee23abd047636c24b2d43c6625dcafc66661d1aca64dec9e0d05df29592624c'
+)
 groups=('3ds-portlibs')
 
 build() {
@@ -44,7 +46,7 @@ package () {
   make DESTDIR="${pkgdir}" install
 
   # Licenses
-  install -Dm644 "docs/LICENSE.TXT" "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
+  install -Dm644 "LICENSE.TXT" "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
   install -Dm644 "docs/GPLv2.TXT"   "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
   install -Dm644 "docs/FTL.TXT"     "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
 }
