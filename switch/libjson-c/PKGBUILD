@@ -2,24 +2,37 @@
 # Contributor: Pablo Curiel <pabloacurielz@gmail.com>
 
 pkgname=switch-libjson-c
-pkgver=0.13.1
-pkgrel=2
+pkgver=0.16
+pkgrel=1
 pkgdesc='A JSON implementation in C.'
 arch=('any')
 url='https://github.com/json-c/json-c/'
 license=('MIT')
 options=(!strip libtool staticlibs)
-source=("https://s3.amazonaws.com/json-c_releases/releases/json-c-${pkgver}.tar.gz")
-sha256sums=('b87e608d4d3f7bfdd36ef78d56d53c74e66ab278d318b71e6002a369d36f4873')
+source=(
+  "https://s3.amazonaws.com/json-c_releases/releases/json-c-${pkgver}.tar.gz"
+  "json-c-${pkgver}.patch"
+)
+sha256sums=(
+  '8e45ac8f96ec7791eaf3bb7ee50e9c2100bbbc87b8d0f1d030c5ba8a0288d96b'
+  'fadfd93ee3998fa95726f3f2a1f348711abfe43f2394a505da06dbb9ca721f55'
+)
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
 build() {
   cd json-c-$pkgver
 
+  patch -p0 -i ${srcdir}/json-c-${pkgver}.patch
+
   source /opt/devkitpro/switchvars.sh
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static
+  aarch64-none-elf-cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DENABLE_THREADING=ON \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_STATIC_LIBS=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    .
 
   make
 }

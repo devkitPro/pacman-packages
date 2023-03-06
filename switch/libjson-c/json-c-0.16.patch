@@ -1,0 +1,29 @@
+--- CMakeLists.txt.orig	2023-03-06 22:27:27.653258333 +0000
++++ CMakeLists.txt	2023-03-06 22:29:07.183682590 +0000
+@@ -105,7 +105,7 @@
+ option(DISABLE_JSON_POINTER           "Disable JSON pointer (RFC6901) support."               OFF)
+ 
+ 
+-if (UNIX OR MINGW OR CYGWIN)
++if (UNIX OR MINGW OR CYGWIN OR NINTENDO_SWITCH)
+     list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+ endif()
+ 
+@@ -164,7 +164,7 @@
+ check_symbol_exists(_isnan          "float.h" HAVE_DECL__ISNAN)
+ check_symbol_exists(_finite         "float.h" HAVE_DECL__FINITE)
+ 
+-if ((MSVC AND NOT (MSVC_VERSION LESS 1800)) OR MINGW OR CYGWIN OR UNIX)
++if ((MSVC AND NOT (MSVC_VERSION LESS 1800)) OR MINGW OR CYGWIN OR UNIX OR NINTENDO_SWITCH)
+     check_symbol_exists(INFINITY    "math.h" HAVE_DECL_INFINITY)
+     check_symbol_exists(isinf       "math.h" HAVE_DECL_ISINF)
+     check_symbol_exists(isnan       "math.h" HAVE_DECL_ISNAN)
+@@ -172,7 +172,7 @@
+ endif()
+ 
+ check_symbol_exists(_doprnt         "stdio.h" HAVE_DOPRNT)
+-if (UNIX OR MINGW OR CYGWIN)
++if (UNIX OR MINGW OR CYGWIN OR NINTENDO_SWITCH)
+     check_symbol_exists(snprintf    "stdio.h" HAVE_SNPRINTF)
+ endif()
+ check_symbol_exists(vasprintf       "stdio.h" HAVE_VASPRINTF)
