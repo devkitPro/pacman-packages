@@ -2,7 +2,7 @@
 
 pkgname="3ds-freetype"
 pkgver=2.13.0
-pkgrel=1
+pkgrel=2
 pkgdesc="TrueType font rendering library (mingw-w64)"
 arch=('any')
 url="https://www.freetype.org/"
@@ -25,6 +25,7 @@ build() {
   cd freetype-${pkgver}
 
   ./configure \
+    --enable-freetype-config \
     --host=arm-none-eabi \
     --target=arm-none-eabi \
     --prefix=${PORTLIBS_PREFIX} \
@@ -44,6 +45,9 @@ package () {
   cd freetype-${pkgver}
 
   make DESTDIR="${pkgdir}" install
+
+  # patch the config script to always output static libraries when not relying on pkg-config
+  sed 's/\$show_static/yes/' -i "${pkgdir}/${PORTLIBS_PREFIX}/bin/freetype-config"
 
   # Licenses
   install -Dm644 "LICENSE.TXT" "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
