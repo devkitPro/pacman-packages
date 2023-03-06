@@ -2,15 +2,18 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('3ds-bzip2')
-pkgver=1.0.6
-pkgrel=3
+pkgver=1.0.8
+pkgrel=1
 pkgdesc="A high-quality data compression program"
 arch=('any')
 license=('custom')
-url="http://www.bzip.org"
+url="https://sourceware.org/bzip2/"
 options=(!strip libtool staticlibs)
-source=(http://http.debian.net/debian/pool/main/b/bzip2/bzip2_$pkgver.orig.tar.bz2)
-sha256sums=('d70a9ccd8bdf47e302d96c69fecd54925f45d9c7b966bb4ef5f56b770960afa7')
+source=(https://sourceware.org/pub/bzip2/bzip2-${pkgver}.tar.gz)
+sha256sums=(
+  'ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269'
+)
+
 makedepends=('devkitARM' 'devkitarm-rules' 'devkitarm-crtls' '3ds-pkg-config' 'dkp-toolchain-vars')
 groups=('3ds-portlibs')
 
