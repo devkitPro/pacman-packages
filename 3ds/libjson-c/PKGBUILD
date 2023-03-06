@@ -2,24 +2,37 @@
 # Contributor: Pablo Curiel <pabloacurielz@gmail.com>
 
 pkgname=3ds-libjson-c
-pkgver=0.13.1
-pkgrel=2
+pkgver=0.16
+pkgrel=1
 pkgdesc='A JSON implementation in C.'
 arch=('any')
 url='https://github.com/json-c/json-c/'
 license=('MIT')
 options=(!strip libtool staticlibs)
-source=("https://s3.amazonaws.com/json-c_releases/releases/json-c-${pkgver}.tar.gz")
-sha256sums=('b87e608d4d3f7bfdd36ef78d56d53c74e66ab278d318b71e6002a369d36f4873')
+source=(
+  "https://s3.amazonaws.com/json-c_releases/releases/json-c-${pkgver}.tar.gz"
+  "json-c-${pkgver}.patch"
+)
+sha256sums=(
+  '8e45ac8f96ec7791eaf3bb7ee50e9c2100bbbc87b8d0f1d030c5ba8a0288d96b'
+  'b4936c9cba4e80f3c7c12148d4f511ed3472bd94c7aebb13e0ea9679435d1399'
+)
 makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 groups=('3ds-portlibs')
 build() {
   cd json-c-$pkgver
 
+  patch -p0 -i ${srcdir}/json-c-${pkgver}.patch
+
   source /opt/devkitpro/3dsvars.sh
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
-    --disable-shared --enable-static
+  arm-none-eabi-cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_STATIC_LIBS=ON \
+    -DDISABLE_THREAD_LOCAL_STORAGE=TRUE \
+    -DCMAKE_BUILD_TYPE=Release \
+    .
 
   make
 }
