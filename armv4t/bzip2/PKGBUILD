@@ -1,49 +1,39 @@
 
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
-_realname=bzip2
-pkgname=armv4t-${_realname}
-pkgver=1.0.9
-pkgrel=2
+pkgname=('armv4t-bzip2')
+pkgver=1.0.8
+pkgrel=1
 pkgdesc="A high-quality data compression program"
 arch=('any')
+license=('custom')
+url="https://sourceware.org/bzip2/"
+options=(!strip libtool staticlibs)
+source=(https://sourceware.org/pub/bzip2/bzip2-${pkgver}.tar.gz)
+sha256sums=(
+  'ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269'
+)
 
-url="https://github.com/devkitPro/bzip2"
-license=(bzip2)
-options=('strip' 'staticlibs')
-
-source=("${url}/releases/download/${_realname}-${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('4f51c50c8da4bb48c81ca05fe02e8e44657402ad4bdfd2957eaf421bb43f5b7f')
-
-makedepends=('dkp-toolchain-vars')
+makedepends=('armv4t-pkg-config' 'dkp-toolchain-vars')
 groups=('armv4t-portlibs')
-
-options=(!strip staticlibs)
-
-_prefix=/opt/devkitpro/crosstools
 
 build() {
 
   source /opt/devkitpro/armv4tvars.sh
 
-  cd ${_realname}-${pkgver}
+  make -C "$srcdir/bzip2-$pkgver" \
+  CC=${TOOL_PREFIX}gcc \
+  AR=${TOOL_PREFIX}ar \
+  RANLIB=${TOOL_PREFIX}ranlib \
+  CPPFLAGS="${CPPFLAGS}" \
+  CFLAGS="-D_FILE_OFFSET_BITS=64 -Winline ${CFLAGS}" libbz2.a
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
-    --disable-shared --enable-static
-  make all-libs
 }
 
 package() {
-
   source /opt/devkitpro/armv4tvars.sh
 
-  cd ${_realname}-${pkgver}
-
-  install -Dm 644 "$srcdir/${_realname}-${pkgver}"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
-  install -Dm 644 "$srcdir/${_realname}-${pkgver}"/bzlib.h -t "${pkgdir}/${PORTLIBS_PREFIX}/include"
-  install -Dm 644 "$srcdir/${_realname}-${pkgver}"/libbz2.a -t "${pkgdir}/${PORTLIBS_PREFIX}/lib"
-  install -Dm 644 "$srcdir/${_realname}-${pkgver}"/bzip2.pc -t "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig"
-
+  install -Dm 644 "$srcdir/bzip2-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
+  install -Dm 644 "$srcdir/bzip2-$pkgver"/bzlib.h -t "${pkgdir}/${PORTLIBS_PREFIX}/include/"
+  install -Dm 644 "$srcdir/bzip2-$pkgver"/libbz2.a -t "${pkgdir}/${PORTLIBS_PREFIX}/lib"
 }
-
-
