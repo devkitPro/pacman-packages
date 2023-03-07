@@ -1,15 +1,17 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkitarm-rules')
-pkgver=1.2.1
-pkgrel=2
+pkgver=1.2.2
+pkgrel=1
 pkgdesc="devkitARM build rules."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/devkitarm-rules"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('ebd05df9232d2aee26729c6fcab71b571c99b30015b255e58a1a03a172a6307c')
+sha256sums=(
+  '7491eb1fe217aedec61d2d6267081d2fe9d08fcd469c706efcd5e95c6665ac40'
+)
 
 package() {
 
