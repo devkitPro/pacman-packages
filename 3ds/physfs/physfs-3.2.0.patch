@@ -1,20 +1,18 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 4a67c27..4ca8bc9 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -76,6 +76,7 @@ set(PHYSFS_SRCS
-     src/physfs_platform_windows.c
-     src/physfs_platform_os2.c
-     src/physfs_platform_qnx.c
+diff -NBaur physfs-release-3.2.0/CMakeLists.txt physfs-release-3.2.0-new/CMakeLists.txt
+--- physfs-release-3.2.0/CMakeLists.txt	2022-09-30 21:13:07.000000000 +0100
++++ physfs-release-3.2.0-new/CMakeLists.txt	2023-03-26 16:19:44.629038704 +0100
+@@ -77,6 +77,7 @@
+     src/physfs.c
+     src/physfs_byteorder.c
+     src/physfs_unicode.c
 +    src/physfs_platform_3ds.c
-     src/physfs_archiver_dir.c
-     src/physfs_archiver_unpacked.c
-     src/physfs_archiver_grp.c
-diff --git a/src/physfs_internal.h b/src/physfs_internal.h
-index 2912623..50b8040 100644
---- a/src/physfs_internal.h
-+++ b/src/physfs_internal.h
-@@ -107,6 +107,10 @@ const void *__PHYSFS_winrtCalcBaseDir(void);
+     src/physfs_platform_posix.c
+     src/physfs_platform_unix.c
+     src/physfs_platform_windows.c
+diff -NBaur physfs-release-3.2.0/src/physfs_internal.h physfs-release-3.2.0-new/src/physfs_internal.h
+--- physfs-release-3.2.0/src/physfs_internal.h	2022-09-30 21:13:07.000000000 +0100
++++ physfs-release-3.2.0-new/src/physfs_internal.h	2023-03-26 16:16:59.634275766 +0100
+@@ -108,6 +108,10 @@
  const void *__PHYSFS_winrtCalcPrefDir(void);
  #endif
  
@@ -23,13 +21,11 @@ index 2912623..50b8040 100644
 +#endif
 +
  /* atomic operations. */
+ /* increment/decrement operations return the final incremented/decremented value. */
  #if defined(_MSC_VER) && (_MSC_VER >= 1500)
- #include <intrin.h>
-diff --git a/src/physfs_platform_3ds.c b/src/physfs_platform_3ds.c
-new file mode 100644
-index 0000000..cc90a1c
---- /dev/null
-+++ b/src/physfs_platform_3ds.c
+diff -NBaur physfs-release-3.2.0/src/physfs_platform_3ds.c physfs-release-3.2.0-new/src/physfs_platform_3ds.c
+--- physfs-release-3.2.0/src/physfs_platform_3ds.c	1970-01-01 01:00:00.000000000 +0100
++++ physfs-release-3.2.0-new/src/physfs_platform_3ds.c	2023-03-26 16:16:59.634275766 +0100
 @@ -0,0 +1,106 @@
 +/*
 + * Nintendo 3DS support routines for PhysicsFS.
@@ -137,11 +133,10 @@ index 0000000..cc90a1c
 +#endif /* PHYSFS_PLATFORM_3DS */
 +
 +/* end of physfs_platform_3ds.c ... */
-diff --git a/src/physfs_platform_posix.c b/src/physfs_platform_posix.c
-index fa2159c..866a08d 100644
---- a/src/physfs_platform_posix.c
-+++ b/src/physfs_platform_posix.c
-@@ -25,6 +25,10 @@
+diff -NBaur physfs-release-3.2.0/src/physfs_platform_posix.c physfs-release-3.2.0-new/src/physfs_platform_posix.c
+--- physfs-release-3.2.0/src/physfs_platform_posix.c	2022-09-30 21:13:07.000000000 +0100
++++ physfs-release-3.2.0-new/src/physfs_platform_posix.c	2023-03-26 16:16:59.634275766 +0100
+@@ -23,6 +23,10 @@
  
  #include "physfs_internal.h"
  
@@ -152,7 +147,7 @@ index fa2159c..866a08d 100644
  
  static PHYSFS_ErrorCode errcodeFromErrnoError(const int err)
  {
-@@ -60,6 +64,9 @@ static inline PHYSFS_ErrorCode errcodeFromErrno(void)
+@@ -58,6 +62,9 @@
  
  static char *getUserDirByUID(void)
  {
@@ -162,7 +157,7 @@ index fa2159c..866a08d 100644
      uid_t uid = getuid();
      struct passwd *pw;
      char *retval = NULL;
-@@ -80,13 +87,16 @@ static char *getUserDirByUID(void)
+@@ -78,13 +85,16 @@
              } /* if */
          } /* if */
      } /* if */
@@ -180,7 +175,7 @@ index fa2159c..866a08d 100644
      char *retval = NULL;
      char *envr = getenv("HOME");
  
-@@ -330,27 +340,43 @@ int __PHYSFS_platformStat(const char *fname, PHYSFS_Stat *st, const int follow)
+@@ -362,27 +372,43 @@
      st->createtime = statbuf.st_ctime;
      st->accesstime = statbuf.st_atime;
  
@@ -226,7 +221,7 @@ index fa2159c..866a08d 100644
      int rc;
      PthreadMutex *m = (PthreadMutex *) allocator.Malloc(sizeof (PthreadMutex));
      BAIL_IF(!m, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
-@@ -363,12 +389,16 @@ void *__PHYSFS_platformCreateMutex(void)
+@@ -395,12 +421,16 @@
  
      m->count = 0;
      m->owner = (pthread_t) 0xDEADBEEF;
@@ -243,7 +238,7 @@ index fa2159c..866a08d 100644
      PthreadMutex *m = (PthreadMutex *) mutex;
  
      /* Destroying a locked mutex is a bug, but we'll try to be helpful. */
-@@ -377,11 +407,15 @@ void __PHYSFS_platformDestroyMutex(void *mutex)
+@@ -409,11 +439,15 @@
  
      pthread_mutex_destroy(&m->mutex);
      allocator.Free(m);
@@ -259,7 +254,7 @@ index fa2159c..866a08d 100644
      PthreadMutex *m = (PthreadMutex *) mutex;
      pthread_t tid = pthread_self();
      if (m->owner != tid)
-@@ -392,12 +426,16 @@ int __PHYSFS_platformGrabMutex(void *mutex)
+@@ -424,12 +458,16 @@
      } /* if */
  
      m->count++;
@@ -276,7 +271,7 @@ index fa2159c..866a08d 100644
      PthreadMutex *m = (PthreadMutex *) mutex;
      assert(m->owner == pthread_self());  /* catch programming errors. */
      assert(m->count > 0);  /* catch programming errors. */
-@@ -409,6 +447,7 @@ void __PHYSFS_platformReleaseMutex(void *mutex)
+@@ -441,6 +479,7 @@
              pthread_mutex_unlock(&m->mutex);
          } /* if */
      } /* if */
@@ -284,10 +279,9 @@ index fa2159c..866a08d 100644
  } /* __PHYSFS_platformReleaseMutex */
  
  #endif  /* PHYSFS_PLATFORM_POSIX */
-diff --git a/src/physfs_platforms.h b/src/physfs_platforms.h
-index d4e4bfd..2385433 100644
---- a/src/physfs_platforms.h
-+++ b/src/physfs_platforms.h
+diff -NBaur physfs-release-3.2.0/src/physfs_platforms.h physfs-release-3.2.0-new/src/physfs_platforms.h
+--- physfs-release-3.2.0/src/physfs_platforms.h	2022-09-30 21:13:07.000000000 +0100
++++ physfs-release-3.2.0-new/src/physfs_platforms.h	2023-03-26 16:16:59.634275766 +0100
 @@ -69,6 +69,10 @@
  #elif defined(__QNX__)
  #  define PHYSFS_PLATFORM_QNX 1
