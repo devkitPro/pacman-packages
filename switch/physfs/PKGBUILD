@@ -1,22 +1,23 @@
 # Maintainer: Ezekiel Bethel <zek@9net.org>
-pkgname=switch-physfs
-pkgver=3.0.2
-pkgrel=2
+_realname=physfs
+pkgname=switch-${_realname}
+pkgver=3.2.0
+pkgrel=1
 pkgdesc='A library to provide abstract access to various archives.'
 arch=('any')
 url='https://icculus.org/physfs/'
 license=('zlib')
 options=(!strip libtool staticlibs)
-source=( "https://icculus.org/physfs/downloads/physfs-${pkgver}.tar.bz2"
+source=( "${_realname}-${pkgver}.tar.gz::https://github.com/icculus/physfs/archive/refs/tags/release-${pkgver}.tar.gz"
          "physfs-${pkgver}.patch")
 makedepends=('devkitA64' 'dkp-toolchain-vars' 'switch-cmake')
 sha256sums=(
-  '304df76206d633df5360e738b138c94e82ccf086e50ba84f456d3f8432f9f863'
-  '9e6b0387a36364a784ab0dd4673d7f81e59da47dd2c5ca02bd6a546c63fe02e3'
+  '1991500eaeb8d5325e3a8361847ff3bf8e03ec89252b7915e1f25b3f8ab5d560'
+  '2a8f0d2fb09bdd534e0d3819842cf2861476d77e6464e6fdcedeb916e78acfad'
   )
 groups=('switch-portlibs')
 build() {
-  cd physfs-$pkgver
+  cd physfs-release-$pkgver
 
   patch -Np1 -i "$srcdir"/physfs-${pkgver}.patch
 
@@ -32,7 +33,7 @@ build() {
 }
 
 package() {
-  cd physfs-$pkgver
+  cd physfs-release-$pkgver
 
   make install DESTDIR="$pkgdir"
 }
