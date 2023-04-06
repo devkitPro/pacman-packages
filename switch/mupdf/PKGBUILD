@@ -13,8 +13,13 @@ depends=("switch-freetype"
          "switch-libjpeg-turbo"
          "switch-zlib"
 )
-makedepends=('devkitpro-pkgbuild-helpers')
+
+makedepends=('dkp-toolchain-vars')
+
 source=("https://www.mupdf.com/downloads/archive/mupdf-$pkgver-source.tar.xz" "mupdf.patch")
+
+groups=('switch-portlibs')
+
 sha256sums=(
   'c935fb2593d9a28d9b56b59dad6e3b0716a6790f8a257a68fa7dcb4430bc6086'
   '5641105980d95c2cb77cf053a13d2255c422767b5c9ec4c2a13c1aa14d1e18bb'
