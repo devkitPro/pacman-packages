@@ -1,7 +1,7 @@
 # Maintainer: Gabriel Kind <gabriel-dkp mastergk de>
 
 pkgname=3ds-mpg123
-pkgver=1.25.13
+pkgver=1.31.3
 pkgrel=1
 pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
 arch=('any')
@@ -11,19 +11,19 @@ options=(!strip libtool staticlibs)
 groups=("3ds-portlibs")
 source=(
  "https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-${pkgver}.tar.bz2"
- "https://downloads.devkitpro.org/packages/sources/mpg123-1.25.10.patch"
+ "mpg123-${pkgver}.patch"
 )
-sha256sums=('90306848359c793fd43b9906e52201df18775742dc3c81c06ab67a806509890a'
-            '444e46951f6270d926698718b3e52ec548088f1374f56bcd766d5b9783a41051')
+sha256sums=('1ca77d3a69a5ff845b7a0536f783fee554e1041139a6b978f6afe14f5814ad1a'
+            '9af6c4c39d4cc58c5b81bf6e26a95fe9bf8322f583a98ec73f0362214a3c3b89'
+)
 makedepends=('dkp-toolchain-vars' '3ds-pkg-config')
 
 build() {
   cd mpg123-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
-  patch -Np1 -i "$srcdir"/mpg123-1.25.10.patch
+  patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch
 
   autoreconf -fi
 
@@ -36,6 +36,10 @@ build() {
 }
 
 package() {
+
+
+  source /opt/devkitpro/3dsvars.sh
+
   cd mpg123-$pkgver
 
   make DESTDIR="$pkgdir" install

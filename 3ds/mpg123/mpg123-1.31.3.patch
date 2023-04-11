@@ -1,0 +1,72 @@
+diff -NBaur mpg123-1.31.3.orig/configure.ac mpg123-1.31.3/configure.ac
+--- mpg123-1.31.3.orig/configure.ac	2023-03-17 17:10:06.000000000 +0000
++++ mpg123-1.31.3/configure.ac	2023-04-11 18:10:11.322818703 +0100
+@@ -1350,6 +1350,20 @@
+ # Optionally use platform macros for byte swapping.
+ AC_CHECK_HEADERS([byteswap.h])
+ 
++if test x"$ac_cv_header_sys_signal_h" = xyes; then
++	AC_CHECK_FUNCS( sigemptyset sigaddset sigprocmask sigaction )
++	if test x"$ac_cv_func_sigemptyset" = xno ||
++	   test x"$ac_cv_func_sigaddset" = xno ||
++	   test x"$ac_cv_func_sigprocmask" = xno ||
++	   test x"$ac_cv_func_sigaction" = xno; then
++		AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
++	fi
++else
++	AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
++fi
++
++AC_CHECK_FUNCS( sleep, [ have_sleep=yes ], [ have_sleep=no ] )
++
+ dnl ############## Choose compiler flags and CPU
+ 
+ # do not assume gcc here, so no flags by default
+diff -NBaur mpg123-1.31.3.orig/libmpg123.pc.in mpg123-1.31.3/libmpg123.pc.in
+--- mpg123-1.31.3.orig/libmpg123.pc.in	2023-03-15 08:02:58.000000000 +0000
++++ mpg123-1.31.3/libmpg123.pc.in	2023-04-11 18:11:17.209838741 +0100
+@@ -7,6 +7,6 @@
+ Description: An optimised MPEG Audio decoder
+ Requires: 
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lmpg123 
++Libs: -L${libdir} -lmpg123 -lm
+ Libs.private: @LIBMPG123_LIBS@
+ Cflags: -I${includedir} 
+diff -NBaur mpg123-1.31.3.orig/libout123.pc.in mpg123-1.31.3/libout123.pc.in
+--- mpg123-1.31.3.orig/libout123.pc.in	2023-03-15 08:02:58.000000000 +0000
++++ mpg123-1.31.3/libout123.pc.in	2023-04-11 18:11:53.141671612 +0100
+@@ -7,6 +7,6 @@
+ Description: A streaming audio output API derived from mpg123
+ Requires: 
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lout123 
++Libs: -L${libdir} -lout123 -lm
+ Libs.private: @LIBOUT123_LIBS@ @LIBDL@
+ Cflags: -I${includedir} 
+diff -NBaur mpg123-1.31.3.orig/src/control_generic.c mpg123-1.31.3/src/control_generic.c
+--- mpg123-1.31.3.orig/src/control_generic.c	2023-03-15 08:20:01.000000000 +0000
++++ mpg123-1.31.3/src/control_generic.c	2023-04-11 18:10:11.326822156 +0100
+@@ -28,8 +28,10 @@
+ #include <ctype.h>
+ #if !defined (_WIN32) || defined (__CYGWIN__)
+ #include <sys/wait.h>
++#ifdef NETWORK
+ #include <sys/socket.h>
+ #endif
++#endif
+ #include <errno.h>
+ #include <string.h>
+ 
+diff -NBaur mpg123-1.31.3.orig/src/mpg123.c mpg123-1.31.3/src/mpg123.c
+--- mpg123-1.31.3.orig/src/mpg123.c	2023-03-15 08:02:57.000000000 +0000
++++ mpg123-1.31.3/src/mpg123.c	2023-04-11 18:10:11.326822156 +0100
+@@ -1334,6 +1334,8 @@
+ 			if(param.verbose > 2) fprintf(stderr, "Note: pausing %i seconds before next track.\n", param.delay);
+ #ifdef WIN32
+ 			Sleep(param.delay*1000);
++#elif !defined(HAVE_SLEEP)
++			fprintf(stderr, "sleep not supported on this platform\n");
+ #else
+ 			sleep(param.delay);
+ #endif
