@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-e2fs
-pkgver=1.46.2
+pkgver=1.47.0
 pkgrel=1
 pkgdesc='An open source, freely available read/write NTFS driver '
 arch=('any')
@@ -11,15 +11,17 @@ options=(!strip libtool staticlibs)
 groups=('ppc-portlibs')
 
 source=(
-  "https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/snapshot/e2fsprogs-1.46.2.tar.gz"
+  "https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/snapshot/e2fsprogs-${pkgver}.tar.gz"
 )
+
 sha256sums=(
-  'f1ef0161aa8918182d088c4b576a5485a60aa3aff3e16cf10824698af5d34dcf'
+  '74c8ea97c73294edc6c11dc5e7fbb4324f86c28efd66ad0ba50be4eec8a48be2'
 )
 
 prepare() {
 
   sed -i 's#tst_uuid uuid_time##' e2fsprogs-${pkgver}/lib/uuid/Makefile.in
+  sed -i 's,#include <arpa/inet.h>,,' e2fsprogs-${pkgver}/lib/ext2fs/jfs_compat.h
 
 }
 
