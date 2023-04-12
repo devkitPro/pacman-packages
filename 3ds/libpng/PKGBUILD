@@ -4,8 +4,8 @@
 
 pkgname=3ds-libpng
 pkgver=1.6.39
-pkgrel=1
-pkgdesc='PNG format graphic files library (for Nintendo 3DS homebrew development)'
+pkgrel=2
+pkgdesc='PNG format graphic files library'
 arch=('any')
 url='http://www.libpng.org'
 license=('custom')
