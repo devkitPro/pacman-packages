@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-ntfs-3g
-pkgver=2017.3.23AR.6
+pkgver=2022.10.3
 pkgrel=1
 pkgdesc='An open source, freely available read/write NTFS driver '
 arch=('any')
@@ -12,12 +12,11 @@ groups=('ppc-portlibs')
 
 source=(
   "ntfs-3g-${pkgver}.tar.gz::https://github.com/tuxera/ntfs-3g/archive/refs/tags/${pkgver}.tar.gz"
-  "ntfs-3g-2017.3.23AR.6.patch"
+  "ntfs-3g-${pkgver}.patch"
 )
-sha256sums=(
-  'a911f609c62f2a9d993263c9e3b91c2fea29556c8403e4740b1328e701568701'
-  'e90a185743167d79dcf3886477a4915e0c927518bb091a5a72e9faa0c66be41f'
-)
+
+sha256sums=('8bd7749ea9d8534c9f0664d48b576e90b96d45ec8803c9427f6ffaa2f0dde299'
+            'e90a185743167d79dcf3886477a4915e0c927518bb091a5a72e9faa0c66be41f')
 
 prepare() {
 
