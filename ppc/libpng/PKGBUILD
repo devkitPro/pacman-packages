@@ -4,7 +4,7 @@
 
 pkgname=ppc-libpng
 pkgver=1.6.39
-pkgrel=1
+pkgrel=2
 pkgdesc='PNG format graphic files library (for Nintendo Gamecube/Wii homebrew development)'
 arch=('any')
 url='http://www.libpng.org'
