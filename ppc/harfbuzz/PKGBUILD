@@ -1,0 +1,41 @@
+# Maintainer:  Mary Strodl <ipadlover8322@gmail.com>
+
+pkgname=ppc-harfbuzz
+pkgver=7.1.0
+pkgrel=1
+pkgdesc='HarfBuzz is a text shaping library. Using the HarfBuzz library allows programs to convert a sequence of Unicode input into properly formatted and positioned glyph output—for any writing system and language.'
+arch=('any')
+url='https://harfbuzz.github.io/'
+license=(LGPL)
+options=(!strip libtool staticlibs)
+source=("https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz")
+sha256sums=(
+  'f135a61cd464c9ed6bc9823764c188f276c3850a8dc904628de2a87966b7077b'
+)
+makedepends=('ppc-pkg-config' 'devkitppc-cmake')
+depends=('ppc-freetype')
+
+groups=('ppc-portlibs')
+
+build() {
+
+  cd harfbuzz-${pkgver}
+
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  export CXXFLAGS="${CXXFLAGS} -DHB_NO_MT"
+
+  ./configure --prefix=${PORTLIBS_PREFIX} --host=powerpc-eabi --disable-shared --enable-static
+
+  make
+}
+
+package() {
+
+  cd harfbuzz-${pkgver}
+
+  make install DESTDIR=${pkgdir}
+
+  rm -fr ${pkgdir}/${PORTLIBS_PREFIX}/share
+
+}
