@@ -2,8 +2,8 @@
 
 pkgname=wii-sdl_ttf
 pkgver=2.0.11
-pkgrel=3
-pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications (Nintendo 3DS port)"
+pkgrel=4
+pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications"
 arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
