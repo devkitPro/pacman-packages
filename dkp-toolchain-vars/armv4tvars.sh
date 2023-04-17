@@ -1,4 +1,4 @@
-. "${BASH_SOURCE%/*}"/devkitarm.sh
+. ${DEVKITPRO}/devkitarm.sh
 
 PORTLIBS_PREFIX=${PORTLIBS_ROOT}/armv4t
 PATH=$PORTLIBS_PREFIX/bin:$PATH

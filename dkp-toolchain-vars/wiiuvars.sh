@@ -1,4 +1,4 @@
-. "${BASH_SOURCE%/*}"/devkitppc.sh
+. ${DEVKITPRO}/devkitppc.sh
 
 export PORTLIBS_PREFIX=${PORTLIBS_ROOT}/wiiu
 export PORTLIBS_PPC=${PORTLIBS_ROOT}/ppc

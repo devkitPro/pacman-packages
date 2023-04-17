@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-toolchain-vars
-pkgver=1.0.2
-pkgrel=1
+pkgver=1.0.3
+pkgrel=2
 
 pkgdesc='helper scripts to set variables for devkitPro toolchains'
 
@@ -19,25 +19,18 @@ conflicts=('devkitpro-pkgbuild-helpers')
 
 options=(!strip)
 
-sha256sums=(
-
-  '000b49cce7a925cb096fbac43501ef1c89511861a3ea2091569ae71aa108369b' # devkitarm.sh
-  'bfdcd0cf6b8386a0db5a3c73abc790cf819369521dd1340338103aca84061dd6' # 3dsvars.sh
-  '84a6c7a8cc78137655f47b36f8f34556123a4fd30e62242b615548cc7b70f2d0' # ndsvars.sh
-  '1ec23c5e1f15fb18c9e4a4ee6896a2354ba21b4d1adf2c1f904f08665af78666' # armv4tvars.sh
-
-  'b69edeee95dfece986941531a7e2c314cc550ab578b300997e0d5de9e825597c' # devkitppc.sh
-  'a826637aa7f16cdda6f6c78f6c9c129ffdafe268e5ddfe03364a5d6c8f02c197' # ppcvars.sh
-  '971c81999751a6dc8639c990ac9adac287e0b53f96abdd34573585b4f79a1b99' # cubevars.sh
-  '126cef38038a0eacf2ede2f2370a00e105e582275fa2f172a0915d979a9f35c6' # wiivars.sh
-  'd99fb990cea960f7b8c09b85f5966024bd1b8b9e969650ed59065eaa0c496892' # wiiuvars.sh
-
-  'f3caba3a8864a31a50ff50131f39d160013b6d0b8a2e7e6ac90ca44b591fcb57' # devkita64.sh
-  '3c65507df9ed4e76f4ce137ed32d4226a4829f6c38cd0d7324d8c0a550c49212' # switchvars.sh
-
-  'ea4776bcbd859a3f6913ab428676e546d20febc7200ff136cb6cd41fdbfe5331' # portlibs_prefix.sh
-
-)
+sha256sums=('000b49cce7a925cb096fbac43501ef1c89511861a3ea2091569ae71aa108369b'
+            '679c9e428c6ee6f482299679c1f0b576cec628afb145e19def497894864dd509'
+            '223f87989791295ef5170d33698390fb1389c4f3cfad735f47fec5757f13c452'
+            '7bc0176c5dbea1ab6acaa98a055a1ab81989152d68b582fc57612972f394ac07'
+            'b69edeee95dfece986941531a7e2c314cc550ab578b300997e0d5de9e825597c'
+            'e3156d1e6671bfc9ad6a343d26da8cbddcfc4d8e5321ddc07cb2b4934e20ed66'
+            'acd597b3f55f57eefbf0e9da33f3b14772126406ee5e0648c612cdb0283469c7'
+            'a60dc9a30028be31e1499cae2c70a670c2e5b0a2872848ccc14dbe1fb960a970'
+            '0f096b32a3216916553360948d2f91f92f4657844a1618cb84bf96a797c44979'
+            'f3caba3a8864a31a50ff50131f39d160013b6d0b8a2e7e6ac90ca44b591fcb57'
+            '5ade1211e616a7eb540c3660839d17af050c41c7c9ee89242ce4fe7afac4df52'
+            '7913cb3d38e78ede19673912f25970d678912404399e5c10c744726bbafd5f84')
 
 package() {
 

@@ -1,4 +1,4 @@
-. "${BASH_SOURCE%/*}"/devkita64.sh
+. ${DEVKITPRO}/devkita64.sh
 
 export PORTLIBS_PREFIX=${DEVKITPRO}/portlibs/switch
 export PATH=$PORTLIBS_PREFIX/bin:$PATH
