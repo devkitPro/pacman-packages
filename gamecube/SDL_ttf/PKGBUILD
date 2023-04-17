@@ -2,8 +2,8 @@
 
 pkgname=gamecube-sdl_ttf
 pkgver=2.0.11
-pkgrel=2
-pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications (Nintendo 3DS port)"
+pkgrel=3
+pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications"
 arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
@@ -25,7 +25,7 @@ sha256sums=(
 build() {
   cd SDL_ttf-$pkgver
 
-  source /opt/devkitpro/gamecubevars.sh
+  source /opt/devkitpro/cubevars.sh
 
   sed '/^noinst_PROGRAMS/d' -i Makefile.in
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
@@ -36,7 +36,7 @@ build() {
 package() {
   cd SDL_ttf-$pkgver
 
-  source /opt/devkitpro/gamecubevars.sh
+  source /opt/devkitpro/cubevars.sh
 
   make DESTDIR="$pkgdir" install
 
