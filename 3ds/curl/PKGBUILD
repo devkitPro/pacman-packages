@@ -3,7 +3,7 @@
 
 pkgname=3ds-curl
 pkgver=7.69.1
-pkgrel=2
+pkgrel=3
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://curl.haxx.se'
@@ -13,7 +13,7 @@ depends=('3ds-zlib' '3ds-mbedtls')
 makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 
 source=("https://curl.haxx.se/download/curl-${pkgver}.tar.xz"
-        '3ds-curl.patch'
+        "curl-${pkgver}.patch"
 )
 
 sha256sums=('03c7d5e6697f7b7e40ada1b2256e565a555657398e6c1fcfa4cb251ccd819d4f'
@@ -25,7 +25,7 @@ build() {
 
   source /opt/devkitpro/3dsvars.sh
 
-  patch -Np1 -i $srcdir/3ds-curl.patch
+  patch -Np1 -i $srcdir/curl-${pkgver}.patch
 
   ./configure CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LIBS="-lctru" \
     --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
@@ -45,5 +45,7 @@ package() {
   make DESTDIR="$pkgdir" -C include install
   make DESTDIR="$pkgdir" install-binSCRIPTS install-pkgconfigDATA
 
-  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+  mkdir -p "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+
+  install -m644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
 }
