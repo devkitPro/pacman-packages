@@ -1,8 +1,9 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 # Contributor: Elouan Martinet <exa@elou.world>
 
-pkgname=3ds-mbedtls
-pkgver=2.16.6
+_realname=mbedtls
+pkgname=3ds-${_realname}
+pkgver=2.28.3
 pkgrel=1
 pkgdesc='An open source, portable, easy to use, readable and flexible SSL library (for Nintendo 3DS homebrew development)'
 arch=('any')
@@ -11,17 +12,17 @@ license=('apache')
 options=(!strip libtool staticlibs)
 depends=(3ds-zlib)
 makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
-source=( "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
-         '3ds-mbedtls.patch' )
+source=( "${_realname}-${pkgver}.tar.gz::https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${pkgver}.tar.gz"
+         "mbedtls-${pkgver}.patch" )
 groups=('3ds-portlibs')
 
-sha256sums=('66455e23a6190a30142cdc1113f7418158839331a9d8e6b0778631d077281770'
-            '3bc52b6a6701ee82342bf39ad2f447b6a7dda7fcfdecb083d909d498e51b5be4')
+sha256sums=('bdf7c5bbdc338da3edad89b2885d4f8668f9a6fffeba6ec17a60333e36dade6f'
+            'a3332c2b65f69f9224e799ac6f05db4555faf76fcfaa720411068252c848b0ee')
 
 build() {
   cd mbedtls-$pkgver
 
-  patch -Np1 -i $srcdir/3ds-mbedtls.patch
+  patch -Np1 -i $srcdir/mbedtls-${pkgver}.patch
 
   ./scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
   ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
@@ -32,7 +33,7 @@ build() {
 
   source /opt/devkitpro/3dsvars.sh
 
-  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkitarm.cmake \
+  arm-none-eabi-cmake \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="CFLAGS -fno-exceptions -fno-rtti" \
