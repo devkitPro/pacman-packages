@@ -2,7 +2,7 @@
 # Contributor: Colin969 <colinb969@gmail.com>
 pkgname=3ds-giflib
 pkgver=5.1.4
-pkgrel=2
+pkgrel=3
 pkgdesc='A library for reading and writing gif images'
 arch=('any')
 url='http://sourceforge.net/projects/giflib'
@@ -28,5 +28,6 @@ package() {
 
   make DESTDIR="${pkgdir}" install
   # MIT License
-  install -Dm644 COPYING "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING"  
+  install -Dm644 COPYING "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING"
+  rm -fr "${pkgdir}/${PORTLIBS_PREFIX}/bin"
 }
