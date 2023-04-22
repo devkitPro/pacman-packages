@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitarm-cmake
-pkgver=1.2.0
+pkgver=1.2.1
 pkgrel=1
 pkgdesc="CMake support files for devkitARM"
 arch=('any')
@@ -18,13 +18,11 @@ groups=('gp32-dev' 'gp2x-dev' 'gba-dev' 'nds-dev' '3ds-dev')
 
 depends=('dkp-cmake-common-utils')
 
-sha256sums=(
-  '643c8bf2313e04be02753a90b80d29e76f0840d0abc5f85e8ea59af433c2bf92'  # devkitARM.cmake
-  '49957ece046e578ae15cecf5ff87af501c50034af0d6a4f972454917255a0932'  # arm-none-eabi-cmake
-  'a49c325d3a02425bfa9898b251232a3f3c5cce11a7edbf9adff9f140b02880b1'  # dkp-arm-mode-wrapper
-  'ffcdeec2e8dffe95c6f12d41a588b5a2afc5b188a8706b0fac4dce38f1e4c050'  # dkp-gba-ds-common.cmake
-  '57c8e8a829031053b28c65dad5db7348de2c4735e70561b9fc2fa570f9508821'  # dkp-gba-ds-utils.cmake
-)
+sha256sums=('f1029f9a04b2e543e5b49255fe501839dabe7f80e626dca0196531de744704db'
+            '49957ece046e578ae15cecf5ff87af501c50034af0d6a4f972454917255a0932'
+            'a49c325d3a02425bfa9898b251232a3f3c5cce11a7edbf9adff9f140b02880b1'
+            'ffcdeec2e8dffe95c6f12d41a588b5a2afc5b188a8706b0fac4dce38f1e4c050'
+            '57c8e8a829031053b28c65dad5db7348de2c4735e70561b9fc2fa570f9508821')
 
 package() {
 
