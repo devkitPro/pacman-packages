@@ -1,0 +1,36 @@
+# Maintainer: TurtleP <jpostelnek@outlook.com>
+
+pkgname=libgxflux
+pkgver=20230423
+_snapshot=91430ea
+pkgrel=3
+pkgdesc="libgxflux"
+arch=("any")
+url="https://repo.or.cz/libgxflux.git"
+license=("GPL2")
+options=("staticlibs" "!strip")
+source=(
+  "libgxflux-${snapshot}.tar.gx::${url}/snapshot/${_snapshot}.tar.gz"
+  "libgxflux-destdir.patch"
+)
+
+sha256sums=('07b7453f7c2eb54aa049498245bea2694feb0a7ae6d7eeb94c3e625d927ac885'
+            '85a819135fd777a00ff7dde8f8370a35f2aaadff8a8afec6791ac9fb19b0e4ce')
+
+
+makedepends=("dkp-toolchain-vars")
+groups=("wii-dev" "gamecube-dev")
+
+package() {
+
+  source /opt/devkitpro/ppcvars.sh
+
+  cd libgxflux-${_snapshot}
+
+  patch -Np1 -i ${srcdir}/libgxflux-destdir.patch
+
+  make -C src install DESTDIR=${pkgdir}
+  make -C src clean
+  make -C src install GAMECUBE=1 DESTDIR=${pkgdir} 
+
+}
