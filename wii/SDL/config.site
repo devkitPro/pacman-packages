@@ -1,0 +1,3 @@
+ac_cv_header_signal=no
+ac_cv_header_signal_h=no
+ac_cv_func_sigaction=no
