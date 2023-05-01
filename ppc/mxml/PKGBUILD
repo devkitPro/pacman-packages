@@ -3,19 +3,21 @@
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
 pkgname=ppc-mxml
-pkgver=2.11
-pkgrel=2
-pkgdesc='XML parsing library (for Nintendo Gamecube/Wii homebrew development)'
+pkgver=3.3.1
+pkgrel=1
+pkgdesc='XML parsing library'
 arch=('any')
 url='https://github.com/michaelrsweet/mxml'
 license=('custom')
 options=(!strip libtool staticlibs)
 source=("${url}/releases/download/v${pkgver}/mxml-${pkgver}.tar.gz")
-sha256sums=('aaf68aac637dd06ba73ae5bb0537a3c4e89ca86f8c09a2d806a1f5b937e2ba8f')
+sha256sums=('0c663ed1fe393b5619f80101798202eea43534abd7c8aff389022fd8c1dacc32')
 makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
 groups=('ppc-portlibs')
 
 build() {
+
+  cd mxml-${pkgver}
 
   source /opt/devkitpro/ppcvars.sh
 
@@ -28,11 +30,12 @@ package() {
 
   source /opt/devkitpro/ppcvars.sh
 
+  cd mxml-${pkgver}
+
   make BUILDROOT="$pkgdir" install
 
   # license
-  install -Dm644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
+  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
   rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
-  rm -r "$pkgdir"${PORTLIBS_PREFIX}/bin
 }
