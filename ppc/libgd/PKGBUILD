@@ -2,8 +2,8 @@
 # Contributor: Ash Logan <ash [at] heyquark [dot] com>
 
 pkgname=ppc-libgd
-pkgver=2.2.5
-pkgrel=2
+pkgver=2.3.3
+pkgrel=1
 pkgdesc="Library for the dynamic creation of images"
 url="https://libgd.github.io"
 license=("custom")
@@ -12,19 +12,20 @@ depends=("devkitPPC" "ppc-libjpeg-turbo" "ppc-libpng" "ppc-freetype")
 makedepends=("ppc-pkg-config" "dkp-toolchain-vars")
 options=("!buildflags" "staticlibs" "libtool" "!strip")
 source=("https://github.com/libgd/libgd/releases/download/gd-$pkgver/libgd-$pkgver.tar.xz"
-        "libgd-2.2.5-nosyslog.patch")
-sha256sums=("8c302ccbf467faec732f0741a859eef4ecae22fea2d2ab87467be940842bde51"
-            "549027858ef0d2d6dec42232bcc2d66a5966d9f66bfc30518dfd026090a3d2d5")
+        "libgd-${pkgver}.patch")
 groups=('ppc-portlibs')
 
 prepare() {
-    patch libgd-$pkgver/src/gd_errors.h < libgd-2.2.5-nosyslog.patch
+    cd libgd-$pkgver
+    patch -Np1 -i ${srcdir}/libgd-${pkgver}.patch
+    ./bootstrap.sh
 }
 
 build() {
     cd libgd-$pkgver
 
     source /opt/devkitpro/ppcvars.sh
+    export CPPFLAGS="$(CPPFLAGS) -DSSIZE_MAX=INT_MAX"
 
    ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi --disable-shared --enable-static
 
@@ -42,3 +43,5 @@ package() {
     # These binaries all end up for PowerPC, so we shouldn't keep them
     rm -rf "$pkgdir/$PORTLIBS_PREFIX/bin"
 }
+sha256sums=('3fe822ece20796060af63b7c60acb151e5844204d289da0ce08f8fdf131e5a61'
+            '87eee942a5b8de80b9f91f4c98220335bcc7fb4d80fcbecea5704e76ac067517')
