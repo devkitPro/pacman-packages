@@ -3,7 +3,7 @@
 
 pkgname=('ppc-bzip2')
 pkgver=1.0.8
-pkgrel=1
+pkgrel=2
 pkgdesc="A high-quality data compression program"
 arch=('any')
 license=('custom')
