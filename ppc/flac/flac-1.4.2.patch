@@ -1,0 +1,35 @@
+diff -NBaur flac-1.4.2.orig/Makefile.in flac-1.4.2/Makefile.in
+--- flac-1.4.2.orig/Makefile.in	2022-10-21 18:54:45.140608200 +0100
++++ flac-1.4.2/Makefile.in	2023-05-01 11:07:04.278183149 +0100
+@@ -395,7 +395,7 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = doc include m4 man src test microbench oss-fuzz \
++SUBDIRS = include m4 src \
+ 	$(am__append_1)
+ EXTRA_DIST = \
+ 	CMakeLists.txt \
+diff -NBaur flac-1.4.2.orig/src/Makefile.in flac-1.4.2/src/Makefile.in
+--- flac-1.4.2.orig/src/Makefile.in	2022-10-21 18:54:46.484512800 +0100
++++ flac-1.4.2/src/Makefile.in	2023-05-01 11:11:51.843550789 +0100
+@@ -357,18 +357,12 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-@FLaC__WITH_CPPLIBS_TRUE@CPPLIBS_DIRS = libFLAC++ test_libFLAC++
++@FLaC__WITH_CPPLIBS_TRUE@CPPLIBS_DIRS = libFLAC++
+ @FLaC__WITH_PROGRAMS_TRUE@PROGRAMS_DIRS = flac metaflac
+ SUBDIRS = \
+ 	libFLAC \
+ 	share \
+ 	$(PROGRAMS_DIRS) \
+-	test_grabbag \
+-	test_libs_common \
+-	test_libFLAC \
+-	test_seeking \
+-	test_streams \
+-	utils \
+ 	$(CPPLIBS_DIRS)
+ 
+ EXTRA_DIST = \

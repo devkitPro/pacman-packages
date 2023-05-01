@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-flac
-pkgver=1.3.2
+pkgver=1.4.2
 pkgrel=1
 pkgdesc='FLAC stands for Free Lossless Audio Codec, an audio format similar to MP3, but lossless...'
 arch=('any')
@@ -31,8 +31,9 @@ build() {
   CFLAGS="${CFLAGS} -D__WIIU__ " \
     ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static \
-    --disable-xmms-plugin --enable-cpplibs \
-    --disable-sse
+    --enable-cpplibs \
+    --disable-programs \
+    --disable-examples
 
   make -C src/libFLAC
 }
@@ -43,3 +44,5 @@ package() {
   make DESTDIR="$pkgdir" install
 }
 
+sha256sums=('e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4'
+            '5244952358deec901fc98dbfdbc7f63317cc6e0f2b036f241fe75c1cf3647302')
