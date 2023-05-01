@@ -1,43 +1,47 @@
-
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=ppc-libjpeg-turbo
-pkgver=1.5.3
-pkgrel=4
-pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression (for wii/gamecube homebrew development)'
+_libname=libjpeg-turbo
+pkgname=ppc-${_libname}
+pkgver=2.1.2
+pkgrel=2
+pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression'
 arch=('any')
-url='https://sourceforge.net/projects/libjpeg-turbo'
+url='https://github.com/libjpeg-turbo/libjpeg-turbo'
 license=('IJG')
 options=(!strip libtool staticlibs)
-source=("https://sourceforge.net/projects/libjpeg-turbo/files/$pkgver/libjpeg-turbo-$pkgver.tar.gz")
-sha256sums=('b24890e2bb46e12e72a79f7e965f409f4e16466d00e1dd15d93d73ee6b592523')
-makedepends=('ppc-pkg-config' 'dkp-toolchain-vars' 'devkitPPC')
+source=(
+  "${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz"
+  "libjpeg-turbo.patch"
+)
+sha256sums=(
+  'e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed'
+  '79fb3d6acdc9b405a1695a7c6248c420b40e63c115e4a5cab913eb7c2b0c38e4'
+)
+makedepends=('devkitppc-cmake' 'ppc-pkg-config' 'dkp-toolchain-vars')
 groups=('ppc-portlibs')
 
 build() {
+  cd libjpeg-turbo-$pkgver
+
+  patch -Np1 -i ${srcdir}/libjpeg-turbo.patch
 
   source /opt/devkitpro/ppcvars.sh
 
-  cd libjpeg-turbo-$pkgver
-
-  sed '/^SUBDIRS/ s/md5//' -i Makefile.in
-
-  ./configure --prefix="/opt/devkitpro/portlibs/ppc" --host=powerpc-eabi --disable-shared --enable-static
+  powerpc-eabi-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG_TESTS:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
 
   make
-
 }
 
 package() {
+  cd libjpeg-turbo-$pkgver
 
   source /opt/devkitpro/ppcvars.sh
 
-  cd libjpeg-turbo-$pkgver
   make DESTDIR="$pkgdir" install
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname
-  cp -v LICENSE.md "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname/
+  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
+  cp -v LICENSE.md "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/share
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/bin
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+  rm -r "$pkgdir"${PORTLIBS_PREFIX}/bin
 
 }
