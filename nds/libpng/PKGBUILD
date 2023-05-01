@@ -2,7 +2,7 @@
 
 pkgname=nds-libpng
 pkgver=1.6.39
-pkgrel=2
+pkgrel=3
 pkgdesc='PNG format graphic files library.'
 arch=('any')
 url='http://www.libpng.org'
