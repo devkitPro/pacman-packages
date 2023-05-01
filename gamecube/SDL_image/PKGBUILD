@@ -2,7 +2,7 @@
 
 pkgname=gamecube-sdl_image
 pkgver=1.2.12
-pkgrel=3
+pkgrel=4
 pkgdesc="A simple library to load images of various formats as SDL surfaces (Nintendo Gamecube port)"
 arch=('any')
 url="https://libsdl.org"
@@ -30,7 +30,7 @@ build() {
 
   sed -i 's,showimage\$(EXEEXT),,g' Makefile.in
 
-  source /opt/devkitpro/gamecubevars.sh
+  source /opt/devkitpro/cubevars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static
@@ -40,7 +40,7 @@ build() {
 package() {
   cd SDL_image-$pkgver
 
-  source /opt/devkitpro/gamecubevars.sh
+  source /opt/devkitpro/cubevars.sh
 
   make DESTDIR="$pkgdir" install
 
