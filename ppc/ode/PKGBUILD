@@ -1,7 +1,7 @@
 
 # Maintainer: davidgfnet <david@davidgf.net>
 pkgname=ppc-ode
-pkgver=0.16.1
+pkgver=0.16.3
 pkgrel=1
 pkgdesc='High performance library for simulating rigid body dynamics'
 arch=('any')
@@ -10,7 +10,7 @@ license=('BSD')
 options=(!strip libtool staticlibs)
 source=("https://bitbucket.org/odedevs/ode/downloads/ode-${pkgver}.tar.gz")
 makedepends=('dkp-toolchain-vars')
-sha256sums=('b228acad81f33781d53eaf313437cc5d6f66aec5a4e56c515fc1b2d51e6e8eba')
+sha256sums=('c741dbf49bfc468ce2964824e5bc3f906ea956b1ae3594c50d351c383f03c413')
 groups=('ppc-portlibs')
 
 build() {
