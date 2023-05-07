@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libnx')
-pkgver=4.3.0
+pkgver=4.4.0
 pkgrel=1
 pkgdesc="Nintendo Switch AArch64-only userland library."
 arch=('any')
@@ -12,9 +12,7 @@ options=(!strip libtool staticlibs)
 source=(
   ${pkgname}-${pkgver}.tar.gz::${url}/${pkgname}/archive/v${pkgver}.tar.gz
 )
-sha256sums=(
-  'e597c22f250f6f18e4a4bd6402b03c30d5a262267f5b1c5fd3786b6edc7a9969'
-)
+
 makedepends=('devkitA64')
 
 groups=('switch-dev')
@@ -32,3 +30,5 @@ package() {
   make DESTDIR=$pkgdir install
 
 }
+
+sha256sums=('6cadacb0b3ff5205fc4c26fb10cd6c576b67d256282503b84becfaf6b8f630b0')
