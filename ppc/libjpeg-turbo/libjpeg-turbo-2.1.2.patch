@@ -1,0 +1,175 @@
+diff -NBaur libjpeg-turbo-2.1.2.orig/CMakeLists.txt libjpeg-turbo-2.1.2/CMakeLists.txt
+--- libjpeg-turbo-2.1.2.orig/CMakeLists.txt	2021-11-19 03:04:35.000000000 +0000
++++ libjpeg-turbo-2.1.2/CMakeLists.txt	2023-05-07 21:43:03.917480986 +0100
+@@ -204,8 +204,10 @@
+ boolean_number(WITH_MEM_SRCDST)
+ option(WITH_SIMD "Include SIMD extensions, if available for this platform" TRUE)
+ boolean_number(WITH_SIMD)
+-option(WITH_TURBOJPEG "Include the TurboJPEG API library and associated test programs" TRUE)
++option(WITH_TURBOJPEG "Include the TurboJPEG API library" TRUE)
+ boolean_number(WITH_TURBOJPEG)
++option(WITH_TURBOJPEG_TESTS "Include the TurboJPEG API library test programs" TRUE)
++boolean_number(WITH_TURBOJPEG_TESTS)
+ option(WITH_FUZZ "Build fuzz targets" FALSE)
+ 
+ macro(report_option var desc)
+@@ -489,12 +491,13 @@
+ message(STATUS "INLINE = ${INLINE} (FORCE_INLINE = ${FORCE_INLINE})")
+ 
+ if(WITH_TURBOJPEG)
+-  if(MSVC)
+-    set(THREAD_LOCAL "__declspec(thread)")
+-  else()
+-    set(THREAD_LOCAL "__thread")
+-  endif()
+-  check_c_source_compiles("${THREAD_LOCAL} int i;  int main(void) { i = 0;  return i; }" HAVE_THREAD_LOCAL)
++  #if(MSVC)
++  #  set(THREAD_LOCAL "__declspec(thread)")
++  #else()
++  #  set(THREAD_LOCAL "__thread")
++  #endif()
++  #check_c_source_compiles("${THREAD_LOCAL} int i;  int main(void) { i = 0;  return i; }" HAVE_THREAD_LOCAL)
++  set(HAVE_THREAD_LOCAL FALSE)
+   if(HAVE_THREAD_LOCAL)
+     message(STATUS "THREAD_LOCAL = ${THREAD_LOCAL}")
+   else()
+@@ -651,17 +654,19 @@
+         LINK_FLAGS "${TJMAPFLAG}${TJMAPFILE}")
+     endif()
+ 
+-    add_executable(tjunittest tjunittest.c tjutil.c md5/md5.c md5/md5hl.c)
+-    target_link_libraries(tjunittest turbojpeg)
++    if(WITH_TURBOJPEG_TESTS)
++      add_executable(tjunittest tjunittest.c tjutil.c md5/md5.c md5/md5hl.c)
++      target_link_libraries(tjunittest turbojpeg)
++
++      add_executable(tjbench tjbench.c tjutil.c)
++      target_link_libraries(tjbench turbojpeg)
++      if(UNIX)
++        target_link_libraries(tjbench m)
++      endif()
+ 
+-    add_executable(tjbench tjbench.c tjutil.c)
+-    target_link_libraries(tjbench turbojpeg)
+-    if(UNIX)
+-      target_link_libraries(tjbench m)
++      add_executable(tjexample tjexample.c)
++      target_link_libraries(tjexample turbojpeg)
+     endif()
+-
+-    add_executable(tjexample tjexample.c)
+-    target_link_libraries(tjexample turbojpeg)
+   endif()
+ 
+   if(ENABLE_STATIC)
+@@ -674,14 +679,16 @@
+       set_target_properties(turbojpeg-static PROPERTIES OUTPUT_NAME turbojpeg)
+     endif()
+ 
+-    add_executable(tjunittest-static tjunittest.c tjutil.c md5/md5.c
+-      md5/md5hl.c)
+-    target_link_libraries(tjunittest-static turbojpeg-static)
+-
+-    add_executable(tjbench-static tjbench.c tjutil.c)
+-    target_link_libraries(tjbench-static turbojpeg-static)
+-    if(UNIX)
+-      target_link_libraries(tjbench-static m)
++    if(WITH_TURBOJPEG_TESTS)
++      add_executable(tjunittest-static tjunittest.c tjutil.c md5/md5.c
++        md5/md5hl.c)
++      target_link_libraries(tjunittest-static turbojpeg-static)
++
++      add_executable(tjbench-static tjbench.c tjutil.c)
++      target_link_libraries(tjbench-static turbojpeg-static)
++      if(UNIX)
++        target_link_libraries(tjbench-static m)
++      endif()
+     endif()
+   endif()
+ endif()
+@@ -697,7 +704,7 @@
+   set(DJPEG_BMP_SOURCES wrbmp.c wrtarga.c)
+ endif()
+ 
+-if(ENABLE_STATIC)
++if(FALSE)
+   add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c
+     ${CJPEG_BMP_SOURCES})
+   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+@@ -711,12 +718,12 @@
+   add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)
+   target_link_libraries(jpegtran-static jpeg-static)
+   set_property(TARGET jpegtran-static PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
+-endif()
+ 
+-add_executable(rdjpgcom rdjpgcom.c)
++  add_executable(rdjpgcom rdjpgcom.c)
+ 
+-add_executable(wrjpgcom wrjpgcom.c)
++  add_executable(wrjpgcom wrjpgcom.c)
+ 
++endif()
+ 
+ ###############################################################################
+ # TESTS
+@@ -1469,8 +1476,10 @@
+       else()
+         set(DIR ${CMAKE_CURRENT_BINARY_DIR})
+       endif()
+-      install(PROGRAMS ${DIR}/tjbench-static${EXE}
+-        DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME tjbench${EXE})
++      if(WITH_TURBOJPEG_TESTS)
++        install(PROGRAMS ${DIR}/tjbench-static${EXE}
++          DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME tjbench${EXE})
++      endif()
+     endif()
+   endif()
+   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/turbojpeg.h
+@@ -1487,16 +1496,16 @@
+     else()
+       set(DIR ${CMAKE_CURRENT_BINARY_DIR})
+     endif()
+-    install(PROGRAMS ${DIR}/cjpeg-static${EXE}
+-      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME cjpeg${EXE})
+-    install(PROGRAMS ${DIR}/djpeg-static${EXE}
+-      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME djpeg${EXE})
+-    install(PROGRAMS ${DIR}/jpegtran-static${EXE}
+-      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpegtran${EXE})
++#    install(PROGRAMS ${DIR}/cjpeg-static${EXE}
++#      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME cjpeg${EXE})
++#    install(PROGRAMS ${DIR}/djpeg-static${EXE}
++#      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME djpeg${EXE})
++#    install(PROGRAMS ${DIR}/jpegtran-static${EXE}
++#      DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME jpegtran${EXE})
+   endif()
+ endif()
+ 
+-install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
++#install(TARGETS rdjpgcom wrjpgcom RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+ 
+ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.ijg
+   ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/example.txt
+diff -NBaur libjpeg-turbo-2.1.2.orig/jerror.c libjpeg-turbo-2.1.2/jerror.c
+--- libjpeg-turbo-2.1.2.orig/jerror.c	2021-11-19 03:04:35.000000000 +0000
++++ libjpeg-turbo-2.1.2/jerror.c	2023-05-07 21:35:38.379164875 +0100
+@@ -21,6 +21,8 @@
+  * These routines are used by both the compression and decompression code.
+  */
+ 
++#include <stdlib.h>
++
+ /* this is not a core library module, so it doesn't define JPEG_INTERNALS */
+ #include "jinclude.h"
+ #include "jpeglib.h"
+diff -NBaur libjpeg-turbo-2.1.2.orig/simd/powerpc/jsimd.c libjpeg-turbo-2.1.2/simd/powerpc/jsimd.c
+--- libjpeg-turbo-2.1.2.orig/simd/powerpc/jsimd.c	2021-11-19 03:04:35.000000000 +0000
++++ libjpeg-turbo-2.1.2/simd/powerpc/jsimd.c	2023-05-07 21:36:29.703852460 +0100
+@@ -14,6 +14,8 @@
+  * PowerPC architecture.
+  */
+ 
++#include <stdlib.h>
++
+ #ifdef __amigaos4__
+ /* This must be defined first as it re-defines GLOBAL otherwise */
+ #include <proto/exec.h>
