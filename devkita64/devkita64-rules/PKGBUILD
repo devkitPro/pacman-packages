@@ -2,19 +2,18 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkita64-rules')
-pkgver=1.0.1
-pkgrel=2
+pkgver=1.1.0
+pkgrel=1
 pkgdesc="devkitA64 build rules."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/devkita64-rules"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=('fbd52e3c32f3c7de8c2ba4ea718c3cfb4ce1fb538d31f8930b5c6dbdafe43f4c')
-
 package() {
 
   mkdir -p $pkgdir/opt/devkitpro/devkitA64
   make -C ${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
+sha256sums=('5e047abeaaf2bd2cd4b39779fd049126c351f55c674b4d8f03c51d2175ba37d1')
