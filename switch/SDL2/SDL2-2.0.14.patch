@@ -602,7 +602,7 @@ index e528a8844..2b60921a0 100644
    add_library(SDL2::SDL2-static STATIC IMPORTED)
    set_target_properties(SDL2::SDL2-static PROPERTIES
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index 16d29f9f2..f433959ce 100644
+index 16d29f9f2..3f3161bad 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
 @@ -101,6 +101,9 @@ static const AudioBootStrap *const bootstrap[] = {
@@ -610,29 +610,38 @@ index 16d29f9f2..f433959ce 100644
      &EMSCRIPTENAUDIO_bootstrap,
  #endif
 +#if SDL_AUDIO_DRIVER_SWITCH
-+    &SWITCHAUDIO_bootstrap,
++    &SWITCHAUDIOOUT_bootstrap,
 +#endif
  #if SDL_AUDIO_DRIVER_JACK
      &JACK_bootstrap,
  #endif
+@@ -1680,7 +1683,7 @@ SDL_SilenceValueForFormat(const SDL_AudioFormat format)
+             return 0x80;
+ 
+         default: break;
+-    }            
++    }
+ 
+     return 0x00;
+ }
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index 350a6d0a0..05fd4af6b 100644
+index 350a6d0a0..462052c98 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
 @@ -208,6 +208,7 @@ extern AudioBootStrap ANDROIDAUDIO_bootstrap;
  extern AudioBootStrap PSPAUDIO_bootstrap;
  extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
  extern AudioBootStrap OS2AUDIO_bootstrap;
-+extern AudioBootStrap SWITCHAUDIO_bootstrap;
++extern AudioBootStrap SWITCHAUDIOOUT_bootstrap;
  
  #endif /* SDL_sysaudio_h_ */
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 000000000..56211a5c7
+index 000000000..74b86676b
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
-@@ -0,0 +1,227 @@
+@@ -0,0 +1,189 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -668,25 +677,12 @@ index 000000000..56211a5c7
 +
 +#include "SDL_switchaudio.h"
 +
-+static const AudioRendererConfig arConfig =
-+    {
-+        .output_rate     = AudioRendererOutputRate_48kHz,
-+        .num_voices      = 24,
-+        .num_effects     = 0,
-+        .num_sinks       = 1,
-+        .num_mix_objs    = 1,
-+        .num_mix_buffers = 2,
-+    };
-+
 +static int
 +SWITCHAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 +{
-+    static const u8 sink_channels[] = {0, 1};
-+    SDL_bool supported_format = SDL_FALSE;
-+    SDL_AudioFormat test_format;
 +    Result res;
-+    u32 size;
-+    int mpid;
++    PcmFormat fmt;
++    int mixlen, aligned_size, i;
 +
 +    this->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(sizeof(*this->hidden));
 +    if (this->hidden == NULL) {
@@ -694,68 +690,84 @@ index 000000000..56211a5c7
 +    }
 +    SDL_zerop(this->hidden);
 +
-+    res = audrenInitialize(&arConfig);
++    res = audoutInitialize();
 +    if (R_FAILED(res)) {
-+        return SDL_SetError("audrenInitialize failed (0x%x)", res);
-+    }
-+    this->hidden->audr_device = true;
-+
-+    res = audrvCreate(&this->hidden->driver, &arConfig, 2);
-+    if (R_FAILED(res)) {
-+        return SDL_SetError("audrvCreate failed (0x%x)", res);
-+    }
-+    this->hidden->audr_driver = true;
-+
-+    test_format = SDL_FirstAudioFormat(this->spec.format);
-+    while ((!supported_format) && (test_format)) {
-+        if (test_format == AUDIO_S16SYS) {
-+            supported_format = SDL_TRUE;
-+        }
-+        else {
-+            test_format = SDL_NextAudioFormat();
-+        }
-+    }
-+    if (!supported_format) {
-+        return SDL_SetError("Unsupported audio format");
++        SDL_free(this->hidden);
++        this->hidden = NULL;
++        return SDL_SetError("audoutInitialize failed (0x%x)", res);
 +    }
 +
-+    this->spec.format = test_format;
++    fmt = audoutGetPcmFormat();
++    switch (fmt) {
++    case PcmFormat_Invalid:
++        SDL_free(this->hidden);
++        this->hidden = NULL;
++        return SDL_SetError("audoutGetPcmFormat returned invalid value (0x%x)", (int)fmt);
++    case PcmFormat_Int8:
++        this->spec.format = AUDIO_S8;
++        break;
++    case PcmFormat_Int16:
++        this->spec.format = AUDIO_S16SYS;
++        break;
++    case PcmFormat_Int32:
++        this->spec.format = AUDIO_S32SYS;
++        break;
++    case PcmFormat_Float:
++        this->spec.format = AUDIO_F32SYS;
++        break;
++    case PcmFormat_Int24:
++    case PcmFormat_Adpcm:
++        SDL_free(this->hidden);
++        this->hidden = NULL;
++        return SDL_SetError("audoutGetPcmFormat returned unsupported sample format (0x%x)", (int)fmt);
++        break;
++    }
++
++    this->spec.freq = (int)audoutGetSampleRate();
++    this->spec.channels = audoutGetChannelCount();
++
 +    SDL_CalculateAudioSpec(&this->spec);
 +
-+    size = (u32) ((this->spec.size * 2) + 0xfff) & ~0xfff;
-+    this->hidden->pool = memalign(0x1000, size);
-+    for (int i = 0; i < 2; i++) {
-+        this->hidden->buffer[i].data_raw = this->hidden->pool;
-+        this->hidden->buffer[i].size = this->spec.size * 2;
-+        this->hidden->buffer[i].start_sample_offset = i * this->spec.samples;
-+        this->hidden->buffer[i].end_sample_offset = this->hidden->buffer[i].start_sample_offset + this->spec.samples;
-+        this->hidden->buffer_tmp = malloc(this->spec.size);
++    aligned_size = (this->spec.size + 0xfff) & ~0xfff;
++    mixlen = aligned_size * NUM_BUFFERS;
++
++    this->hidden->rawbuf = memalign(0x1000, mixlen);
++    if (this->hidden->rawbuf == NULL) {
++        SDL_free(this->hidden);
++        this->hidden = NULL;
++        return SDL_SetError("Couldn't allocate mixing buffer");
 +    }
 +
-+    mpid = audrvMemPoolAdd(&this->hidden->driver, this->hidden->pool, size);
-+    audrvMemPoolAttach(&this->hidden->driver, mpid);
++    SDL_memset(this->hidden->rawbuf, 0, mixlen);
++    for (i = 0; i < NUM_BUFFERS; i++) {
++        this->hidden->out_buffers[i] = &this->hidden->rawbuf[i * aligned_size];
++        this->hidden->buffer[i].next = NULL;
++        this->hidden->buffer[i].buffer = this->hidden->out_buffers[i];
++        this->hidden->buffer[i].buffer_size = aligned_size;
++        this->hidden->buffer[i].data_size = this->spec.size;
++        this->hidden->buffer[i].data_offset = 0;
++    }
 +
-+    audrvDeviceSinkAdd(&this->hidden->driver, AUDREN_DEFAULT_DEVICE_NAME, 2, sink_channels);
++    this->hidden->cur_buffer = this->hidden->next_buffer;
++    this->hidden->next_buffer = (this->hidden->next_buffer + 1) % NUM_BUFFERS;
 +
-+    res = audrenStartAudioRenderer();
++    res = audoutAppendAudioOutBuffer(&this->hidden->buffer[this->hidden->cur_buffer]);
 +    if (R_FAILED(res)) {
-+        return SDL_SetError("audrenStartAudioRenderer failed (0x%x)", res);
++        free(this->hidden->rawbuf);
++        this->hidden->rawbuf = NULL;
++        SDL_free(this->hidden);
++        this->hidden = NULL;
++        return SDL_SetError("audoutAppendAudioOutBuffer failed (0x%x)", res);
 +    }
 +
-+    audrvVoiceInit(&this->hidden->driver, 0, this->spec.channels, PcmFormat_Int16, this->spec.freq);
-+    audrvVoiceSetDestinationMix(&this->hidden->driver, 0, AUDREN_FINAL_MIX_ID);
-+    if (this->spec.channels == 1) {
-+        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 0);
-+        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 1);
++    res = audoutStartAudioOut();
++    if (R_FAILED(res)) {
++        free(this->hidden->rawbuf);
++        this->hidden->rawbuf = NULL;
++        SDL_free(this->hidden);
++        this->hidden = NULL;
++        return SDL_SetError("audoutStartAudioOut failed (0x%x)", res);
 +    }
-+    else {
-+        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 0);
-+        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 0.0f, 0, 1);
-+        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 0.0f, 1, 0);
-+        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 1, 1);
-+    }
-+
-+    audrvVoiceStart(&this->hidden->driver, 0);
 +
 +    return 0;
 +}
@@ -763,72 +775,31 @@ index 000000000..56211a5c7
 +static void
 +SWITCHAUDIO_PlayDevice(_THIS)
 +{
-+    int current = -1;
-+    for (int i = 0; i < 2; i++) {
-+        if (this->hidden->buffer[i].state == AudioDriverWaveBufState_Free
-+            || this->hidden->buffer[i].state == AudioDriverWaveBufState_Done) {
-+            current = i;
-+            break;
-+        }
-+    }
-+
-+    if (current >= 0) {
-+        Uint8 *ptr = (Uint8 *) (this->hidden->pool + (current * this->spec.size));
-+        memcpy(ptr, this->hidden->buffer_tmp, this->spec.size);
-+        armDCacheFlush(ptr, this->spec.size);
-+        audrvVoiceAddWaveBuf(&this->hidden->driver, 0, &this->hidden->buffer[current]);
-+    }
-+    else if (!audrvVoiceIsPlaying(&this->hidden->driver, 0)) {
-+        audrvVoiceStart(&this->hidden->driver, 0);
-+    }
-+
-+    audrvUpdate(&this->hidden->driver);
-+
-+    if (current >= 0) {
-+        while (this->hidden->buffer[current].state != AudioDriverWaveBufState_Playing) {
-+            audrvUpdate(&this->hidden->driver);
-+            audrenWaitFrame();
-+        }
-+    }
-+    else {
-+        current = -1;
-+        for (int i = 0; i < 2; i++) {
-+            if (this->hidden->buffer[i].state == AudioDriverWaveBufState_Playing) {
-+                current = i;
-+                break;
-+            }
-+        }
-+        while (this->hidden->buffer[current].state == AudioDriverWaveBufState_Playing) {
-+            audrvUpdate(&this->hidden->driver);
-+            audrenWaitFrame();
-+        }
-+    }
++    this->hidden->cur_buffer = this->hidden->next_buffer;
++    audoutAppendAudioOutBuffer(&this->hidden->buffer[this->hidden->cur_buffer]);
++    this->hidden->next_buffer = (this->hidden->next_buffer + 1) % NUM_BUFFERS;
 +}
 +
 +static void
 +SWITCHAUDIO_WaitDevice(_THIS)
 +{
++    audoutWaitPlayFinish(&this->hidden->released_out_buffer, &this->hidden->released_out_count, UINT64_MAX);
 +}
 +
 +static Uint8
 +*SWITCHAUDIO_GetDeviceBuf(_THIS)
 +{
-+    return this->hidden->buffer_tmp;
++    return this->hidden->out_buffers[this->hidden->next_buffer];
 +}
 +
 +static void
 +SWITCHAUDIO_CloseDevice(_THIS)
 +{
-+    if (this->hidden->audr_driver) {
-+        audrvClose(&this->hidden->driver);
-+    }
++    audoutStopAudioOut();
 +
-+    if (this->hidden->audr_device) {
-+        audrenExit();
-+    }
-+
-+    if (this->hidden->buffer_tmp) {
-+        free(this->hidden->buffer_tmp);
++    if (this->hidden->rawbuf) {
++        free(this->hidden->rawbuf);
++        this->hidden->rawbuf = NULL;
 +    }
 +
 +    SDL_free(this->hidden);
@@ -837,7 +808,7 @@ index 000000000..56211a5c7
 +static void
 +SWITCHAUDIO_ThreadInit(_THIS)
 +{
-+
++    (void)this;
 +}
 +
 +static int
@@ -850,22 +821,22 @@ index 000000000..56211a5c7
 +    impl->CloseDevice = SWITCHAUDIO_CloseDevice;
 +    impl->ThreadInit = SWITCHAUDIO_ThreadInit;
 +
-+    impl->OnlyHasDefaultOutputDevice = 1;
++    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
 +
-+    return 1;
++    return SDL_TRUE;
 +}
 +
-+AudioBootStrap SWITCHAUDIO_bootstrap = {
-+    "switch", "Nintendo Switch audio driver", SWITCHAUDIO_Init, 0
++AudioBootStrap SWITCHAUDIOOUT_bootstrap = {
++    "switchout", "Nintendo Switch audio out driver", SWITCHAUDIO_Init, SDL_FALSE
 +};
 +
 +#endif /* SDL_AUDIO_DRIVER_SWITCH */
 diff --git a/src/audio/switch/SDL_switchaudio.h b/src/audio/switch/SDL_switchaudio.h
 new file mode 100644
-index 000000000..f5e0340fb
+index 000000000..b618e2ae1
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,48 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -896,14 +867,21 @@ index 000000000..f5e0340fb
 +/* Hidden "this" pointer for the audio functions */
 +#define _THIS   SDL_AudioDevice *this
 +
++#define NUM_BUFFERS 2
++
 +struct SDL_PrivateAudioData
 +{
-+    AudioDriver driver;
-+    AudioDriverWaveBuf buffer[2];
-+    void *buffer_tmp;
-+    void *pool;
-+    bool audr_device;
-+    bool audr_driver;
++    AudioOutBuffer buffer[NUM_BUFFERS];
++    AudioOutBuffer *released_out_buffer;
++    u32 released_out_count;
++    /* The raw allocated mixing buffer. */
++    Uint8   *rawbuf;
++    /* Individual mixing buffers. */
++    void *out_buffers[NUM_BUFFERS];
++    /* Index of the next available mixing buffer. */
++    int     next_buffer;
++    /* Currently playing buffer */
++    int     cur_buffer;
 +};
 +
 +#endif /* SDL_switchaudio_h_ */
@@ -1049,10 +1027,10 @@ index 3ea7d39c1..ef06d709f 100644
  
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..2d73a4424
+index 000000000..d77345352
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,273 @@
+@@ -0,0 +1,353 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -1081,90 +1059,176 @@ index 000000000..2d73a4424
 +
 +#include "SDL_events.h"
 +#include "../SDL_sysjoystick.h"
++#include "SDL_hints.h"
 +
 +#include <switch.h>
 +
 +#define JOYSTICK_COUNT 8
 +
-+typedef struct SWITCHJoystickState
-+{
++typedef struct SWITCHJoystickState {
 +    PadState pad;
-+    u64 buttons;
-+    HidAnalogStickState stick_l;
-+    HidAnalogStickState stick_r;
++    HidAnalogStickState sticks_old[2];
 +    HidVibrationDeviceHandle vibrationDeviceHandles;
 +    HidVibrationValue vibrationValues;
++    HidNpadButton *pad_mapping;
++    u32 pad_type;
++    u32 pad_type_prev;
++    HidNpadStyleTag pad_style;
++    HidNpadStyleTag pad_style_prev;
 +} SWITCHJoystickState;
 +
-+static SWITCHJoystickState joystickState[JOYSTICK_COUNT];
++static SWITCHJoystickState state[JOYSTICK_COUNT];
 +
-+static const HidNpadButton pad_mapping[] = {
-+    HidNpadButton_A, HidNpadButton_B, HidNpadButton_X, HidNpadButton_Y,
-+    HidNpadButton_StickL, HidNpadButton_StickR,
-+    HidNpadButton_L, HidNpadButton_R,
-+    HidNpadButton_ZL, HidNpadButton_ZR,
-+    HidNpadButton_Plus, HidNpadButton_Minus,
-+    HidNpadButton_Left, HidNpadButton_Up, HidNpadButton_Right, HidNpadButton_Down,
-+    HidNpadButton_StickLLeft, HidNpadButton_StickLUp, HidNpadButton_StickLRight, HidNpadButton_StickLDown,
-+    HidNpadButton_StickRLeft, HidNpadButton_StickRUp, HidNpadButton_StickRRight, HidNpadButton_StickRDown,
-+    HidNpadButton_LeftSL, HidNpadButton_LeftSR, HidNpadButton_RightSL, HidNpadButton_RightSR
++static const HidNpadButton pad_mapping_default[] = {
++        HidNpadButton_A, HidNpadButton_B, HidNpadButton_X, HidNpadButton_Y,
++        HidNpadButton_StickL, HidNpadButton_StickR,
++        HidNpadButton_L, HidNpadButton_R,
++        HidNpadButton_ZL, HidNpadButton_ZR,
++        HidNpadButton_Plus, HidNpadButton_Minus,
++        HidNpadButton_Left, HidNpadButton_Up, HidNpadButton_Right, HidNpadButton_Down,
++        HidNpadButton_StickLLeft, HidNpadButton_StickLUp, HidNpadButton_StickLRight, HidNpadButton_StickLDown,
++        HidNpadButton_StickRLeft, HidNpadButton_StickRUp, HidNpadButton_StickRRight, HidNpadButton_StickRDown,
++        HidNpadButton_LeftSL, HidNpadButton_LeftSR, HidNpadButton_RightSL, HidNpadButton_RightSR
 +};
++
++// left single joycon mapping (start = left stick, select = minus)
++static const HidNpadButton pad_mapping_left_joy[] = {
++        HidNpadButton_Down, HidNpadButton_Left, HidNpadButton_Right, HidNpadButton_Up,
++        BIT(31), BIT(31),
++        BIT(31), BIT(31),
++        HidNpadButton_LeftSL, HidNpadButton_LeftSR,
++        HidNpadButton_StickL, HidNpadButton_Minus,
++        HidNpadButton_StickLUp, HidNpadButton_StickLRight, HidNpadButton_StickLDown, HidNpadButton_StickLLeft,
++        BIT(31), BIT(31), BIT(31), BIT(31),
++        BIT(31), BIT(31), BIT(31), BIT(31),
++        BIT(31), BIT(31), BIT(31), BIT(31)
++};
++
++// right single joycon mapping (start = right stick, select = plus)
++static const HidNpadButton pad_mapping_right_joy[] = {
++        HidNpadButton_X, HidNpadButton_A, HidNpadButton_Y, HidNpadButton_B,
++        BIT(31), BIT(31),
++        BIT(31), BIT(31),
++        HidNpadButton_RightSL, HidNpadButton_RightSR,
++        HidNpadButton_StickR, HidNpadButton_Plus,
++        HidNpadButton_StickRDown, HidNpadButton_StickRLeft, HidNpadButton_StickRUp, HidNpadButton_StickRRight,
++        BIT(31), BIT(31), BIT(31), BIT(31),
++        BIT(31), BIT(31), BIT(31), BIT(31),
++        BIT(31), BIT(31), BIT(31), BIT(31)
++};
++
++static void SWITCH_UpdateControllerSupport(bool handheld) {
++    if (!handheld) {
++        HidLaControllerSupportResultInfo info;
++        HidLaControllerSupportArg args;
++        hidLaCreateControllerSupportArg(&args);
++        args.hdr.player_count_max = JOYSTICK_COUNT;
++        hidLaShowControllerSupportForSystem(&info, &args, false);
++    }
++
++    // update pads states
++    for (int i = 0; i < JOYSTICK_COUNT; i++) {
++        SDL_Joystick *joy = SDL_JoystickFromInstanceID(i);
++        if (joy) {
++            padUpdate(&state[i].pad);
++            state[i].pad_type = state[i].pad_type_prev = hidGetNpadDeviceType((HidNpadIdType) i);
++            state[i].pad_style = state[i].pad_style_prev = hidGetNpadStyleSet((HidNpadIdType) i);
++            // update pad mapping
++            if (!(state[i].pad_style & HidNpadStyleTag_NpadJoyDual) &&
++                (state[i].pad_type & HidDeviceTypeBits_JoyLeft)) {
++                state[i].pad_mapping = (HidNpadButton *) &pad_mapping_left_joy;
++            } else if (!(state[i].pad_style & HidNpadStyleTag_NpadJoyDual) &&
++                       (state[i].pad_type & HidDeviceTypeBits_JoyRight)) {
++                state[i].pad_mapping = (HidNpadButton *) &pad_mapping_right_joy;
++            } else {
++                state[i].pad_mapping = (HidNpadButton *) &pad_mapping_default;
++            }
++            // update vibration stuff ?
++            hidInitializeVibrationDevices(&state[i].vibrationDeviceHandles, 1,
++                                          HidNpadIdType_No1 + i, state[i].pad_style);
++            // reset sdl joysticks states
++            SDL_PrivateJoystickAxis(joy, 0, 0);
++            SDL_PrivateJoystickAxis(joy, 1, 0);
++            SDL_PrivateJoystickAxis(joy, 2, 0);
++            SDL_PrivateJoystickAxis(joy, 3, 0);
++            state[i].pad.buttons_cur = 0;
++            state[i].pad.buttons_old = 0;
++            for (int j = 0; j < joy->nbuttons; j++) {
++                SDL_PrivateJoystickButton(joy, j, SDL_RELEASED);
++            }
++        }
++    }
++}
 +
 +/* Function to scan the system for joysticks.
 + * It should return 0, or -1 on an unrecoverable fatal error.
 + */
-+static int
-+SWITCH_JoystickInit(void)
-+{
++static int SWITCH_JoystickInit(void) {
 +    padConfigureInput(JOYSTICK_COUNT, HidNpadStyleSet_NpadStandard);
 +
 +    // initialize first pad to defaults
-+    padInitializeDefault(&joystickState[0].pad);
-+    padUpdate(&joystickState[0].pad);
++    padInitializeDefault(&state[0].pad);
++    padUpdate(&state[0].pad);
++    hidSetNpadJoyHoldType(HidNpadJoyHoldType_Horizontal);
++
++    state[0].pad_type = state[0].pad_type_prev = hidGetNpadDeviceType((HidNpadIdType) 0);
++    state[0].pad_style = state[0].pad_style_prev = hidGetNpadStyleSet((HidNpadIdType) 0);
++    if (!(state[0].pad_style & HidNpadStyleTag_NpadJoyDual) &&
++        (state[0].pad_type & HidDeviceTypeBits_JoyLeft)) {
++        state[0].pad_mapping = (HidNpadButton*)&pad_mapping_left_joy;
++    }
++    else if (!(state[0].pad_style & HidNpadStyleTag_NpadJoyDual) &&
++             (state[0].pad_type & HidDeviceTypeBits_JoyRight)) {
++        state[0].pad_mapping = (HidNpadButton*)&pad_mapping_right_joy;
++    }
++    else {
++        state[0].pad_mapping = (HidNpadButton*)&pad_mapping_default;
++    }
 +
 +    // initialize pad and vibrations for pad 1 to 7
 +    for (int i = 1; i < JOYSTICK_COUNT; i++) {
-+        padInitialize(&joystickState[i].pad, HidNpadIdType_No1 + i);
-+        padUpdate(&joystickState[i].pad);
-+        hidInitializeVibrationDevices(&joystickState[i].vibrationDeviceHandles,1,
-+                                      HidNpadIdType_No1 + i, padGetStyleSet(&joystickState[i].pad));
++        padInitialize(&state[i].pad, HidNpadIdType_No1 + i);
++        padUpdate(&state[i].pad);
++        state[i].pad_type = state[i].pad_type_prev = hidGetNpadDeviceType((HidNpadIdType) i);
++        state[i].pad_style = state[i].pad_style_prev = hidGetNpadStyleSet((HidNpadIdType) i);
++        if (!(state[i].pad_style & HidNpadStyleTag_NpadJoyDual) &&
++            (state[i].pad_type & HidDeviceTypeBits_JoyLeft)) {
++            state[i].pad_mapping = (HidNpadButton*)&pad_mapping_left_joy;
++        }
++        else if (!(state[i].pad_style & HidNpadStyleTag_NpadJoyDual) &&
++                 (state[i].pad_type & HidDeviceTypeBits_JoyRight)) {
++            state[i].pad_mapping = (HidNpadButton*)&pad_mapping_right_joy;
++        }
++        else {
++            state[i].pad_mapping = (HidNpadButton*)&pad_mapping_default;
++        }
++        hidInitializeVibrationDevices(&state[i].vibrationDeviceHandles, 1,
++                                      HidNpadIdType_No1 + i, state[i].pad_style);
 +    }
 +
 +    return JOYSTICK_COUNT;
 +}
 +
-+static int
-+SWITCH_JoystickGetCount(void)
-+{
++static int SWITCH_JoystickGetCount(void) {
 +    return JOYSTICK_COUNT;
 +}
 +
-+static void
-+SWITCH_JoystickDetect(void)
-+{
++static void SWITCH_JoystickDetect(void) {
 +}
 +
 +/* Function to get the device-dependent name of a joystick */
-+static const char *
-+SWITCH_JoystickGetDeviceName(int device_index)
-+{
++static const char *SWITCH_JoystickGetDeviceName(int device_index) {
 +    return "Switch Controller";
 +}
 +
-+static int
-+SWITCH_JoystickGetDevicePlayerIndex(int device_index)
-+{
++static int SWITCH_JoystickGetDevicePlayerIndex(int device_index) {
 +    return -1;
 +}
 +
-+static void
-+SWITCH_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-+{
++static void SWITCH_JoystickSetDevicePlayerIndex(int device_index, int player_index) {
 +}
 +
-+static SDL_JoystickGUID
-+SWITCH_JoystickGetDeviceGUID(int device_index)
-+{
++static SDL_JoystickGUID SWITCH_JoystickGetDeviceGUID(int device_index) {
 +    SDL_JoystickGUID guid;
 +    /* the GUID is just the first 16 chars of the name for now */
 +    const char *name = SWITCH_JoystickGetDeviceName(device_index);
@@ -1174,9 +1238,7 @@ index 000000000..2d73a4424
 +}
 +
 +/* Function to perform the mapping from device index to the instance id for this index */
-+static SDL_JoystickID
-+SWITCH_JoystickGetDeviceInstanceID(int device_index)
-+{
++static SDL_JoystickID SWITCH_JoystickGetDeviceInstanceID(int device_index) {
 +    return device_index;
 +}
 +
@@ -1185,10 +1247,8 @@ index 000000000..2d73a4424
 +   This should fill the nbuttons and naxes fields of the joystick structure.
 +   It returns 0, or -1 if there is an error.
 + */
-+static int
-+SWITCH_JoystickOpen(SDL_Joystick *joystick, int device_index)
-+{
-+    joystick->nbuttons = sizeof(pad_mapping) / sizeof(*pad_mapping);
++static int SWITCH_JoystickOpen(SDL_Joystick *joystick, int device_index) {
++    joystick->nbuttons = sizeof(pad_mapping_default) / sizeof(*pad_mapping_default);
 +    joystick->naxes = 4;
 +    joystick->nhats = 0;
 +    joystick->instance_id = device_index;
@@ -1196,44 +1256,34 @@ index 000000000..2d73a4424
 +    return 0;
 +}
 +
-+static int
-+SWITCH_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-+{
++static int SWITCH_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble) {
 +    int id = joystick->instance_id;
 +
-+    joystickState[id].vibrationValues.amp_low =
-+    joystickState[id].vibrationValues.amp_high = low_frequency_rumble == 0 ? 0.0f : 320.0f;
-+    joystickState[id].vibrationValues.freq_low =
++    state[id].vibrationValues.amp_low =
++    state[id].vibrationValues.amp_high = low_frequency_rumble == 0 ? 0.0f : 320.0f;
++    state[id].vibrationValues.freq_low =
 +            low_frequency_rumble == 0 ? 160.0f : (float) low_frequency_rumble / 204;
-+    joystickState[id].vibrationValues.freq_high =
++    state[id].vibrationValues.freq_high =
 +            high_frequency_rumble == 0 ? 320.0f : (float) high_frequency_rumble / 204;
 +
-+    hidSendVibrationValues(&joystickState[id].vibrationDeviceHandles, &joystickState[id].vibrationValues, 1);
++    hidSendVibrationValues(&state[id].vibrationDeviceHandles, &state[id].vibrationValues, 1);
 +
 +    return 0;
 +}
 +
-+static int
-+SWITCH_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left, Uint16 right)
-+{
++static int SWITCH_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right) {
 +    return SDL_Unsupported();
 +}
 +
-+static SDL_bool
-+SWITCH_JoystickHasLED(SDL_Joystick * joystick)
-+{
++static SDL_bool SWITCH_JoystickHasLED(SDL_Joystick *joystick) {
 +    return SDL_FALSE;
 +}
 +
-+static int
-+SWITCH_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
-+{
++static int SWITCH_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue) {
 +    return 0;
 +}
 +
-+static int
-+SWITCH_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
-+{
++static int SWITCH_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled) {
 +    return SDL_Unsupported();
 +}
 +
@@ -1242,91 +1292,98 @@ index 000000000..2d73a4424
 + * but instead should call SDL_PrivateJoystick*() to deliver events
 + * and update joystick device state.
 + */
-+static void
-+SWITCH_JoystickUpdate(SDL_Joystick *joystick)
-+{
-+    u64 changed;
-+    static SWITCHJoystickState state_old[JOYSTICK_COUNT];
-+
++static void SWITCH_JoystickUpdate(SDL_Joystick *joystick) {
++    u64 diff;
 +    int index = (int) SDL_JoystickInstanceID(joystick);
-+    if (index > JOYSTICK_COUNT || SDL_IsTextInputActive()) {
++    if (index >= JOYSTICK_COUNT || SDL_IsTextInputActive()) {
 +        return;
 +    }
 +
-+    padUpdate(&joystickState[index].pad);
-+    joystickState[index].stick_l = padGetStickPos(&joystickState[index].pad, 0);
-+    joystickState[index].stick_r = padGetStickPos(&joystickState[index].pad, 1);
-+    joystickState[index].buttons = padGetButtons(&joystickState[index].pad);
-+
-+    // Axes
-+    if (state_old[index].stick_l.x != joystickState[index].stick_l.x) {
-+        SDL_PrivateJoystickAxis(joystick, 0, (Sint16) joystickState[index].stick_l.x);
-+        state_old[index].stick_l.x = joystickState[index].stick_l.x;
-+    }
-+    if (state_old[index].stick_l.y != joystickState[index].stick_l.y) {
-+        SDL_PrivateJoystickAxis(joystick, 1, (Sint16) -joystickState[index].stick_l.y);
-+        state_old[index].stick_l.y = -joystickState[index].stick_l.y;
-+    }
-+    if (state_old[index].stick_r.x != joystickState[index].stick_r.x) {
-+        SDL_PrivateJoystickAxis(joystick, 2, (Sint16) joystickState[index].stick_r.x);
-+        state_old[index].stick_r.x = joystickState[index].stick_r.x;
-+    }
-+    if (state_old[index].stick_r.y != joystickState[index].stick_r.y) {
-+        SDL_PrivateJoystickAxis(joystick, 3, (Sint16) -joystickState[index].stick_r.y);
-+        state_old[index].stick_r.y = -joystickState[index].stick_r.y;
++    padUpdate(&state[index].pad);
++    if (!padIsConnected(&state[index].pad)) {
++        return;
 +    }
 +
-+    // Buttons
-+    changed = state_old[index].buttons ^ joystickState[index].buttons;
-+    state_old[index].buttons = joystickState[index].buttons;
-+    if (changed) {
++    // update pad type and style, open controller support applet if needed
++    state[index].pad_type = hidGetNpadDeviceType((HidNpadIdType) index);
++    state[index].pad_style = hidGetNpadStyleSet((HidNpadIdType) index);
++    if (state[index].pad_type != state[index].pad_type_prev
++        || state[index].pad_style != state[index].pad_style_prev) {
++        SWITCH_UpdateControllerSupport(padIsHandheld(&state[index].pad) ? true : false);
++        return;
++    }
++
++    // only handle axes in non-single joycon mode
++    if (state[index].pad_style & HidNpadStyleTag_NpadJoyDual
++        || (state[index].pad_type != HidDeviceTypeBits_JoyLeft
++            && state[index].pad_type != HidDeviceTypeBits_JoyRight)) {
++        // axis left
++        if (state[index].sticks_old[0].x != state[index].pad.sticks[0].x) {
++            SDL_PrivateJoystickAxis(joystick, 0, (Sint16) state[index].pad.sticks[0].x);
++            state[index].sticks_old[0].x = state[index].pad.sticks[0].x;
++        }
++        if (state[index].sticks_old[0].y != state[index].pad.sticks[0].y) {
++            SDL_PrivateJoystickAxis(joystick, 1, (Sint16) - state[index].pad.sticks[0].y);
++            state[index].sticks_old[0].y = -state[index].pad.sticks[0].y;
++        }
++        state[index].sticks_old[0] = padGetStickPos(&state[index].pad, 0);
++        // axis right
++        if (state[index].sticks_old[1].x != state[index].pad.sticks[1].x) {
++            SDL_PrivateJoystickAxis(joystick, 2, (Sint16) state[index].pad.sticks[1].x);
++            state[index].sticks_old[1].x = state[index].pad.sticks[1].x;
++        }
++        if (state[index].sticks_old[1].y != state[index].pad.sticks[1].y) {
++            SDL_PrivateJoystickAxis(joystick, 3, (Sint16) - state[index].pad.sticks[1].y);
++            state[index].sticks_old[1].y = -state[index].pad.sticks[1].y;
++        }
++        state[index].sticks_old[1] = padGetStickPos(&state[index].pad, 1);
++    }
++
++    // handle buttons
++    diff = state[index].pad.buttons_old ^ state[index].pad.buttons_cur;
++    if (diff) {
 +        for (int i = 0; i < joystick->nbuttons; i++) {
-+            if (changed & pad_mapping[i]) {
-+                SDL_PrivateJoystickButton(joystick, (Uint8) i,
-+                                          (Uint8) ((joystickState[index].buttons & pad_mapping[i]) ?
-+                                                   SDL_PRESSED : SDL_RELEASED));
++            if (diff & state[index].pad_mapping[i]) {
++                SDL_PrivateJoystickButton(
++                        joystick, i,
++                        state[index].pad.buttons_cur & state[index].pad_mapping[i] ?
++                        SDL_PRESSED : SDL_RELEASED);
 +            }
 +        }
 +    }
 +}
 +
 +/* Function to close a joystick after use */
-+static void
-+SWITCH_JoystickClose(SDL_Joystick *joystick)
-+{
++static void SWITCH_JoystickClose(SDL_Joystick *joystick) {
 +}
 +
 +/* Function to perform any system-specific joystick related cleanup */
-+static void
-+SWITCH_JoystickQuit(void)
-+{
++static void SWITCH_JoystickQuit(void) {
 +}
 +
-+SDL_JoystickDriver SDL_SWITCH_JoystickDriver =
-+{
-+    SWITCH_JoystickInit,
-+    SWITCH_JoystickGetCount,
-+    SWITCH_JoystickDetect,
-+    SWITCH_JoystickGetDeviceName,
-+    SWITCH_JoystickGetDevicePlayerIndex,
-+    SWITCH_JoystickSetDevicePlayerIndex,
-+    SWITCH_JoystickGetDeviceGUID,
-+    SWITCH_JoystickGetDeviceInstanceID,
-+    SWITCH_JoystickOpen,
-+    SWITCH_JoystickRumble,
-+    SWITCH_JoystickRumbleTriggers,
-+    SWITCH_JoystickHasLED,
-+    SWITCH_JoystickSetLED,
-+    SWITCH_JoystickSetSensorsEnabled,
-+    SWITCH_JoystickUpdate,
-+    SWITCH_JoystickClose,
-+    SWITCH_JoystickQuit,
++SDL_JoystickDriver SDL_SWITCH_JoystickDriver = {
++        SWITCH_JoystickInit,
++        SWITCH_JoystickGetCount,
++        SWITCH_JoystickDetect,
++        SWITCH_JoystickGetDeviceName,
++        SWITCH_JoystickGetDevicePlayerIndex,
++        SWITCH_JoystickSetDevicePlayerIndex,
++        SWITCH_JoystickGetDeviceGUID,
++        SWITCH_JoystickGetDeviceInstanceID,
++        SWITCH_JoystickOpen,
++        SWITCH_JoystickRumble,
++        SWITCH_JoystickRumbleTriggers,
++        SWITCH_JoystickHasLED,
++        SWITCH_JoystickSetLED,
++        SWITCH_JoystickSetSensorsEnabled,
++        SWITCH_JoystickUpdate,
++        SWITCH_JoystickClose,
++        SWITCH_JoystickQuit,
 +};
 +
 +#endif /* SDL_JOYSTICK_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-\ No newline at end of file
 diff --git a/src/power/SDL_power.c b/src/power/SDL_power.c
 index ca19d4492..216da4fd5 100644
 --- a/src/power/SDL_power.c
@@ -2173,10 +2230,10 @@ index 000000000..988728c08
 +#endif //SDL2_SDL_SWITCHSWKB_H
 diff --git a/src/video/switch/SDL_switchtouch.c b/src/video/switch/SDL_switchtouch.c
 new file mode 100644
-index 000000000..a319be038
+index 000000000..ab1e2c77e
 --- /dev/null
 +++ b/src/video/switch/SDL_switchtouch.c
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,122 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
@@ -2208,59 +2265,89 @@ index 000000000..a319be038
 +#include "../../events/SDL_touch_c.h"
 +#include "../../video/SDL_sysvideo.h"
 +
-+HidTouchScreenState touchState;
-+HidTouchScreenState touchStateOld;
++static HidTouchScreenState touchState;
++static HidTouchScreenState touchStateOld;
 +
-+void
-+SWITCH_InitTouch(void) {
++void SWITCH_InitTouch(void)
++{
 +    hidInitializeTouchScreen();
 +    SDL_AddTouch((SDL_TouchID) 0, SDL_TOUCH_DEVICE_DIRECT, "Switch");
 +    SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, "0", SDL_HINT_DEFAULT);
++    SDL_memset(&touchState, 0, sizeof(HidTouchScreenState));
++    SDL_memset(&touchStateOld, 0, sizeof(HidTouchScreenState));
 +}
 +
-+void
-+SWITCH_QuitTouch(void) {
-+
++void SWITCH_QuitTouch(void)
++{
 +}
 +
-+void
-+SWITCH_PollTouch(void) {
++void SWITCH_PollTouch(void)
++{
++    const float rel_w = 1280.0f, rel_h = 720.0f;
 +    SDL_Window *window = SDL_GetFocusWindow();
-+    if (window == NULL) {
++    SDL_TouchID id = 1;
++    SDL_bool found;
++    s32 i, j;
++
++    if (!window) {
 +        return;
 +    }
 +
-+    memcpy(&touchStateOld, &touchState, sizeof(touchState));
++    if (SDL_AddTouch(id, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
++        SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
++    }
++
++    SDL_memcpy(&touchStateOld, &touchState, sizeof(touchState));
 +
 +    if (hidGetTouchScreenStates(&touchState, 1)) {
-+        for (u32 i = 0; i < touchState.count; i++) {
-+            // Send an initial touch
-+            SDL_SendTouch(0, touchState.touches[i].finger_id, window, SDL_TRUE,
-+                          (float) touchState.touches[i].x / 1280.0f,
-+                          (float) touchState.touches[i].y / 720.0f, 1);
-+            // Always send the motion
-+            SDL_SendTouchMotion(0, (SDL_FingerID) i, window,
-+                                (float) touchState.touches[i].x / 1280.0f,
-+                                (float) touchState.touches[i].y / 720.0f, 1);
-+        }
++        /* Finger down */
++        if (touchStateOld.count < touchState.count) {
++            for (i = 0; i < touchState.count; i++) {
++                found = SDL_FALSE;
 +
-+        // some fingers might have been let go
-+        if (touchStateOld.count > 0) {
-+            for (int i = 0; i < touchStateOld.count; i++) {
-+                int finger_up = 1;
-+                if (touchState.count > 0) {
-+                    for (int j = 0; j < touchState.count; j++) {
-+                        if (touchState.touches[j].finger_id == touchStateOld.touches[i].finger_id) {
-+                            finger_up = 0;
-+                        }
++                for (j = 0; j < touchStateOld.count; j++) {
++                    if (touchStateOld.touches[j].finger_id == touchState.touches[i].finger_id) {
++                        found = SDL_TRUE;
++                        break;
 +                    }
 +                }
-+                if (finger_up == 1) {
-+                    // Finger released from screen
-+                    SDL_SendTouch((SDL_TouchID) 0, (SDL_FingerID) touchStateOld.touches[i].finger_id, window, SDL_FALSE,
-+                                  (float) touchStateOld.touches[i].x / 1280.0f,
-+                                  (float) touchStateOld.touches[i].y / 720.0f, 1);
++
++                if (!found) {
++                    SDL_SendTouch(id,
++                                  touchState.touches[i].finger_id,
++                                  window, SDL_TRUE,
++                                  (float)touchState.touches[i].x / rel_w,
++                                  (float)touchState.touches[i].y / rel_h, 1);
 +                }
++            }
++        }
++
++        /* Scan for moves or up */
++        for (i = 0; i < touchStateOld.count; i++) {
++            found = SDL_FALSE;
++
++            for (j = 0; j < touchState.count; j++) {
++                if (touchState.touches[j].finger_id == touchStateOld.touches[i].finger_id) {
++                    found = SDL_TRUE;
++                    /* Finger moved */
++                    if (touchState.touches[j].x != touchStateOld.touches[i].x || touchState.touches[j].y != touchStateOld.touches[i].y) {
++                        SDL_SendTouchMotion(id,
++                                            (SDL_FingerID)i, window,
++                                            (float)touchState.touches[j].x / rel_w,
++                                            (float)touchState.touches[j].y / rel_h, 1);
++                    }
++                    break;
++                }
++            }
++
++            if (!found) {
++                /* Finger Up */
++                SDL_SendTouch(id,
++                              (SDL_FingerID)touchStateOld.touches[i].finger_id,
++                              window,
++                              SDL_FALSE,
++                              (float) touchStateOld.touches[i].x / rel_w,
++                              (float) touchStateOld.touches[i].y / rel_h, 1);
 +            }
 +        }
 +    }
