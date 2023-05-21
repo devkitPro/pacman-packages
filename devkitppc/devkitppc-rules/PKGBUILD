@@ -2,8 +2,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkitppc-rules')
-pkgver=1.2.0
-pkgrel=3
+pkgver=1.2.1
+pkgrel=1
 pkgdesc="devkitPPC build rules."
 arch=('any')
 license=('custom')
@@ -20,4 +20,4 @@ package() {
   make -C ${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('a357b621615fce747358f30dfffe2381c40d03eb26dcd248b98ad0366c245497')
+sha256sums=('c102e969807f77661eea7966ebb02e5386b0d78ae541a4fa4f1acce6d2f32afd')
