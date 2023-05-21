@@ -2,8 +2,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkita64-rules')
-pkgver=1.1.0
-pkgrel=2
+pkgver=1.1.1
+pkgrel=1
 pkgdesc="devkitA64 build rules."
 arch=('any')
 license=('custom')
@@ -17,4 +17,4 @@ package() {
   make -C ${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('5e047abeaaf2bd2cd4b39779fd049126c351f55c674b4d8f03c51d2175ba37d1')
+sha256sums=('bd47183a806e7721fd98cca00cb9fbbea0334551882074725de484e88e4b9d13')
