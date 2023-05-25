@@ -245,7 +245,7 @@ index 74ac21df0..2cba86dae 100644
  #endif
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.c b/src/audio/n3ds/SDL_n3dsaudio.c
 new file mode 100644
-index 000000000..e0a1d39a3
+index 000000000..019f205ba
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.c
 @@ -0,0 +1,339 @@
@@ -318,12 +318,12 @@ index 000000000..e0a1d39a3
 +
 +static void N3DSAUD_LockAudio(_THIS)
 +{
-+	contextLock(this);
++	SDL_mutexP(this->mixer_lock);
 +}
 +
 +static void N3DSAUD_UnlockAudio(_THIS)
 +{
-+	contextUnlock(this);
++	SDL_mutexV(this->mixer_lock);
 +}
 +
 +static void N3DSAUD_DeleteDevice(SDL_AudioDevice *device)
