@@ -1,7 +1,19 @@
-diff -NBaur mbedtls-2.16.6/library/entropy.c mbedtls-2.16.6-patched/library/entropy.c
---- mbedtls-2.16.6/library/entropy.c	2020-04-09 14:12:23.000000000 +0100
-+++ mbedtls-2.16.6-patched/library/entropy.c	2020-07-15 13:42:22.169835684 +0100
-@@ -119,6 +119,19 @@
+From 94158cbed82e0f3c6ee9337d2a90b0d7d2d14eda Mon Sep 17 00:00:00 2001
+From: Sergi Granell <xerpi.g.12@gmail.com>
+Date: Fri, 26 May 2023 14:41:42 +0900
+Subject: [PATCH] Switch port
+
+---
+ library/entropy.c     | 13 +++++++++
+ library/net_sockets.c |  4 ++-
+ library/timing.c      | 63 +++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 77 insertions(+), 3 deletions(-)
+
+diff --git a/library/entropy.c b/library/entropy.c
+index af78acc1b..b02ee2b51 100644
+--- a/library/entropy.c
++++ b/library/entropy.c
+@@ -105,6 +105,19 @@ void mbedtls_entropy_init(mbedtls_entropy_context *ctx)
  #endif /* MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES */
  }
  
@@ -18,53 +30,53 @@ diff -NBaur mbedtls-2.16.6/library/entropy.c mbedtls-2.16.6-patched/library/entr
 +    }
 +#endif
 +
- void mbedtls_entropy_free( mbedtls_entropy_context *ctx )
+ void mbedtls_entropy_free(mbedtls_entropy_context *ctx)
  {
- #if defined(MBEDTLS_HAVEGE_C)
-diff -NBaur mbedtls-2.16.6/library/net_sockets.c mbedtls-2.16.6-patched/library/net_sockets.c
---- mbedtls-2.16.6/library/net_sockets.c	2020-04-09 14:12:23.000000000 +0100
-+++ mbedtls-2.16.6-patched/library/net_sockets.c	2020-07-15 13:42:22.169835684 +0100
-@@ -34,7 +34,7 @@
+     /* If the context was already free, don't call free() again.
+diff --git a/library/net_sockets.c b/library/net_sockets.c
+index bdd82ac6f..2c2d3465f 100644
+--- a/library/net_sockets.c
++++ b/library/net_sockets.c
+@@ -33,7 +33,7 @@
  
  #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
      !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
--    !defined(__HAIKU__)
-+    !defined(__HAIKU__) && !defined(__SWITCH__)
+-    !defined(__HAIKU__) && !defined(__midipix__)
++    !defined(__HAIKU__) && !defined(__midipix__) && !defined(__SWITCH__)
  #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
  #endif
  
-@@ -409,7 +409,7 @@
+@@ -422,6 +422,7 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
+             }
  
-             memcpy( client_ip, &addr4->sin_addr.s_addr, *ip_len );
-         }
--        else
-+/*        else
-         {
+             memcpy(client_ip, &addr4->sin_addr.s_addr, *ip_len);
++#ifndef __SWITCH__
+         } else {
              struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
-             *ip_len = sizeof( addr6->sin6_addr.s6_addr );
-@@ -419,7 +419,7 @@
+             *ip_len = sizeof(addr6->sin6_addr.s6_addr);
+@@ -431,6 +432,7 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
+             }
  
-             memcpy( client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
+             memcpy(client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
++#endif
          }
--    }
-+*/    }
+     }
  
-     return( 0 );
- }
-diff -NBaur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timing.c
---- mbedtls-2.16.6/library/timing.c	2020-04-09 14:12:23.000000000 +0100
-+++ mbedtls-2.16.6-patched/library/timing.c	2020-08-09 20:42:24.909687336 +0100
-@@ -40,7 +40,7 @@
+diff --git a/library/timing.c b/library/timing.c
+index 47e34f922..33dcd1cc0 100644
+--- a/library/timing.c
++++ b/library/timing.c
+@@ -29,7 +29,7 @@
  
  #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
      !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
--    !defined(__HAIKU__)
-+    !defined(__HAIKU__) && !defined(__SWITCH__)
+-    !defined(__HAIKU__) && !defined(__midipix__)
++    !defined(__HAIKU__) && !defined(__midipix__) && !defined(__SWITCH__)
  #error "This module only works on Unix and Windows, see MBEDTLS_TIMING_C in config.h"
  #endif
  
-@@ -73,6 +73,10 @@
- 
+@@ -62,6 +62,10 @@ struct _hr_time {
+ };
  #endif /* _WIN32 && !EFIX64 && !EFI32 */
  
 +#ifdef __SWITCH__
@@ -72,9 +84,9 @@ diff -NBaur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timin
 +#endif
 +
  #if !defined(HAVE_HARDCLOCK) && defined(MBEDTLS_HAVE_ASM) &&  \
-     ( defined(_MSC_VER) && defined(_M_IX86) ) || defined(__WATCOMC__)
+     (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
  
-@@ -216,6 +220,16 @@
+@@ -203,6 +207,16 @@ unsigned long mbedtls_timing_hardclock(void)
  }
  #endif /* !HAVE_HARDCLOCK && _MSC_VER && !EFIX64 && !EFI32 */
  
@@ -91,7 +103,7 @@ diff -NBaur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timin
  #if !defined(HAVE_HARDCLOCK)
  
  #define HAVE_HARDCLOCK
-@@ -313,6 +327,51 @@
+@@ -292,6 +306,51 @@ unsigned long mbedtls_timing_get_timer(struct mbedtls_timing_hr_time *val, int r
      }
  }
  
@@ -106,9 +118,9 @@ diff -NBaur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timin
 +    (void) param;
 +    svcSleepThread((s64)alarmSecs * 1e9L);
 +    mbedtls_timing_alarmed = 1;
-+} 
++}
 +
-+static void __attribute__((destructor)) cleanup_timer_thread() 
++static void __attribute__((destructor)) cleanup_timer_thread()
 +{
 +    if(timer_thread_created)
 +    {
@@ -140,10 +152,10 @@ diff -NBaur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timin
 +    threadStart(&timerThread);
 +}
 +#else
- static void sighandler( int signum )
+ static void sighandler(int signum)
  {
      mbedtls_timing_alarmed = 1;
-@@ -331,7 +390,7 @@
+@@ -309,7 +368,7 @@ void mbedtls_set_alarm(int seconds)
          mbedtls_timing_alarmed = 1;
      }
  }
@@ -152,3 +164,6 @@ diff -NBaur mbedtls-2.16.6/library/timing.c mbedtls-2.16.6-patched/library/timin
  #endif /* _WIN32 && !EFIX64 && !EFI32 */
  
  /*
+-- 
+2.40.1
+

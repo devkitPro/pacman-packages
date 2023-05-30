@@ -1,6 +1,7 @@
-pkgname=switch-mbedtls
-pkgver=2.16.6
-pkgrel=3
+_realname=mbedtls
+pkgname=switch-${_realname}
+pkgver=2.28.3
+pkgrel=1
 pkgdesc='An open source, portable, easy to use, readable and flexible SSL library'
 arch=('any')
 url='https://tls.mbed.org'
@@ -8,20 +9,16 @@ license=('apache')
 options=(!strip libtool staticlibs)
 depends=(switch-zlib)
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
-source=( 
-    "https://tls.mbed.org/download/mbedtls-${pkgver}-apache.tgz"
-    'switch-mbedtls.patch'
-)
+source=( "${_realname}-${pkgver}.tar.gz::https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${pkgver}.tar.gz"
+         "mbedtls-${pkgver}.patch" )
 groups=('switch-portlibs')
-sha256sums=(
- '66455e23a6190a30142cdc1113f7418158839331a9d8e6b0778631d077281770'
- 'c1cb20905a73e2cb9a6a97c73bce56576f06d7c63cbe1875c4d8c1c7f98faba1'
-)
+sha256sums=('bdf7c5bbdc338da3edad89b2885d4f8668f9a6fffeba6ec17a60333e36dade6f'
+            'dcd1c485ee21289cac2f813d2ac3c36e23f10a3d402ad5dd35d3eb844be7689c')
 
 build() {
   cd mbedtls-$pkgver
 
-  patch -Np1 -i $srcdir/switch-mbedtls.patch
+  patch -Np1 -i $srcdir/mbedtls-${pkgver}.patch
 
   ./scripts/config.pl set MBEDTLS_ENTROPY_HARDWARE_ALT
   ./scripts/config.pl set MBEDTLS_NO_PLATFORM_ENTROPY
@@ -30,7 +27,7 @@ build() {
 
   source /opt/devkitpro/switchvars.sh
 
-  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/devkita64.cmake \
+  aarch64-none-elf-cmake \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
     -DCMAKE_CXX_FLAGS="CFLAGS -fno-exceptions -fno-rtti" \
