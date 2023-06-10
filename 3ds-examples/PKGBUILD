@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('3ds-examples')
-pkgver=20220129
+pkgver=20230610
 pkgrel=1
 pkgdesc="Nintendo 3DS example code."
 arch=('any')
@@ -10,9 +10,6 @@ license=('custom')
 url="http://github.com/devkitpro/3ds-examples"
 options=(!strip libtool staticlibs)
 source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=(
-  '6e87b2b68a7dffabae5910128ddebac4deddb927a00f89947e4037f76b5629cd'
-)
 makedepends=('devkitARM')
 
 groups=('3ds-dev')
@@ -21,3 +18,4 @@ package() {
   mkdir -p "$pkgdir"/opt/devkitpro/examples/3ds
   cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/3ds  
 }
+sha256sums=('16dfaca05d3431ca36a792e57c8f01bc6f0183991c345d2074e8e74ad82b207f')
