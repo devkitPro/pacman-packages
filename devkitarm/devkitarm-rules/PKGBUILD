@@ -2,7 +2,7 @@
 
 pkgname=('devkitarm-rules')
 pkgver=1.5.0
-pkgrel=1
+pkgrel=2
 pkgdesc="devkitARM build rules."
 arch=('any')
 license=('custom')
@@ -17,4 +17,4 @@ package() {
   make -C ${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('04f8ec30530d15fdeeacfdcc63a039b790f3cc19fabe622d08e9086cc0e778a1')
+sha256sums=('d9d3b1fce4beb5ad8dd8a15c994b9993a87e45269275f0de7ee6931c4b2ad63e')
