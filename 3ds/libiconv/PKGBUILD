@@ -1,0 +1,39 @@
+pkgname=3ds-libiconv
+pkgver=1.17
+pkgrel=1
+pkgdesc=''
+arch=('any')
+url='https://www.gnu.org/software/libiconv/'
+license=('LGPL')
+options=(!strip libtool staticlibs)
+depends=()
+makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
+groups=('3ds-portlibs')
+
+source=(
+  "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-${pkgver}.tar.gz"
+  libiconv-${pkgver}.patch
+)
+
+build() {
+  cd libiconv-$pkgver
+  patch -p0 -i ${srcdir}/libiconv-${pkgver}.patch
+
+  source /opt/devkitpro/3dsvars.sh
+
+  ./configure --prefix=$PORTLIBS_PREFIX --host=arm-none-eabi --disable-shared \
+  CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LIBS="${LIBS}"
+
+  make
+}
+
+package() {
+  cd libiconv-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+
+  make install-lib includedir=${pkgdir}/${PORTLIBS_PREFIX}/include libdir=${pkgdir}/${PORTLIBS_PREFIX}/lib
+}
+
+sha256sums=('8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313'
+            '50b1331b9bf8aa115846db958ebb8e73d80bb5a224ffc892041edce9a4af88b3')
