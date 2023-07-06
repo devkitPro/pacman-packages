@@ -1,9 +1,10 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 # Contributor: Cpasjuste <cpasjuste@gmail.com>
 # Contributor: carstene1ns <dev f4ke de>
+# Contributor: giroletm <rsmromaji@gmail.com>
 
 pkgname=switch-sdl2_ttf
-pkgver=2.0.15
+pkgver=2.20.2
 pkgrel=1
 pkgdesc="SDL2 TrueType font library (Nintendo Switch port)."
 arch=('any')
@@ -15,14 +16,17 @@ depends=(
   'switch-sdl2'
   'switch-freetype'
 )
-source=("${url}release/SDL2_ttf-${pkgver}.tar.gz")
-sha256sums=('a9eceb1ad88c1f1545cd7bd28e7cbc0b2c14191d40238f531a15b01b1b22cd33')
+source=("${url}release/SDL2_ttf-${pkgver}.tar.gz" "SDL2_ttf-${pkgver}.patch")
+sha256sums=('9dc71ed93487521b107a2c4a9ca6bf43fb62f6bddd5c26b055e6b91418a22053'
+            '72c810610ae772692e4664b95cc64ec5aa3cae7ba4a7091d0830a10f038762e2')
 groups=('switch-portlibs' 'switch-sdl2')
 
 build() {
   cd SDL2_ttf-$pkgver
 
   source ${DEVKITPRO}/switchvars.sh
+
+  patch -p1 -i $srcdir/SDL2_ttf-${pkgver}.patch
 
   # patch out compiling showfont and glfont
   sed '/^noinst_PROGRAMS/d' -i Makefile.in
@@ -45,5 +49,5 @@ package() {
   echo "Requires.private: freetype2" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_ttf.pc"
 
   # License
-  install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
+  install -Dm644 "LICENSE.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.txt"
 }

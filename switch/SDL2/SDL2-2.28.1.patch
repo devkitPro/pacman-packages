@@ -1,194 +1,20 @@
-diff --git a/.gitignore b/.gitignore
-new file mode 100644
-index 000000000..7f5da9cd6
---- /dev/null
-+++ b/.gitignore
-@@ -0,0 +1,168 @@
-+aclocal.m4
-+autom4te*
-+config.cache
-+config.log
-+config.status
-+libtool
-+Makefile
-+Makefile.rules
-+sdl2-config
-+sdl2-config.cmake
-+sdl2-config-version.cmake
-+sdl2.pc
-+SDL2.spec
-+build
-+gen
-+Build
-+buildbot
-+
-+*.so
-+*.so.*
-+*.dll
-+*.exe
-+*.o
-+*.obj
-+*.lib
-+*.a
-+*.la
-+*.dSYM
-+*,e1f
-+*,ff8
-+*.lnk
-+*.err
-+*.exp
-+*.map
-+*.orig
-+*~
-+*.swp
-+*.tmp
-+*.rej
-+
-+# for CMake
-+CMakeFiles/
-+CMakeCache.txt
-+cmake_install.cmake
-+cmake_uninstall.cmake
-+SDL2ConfigVersion.cmake
-+.ninja_*
-+*.ninja
-+
-+# for CLion
-+.idea
-+cmake-build-*
-+
-+# for Xcode
-+*.mode1*
-+*.perspective*
-+*.pbxuser
-+(^|/)build($|/)
-+.DS_Store
-+xcuserdata
-+*.xcworkspace
-+
-+# for Visual C++
-+.vs
-+Debug
-+Release
-+*.user
-+*.ncb
-+*.suo
-+*.sdf
-+VisualC/tests/loopwave/sample.wav
-+VisualC/tests/testautomation/CompareSurfaces0001_Reference.bmp
-+VisualC/tests/testautomation/CompareSurfaces0001_TestOutput.bmp
-+VisualC/tests/testgamecontroller/axis.bmp
-+VisualC/tests/testgamecontroller/button.bmp
-+VisualC/tests/testgamecontroller/controllermap.bmp
-+VisualC/tests/testoverlay2/moose.dat
-+VisualC/tests/testrendertarget/icon.bmp
-+VisualC/tests/testrendertarget/sample.bmp
-+VisualC/tests/testscale/icon.bmp
-+VisualC/tests/testscale/sample.bmp
-+VisualC/tests/testsprite2/icon.bmp
-+VisualC/visualtest/icon.bmp
-+VisualC/visualtest/testquit.actions
-+VisualC/visualtest/testquit.config
-+VisualC/visualtest/testquit.exe
-+VisualC/visualtest/testquit.parameters
-+VisualC/visualtest/testsprite2.exe
-+VisualC/visualtest/testsprite2_sample.actions
-+VisualC/visualtest/testsprite2_sample.config
-+VisualC/visualtest/testsprite2_sample.parameters
-+
-+# for Android
-+android-project/local.properties
-+
-+test/checkkeys
-+test/controllermap
-+test/loopwave
-+test/loopwavequeue
-+test/testatomic
-+test/testaudiocapture
-+test/testaudiohotplug
-+test/testaudioinfo
-+test/testautomation
-+test/testbounds
-+test/testcustomcursor
-+test/testdisplayinfo
-+test/testdraw2
-+test/testdrawchessboard
-+test/testdropfile
-+test/testerror
-+test/testevdev
-+test/testfile
-+test/testfilesystem
-+test/testgamecontroller
-+test/testgesture
-+test/testgl2
-+test/testgles
-+test/testgles2
-+test/testhaptic
-+test/testhittesting
-+test/testhotplug
-+test/testiconv
-+test/testime
-+test/testintersections
-+test/testjoystick
-+test/testkeys
-+test/testloadso
-+test/testlocale
-+test/testlock
-+test/testmessage
-+test/testmultiaudio
-+test/testnative
-+test/testoverlay2
-+test/testplatform
-+test/testpower
-+test/testqsort
-+test/testrelative
-+test/testrendercopyex
-+test/testrendertarget
-+test/testresample
-+test/testrumble
-+test/testscale
-+test/testsem
-+test/testsensor
-+test/testshader
-+test/testshape
-+test/testsprite2
-+test/testspriteminimal
-+test/teststreaming
-+test/testthread
-+test/testtimer
-+test/testurl
-+test/testver
-+test/testviewport
-+test/testvulkan
-+test/testwm2
-+test/testyuv
-+test/torturethread
-+
-+builddir/
-+debian/*.debhelper.log
-+debian/*.substvars
-+debian/*.tar.gz
-+debian/.debhelper/
-+debian/files
-+debian/libsdl*/
-+debian/tmp/
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b9b9eb620..6f2f02df7 100644
+index d6c82c819..3c97a5e79 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -164,7 +164,7 @@ if(APPLE OR ARCH_64)
-     set(OPT_DEF_SSEMATH ON)
-   endif()
+@@ -233,7 +233,7 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC)
  endif()
--if(UNIX OR MINGW OR MSYS)
-+if(UNIX OR MINGW OR MSYS OR NINTENDO_SWITCH)
+ 
+ # Default option knobs
+-if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA OR PSP OR PS2 OR N3DS)
++if(UNIX OR MINGW OR MSYS OR (USE_CLANG AND NOT WINDOWS) OR VITA OR PSP OR PS2 OR N3DS OR NINTENDO_SWITCH)
    set(OPT_DEF_LIBC ON)
  endif()
  
-@@ -1988,6 +1988,57 @@ elseif(RISCOS)
-   if(SDL_AUDIO)
-     CheckOSS()
-   endif()
+@@ -2866,6 +2866,57 @@ elseif(N3DS)
+     endif()
+     list(APPEND EXTRA_LIBS ${lib})
+   endforeach()
 +
 +elseif(NINTENDO_SWITCH)
 +  if(SDL_AUDIO)
@@ -242,74 +68,29 @@ index b9b9eb620..6f2f02df7 100644
 +  CheckPTHREAD()
  endif()
  
- if(VIDEO_VULKAN)
+ if(HAVE_VULKAN AND NOT SDL_LOADSO)
+diff --git a/cmake/sdlplatform.cmake b/cmake/sdlplatform.cmake
+index f55ad313b..b6ce0f5bf 100644
+--- a/cmake/sdlplatform.cmake
++++ b/cmake/sdlplatform.cmake
+@@ -48,6 +48,8 @@ macro(SDL_DetectCMakePlatform)
+     set(SDL_CMAKE_PLATFORM HAIKU)
+   elseif(NINTENDO_3DS)
+     set(SDL_CMAKE_PLATFORM N3DS)
++  elseif(NINTENDO_SWITCH)
++    set(SDL_CMAKE_PLATFORM NINTENDO_SWITCH)
+   endif()
+   if(SDL_CMAKE_PLATFORM)
+     set(${SDL_CMAKE_PLATFORM} TRUE)
 diff --git a/configure b/configure
-index cdb12bd02..0465c4d60 100755
+index d244aa450..de27594b0 100755
 --- a/configure
 +++ b/configure
-@@ -768,6 +768,7 @@ infodir
- docdir
- oldincludedir
- includedir
-+runstatedir
- localstatedir
- sharedstatedir
- sysconfdir
-@@ -978,6 +979,7 @@ datadir='${datarootdir}'
- sysconfdir='${prefix}/etc'
- sharedstatedir='${prefix}/com'
- localstatedir='${prefix}/var'
-+runstatedir='${localstatedir}/run'
- includedir='${prefix}/include'
- oldincludedir='/usr/include'
- docdir='${datarootdir}/doc/${PACKAGE}'
-@@ -1230,6 +1232,15 @@ do
-   | -silent | --silent | --silen | --sile | --sil)
-     silent=yes ;;
- 
-+  -runstatedir | --runstatedir | --runstatedi | --runstated \
-+  | --runstate | --runstat | --runsta | --runst | --runs \
-+  | --run | --ru | --r)
-+    ac_prev=runstatedir ;;
-+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-+  | --run=* | --ru=* | --r=*)
-+    runstatedir=$ac_optarg ;;
-+
-   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
-     ac_prev=sbindir ;;
-   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
-@@ -1367,7 +1378,7 @@ fi
- for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
- 		datadir sysconfdir sharedstatedir localstatedir includedir \
- 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
--		libdir localedir mandir
-+		libdir localedir mandir runstatedir
- do
-   eval ac_val=\$$ac_var
-   # Remove trailing slashes.
-@@ -1520,6 +1531,7 @@ Fine tuning of the installation directories:
-   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
-   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
-   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
-   --libdir=DIR            object code libraries [EPREFIX/lib]
-   --includedir=DIR        C header files [PREFIX/include]
-   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
-@@ -20178,8 +20190,6 @@ ac_x_header_dirs='
- /usr/local/include/X11R5
- /usr/local/include/X11R4
- 
--/opt/X11/include
--
- /usr/X386/include
- /usr/x386/include
- /usr/XFree86/include/X11
-@@ -25619,6 +25629,83 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
-             have_timers=yes
+@@ -29732,6 +29732,83 @@ printf "%s\n" "#define SDL_JOYSTICK_OS2 1" >>confdefs.h
+             have_joystick=yes
          fi
          ;;
-+	aarch64-none-elf*)
++  aarch64-none-elf*)
 +        ARCH=switch
 +        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 \
 +            -mtp=soft -ftls-model=local-exec \
@@ -326,7 +107,7 @@ index cdb12bd02..0465c4d60 100755
 +        # Set up files for the power library
 +        if test x$enable_power = xyes; then
 +
-+$as_echo "#define SDL_POWER_SWITCH 1" >>confdefs.h
++printf "%s\n" "#define SDL_POWER_SWITCH 1" >>confdefs.h
 +
 +            SOURCES="$SOURCES $srcdir/src/power/switch/SDL_syspower.c"
 +            have_power=yes
@@ -334,7 +115,7 @@ index cdb12bd02..0465c4d60 100755
 +        # Set up files for the filesystem library
 +        if test x$enable_filesystem = xyes; then
 +
-+$as_echo "#define SDL_FILESYSTEM_SWITCH 1" >>confdefs.h
++printf "%s\n" "#define SDL_FILESYSTEM_SWITCH 1" >>confdefs.h
 +
 +            SOURCES="$SOURCES $srcdir/src/filesystem/switch/SDL_sysfilesystem.c"
 +            have_filesystem=yes
@@ -343,19 +124,19 @@ index cdb12bd02..0465c4d60 100755
 +        if test x$enable_video = xyes; then
 +            SOURCES="$SOURCES $srcdir/src/video/switch/*.c"
 +
-+$as_echo "#define SDL_VIDEO_DRIVER_SWITCH 1" >>confdefs.h
++printf "%s\n" "#define SDL_VIDEO_DRIVER_SWITCH 1" >>confdefs.h
 +
 +
-+$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
++printf "%s\n" "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
 +
 +
-+$as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
++printf "%s\n" "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
 +
 +
-+$as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
++printf "%s\n" "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
 +
 +
-+$as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
++printf "%s\n" "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 +
 +            SUMMARY_video="${SUMMARY_video} switch_opengles2"
 +            have_video=yes
@@ -363,7 +144,7 @@ index cdb12bd02..0465c4d60 100755
 +        # Set up files for the audio library
 +        if test x$enable_audio = xyes; then
 +
-+$as_echo "#define SDL_AUDIO_DRIVER_SWITCH 1" >>confdefs.h
++printf "%s\n" "#define SDL_AUDIO_DRIVER_SWITCH 1" >>confdefs.h
 +
 +           SOURCES="$SOURCES $srcdir/src/audio/switch/*.c"
 +           SUMMARY_audio="${SUMMARY_audio} switch"
@@ -372,7 +153,7 @@ index cdb12bd02..0465c4d60 100755
 +        # Set up files for the joystick library
 +        if test x$enable_joystick = xyes; then
 +
-+$as_echo "#define SDL_JOYSTICK_SWITCH 1" >>confdefs.h
++printf "%s\n" "#define SDL_JOYSTICK_SWITCH 1" >>confdefs.h
 +
 +            SOURCES="$SOURCES $srcdir/src/joystick/switch/*.c"
 +            have_joystick=yes
@@ -380,7 +161,7 @@ index cdb12bd02..0465c4d60 100755
 +        # Set up files for the timer library
 +        if test x$enable_timers = xyes; then
 +
-+$as_echo "#define SDL_TIMER_SWITCH 1" >>confdefs.h
++printf "%s\n" "#define SDL_TIMER_SWITCH 1" >>confdefs.h
 +
 +            SOURCES="$SOURCES $srcdir/src/timer/switch/*.c"
 +            have_timers=yes
@@ -390,14 +171,14 @@ index cdb12bd02..0465c4d60 100755
          as_fn_error $? "
  *** Unsupported host:  Please add to configure.ac
 diff --git a/configure.ac b/configure.ac
-index b7e519b8f..74c7c4f64 100644
+index 13b013501..af292489e 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -4230,6 +4230,63 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
-             have_timers=yes
+@@ -4690,6 +4690,63 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
+             have_joystick=yes
          fi
          ;;
-+	aarch64-none-elf*)
++    aarch64-none-elf*)
 +        ARCH=switch
 +        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 \
 +            -mtp=soft -ftls-model=local-exec \
@@ -458,78 +239,78 @@ index b7e519b8f..74c7c4f64 100644
          AC_MSG_ERROR([
  *** Unsupported host:  Please add to configure.ac
 diff --git a/include/SDL_config.h.cmake b/include/SDL_config.h.cmake
-index 754b57013..a3a8e1e87 100644
+index 7512bb1cc..78fcf2f76 100644
 --- a/include/SDL_config.h.cmake
 +++ b/include/SDL_config.h.cmake
-@@ -287,6 +287,7 @@
- #cmakedefine SDL_AUDIO_DRIVER_SUNAUDIO @SDL_AUDIO_DRIVER_SUNAUDIO@
- #cmakedefine SDL_AUDIO_DRIVER_WASAPI @SDL_AUDIO_DRIVER_WASAPI@
- #cmakedefine SDL_AUDIO_DRIVER_WINMM @SDL_AUDIO_DRIVER_WINMM@
+@@ -327,6 +327,7 @@
+ #cmakedefine SDL_AUDIO_DRIVER_PSP @SDL_AUDIO_DRIVER_PSP@
+ #cmakedefine SDL_AUDIO_DRIVER_PS2 @SDL_AUDIO_DRIVER_PS2@
+ #cmakedefine SDL_AUDIO_DRIVER_N3DS @SDL_AUDIO_DRIVER_N3DS@
 +#cmakedefine SDL_AUDIO_DRIVER_SWITCH @SDL_AUDIO_DRIVER_SWITCH@
  
  /* Enable various input drivers */
  #cmakedefine SDL_INPUT_LINUXEV @SDL_INPUT_LINUXEV@
-@@ -305,6 +306,7 @@
- #cmakedefine SDL_JOYSTICK_HIDAPI @SDL_JOYSTICK_HIDAPI@
- #cmakedefine SDL_JOYSTICK_EMSCRIPTEN @SDL_JOYSTICK_EMSCRIPTEN@
- #cmakedefine SDL_JOYSTICK_VIRTUAL @SDL_JOYSTICK_VIRTUAL@
+@@ -353,6 +354,7 @@
+ #cmakedefine SDL_JOYSTICK_PSP @SDL_JOYSTICK_PSP@
+ #cmakedefine SDL_JOYSTICK_PS2 @SDL_JOYSTICK_PS2@
+ #cmakedefine SDL_JOYSTICK_N3DS @SDL_JOYSTICK_N3DS@
 +#cmakedefine SDL_JOYSTICK_SWITCH @SDL_JOYSTICK_SWITCH@
  #cmakedefine SDL_HAPTIC_DUMMY @SDL_HAPTIC_DUMMY@
  #cmakedefine SDL_HAPTIC_LINUX @SDL_HAPTIC_LINUX@
  #cmakedefine SDL_HAPTIC_IOKIT @SDL_HAPTIC_IOKIT@
-@@ -330,6 +332,7 @@
- #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX@
- #cmakedefine SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP @SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP@
- #cmakedefine SDL_THREAD_WINDOWS @SDL_THREAD_WINDOWS@
+@@ -388,6 +390,7 @@
+ #cmakedefine SDL_THREAD_PSP @SDL_THREAD_PSP@
+ #cmakedefine SDL_THREAD_PS2 @SDL_THREAD_PS2@
+ #cmakedefine SDL_THREAD_N3DS @SDL_THREAD_N3DS@
 +#cmakedefine SDL_THREAD_SWITCH @SDL_THREAD_SWITCH@
  
  /* Enable various timer systems */
  #cmakedefine SDL_TIMER_HAIKU @SDL_TIMER_HAIKU@
-@@ -337,6 +340,7 @@
- #cmakedefine SDL_TIMER_UNIX @SDL_TIMER_UNIX@
- #cmakedefine SDL_TIMER_WINDOWS @SDL_TIMER_WINDOWS@
- #cmakedefine SDL_TIMER_WINCE @SDL_TIMER_WINCE@
+@@ -399,6 +402,7 @@
+ #cmakedefine SDL_TIMER_PSP @SDL_TIMER_PSP@
+ #cmakedefine SDL_TIMER_PS2 @SDL_TIMER_PS2@
+ #cmakedefine SDL_TIMER_N3DS @SDL_TIMER_N3DS@
 +#cmakedefine SDL_TIMER_SWITCH @SDL_TIMER_SWITCH@
  
  /* Enable various video drivers */
  #cmakedefine SDL_VIDEO_DRIVER_ANDROID @SDL_VIDEO_DRIVER_ANDROID@
-@@ -386,6 +390,7 @@
- #cmakedefine SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS @SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS@
- #cmakedefine SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY @SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY@
+@@ -453,6 +457,7 @@
  #cmakedefine SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM @SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM@
+ #cmakedefine SDL_VIDEO_DRIVER_VITA @SDL_VIDEO_DRIVER_VITA@
+ #cmakedefine SDL_VIDEO_DRIVER_N3DS @SDL_VIDEO_DRIVER_N3DS@
 +#cmakedefine SDL_VIDEO_DRIVER_SWITCH @SDL_VIDEO_DRIVER_SWITCH@
  
  #cmakedefine SDL_VIDEO_RENDER_D3D @SDL_VIDEO_RENDER_D3D@
  #cmakedefine SDL_VIDEO_RENDER_D3D11 @SDL_VIDEO_RENDER_D3D11@
-@@ -423,6 +428,7 @@
- #cmakedefine SDL_POWER_HAIKU @SDL_POWER_HAIKU@
- #cmakedefine SDL_POWER_EMSCRIPTEN @SDL_POWER_EMSCRIPTEN@
- #cmakedefine SDL_POWER_HARDWIRED @SDL_POWER_HARDWIRED@
+@@ -497,6 +502,7 @@
+ #cmakedefine SDL_POWER_VITA @SDL_POWER_VITA@
+ #cmakedefine SDL_POWER_PSP @SDL_POWER_PSP@
+ #cmakedefine SDL_POWER_N3DS @SDL_POWER_N3DS@
 +#cmakedefine SDL_POWER_SWITCH @SDL_POWER_SWITCH@
  
  /* Enable system filesystem support */
  #cmakedefine SDL_FILESYSTEM_ANDROID @SDL_FILESYSTEM_ANDROID@
-@@ -432,6 +438,7 @@
- #cmakedefine SDL_FILESYSTEM_UNIX @SDL_FILESYSTEM_UNIX@
- #cmakedefine SDL_FILESYSTEM_WINDOWS @SDL_FILESYSTEM_WINDOWS@
- #cmakedefine SDL_FILESYSTEM_EMSCRIPTEN @SDL_FILESYSTEM_EMSCRIPTEN@
+@@ -512,6 +518,7 @@
+ #cmakedefine SDL_FILESYSTEM_PSP @SDL_FILESYSTEM_PSP@
+ #cmakedefine SDL_FILESYSTEM_PS2 @SDL_FILESYSTEM_PS2@
+ #cmakedefine SDL_FILESYSTEM_N3DS @SDL_FILESYSTEM_N3DS@
 +#cmakedefine SDL_FILESYSTEM_SWITCH @SDL_FILESYSTEM_SWITCH@
  
- /* Enable assembly routines */
- #cmakedefine SDL_ASSEMBLY_ROUTINES @SDL_ASSEMBLY_ROUTINES@
+ /* Enable misc subsystem */
+ #cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
 diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index 3a2a7149d..9636f6080 100644
+index d6460b783..bfbc0067f 100644
 --- a/include/SDL_config.h.in
 +++ b/include/SDL_config.h.in
-@@ -287,6 +287,7 @@
- #undef SDL_AUDIO_DRIVER_SUNAUDIO
+@@ -311,6 +311,7 @@
  #undef SDL_AUDIO_DRIVER_WASAPI
  #undef SDL_AUDIO_DRIVER_WINMM
+ #undef SDL_AUDIO_DRIVER_OS2
 +#undef SDL_AUDIO_DRIVER_SWITCH
  
  /* Enable various input drivers */
  #undef SDL_INPUT_LINUXEV
-@@ -307,6 +308,7 @@
+@@ -333,6 +334,7 @@
  #undef SDL_JOYSTICK_RAWINPUT
  #undef SDL_JOYSTICK_EMSCRIPTEN
  #undef SDL_JOYSTICK_VIRTUAL
@@ -537,75 +318,43 @@ index 3a2a7149d..9636f6080 100644
  #undef SDL_HAPTIC_DUMMY
  #undef SDL_HAPTIC_ANDROID
  #undef SDL_HAPTIC_LINUX
-@@ -337,6 +339,7 @@
- #undef SDL_TIMER_DUMMY
+@@ -367,6 +369,7 @@
  #undef SDL_TIMER_UNIX
  #undef SDL_TIMER_WINDOWS
+ #undef SDL_TIMER_OS2
 +#undef SDL_TIMER_SWITCH
  
  /* Enable various video drivers */
  #undef SDL_VIDEO_DRIVER_HAIKU
-@@ -382,6 +385,7 @@
- #undef SDL_VIDEO_DRIVER_VIVANTE
- #undef SDL_VIDEO_DRIVER_VIVANTE_VDK
+@@ -413,6 +416,7 @@
+ #undef SDL_VIDEO_DRIVER_OS2
  #undef SDL_VIDEO_DRIVER_QNX
+ #undef SDL_VIDEO_DRIVER_RISCOS
 +#undef SDL_VIDEO_DRIVER_SWITCH
  
  #undef SDL_VIDEO_RENDER_D3D
  #undef SDL_VIDEO_RENDER_D3D11
-@@ -417,6 +421,7 @@
+@@ -449,6 +453,7 @@
  #undef SDL_POWER_ANDROID
  #undef SDL_POWER_EMSCRIPTEN
  #undef SDL_POWER_HARDWIRED
 +#undef SDL_POWER_SWITCH
  
  /* Enable system filesystem support */
- #undef SDL_FILESYSTEM_HAIKU
-@@ -427,6 +432,7 @@
- #undef SDL_FILESYSTEM_NACL
  #undef SDL_FILESYSTEM_ANDROID
- #undef SDL_FILESYSTEM_EMSCRIPTEN
+@@ -464,6 +469,7 @@
+ #undef SDL_FILESYSTEM_VITA
+ #undef SDL_FILESYSTEM_PSP
+ #undef SDL_FILESYSTEM_PS2
 +#undef SDL_FILESYSTEM_SWITCH
  
- /* Enable assembly routines */
- #undef SDL_ASSEMBLY_ROUTINES
-diff --git a/sdl2-config.cmake.in b/sdl2-config.cmake.in
-index e528a8844..2b60921a0 100644
---- a/sdl2-config.cmake.in
-+++ b/sdl2-config.cmake.in
-@@ -18,12 +18,21 @@ if(NOT TARGET SDL2::SDL2)
-   string(REPLACE "-lSDL2 " "" SDL2_EXTRA_LINK_FLAGS_STATIC "@SDL_STATIC_LIBS@ ")
-   string(STRIP "${SDL2_EXTRA_LINK_FLAGS_STATIC}" SDL2_EXTRA_LINK_FLAGS_STATIC)
- 
--  add_library(SDL2::SDL2 SHARED IMPORTED)
--  set_target_properties(SDL2::SDL2 PROPERTIES
--    INTERFACE_INCLUDE_DIRECTORIES "@includedir@/SDL2"
--    IMPORTED_LINK_INTERFACE_LANGUAGES "C"
--    IMPORTED_LOCATION "@libdir@/${CMAKE_SHARED_LIBRARY_PREFIX}SDL2${CMAKE_SHARED_LIBRARY_SUFFIX}"
--    INTERFACE_LINK_LIBRARIES "${SDL2_EXTRA_LINK_FLAGS}")
-+  if(TARGET_SUPPORTS_SHARED_LIBS)
-+    add_library(SDL2::SDL2 SHARED IMPORTED)
-+    set_target_properties(SDL2::SDL2 PROPERTIES
-+      INTERFACE_INCLUDE_DIRECTORIES "@includedir@/SDL2"
-+      IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-+      IMPORTED_LOCATION "@libdir@/${CMAKE_SHARED_LIBRARY_PREFIX}SDL2${CMAKE_SHARED_LIBRARY_SUFFIX}"
-+      INTERFACE_LINK_LIBRARIES "${SDL2_EXTRA_LINK_FLAGS}")
-+  else()
-+    add_library(SDL2::SDL2 STATIC IMPORTED)
-+    set_target_properties(SDL2::SDL2 PROPERTIES
-+      INTERFACE_INCLUDE_DIRECTORIES "@includedir@/SDL2"
-+      IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-+      IMPORTED_LOCATION "@libdir@/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2${CMAKE_STATIC_LIBRARY_SUFFIX}"
-+      INTERFACE_LINK_LIBRARIES "${SDL2_EXTRA_LINK_FLAGS_STATIC}")
-+  endif()
- 
-   add_library(SDL2::SDL2-static STATIC IMPORTED)
-   set_target_properties(SDL2::SDL2-static PROPERTIES
+ /* Enable misc subsystem */
+ #undef SDL_MISC_DUMMY
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index 16d29f9f2..3f3161bad 100644
+index 60242e60a..b5756cf05 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
-@@ -101,6 +101,9 @@ static const AudioBootStrap *const bootstrap[] = {
+@@ -111,6 +111,9 @@ static const AudioBootStrap *const bootstrap[] = {
  #if SDL_AUDIO_DRIVER_EMSCRIPTEN
      &EMSCRIPTENAUDIO_bootstrap,
  #endif
@@ -615,21 +364,12 @@ index 16d29f9f2..3f3161bad 100644
  #if SDL_AUDIO_DRIVER_JACK
      &JACK_bootstrap,
  #endif
-@@ -1680,7 +1683,7 @@ SDL_SilenceValueForFormat(const SDL_AudioFormat format)
-             return 0x80;
- 
-         default: break;
--    }            
-+    }
- 
-     return 0x00;
- }
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index 350a6d0a0..462052c98 100644
+index c755d4341..c3c2085d8 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
-@@ -208,6 +208,7 @@ extern AudioBootStrap ANDROIDAUDIO_bootstrap;
- extern AudioBootStrap PSPAUDIO_bootstrap;
+@@ -209,6 +209,7 @@ extern AudioBootStrap VITAAUD_bootstrap;
+ extern AudioBootStrap N3DSAUDIO_bootstrap;
  extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
  extern AudioBootStrap OS2AUDIO_bootstrap;
 +extern AudioBootStrap SWITCHAUDIOOUT_bootstrap;
@@ -638,7 +378,7 @@ index 350a6d0a0..462052c98 100644
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 000000000..74b86676b
+index 000000000..1cf19ce87
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
 @@ -0,0 +1,189 @@
@@ -678,7 +418,7 @@ index 000000000..74b86676b
 +#include "SDL_switchaudio.h"
 +
 +static int
-+SWITCHAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
++SWITCHAUDIO_OpenDevice(_THIS, const char *devname)
 +{
 +    Result res;
 +    PcmFormat fmt;
@@ -886,31 +626,31 @@ index 000000000..b618e2ae1
 +
 +#endif /* SDL_switchaudio_h_ */
 diff --git a/src/cpuinfo/SDL_cpuinfo.c b/src/cpuinfo/SDL_cpuinfo.c
-index b529a6d1d..c62c98c10 100644
+index 337ae335a..39ce7484e 100644
 --- a/src/cpuinfo/SDL_cpuinfo.c
 +++ b/src/cpuinfo/SDL_cpuinfo.c
-@@ -894,7 +894,7 @@ SDL_GetSystemRAM(void)
+@@ -1079,7 +1079,7 @@ int SDL_GetSystemRAM(void)
  #endif
  #ifdef HAVE_SYSCTLBYNAME
          if (SDL_SystemRAM <= 0) {
 -#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__DragonFly__)
 +#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__SWITCH__)
  #ifdef HW_REALMEM
-             int mib[2] = {CTL_HW, HW_REALMEM};
+             int mib[2] = { CTL_HW, HW_REALMEM };
  #else
 diff --git a/src/dynapi/SDL_dynapi.h b/src/dynapi/SDL_dynapi.h
-index 764e5d978..988eb6341 100644
+index 99ca08008..9dadb7b48 100644
 --- a/src/dynapi/SDL_dynapi.h
 +++ b/src/dynapi/SDL_dynapi.h
-@@ -57,6 +57,8 @@
- #define SDL_DYNAMIC_API 0
- #elif defined(__clang_analyzer__)
- #define SDL_DYNAMIC_API 0  /* Turn off for static analysis, so reports are more clear. */
+@@ -67,6 +67,8 @@
+ #define SDL_DYNAMIC_API 0 /* The N-Gage doesn't support dynamic linking either */
+ #elif defined(__3DS__)
+ #define SDL_DYNAMIC_API 0 /* devkitARM doesn't support dynamic linking */
 +#elif defined(__SWITCH__) && __SWITCH__
 +#define SDL_DYNAMIC_API 0  /* Probably not useful on switch. */
+ #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
+ #define SDL_DYNAMIC_API 0 /* we need dlopen(), but don't have it.... */
  #endif
- 
- /* everyone else. This is where we turn on the API if nothing forced it off. */
 diff --git a/src/filesystem/switch/SDL_sysfilesystem.c b/src/filesystem/switch/SDL_sysfilesystem.c
 new file mode 100644
 index 000000000..6053c6f43
@@ -985,52 +725,51 @@ index 000000000..6053c6f43
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/joystick/SDL_gamecontrollerdb.h b/src/joystick/SDL_gamecontrollerdb.h
-index e032bdede..3a12e02e0 100644
+index f6fc08d59..b4f0b1479 100644
 --- a/src/joystick/SDL_gamecontrollerdb.h
 +++ b/src/joystick/SDL_gamecontrollerdb.h
-@@ -846,6 +846,10 @@ static const char *s_ControllerMappings [] =
- #if defined(SDL_JOYSTICK_EMSCRIPTEN)
-     "default,Standard Gamepad,a:b0,b:b1,back:b8,dpdown:b13,dpleft:b14,dpright:b15,dpup:b12,guide:b16,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b2,y:b3,",
+@@ -997,6 +997,9 @@ static const char *s_ControllerMappings[] = {
  #endif
-+#if defined(SDL_JOYSTICK_SWITCH)
-+    "53776974636820436F6E74726F6C6C65,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
+ #if SDL_JOYSTICK_N3DS
+     "000000004e696e74656e646f20334400,Nintendo 3DS,crc:3210,a:b0,b:b1,back:b2,dpdown:b7,dpleft:b5,dpright:b4,dpup:b6,leftshoulder:b9,lefttrigger:b14,leftx:a0,lefty:a1,rightshoulder:b8,righttrigger:b15,rightx:a2,righty:a3,start:b3,x:b10,y:b11,",
 +#endif
-+    "hidapi,*,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
++#if SDL_JOYSTICK_SWITCH
++    "53776974636820436F6E74726F6C6C65,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
+ #endif
+     "hidapi,*,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
      NULL
- };
- 
 diff --git a/src/joystick/SDL_joystick.c b/src/joystick/SDL_joystick.c
-index 32eb7c248..78f310881 100644
+index 12965f934..b3b0398bb 100644
 --- a/src/joystick/SDL_joystick.c
 +++ b/src/joystick/SDL_joystick.c
-@@ -80,6 +80,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
- #ifdef SDL_JOYSTICK_HAIKU
-     &SDL_HAIKU_JoystickDriver,
+@@ -105,6 +105,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
+ #ifdef SDL_JOYSTICK_N3DS
+     &SDL_N3DS_JoystickDriver
  #endif
 +#ifdef SDL_JOYSTICK_SWITCH
 +    &SDL_SWITCH_JoystickDriver,
 +#endif
- #ifdef SDL_JOYSTICK_USBHID  /* !!! FIXME: "USBHID" is a generic name, and doubly-confusing with HIDAPI next to it. This is the *BSD interface, rename this. */
-     &SDL_BSD_JoystickDriver,
+ #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
+         &SDL_DUMMY_JoystickDriver
  #endif
 diff --git a/src/joystick/SDL_sysjoystick.h b/src/joystick/SDL_sysjoystick.h
-index 3ea7d39c1..ef06d709f 100644
+index a93fa662c..c0f3e9ec1 100644
 --- a/src/joystick/SDL_sysjoystick.h
 +++ b/src/joystick/SDL_sysjoystick.h
-@@ -204,6 +204,7 @@ extern SDL_JoystickDriver SDL_LINUX_JoystickDriver;
- extern SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver;
- extern SDL_JoystickDriver SDL_WGI_JoystickDriver;
- extern SDL_JoystickDriver SDL_WINDOWS_JoystickDriver;
+@@ -249,6 +249,7 @@ extern SDL_JoystickDriver SDL_PS2_JoystickDriver;
+ extern SDL_JoystickDriver SDL_PSP_JoystickDriver;
+ extern SDL_JoystickDriver SDL_VITA_JoystickDriver;
+ extern SDL_JoystickDriver SDL_N3DS_JoystickDriver;
 +extern SDL_JoystickDriver SDL_SWITCH_JoystickDriver;
  
- #endif /* SDL_sysjoystick_h_ */
- 
+ /* Ends C function definitions when using C++ */
+ #ifdef __cplusplus
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..d77345352
+index 000000000..d3dd33dca
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,353 @@
+@@ -0,0 +1,388 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -1221,6 +960,11 @@ index 000000000..d77345352
 +    return "Switch Controller";
 +}
 +
++static const char *SWITCH_JoystickGetDevicePath(int device_index)
++{
++    return NULL;
++}
++
 +static int SWITCH_JoystickGetDevicePlayerIndex(int device_index) {
 +    return -1;
 +}
@@ -1275,12 +1019,22 @@ index 000000000..d77345352
 +    return SDL_Unsupported();
 +}
 +
++static Uint32 SWITCH_JoystickGetCapabilities(SDL_Joystick *joystick)
++{
++    return 0;
++}
++
 +static SDL_bool SWITCH_JoystickHasLED(SDL_Joystick *joystick) {
 +    return SDL_FALSE;
 +}
 +
 +static int SWITCH_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue) {
 +    return 0;
++}
++
++static int SWITCH_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
++{
++    return SDL_Unsupported();
 +}
 +
 +static int SWITCH_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled) {
@@ -1361,49 +1115,69 @@ index 000000000..d77345352
 +static void SWITCH_JoystickQuit(void) {
 +}
 +
++static SDL_bool SWITCH_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
++{
++    /* There is only one possible mapping. */
++    *out = (SDL_GamepadMapping){
++        .a = { EMappingKind_Button, 0 },
++        .b = { EMappingKind_Button, 1 },
++        .x = { EMappingKind_Button, 2 },
++        .y = { EMappingKind_Button, 3 },
++        .start = { EMappingKind_Button, 10 },
++        .dpup = { EMappingKind_Button, 13 },
++        .dpdown = { EMappingKind_Button, 15 },
++        .dpleft = { EMappingKind_Button, 12 },
++        .dpright = { EMappingKind_Button, 14 },
++    };
++    return SDL_TRUE;
++}
++
 +SDL_JoystickDriver SDL_SWITCH_JoystickDriver = {
-+        SWITCH_JoystickInit,
-+        SWITCH_JoystickGetCount,
-+        SWITCH_JoystickDetect,
-+        SWITCH_JoystickGetDeviceName,
-+        SWITCH_JoystickGetDevicePlayerIndex,
-+        SWITCH_JoystickSetDevicePlayerIndex,
-+        SWITCH_JoystickGetDeviceGUID,
-+        SWITCH_JoystickGetDeviceInstanceID,
-+        SWITCH_JoystickOpen,
-+        SWITCH_JoystickRumble,
-+        SWITCH_JoystickRumbleTriggers,
-+        SWITCH_JoystickHasLED,
-+        SWITCH_JoystickSetLED,
-+        SWITCH_JoystickSetSensorsEnabled,
-+        SWITCH_JoystickUpdate,
-+        SWITCH_JoystickClose,
-+        SWITCH_JoystickQuit,
++        .Init = SWITCH_JoystickInit,
++        .GetCount = SWITCH_JoystickGetCount,
++        .Detect = SWITCH_JoystickDetect,
++        .GetDeviceName = SWITCH_JoystickGetDeviceName,
++        .GetDevicePath = SWITCH_JoystickGetDevicePath,
++        .GetDevicePlayerIndex = SWITCH_JoystickGetDevicePlayerIndex,
++        .SetDevicePlayerIndex = SWITCH_JoystickSetDevicePlayerIndex,
++        .GetDeviceGUID = SWITCH_JoystickGetDeviceGUID,
++        .GetDeviceInstanceID = SWITCH_JoystickGetDeviceInstanceID,
++        .Open = SWITCH_JoystickOpen,
++        .Rumble = SWITCH_JoystickRumble,
++        .RumbleTriggers = SWITCH_JoystickRumbleTriggers,
++        .GetCapabilities = SWITCH_JoystickGetCapabilities,
++        .SetLED = SWITCH_JoystickSetLED,
++        .SendEffect = SWITCH_JoystickSendEffect,
++        .SetSensorsEnabled = SWITCH_JoystickSetSensorsEnabled,
++        .Update = SWITCH_JoystickUpdate,
++        .Close = SWITCH_JoystickClose,
++        .Quit = SWITCH_JoystickQuit,
++        .GetGamepadMapping = SWITCH_JoystickGetGamepadMapping
 +};
 +
 +#endif /* SDL_JOYSTICK_SWITCH */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/power/SDL_power.c b/src/power/SDL_power.c
-index ca19d4492..216da4fd5 100644
+index 63ba38221..41c880b3b 100644
 --- a/src/power/SDL_power.c
 +++ b/src/power/SDL_power.c
-@@ -74,6 +74,9 @@ static SDL_GetPowerInfo_Impl implementations[] = {
- #ifdef SDL_POWER_EMSCRIPTEN     /* handles Emscripten */
+@@ -78,6 +78,9 @@ static SDL_GetPowerInfo_Impl implementations[] = {
+ #ifdef SDL_POWER_EMSCRIPTEN /* handles Emscripten */
      SDL_GetPowerInfo_Emscripten,
  #endif
-+#ifdef SDL_POWER_SWITCH         /* handles Nintendo Switch. */
++#ifdef SDL_POWER_SWITCH /* handles Nintendo Switch. */
 +    SDL_GetPowerInfo_SWITCH,
 +#endif
  
  #ifdef SDL_POWER_HARDWIRED
      SDL_GetPowerInfo_Hardwired,
 diff --git a/src/power/SDL_syspower.h b/src/power/SDL_syspower.h
-index f28cc982b..905b4fb4c 100644
+index 5401a0ee3..a640cc5a4 100644
 --- a/src/power/SDL_syspower.h
 +++ b/src/power/SDL_syspower.h
-@@ -40,6 +40,7 @@ SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
- SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
+@@ -42,6 +42,7 @@ SDL_bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
+ SDL_bool SDL_GetPowerInfo_N3DS(SDL_PowerState *, int *, int *);
  SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
  SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
 +SDL_bool SDL_GetPowerInfo_SWITCH(SDL_PowerState *, int *, int *);
@@ -1485,38 +1259,39 @@ index 000000000..86ae7875c
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index c82b59e23..a80d3ed13 100644
+index 278a68026..a1e654452 100644
 --- a/src/thread/SDL_thread_c.h
 +++ b/src/thread/SDL_thread_c.h
-@@ -38,6 +38,8 @@
- #include "stdcpp/SDL_systhread_c.h"
- #elif SDL_THREAD_OS2
+@@ -46,6 +46,8 @@
  #include "os2/SDL_systhread_c.h"
+ #elif SDL_THREAD_NGAGE
+ #include "ngage/SDL_systhread_c.h"
 +#elif SDL_THREAD_SWITCH
 +#include "switch/SDL_systhread_c.h"
  #else
  #error Need thread implementation for this platform
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/pthread/SDL_systhread.c b/src/thread/pthread/SDL_systhread.c
-index afed1d9c8..6a867e48b 100644
+index 531680705..5adbd35a8 100644
 --- a/src/thread/pthread/SDL_systhread.c
 +++ b/src/thread/pthread/SDL_systhread.c
-@@ -60,8 +60,11 @@
+@@ -59,8 +59,12 @@
  #include <kernel/OS.h>
  #endif
  
 +#ifdef __SWITCH__
 +#include <switch.h>
 +#endif
++
  
 -#ifndef __NACL__
 +#if !defined(__NACL__) && !defined(__SWITCH__)
  /* List of signals to mask in the subthreads */
  static const int sig_list[] = {
      SIGHUP, SIGINT, SIGQUIT, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGWINCH,
-@@ -126,10 +129,10 @@ SDL_SYS_CreateThread(SDL_Thread * thread)
- void
- SDL_SYS_SetupThread(const char *name)
+@@ -122,10 +126,10 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
+ 
+ void SDL_SYS_SetupThread(const char *name)
  {
 -#if !defined(__NACL__)
 +#if !defined(__NACL__) && !defined(__SWITCH__)
@@ -1526,8 +1301,8 @@ index afed1d9c8..6a867e48b 100644
 +#endif /* !__NACL__ && !__NINTENDO_SWITCH__ */
  
      if (name != NULL) {
-         #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)
-@@ -159,14 +162,14 @@ SDL_SYS_SetupThread(const char *name)
+         #if (defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)) && defined(HAVE_DLOPEN)
+@@ -162,14 +166,14 @@ void SDL_SYS_SetupThread(const char *name)
      }
  
     /* NativeClient does not yet support signals.*/
@@ -1544,9 +1319,9 @@ index afed1d9c8..6a867e48b 100644
  
  
  #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
-@@ -200,6 +203,20 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+@@ -190,6 +194,20 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
  {
- #if __NACL__ || __RISCOS__
+ #if __NACL__ || __RISCOS__ || __OS2__
      /* FIXME: Setting thread priority does not seem to be supported in NACL */
 +    return 0;
 +#elif __SWITCH__
@@ -1567,7 +1342,7 @@ index afed1d9c8..6a867e48b 100644
      struct sched_param sched;
 diff --git a/src/timer/switch/SDL_systimer.c b/src/timer/switch/SDL_systimer.c
 new file mode 100644
-index 000000000..f0a13a2bd
+index 000000000..02b600ea5
 --- /dev/null
 +++ b/src/timer/switch/SDL_systimer.c
 @@ -0,0 +1,75 @@
@@ -1593,7 +1368,7 @@ index 000000000..f0a13a2bd
 +*/
 +#include "../../SDL_internal.h"
 +
-+#ifdef SDL_TIMER_SWITCH
++#if SDL_TIMER_SWITCH
 +
 +#include "SDL_timer.h"
 +#include <switch.h>
@@ -1618,13 +1393,13 @@ index 000000000..f0a13a2bd
 +    started = false;
 +}
 +
-+Uint32 SDL_GetTicks(void)
++Uint64 SDL_GetTicks64(void)
 +{
 +    if (!started) {
 +        SDL_TicksInit();
 +    }
 +
-+    return (Uint32) ((SDL_GetPerformanceCounter() - start) * 1000 / SDL_GetPerformanceFrequency());
++    return (Uint64) ((SDL_GetPerformanceCounter() - start) * 1000 / SDL_GetPerformanceFrequency());
 +}
 +
 +Uint64
@@ -1647,22 +1422,22 @@ index 000000000..f0a13a2bd
 +
 +#endif /* SDL_TIMER_SWITCH */
 diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index c8c425b6b..5659f4cdf 100644
+index d7a42cc64..aa51f7a11 100644
 --- a/src/video/SDL_sysvideo.h
 +++ b/src/video/SDL_sysvideo.h
-@@ -439,6 +439,7 @@ extern VideoBootStrap QNX_bootstrap;
- extern VideoBootStrap OFFSCREEN_bootstrap;
+@@ -482,6 +482,7 @@ extern VideoBootStrap OFFSCREEN_bootstrap;
+ extern VideoBootStrap NGAGE_bootstrap;
  extern VideoBootStrap OS2DIVE_bootstrap;
  extern VideoBootStrap OS2VMAN_bootstrap;
 +extern VideoBootStrap SWITCH_bootstrap;
  
- extern SDL_VideoDevice *SDL_GetVideoDevice(void);
- extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
+ /* Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work */
+ extern SDL_bool SDL_OnVideoThread(void);
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index a0ca32243..5d37492db 100644
+index 84dfcc135..d026746fe 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
-@@ -117,6 +117,9 @@ static VideoBootStrap *bootstrap[] = {
+@@ -137,6 +137,9 @@ static VideoBootStrap *bootstrap[] = {
      &OS2DIVE_bootstrap,
      &OS2VMAN_bootstrap,
  #endif
@@ -1671,29 +1446,29 @@ index a0ca32243..5d37492db 100644
 +#endif
  #if SDL_VIDEO_DRIVER_DUMMY
      &DUMMY_bootstrap,
- #endif
-@@ -1474,7 +1477,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
-     }
+ #if SDL_INPUT_LINUXEV
+@@ -201,7 +204,7 @@ typedef struct
  
-     /* Some platforms have OpenGL enabled by default */
--#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
-+#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__ || __SWITCH__
-     if (!_this->is_dummy && !(flags & SDL_WINDOW_VULKAN) && !(flags & SDL_WINDOW_METAL) && !SDL_IsVideoContextExternal()) {
-         flags |= SDL_WINDOW_OPENGL;
+ static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
+ {
+-#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
++#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__ || __SWITCH__
+     if (_this->GL_CreateContext != NULL) {
+         return SDL_WINDOW_OPENGL;
      }
 diff --git a/src/video/khronos/EGL/eglplatform.h b/src/video/khronos/EGL/eglplatform.h
-index c77c3338d..c59e43bac 100644
+index 99362a23d..576c2731d 100644
 --- a/src/video/khronos/EGL/eglplatform.h
 +++ b/src/video/khronos/EGL/eglplatform.h
-@@ -77,7 +77,7 @@ typedef HDC     EGLNativeDisplayType;
- typedef HBITMAP EGLNativePixmapType;
- typedef HWND    EGLNativeWindowType;
+@@ -70,7 +70,7 @@ typedef int EGLNativeDisplayType;
+ typedef int EGLNativePixmapType;
+ typedef int EGLNativeWindowType;
  
--#elif defined(__APPLE__) || defined(__WINSCW__) || defined(__SYMBIAN32__)  /* Symbian */
-+#elif defined(__APPLE__) || defined(__WINSCW__) || defined(__SYMBIAN32__) || defined(__SWITCH__)
+-#elif defined(__WINSCW__) || defined(__SYMBIAN32__)  /* Symbian */
++#elif defined(__WINSCW__) || defined(__SYMBIAN32__) || defined(__SWITCH__)
  
  typedef int   EGLNativeDisplayType;
- typedef void *EGLNativeWindowType;
+ typedef void *EGLNativePixmapType;
 diff --git a/src/video/switch/SDL_switchkeyboard.c b/src/video/switch/SDL_switchkeyboard.c
 new file mode 100644
 index 000000000..5037f6ff4
@@ -2851,59 +2626,6 @@ index 000000000..d34643ed4
 +#endif /* __SDL_SWITCHVIDEO_H__ */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
-diff --git a/test/configure b/test/configure
-index 4faf15c43..5c05af3bc 100755
---- a/test/configure
-+++ b/test/configure
-@@ -640,6 +640,7 @@ infodir
- docdir
- oldincludedir
- includedir
-+runstatedir
- localstatedir
- sharedstatedir
- sysconfdir
-@@ -720,6 +721,7 @@ datadir='${datarootdir}'
- sysconfdir='${prefix}/etc'
- sharedstatedir='${prefix}/com'
- localstatedir='${prefix}/var'
-+runstatedir='${localstatedir}/run'
- includedir='${prefix}/include'
- oldincludedir='/usr/include'
- docdir='${datarootdir}/doc/${PACKAGE}'
-@@ -972,6 +974,15 @@ do
-   | -silent | --silent | --silen | --sile | --sil)
-     silent=yes ;;
- 
-+  -runstatedir | --runstatedir | --runstatedi | --runstated \
-+  | --runstate | --runstat | --runsta | --runst | --runs \
-+  | --run | --ru | --r)
-+    ac_prev=runstatedir ;;
-+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-+  | --run=* | --ru=* | --r=*)
-+    runstatedir=$ac_optarg ;;
-+
-   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
-     ac_prev=sbindir ;;
-   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
-@@ -1109,7 +1120,7 @@ fi
- for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
- 		datadir sysconfdir sharedstatedir localstatedir includedir \
- 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
--		libdir localedir mandir
-+		libdir localedir mandir runstatedir
- do
-   eval ac_val=\$$ac_var
-   # Remove trailing slashes.
-@@ -1262,6 +1273,7 @@ Fine tuning of the installation directories:
-   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
-   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
-   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
-   --libdir=DIR            object code libraries [EPREFIX/lib]
-   --includedir=DIR        C header files [PREFIX/include]
-   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
 diff --git a/test/testswitch.c b/test/testswitch.c
 new file mode 100644
 index 000000000..51012e481
