@@ -1,4 +1,4 @@
-# Maintainer:  averne <averne381@gmail.com>
+# Contributor:  averne <averne381@gmail.com>
 
 pkgbasename=dav1d
 pkgname=switch-$pkgbasename
@@ -12,10 +12,6 @@ options=(!strip libtool staticlibs)
 source=(
   "${url}/-/archive/${pkgver}/${pkgbasename}-${pkgver}.tar.gz"
   "dav1d.patch"
-)
-sha256sums=(
-  "2dd85860d213479672b1c708e31593446e8c2b53ff41e2ca25a2eafb718424e2"
-  "SKIP"
 )
 
 makedepends=("dkp-toolchain-vars" "dkp-meson-scripts")
@@ -40,3 +36,5 @@ package() {
 
   DESTDIR="$pkgdir" meson install -C build
 }
+sha256sums=('2dd85860d213479672b1c708e31593446e8c2b53ff41e2ca25a2eafb718424e2'
+            '424e132380ea9afb0e13fcdf5d2893a7895094fff4ee297cdb30ead422256542')
