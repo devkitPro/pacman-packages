@@ -1,0 +1,55 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgsuffix=51
+pkgname=("switch-liblua${pkgsuffix}")
+pkgvermaj=5.1
+pkgver=${pkgvermaj}.5
+pkgrel=1
+pkgdesc="Powerful lightweight programming language designed for extending applications"
+arch=('any')
+license=('MIT')
+url="https://www.lua.org/"
+options=(!strip libtool staticlibs)
+
+source=(${url}/ftp//lua-${pkgver}.tar.gz)
+
+makedepends=('devkitA64' 'switch-pkg-config' 'dkp-toolchain-vars')
+groups=('switch-portlibs')
+
+build() {
+
+  source /opt/devkitpro/switchvars.sh
+
+  make -C "${srcdir}/lua-${pkgver}" \
+    CC=aarch64-none-elf-gcc \
+    AR="aarch64-none-elf-ar rcu" \
+    RANLIB=aarch64-none-elf-ranlib \
+    LUA_A=liblua${pkgvermaj}.a \
+    ALL_T=liblua${pkgvermaj}.a \
+    CPPFLAGS="${CPPFLAGS} ${CFLAGS}" \
+    PLAT=generic
+
+}
+
+package() {
+
+  source /opt/devkitpro/switchvars.sh
+
+  cd ${srcdir}/lua-${pkgver}
+
+  echo $pkgdir
+  echo $PORTLIBS_PREFIX
+
+  install -dm 755 ${pkgdir}/${PORTLIBS_PREFIX}/include/lua${pkgvermaj}
+  install -m 644 src/lua.h src/luaconf.h src/lualib.h src/lauxlib.h ${pkgdir}/${PORTLIBS_PREFIX}/include/lua${pkgvermaj}
+
+  sed -i "s,prefix= /usr/local,prefix= ${PORTLIBS_PREFIX}," etc/lua.pc
+  sed -i "s,includedir=\${prefix}/include,includedir=\${prefix}/include/lua${pkgvermaj}," etc/lua.pc
+  sed -i "s,-llua,-llua${pkgvermaj}," etc/lua.pc
+
+  install -dm 755 ${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig
+  install -m 644 etc/lua.pc ${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/lua${pkgsuffix}.pc
+  install -m 644 src/liblua${pkgvermaj}.a ${pkgdir}/${PORTLIBS_PREFIX}/lib
+
+}
+sha256sums=('2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333')
