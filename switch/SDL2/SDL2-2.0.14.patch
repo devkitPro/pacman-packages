@@ -638,10 +638,10 @@ index 350a6d0a0..462052c98 100644
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 000000000..74b86676b
+index 000000000..57e922567
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,190 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -796,6 +796,7 @@ index 000000000..74b86676b
 +SWITCHAUDIO_CloseDevice(_THIS)
 +{
 +    audoutStopAudioOut();
++    audoutExit();
 +
 +    if (this->hidden->rawbuf) {
 +        free(this->hidden->rawbuf);
