@@ -1,0 +1,229 @@
+diff -NBaur mpg123-1.31.3.orig/configure.ac mpg123-1.31.3/configure.ac
+--- mpg123-1.31.3.orig/configure.ac	2023-03-17 17:10:06.000000000 +0000
++++ mpg123-1.31.3/configure.ac	2023-08-30 19:13:29.093284185 +0100
+@@ -1350,6 +1350,20 @@
+ # Optionally use platform macros for byte swapping.
+ AC_CHECK_HEADERS([byteswap.h])
+ 
++if test x"$ac_cv_header_sys_signal_h" = xyes; then
++	AC_CHECK_FUNCS( sigemptyset sigaddset sigprocmask sigaction )
++	if test x"$ac_cv_func_sigemptyset" = xno ||
++	   test x"$ac_cv_func_sigaddset" = xno ||
++	   test x"$ac_cv_func_sigprocmask" = xno ||
++	   test x"$ac_cv_func_sigaction" = xno; then
++		AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
++	fi
++else
++	AC_DEFINE(DONT_CATCH_SIGNALS, 1, [ Signal handling is not supported on this platform ])
++fi
++
++AC_CHECK_FUNCS( sleep, [ have_sleep=yes ], [ have_sleep=no ] )
++
+ dnl ############## Choose compiler flags and CPU
+ 
+ # do not assume gcc here, so no flags by default
+diff -NBaur mpg123-1.31.3.orig/libmpg123.pc.in mpg123-1.31.3/libmpg123.pc.in
+--- mpg123-1.31.3.orig/libmpg123.pc.in	2023-03-15 08:02:58.000000000 +0000
++++ mpg123-1.31.3/libmpg123.pc.in	2023-08-30 19:13:29.093284185 +0100
+@@ -7,6 +7,6 @@
+ Description: An optimised MPEG Audio decoder
+ Requires: 
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lmpg123 
++Libs: -L${libdir} -lmpg123 -lm
+ Libs.private: @LIBMPG123_LIBS@
+ Cflags: -I${includedir} 
+diff -NBaur mpg123-1.31.3.orig/libout123.pc.in mpg123-1.31.3/libout123.pc.in
+--- mpg123-1.31.3.orig/libout123.pc.in	2023-03-15 08:02:58.000000000 +0000
++++ mpg123-1.31.3/libout123.pc.in	2023-08-30 19:13:29.093284185 +0100
+@@ -7,6 +7,6 @@
+ Description: A streaming audio output API derived from mpg123
+ Requires: 
+ Version: @PACKAGE_VERSION@
+-Libs: -L${libdir} -lout123 
++Libs: -L${libdir} -lout123 -lm
+ Libs.private: @LIBOUT123_LIBS@ @LIBDL@
+ Cflags: -I${includedir} 
+diff -NBaur mpg123-1.31.3.orig/src/control_generic.c mpg123-1.31.3/src/control_generic.c
+--- mpg123-1.31.3.orig/src/control_generic.c	2023-03-15 08:20:01.000000000 +0000
++++ mpg123-1.31.3/src/control_generic.c	2023-08-30 19:13:29.093284185 +0100
+@@ -28,8 +28,10 @@
+ #include <ctype.h>
+ #if !defined (_WIN32) || defined (__CYGWIN__)
+ #include <sys/wait.h>
++#ifdef NETWORK
+ #include <sys/socket.h>
+ #endif
++#endif
+ #include <errno.h>
+ #include <string.h>
+ 
+diff -NBaur mpg123-1.31.3.orig/src/Makemodule.am mpg123-1.31.3/src/Makemodule.am
+--- mpg123-1.31.3.orig/src/Makemodule.am	2023-03-15 08:02:57.000000000 +0000
++++ mpg123-1.31.3/src/Makemodule.am	2023-08-30 19:16:12.291812289 +0100
+@@ -1,34 +1,10 @@
+ # Module for non-recursive mpg123 build system.
+ 
+-include src/tests/Makemodule.am
+ include src/compat/Makemodule.am
+ include src/libmpg123/Makemodule.am
+ include src/libout123/Makemodule.am
+ include src/libsyn123/Makemodule.am
+ 
+-bin_PROGRAMS += \
+-  src/mpg123 \
+-  src/out123 \
+-  src/mpg123-id3dump \
+-  src/mpg123-strip
+-
+-src_mpg123_LDADD = \
+-  src/compat/libcompat.la \
+-  src/libmpg123/libmpg123.la \
+-  src/libout123/libout123.la \
+-  src/libsyn123/libsyn123.la \
+-  @PROG_LIBS@
+-
+-src_mpg123_LDFLAGS = @EXEC_LT_LDFLAGS@
+-
+-src_out123_LDADD = \
+-  src/compat/libcompat.la \
+-  src/libsyn123/libsyn123.la \
+-  src/libout123/libout123.la \
+-  @PROG_LIBS@
+-
+-src_out123_LDFLAGS = @EXEC_LT_LDFLAGS@
+-
+ EXTRA_DIST += \
+   src/intsym.h \
+   src/mpg123-with-modules \
+@@ -36,118 +12,3 @@
+ 
+ CLEANFILES += src/*.a
+ 
+-src_mpg123_id3dump_LDADD = \
+-  src/compat/libcompat.la \
+-  src/libmpg123/libmpg123.la \
+-  @PROG_LIBS@
+-
+-src_mpg123_strip_LDADD = \
+-  src/compat/libcompat.la \
+-  src/libmpg123/libmpg123.la \
+-  @PROG_LIBS@
+-
+-src_mpg123_SOURCES = \
+-  src/audio.c \
+-  src/audio.h \
+-  src/common.c \
+-  src/common.h \
+-  src/sysutil.c \
+-  src/sysutil.h \
+-  src/control_generic.c \
+-  src/equalizer.c \
+-  src/getlopt.c \
+-  src/getlopt.h \
+-  src/httpget.c \
+-  src/httpget.h \
+-  src/resolver.c \
+-  src/resolver.h \
+-  src/genre.h \
+-  src/genre.c \
+-  src/mpg123.c \
+-  src/mpg123app.h \
+-  src/metaprint.c \
+-  src/metaprint.h \
+-  src/local.h \
+-  src/local.c \
+-  src/playlist.c \
+-  src/playlist.h \
+-  src/streamdump.h \
+-  src/streamdump.c \
+-  src/term.c \
+-  src/term.h \
+-  src/terms.h \
+-  src/win32_support.h
+-
+-# Does that finally work to build/link the correct object file?
+-src_mpg123_SOURCES += 
+-
+-# Replace common.h by sysutil.h!
+-src_out123_SOURCES = \
+-  src/sysutil.c \
+-  src/sysutil.h \
+-  src/common.h \
+-  src/getlopt.c \
+-  src/getlopt.h \
+-  src/local.h \
+-  src/local.c \
+-  src/filters.h \
+-  src/filters.c \
+-  src/out123.c \
+-  src/mpg123app.h \
+-  src/win32_support.h
+-
+-src_mpg123_id3dump_SOURCES = \
+-  src/mpg123-id3dump.c \
+-  src/getlopt.c \
+-  src/getlopt.h
+-
+-src_mpg123_strip_SOURCES = \
+-  src/mpg123-strip.c \
+-  src/getlopt.c \
+-  src/getlopt.h
+-
+-if TERM_POSIX
+-src_mpg123_SOURCES += src/term_posix.c
+-endif
+-
+-if TERM_WIN32
+-src_mpg123_SOURCES += src/term_win32.c
+-endif
+-
+-if TERM_NONE
+-src_mpg123_SOURCES += src/term_none.c
+-endif
+-
+-if NET123
+-src_mpg123_SOURCES += src/net123.h
+-endif
+-
+-if NET123_EXEC
+-src_mpg123_SOURCES += src/net123_exec.c
+-endif
+-
+-if NET123_WINHTTP
+-src_mpg123_SOURCES += src/net123_winhttp.c
+-src_mpg123_LDADD += -lwinhttp
+-endif
+-
+-if NET123_WININET
+-src_mpg123_SOURCES += src/net123_wininet.c
+-src_mpg123_LDADD += -lwininet
+-endif
+-
+-if WIN32_CODES
+-src_mpg123_SOURCES += \
+-  src/win32_support.c
+-
+-if NETWORK_WINSOCK
+-src_mpg123_SOURCES += src/win32_net.c
+-src_mpg123_LDADD += -lws2_32
+-endif
+-
+-src_out123_SOURCES+= \
+-  src/win32_support.c
+-
+-src_mpg123_id3dump_SOURCES += \
+-  src/win32_support.c
+-endif
+diff -NBaur mpg123-1.31.3.orig/src/mpg123.c mpg123-1.31.3/src/mpg123.c
+--- mpg123-1.31.3.orig/src/mpg123.c	2023-03-15 08:02:57.000000000 +0000
++++ mpg123-1.31.3/src/mpg123.c	2023-08-30 19:13:29.093284185 +0100
+@@ -1334,6 +1334,8 @@
+ 			if(param.verbose > 2) fprintf(stderr, "Note: pausing %i seconds before next track.\n", param.delay);
+ #ifdef WIN32
+ 			Sleep(param.delay*1000);
++#elif !defined(HAVE_SLEEP)
++			fprintf(stderr, "sleep not supported on this platform\n");
+ #else
+ 			sleep(param.delay);
+ #endif

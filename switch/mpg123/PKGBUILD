@@ -1,8 +1,8 @@
 # Maintainer: Gabriel Kind <gabriel-dkp mastergk de>
 
 pkgname=switch-mpg123
-pkgver=1.25.10
-pkgrel=4
+pkgver=1.31.3
+pkgrel=1
 pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
 arch=('any')
 url="http://sourceforge.net/projects/mpg123"
@@ -10,7 +10,7 @@ license=('LGPL2.1')
 options=(!strip libtool staticlibs)
 source=(
  "http://downloads.sourceforge.net/sourceforge/mpg123/mpg123-${pkgver}.tar.bz2"
- "https://downloads.devkitpro.org/packages/sources/mpg123-1.25.10.patch"
+ "mpg123-${pkgver}.patch"
 )
 sha256sums=('6c1337aee2e4bf993299851c70b7db11faec785303cfca3a5c3eb5f329ba7023'
             '444e46951f6270d926698718b3e52ec548088f1374f56bcd766d5b9783a41051')
@@ -19,14 +19,13 @@ groups=('switch-portlibs')
 build() {
   cd mpg123-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
   patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch
 
   autoreconf -fi
 
-  LIBS="-lm" ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+  LIBS="-lnx -lm" ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static --enable-fifo=no \
     --enable-ipv6=no --enable-network=no --enable-int-quality=no \
     --with-cpu=generic --with-default-audio=dummy
@@ -44,3 +43,7 @@ package() {
   # remove useless stuff
   rm -rf "$pkgdir"${PORTLIBS_PREFIX}/bin "$pkgdir"${PORTLIBS_PREFIX}/share
 }
+sha256sums=('1ca77d3a69a5ff845b7a0536f783fee554e1041139a6b978f6afe14f5814ad1a'
+            '9af6c4c39d4cc58c5b81bf6e26a95fe9bf8322f583a98ec73f0362214a3c3b89')
+sha256sums=('1ca77d3a69a5ff845b7a0536f783fee554e1041139a6b978f6afe14f5814ad1a'
+            '99e86f82aa5c53769747c7e104f6d2f3a679b29481df38386321beb6f7ef0b70')
