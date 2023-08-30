@@ -2,7 +2,7 @@
 
 pkgname=ppc-mpg123
 pkgver=1.31.3
-pkgrel=2
+pkgrel=3
 pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
 arch=('any')
 url="http://sourceforge.net/projects/mpg123"
@@ -45,3 +45,5 @@ package() {
   # remove useless stuff
   rm -rf "$pkgdir"${PORTLIBS_PREFIX}/bin "$pkgdir"${PORTLIBS_PREFIX}/share
 }
+sha256sums=('1ca77d3a69a5ff845b7a0536f783fee554e1041139a6b978f6afe14f5814ad1a'
+            '99e86f82aa5c53769747c7e104f6d2f3a679b29481df38386321beb6f7ef0b70')
