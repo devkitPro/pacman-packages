@@ -1,7 +1,7 @@
 # Maintainer: Gabriel Kind <gabriel-dkp mastergk de>
 
 pkgname=armv4t-mpg123
-pkgver=1.25.13
+pkgver=1.31.3
 pkgrel=1
 pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
 arch=('any')
@@ -11,10 +11,8 @@ options=(!strip libtool staticlibs)
 groups=("armv4t-portlibs")
 source=(
  "https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-${pkgver}.tar.bz2"
- "https://downloads.devkitpro.org/packages/sources/mpg123-1.25.10.patch"
+ "mpg123-${pkgver}.patch"
 )
-sha256sums=('90306848359c793fd43b9906e52201df18775742dc3c81c06ab67a806509890a'
-            '444e46951f6270d926698718b3e52ec548088f1374f56bcd766d5b9783a41051')
 makedepends=('dkp-toolchain-vars')
 
 build() {
@@ -22,7 +20,7 @@ build() {
 
   source /opt/devkitpro/armv4tvars.sh
 
-  patch -Np1 -i "$srcdir"/mpg123-1.25.10.patch
+  patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch
 
   autoreconf -fi
 
@@ -42,3 +40,5 @@ package() {
   # remove useless stuff
   rm -rf "$pkgdir"${PORTLIBS_PREFIX}/bin "$pkgdir"${PORTLIBS_PREFIX}/share
 }
+sha256sums=('1ca77d3a69a5ff845b7a0536f783fee554e1041139a6b978f6afe14f5814ad1a'
+            '99e86f82aa5c53769747c7e104f6d2f3a679b29481df38386321beb6f7ef0b70')
