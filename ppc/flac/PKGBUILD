@@ -1,14 +1,14 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-flac
-pkgver=1.4.2
+pkgver=1.4.3
 pkgrel=1
 pkgdesc='FLAC stands for Free Lossless Audio Codec, an audio format similar to MP3, but lossless...'
 arch=('any')
 url='https://xiph.org/flac/'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
-depends=("switch-libogg")
+depends=("ppc-libogg")
 makedepends=('dkp-toolchain-vars')
 source=(
   "https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz"
@@ -45,4 +45,6 @@ package() {
 }
 
 sha256sums=('e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4'
+            '5244952358deec901fc98dbfdbc7f63317cc6e0f2b036f241fe75c1cf3647302')
+sha256sums=('6c58e69cd22348f441b861092b825e591d0b822e106de6eb0ee4d05d27205b70'
             '5244952358deec901fc98dbfdbc7f63317cc6e0f2b036f241fe75c1cf3647302')
