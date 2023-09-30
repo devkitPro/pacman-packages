@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 include_guard(GLOBAL)
 
 # Inherit default devkitPro platform configuration
-include(Platform/Generic-dkP)
+include(${CMAKE_CURRENT_LIST_DIR}/Generic-dkP.cmake)
 
 # Platform identification flags
 set(NINTENDO_3DS TRUE)
