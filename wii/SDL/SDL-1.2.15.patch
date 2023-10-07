@@ -163,16 +163,16 @@ diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
 index beb26e0b4..fbbeb459f 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
-@@ -113,6 +113,9 @@ static AudioBootStrap *bootstrap[] = {
+@@ -112,6 +112,9 @@ static AudioBootStrap *bootstrap[] = {
+ #endif
  #if SDL_AUDIO_DRIVER_EPOCAUDIO
  	&EPOCAudio_bootstrap,
- #endif
++#endif
 +#if SDL_AUDIO_DRIVER_OGC
 +	&OGCAUD_bootstrap,
-+#endif
+ #endif
  	NULL
  };
- SDL_AudioDevice *current_audio = NULL;
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
 index 74ac21df0..e701a570a 100644
 --- a/src/audio/SDL_sysaudio.h
@@ -789,7 +789,7 @@ index 000000000..9709c5e47
 +#endif /* SDL_JOYSTICK_DC */
 diff --git a/src/joystick/wii/SDL_sysjoystick.c b/src/joystick/wii/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..8be904496
+index 000000000..88aa28ddb
 --- /dev/null
 +++ b/src/joystick/wii/SDL_sysjoystick.c
 @@ -0,0 +1,582 @@
@@ -1090,7 +1090,7 @@ index 000000000..8be904496
 +	WPADData *data;
 +	const u32 *buttons;
 +
-+	if (!WPAD_ReadPending(WPAD_CHAN_0, NULL))
++	if (!WPAD_ReadPending(joystick->index, NULL))
 +		return;
 +	data = WPAD_Data(joystick->index);
 +	changed = data->btns_d | data->btns_u;
@@ -1409,10 +1409,10 @@ index 000000000..59288fb44
 +}
 diff --git a/src/main/wii/SDL_wii_main.c b/src/main/wii/SDL_wii_main.c
 new file mode 100644
-index 000000000..273d56433
+index 000000000..7cfc72400
 --- /dev/null
 +++ b/src/main/wii/SDL_wii_main.c
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,76 @@
 +/* Include the SDL main definition header */
 +#include "SDL_main.h"
 +#undef main
@@ -1453,8 +1453,6 @@ index 000000000..273d56433
 +{
 +	TerminateRequested = 0;
 +	SDL_Quit();
-+	printf("about to exit.\n");
-+	while(1);
 +	exit(1);
 +}
 +void Terminate()
@@ -2075,10 +2073,10 @@ index 000000000..313544ca5
 +typedef Uint32 SYS_ThreadHandle;
 diff --git a/src/timer/ogc/SDL_systimer.c b/src/timer/ogc/SDL_systimer.c
 new file mode 100644
-index 000000000..03fa76445
+index 000000000..931b8e8e9
 --- /dev/null
 +++ b/src/timer/ogc/SDL_systimer.c
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,105 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2006 Sam Lantinga
@@ -2112,13 +2110,16 @@ index 000000000..03fa76445
 +
 +#include <ogcsys.h>
 +
++static Uint64 start;
++
 +void SDL_StartTicks(void)
 +{
++	start = gettime();
 +}
 +
 +Uint32 SDL_GetTicks (void)
 +{
-+	const Uint64 ticks	= gettime();
++	const Uint64 ticks	= gettime() - start;
 +	const Uint64 ms		= ticks / TB_TIMER_CLOCK;
 +	return ms;
 +}
