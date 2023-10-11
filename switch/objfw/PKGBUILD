@@ -1,0 +1,40 @@
+# Maintainer: Jonathan Schleifer <js@nil.im>
+pkgname=switch-objfw
+pkgver=1.0.4
+pkgrel=1
+pkgdesc="Portable, lightweight framework for the Objective-C language"
+arch=('any')
+url="https://objfw.nil.im/"
+license=('custom:QPL' 'GPL3' 'GPL2')
+source=("objfw-$pkgver.tar.gz::https://objfw.nil.im/downloads/objfw-$pkgver.tar.gz")
+sha256sums=(c62c61fc3f1b2d5c1d78369c602a6e82b32ade5c8ec0e9c410646d1554bf1e26)
+groups=('switch-portlibs')
+
+build() {
+  export DEVKITPRO=/opt/devkitpro
+  export DEVKITA64="$DEVKITPRO/devkitA64"
+  export PORTLIBS_PREFIX="$DEVKITPRO/portlibs/switch"
+  export PATH="$DEVKITA64/bin:$DEVKITPRO/bin:$PATH"
+
+  cd "objfw-$pkgver"
+  ./configure --prefix="$PORTLIBS_PREFIX" --host=aarch64-none-elf \
+    --with-nintendo-switch --with-tls=none
+  make
+}
+
+package() {
+  cd "objfw-$pkgver"
+  make DESTDIR="$pkgdir/" install
+
+  for i in LICENSE.QPL LICENSE.GPLv3 LICENSE.GPLv2; do
+    install -D -m 644 "$i" "$pkgdir$PORTLIBS_PREFIX/licenses/$pkgname/$i"
+  done
+
+  # We don't want the tools - we're not gonna run them on a Switch.
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/objfw-new"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofarc"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofdns"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofhash"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofhttp"
+  rm -fr "$pkgdir$PORTLIBS_PREFIX/share"
+}
