@@ -3,7 +3,7 @@
 pkgbasename=libmpv
 pkgname=switch-${pkgbasename}
 pkgver=0.36.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Command line video player (library only)'
 arch=('any')
 url='https://mpv.io/'
@@ -12,7 +12,7 @@ options=(!strip libtool staticlibs)
 source=("${pkgbasename}-${pkgver}.tar.gz::https://github.com/mpv-player/mpv/archive/v${pkgver}.tar.gz" "mpv.patch")
 sha256sums=(
   '29abc44f8ebee013bb2f9fe14d80b30db19b534c679056e4851ceadf5a5e8bf6'
-  'afd7a950bf93cc417a7b46a6df40870ed6d0f7854feb2d4d64630d9769141a7a'
+  'f8c99be60dc3ddbc885d1c03c066bb0d48259662e16d55c0dee57a7bf8bb6047'
 )
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 depends=('switch-sdl2' 'switch-ffmpeg' 'switch-mesa')
