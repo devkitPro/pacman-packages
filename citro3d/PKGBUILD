@@ -3,7 +3,7 @@
 
 pkgname=('citro3d')
 pkgver=1.7.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Nintendo 3DS gpu library."
 arch=('any')
 license=('custom')
@@ -27,5 +27,5 @@ package() {
   make -C $srcdir/${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('47613b860d45c616852c5fd6e75a9c036f9558ecf2d8ec585a39e7b96207419a')
-sha256sums=('9e1efb16254c75d124adcf29b834fd5ebfd72efa13f218747f8f6cc1e1df2c77')
+
+sha256sums=('c920515a791442e81e0c2c8867dde81bf14aca17eacb2709b4a3a3c61699250c')
