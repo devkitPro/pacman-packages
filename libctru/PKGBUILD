@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libctru')
-pkgver=2.2.2
-pkgrel=2
+pkgver=2.3.0
+pkgrel=1
 pkgdesc="Nintendo 3DS userland library."
 arch=('any')
 license=('custom')
@@ -10,18 +10,10 @@ url="http://github.com/devkitPro/${pkgname}"
 options=(!strip libtool staticlibs)
 source=(
   ${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz
-  ${pkgname}-${pkgver}.patch
 )
 depends=('devkitARM')
 
 groups=('3ds-dev')
-
-prepare() {
-
-  cd ${srcdir}/${pkgname}-${pkgver}
-  patch -Np1 < ${srcdir}/${pkgname}-${pkgver}.patch
-
-}
 
 build() {
 
@@ -37,5 +29,4 @@ package() {
 
 }
 
-sha256sums=('e1c0e24eefef6786a652cd29c9122dc869c7bae717638bb05f8382b1cd23476f'
-            'ee09e9f613b2930caa49ca871a8994baffca8906f4e59e599e9419e5b3285dfd')
+sha256sums=('2e6b501d9bf1a47ac97326bf3b964d0713d6cc91dfd42bc7c9619469ec8266df')
