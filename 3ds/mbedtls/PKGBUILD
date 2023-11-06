@@ -3,7 +3,7 @@
 
 _realname=mbedtls
 pkgname=3ds-${_realname}
-pkgver=2.28.3
+pkgver=2.28.5
 pkgrel=1
 pkgdesc='An open source, portable, easy to use, readable and flexible SSL library (for Nintendo 3DS homebrew development)'
 arch=('any')
@@ -57,3 +57,6 @@ package() {
   cp -v LICENSE "$pkgdir"$PORTLIBS_PREFIX/licenses/$pkgname 
 
 }
+
+sha256sums=('849e86b626e42ded6bf67197b64aa771daa54e2a7e2868dc67e1e4711959e5e3'
+            'c9e78393571d9579922e1cf442ad520dc29d605a0953ee23dcb182139206e9a2')

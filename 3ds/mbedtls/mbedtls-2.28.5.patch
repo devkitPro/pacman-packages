@@ -1,7 +1,8 @@
-diff -NBaur mbedtls-2.28.3.orig/library/entropy.c mbedtls-2.28.3/library/entropy.c
---- mbedtls-2.28.3.orig/library/entropy.c	2023-03-24 15:54:53
-+++ mbedtls-2.28.3/library/entropy.c	2023-04-17 23:23:14
-@@ -105,6 +105,19 @@
+diff --git a/library/entropy.c b/library/entropy.c
+index e9a7ae63d..b572edd2f 100644
+--- a/library/entropy.c
++++ b/library/entropy.c
+@@ -107,6 +107,19 @@ void mbedtls_entropy_init(mbedtls_entropy_context *ctx)
  #endif /* MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES */
  }
  
@@ -21,9 +22,10 @@ diff -NBaur mbedtls-2.28.3.orig/library/entropy.c mbedtls-2.28.3/library/entropy
  void mbedtls_entropy_free(mbedtls_entropy_context *ctx)
  {
      /* If the context was already free, don't call free() again.
-diff -NBaur mbedtls-2.28.3.orig/library/net_sockets.c mbedtls-2.28.3/library/net_sockets.c
---- mbedtls-2.28.3.orig/library/net_sockets.c	2023-03-24 15:54:53
-+++ mbedtls-2.28.3/library/net_sockets.c	2023-04-17 23:25:23
+diff --git a/library/net_sockets.c b/library/net_sockets.c
+index 2c2a876b0..bf2925c97 100644
+--- a/library/net_sockets.c
++++ b/library/net_sockets.c
 @@ -33,7 +33,7 @@
  
  #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
@@ -33,7 +35,7 @@ diff -NBaur mbedtls-2.28.3.orig/library/net_sockets.c mbedtls-2.28.3/library/net
  #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
  #endif
  
-@@ -422,6 +422,7 @@
+@@ -423,6 +423,7 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
              }
  
              memcpy(client_ip, &addr4->sin_addr.s_addr, *ip_len);
@@ -41,7 +43,7 @@ diff -NBaur mbedtls-2.28.3.orig/library/net_sockets.c mbedtls-2.28.3/library/net
          } else {
              struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
              *ip_len = sizeof(addr6->sin6_addr.s6_addr);
-@@ -431,6 +432,7 @@
+@@ -432,6 +433,7 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
              }
  
              memcpy(client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
