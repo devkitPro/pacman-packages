@@ -2,8 +2,8 @@
 # Contributor: Elouan Martinet <exa@elou.world>
 
 pkgname=3ds-curl
-pkgver=7.69.1
-pkgrel=3
+pkgver=8.4.0
+pkgrel=1
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://curl.haxx.se'
@@ -28,10 +28,19 @@ build() {
   patch -Np1 -i $srcdir/curl-${pkgver}.patch
 
   ./configure CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LIBS="-lctru" \
-    --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
-    --disable-shared --enable-static --disable-ipv6 --disable-unix-sockets \
-    --disable-manual --disable-ntlm-wb --disable-threaded-resolver \
-    --with-mbedtls=$PORTLIBS_PREFIX
+    --prefix=${PORTLIBS_PREFIX} \
+    --host=arm-none-eabi \
+    --disable-shared \
+    --enable-static \
+    --disable-ipv6 \
+    --disable-unix-sockets \
+    --disable-threaded-resolver \
+    --disable-manual \
+    --disable-pthreads \
+    --disable-socketpair \
+    --disable-ntlm-wb \
+    --with-mbedtls=${PORTLIBS_PREFIX} \
+    --with-ca-bundle=sdmc:/config/ssl/cacert.pem
 
   make -C lib
 }
@@ -49,3 +58,5 @@ package() {
 
   install -m644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
 }
+sha256sums=('16c62a9c4af0f703d28bda6d7bbf37ba47055ad3414d70dec63e2e6336f2a82d'
+            'e41d19d24631f3dce4a0e1c5f9fd92c36f4ddd803d07a943507dab525813ecbe')
