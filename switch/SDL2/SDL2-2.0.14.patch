@@ -244,7 +244,7 @@ index b9b9eb620..6f2f02df7 100644
  
  if(VIDEO_VULKAN)
 diff --git a/configure b/configure
-index cdb12bd02..0465c4d60 100755
+index cdb12bd02..80aeb2e2a 100755
 --- a/configure
 +++ b/configure
 @@ -768,6 +768,7 @@ infodir
@@ -317,7 +317,7 @@ index cdb12bd02..0465c4d60 100755
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -fPIC"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
-+        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lglapi -ldrm_nouveau -lnx"
++        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lstdc++ -lglapi -ldrm_nouveau -lnx"
 +
 +        CheckDeclarationAfterStatement
 +        CheckClockGettime
@@ -390,7 +390,7 @@ index cdb12bd02..0465c4d60 100755
          as_fn_error $? "
  *** Unsupported host:  Please add to configure.ac
 diff --git a/configure.ac b/configure.ac
-index b7e519b8f..74c7c4f64 100644
+index b7e519b8f..e28bfd1b3 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -4230,6 +4230,63 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
@@ -405,7 +405,7 @@ index b7e519b8f..74c7c4f64 100644
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -fPIC"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
-+        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lglapi -ldrm_nouveau -lnx"
++        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lstdc++ -lglapi -ldrm_nouveau -lnx"
 +
 +        CheckDeclarationAfterStatement
 +        CheckClockGettime
