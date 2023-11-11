@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitarm-cmake
-pkgver=1.2.1
+pkgver=1.2.2
 pkgrel=1
 pkgdesc="CMake support files for devkitARM"
 arch=('any')
@@ -21,8 +21,8 @@ depends=('dkp-cmake-common-utils')
 sha256sums=('f1029f9a04b2e543e5b49255fe501839dabe7f80e626dca0196531de744704db'
             '49957ece046e578ae15cecf5ff87af501c50034af0d6a4f972454917255a0932'
             'a49c325d3a02425bfa9898b251232a3f3c5cce11a7edbf9adff9f140b02880b1'
-            'ffcdeec2e8dffe95c6f12d41a588b5a2afc5b188a8706b0fac4dce38f1e4c050'
-            '57c8e8a829031053b28c65dad5db7348de2c4735e70561b9fc2fa570f9508821')
+            '0892748da89275191bba16b747faed6361b4f1fd09d2d3641160b44dc0b3a8e5'
+            'f114ef69e2b853237b8d1450c603a1fc64c99cca99c8606aae568951cee506c8')
 
 package() {
 

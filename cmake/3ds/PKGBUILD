@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=3ds-cmake
-pkgver=1.5.0
+pkgver=1.5.1
 pkgrel=1
 pkgdesc="CMake support for Nintendo 3DS"
 arch=('any')
@@ -14,11 +14,9 @@ options=('!strip')
 depends=('devkitarm-cmake' '3dstools' 'picasso' 'tex3ds' '3ds-pkg-config')
 groups=('3ds-dev')
 
-sha256sums=(
-  '80bdd830820bfafc3b56944d26179f3399a4f54baea2ecc35e9fedab93a0ef8d'  # 3DS.cmake
-  '05ec82ade3cfb4cfe94852c1d51984d2d4b8fdb9bec5ee9ded31195d847614ae'  # Nintendo3DS.cmake
-  'f4bbf2fab22c7ecd091fb755464795e915a4f46269ae15a094bce7c21ddf2aa2'  # arm-none-eabi-cmake
-)
+sha256sums=('b60cadbc5b3f1647d107215309698f862ef0a06b3a8057b729b4cb7ff77e1c45'
+            '63bba1bc5b65a61797d07fa8bbf8dc8ac135920db77d00ee1446d1c72100eabb'
+            'f4bbf2fab22c7ecd091fb755464795e915a4f46269ae15a094bce7c21ddf2aa2')
 
 package() {
 
