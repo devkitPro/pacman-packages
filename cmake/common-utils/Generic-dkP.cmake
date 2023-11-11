@@ -30,7 +30,7 @@ macro(__dkp_init_platform_settings platform)
 		endif()
 	endforeach()
 
-	set(CMAKE_ASM_FLAGS_INIT "${CMAKE_ASM_FLAGS_INIT} -x assembler-with-cpp")
+	string(APPEND CMAKE_ASM_FLAGS_INIT " -x assembler-with-cpp")
 
 	if(NOT DKP_PLATFORM_BOOTSTRAP)
 		set(CMAKE_EXE_LINKER_FLAGS_INIT "${${platform}_ARCH_SETTINGS} ${${platform}_LINKER_FLAGS}")

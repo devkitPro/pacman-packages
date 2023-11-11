@@ -29,15 +29,15 @@ function(dkp_add_embedded_binary_library target)
 			endif()
 
 			add_custom_command(
-				OUTPUT "${genfolder}/${basename}.s" "${genfolder}/${basename}.h"
+				OUTPUT "${genfolder}/${basename}.S" "${genfolder}/${basename}.h"
 				COMMAND ${CMAKE_COMMAND} -E make_directory "${genfolder}"
-				COMMAND ${DKP_BIN2S} -a ${DKP_BIN2S_ALIGNMENT} -H "${genfolder}/${basename}.h" "${infile}" > "${genfolder}/${basename}.s"
+				COMMAND ${DKP_BIN2S} -a ${DKP_BIN2S_ALIGNMENT} -H "${genfolder}/${basename}.h" "${infile}" > "${genfolder}/${basename}.S"
 				DEPENDS ${indeps}
 				COMMENT "Generating binary embedding source for ${inname}"
 			)
 
-			list(APPEND intermediates "${genfolder}/${basename}.s" "${genfolder}/${basename}.h")
-			set_source_files_properties("${genfolder}/${basename}.s" PROPERTIES LANGUAGE "${lang}")
+			list(APPEND intermediates "${genfolder}/${basename}.S" "${genfolder}/${basename}.h")
+			set_source_files_properties("${genfolder}/${basename}.S" PROPERTIES LANGUAGE "${lang}")
 		endforeach()
 	endforeach()
 
