@@ -28,6 +28,10 @@ __dkp_init_platform_settings(WUT)
 function(wut_create_rpl target)
 	cmake_parse_arguments(PARSE_ARGV 1 ELF2RPL "IS_RPX" "" "")
 
+	if (NOT WUT_ELF2RPL_EXE)
+		message(FATAL_ERROR "Could not find elf2rpl: try installing wut-tools")
+	endif()
+
 	set(ELF2RPL_FLAGS "")
 	if(ELF2RPL_IS_RPX)
 		# Do nothing - the defaults are good for RPX
@@ -58,6 +62,10 @@ endfunction()
 
 function(wut_create_wuhb target)
 	cmake_parse_arguments(PARSE_ARGV 1 WUHBTOOL "" "TARGET;OUTPUT;CONTENT;NAME;SHORTNAME;AUTHOR;ICON;TVSPLASH;DRCSPLASH" "")
+
+	if (NOT WUT_WUHBTOOL_EXE)
+		message(FATAL_ERROR "Could not find wuhbtool: try installing wut-tools")
+	endif()
 
 	if(DEFINED WUHBTOOL_TARGET)
 		set(intarget "${WUHBTOOL_TARGET}")
@@ -150,6 +158,14 @@ endfunction()
 function(wut_add_exports target exports_file)
 	get_filename_component(exports_file "${exports_file}" ABSOLUTE)
 	get_target_property(RPL_BINARY_DIR ${target} BINARY_DIR)
+
+	if (NOT WUT_RPLEXPORTGEN_EXE)
+		message(FATAL_ERROR "Could not find rplexportgen: try installing wut-tools")
+	endif()
+
+	if (NOT WUT_RPLIMPORTGEN_EXE)
+		message(FATAL_ERROR "Could not find rplimportgen: try installing wut-tools")
+	endif()
 
 	__dkp_asm_lang(lang wut_add_exports)
 	set(genfolder "${RPL_BINARY_DIR}/.dkp-generated")

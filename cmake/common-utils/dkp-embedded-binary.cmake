@@ -9,6 +9,10 @@ function(dkp_add_embedded_binary_library target)
 		message(FATAL_ERROR "dkp_add_embedded_binary_library: must provide at least one input file")
 	endif()
 
+	if (NOT DKP_BIN2S)
+		message(FATAL_ERROR "Could not find bin2s: try installing general-tools")
+	endif()
+
 	__dkp_asm_lang(lang dkp_add_embedded_binary_library)
 	set(genfolder "${CMAKE_CURRENT_BINARY_DIR}/.dkp-generated/${target}")
 	set(intermediates "")

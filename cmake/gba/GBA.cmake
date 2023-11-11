@@ -39,8 +39,5 @@ if (NOT PKG_CONFIG_EXECUTABLE)
 endif()
 
 find_program(GBA_GBAFIX_EXE NAMES gbafix HINTS "${DEVKITPRO}/tools/bin")
-if (NOT GBA_GBAFIX_EXE)
-	message(FATAL_ERROR "Could not find gbafix: try installing gba-tools")
-endif()
 
 include(dkp-gba-ds-common)

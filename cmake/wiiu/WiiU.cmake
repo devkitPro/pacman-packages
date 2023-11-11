@@ -22,21 +22,6 @@ if (NOT PKG_CONFIG_EXECUTABLE)
 endif()
 
 find_program(WUT_ELF2RPL_EXE NAMES elf2rpl HINTS "${DEVKITPRO}/tools/bin")
-if (NOT WUT_ELF2RPL_EXE)
-	message(FATAL_ERROR "Could not find elf2rpl: try installing wut-tools")
-endif()
-
 find_program(WUT_WUHBTOOL_EXE NAMES wuhbtool HINTS "${DEVKITPRO}/tools/bin")
-if (NOT WUT_WUHBTOOL_EXE)
-	message(FATAL_ERROR "Could not find wuhbtool: try installing wut-tools")
-endif()
-
 find_program(WUT_RPLEXPORTGEN_EXE NAMES rplexportgen HINTS "${DEVKITPRO}/tools/bin")
-if (NOT WUT_RPLEXPORTGEN_EXE)
-	message(FATAL_ERROR "Could not find rplexportgen: try installing wut-tools")
-endif()
-
 find_program(WUT_RPLIMPORTGEN_EXE NAMES rplimportgen HINTS "${DEVKITPRO}/tools/bin")
-if (NOT WUT_RPLIMPORTGEN_EXE)
-	message(FATAL_ERROR "Could not find rplimportgen: try installing wut-tools")
-endif()

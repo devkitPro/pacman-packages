@@ -24,6 +24,9 @@ __dkp_init_platform_settings(CTR)
 
 function(ctr_generate_smdh)
 	cmake_parse_arguments(PARSE_ARGV 0 SMDH "" "OUTPUT;NAME;DESCRIPTION;AUTHOR;ICON" "")
+	if (NOT CTR_SMDHTOOL_EXE)
+		message(FATAL_ERROR "Could not find smdhtool: try installing 3ds-tools")
+	endif()
 	if (NOT DEFINED SMDH_OUTPUT)
 		if(DEFINED SMDH_UNPARSED_ARGUMENTS)
 			list(GET SMDH_UNPARSED_ARGUMENTS 0 SMDH_OUTPUT)
@@ -60,6 +63,10 @@ endfunction()
 
 function(ctr_create_3dsx target)
 	cmake_parse_arguments(PARSE_ARGV 1 CTR_3DSXTOOL "NOSMDH" "TARGET;OUTPUT;SMDH;ROMFS" "")
+
+	if (NOT CTR_3DSXTOOL_EXE)
+		message(FATAL_ERROR "Could not find 3dsxtool: try installing 3ds-tools")
+	endif()
 
 	if(DEFINED CTR_3DSXTOOL_TARGET)
 		set(intarget "${CTR_3DSXTOOL_TARGET}")
@@ -131,6 +138,10 @@ endfunction()
 function(ctr_add_shader_library target)
 	cmake_parse_arguments(PARSE_ARGV 1 CTR_PICASSO "" "OUTPUT" "SOURCES")
 
+	if (NOT CTR_PICASSO_EXE)
+		message(FATAL_ERROR "Could not find picasso: try installing picasso")
+	endif()
+
 	if(DEFINED CTR_PICASSO_OUTPUT)
 		get_filename_component(CTR_PICASSO_OUTPUT "${CTR_PICASSO_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 	else()
@@ -158,6 +169,10 @@ endfunction()
 
 function(ctr_add_graphics_target target kind)
 	cmake_parse_arguments(PARSE_ARGV 2 CTR_TEX3DS "" "OUTPUT" "INPUTS;OPTIONS")
+
+	if (NOT CTR_TEX3DS_EXE)
+		message(FATAL_ERROR "Could not find tex3ds: try installing tex3ds")
+	endif()
 
 	if(DEFINED CTR_TEX3DS_OUTPUT)
 		get_filename_component(CTR_TEX3DS_OUTPUT "${CTR_TEX3DS_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")

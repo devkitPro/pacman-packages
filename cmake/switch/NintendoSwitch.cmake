@@ -27,6 +27,9 @@ __dkp_init_platform_settings(NX)
 
 function(nx_generate_nacp)
 	cmake_parse_arguments(PARSE_ARGV 0 NACP "" "OUTPUT;NAME;AUTHOR;VERSION" "")
+	if (NOT NX_NACPTOOL_EXE)
+		message(FATAL_ERROR "Could not find nacptool: try installing switch-tools")
+	endif()
 	if (NOT DEFINED NACP_OUTPUT)
 		if(DEFINED NACP_UNPARSED_ARGUMENTS)
 			list(GET NACP_UNPARSED_ARGUMENTS 0 NACP_OUTPUT)
@@ -58,6 +61,10 @@ endfunction()
 
 function(nx_create_nro target)
 	cmake_parse_arguments(PARSE_ARGV 1 ELF2NRO "NOICON;NONACP" "TARGET;OUTPUT;ICON;NACP;ROMFS" "")
+
+	if (NOT NX_ELF2NRO_EXE)
+		message(FATAL_ERROR "Could not find elf2nro: try installing switch-tools")
+	endif()
 
 	if(DEFINED ELF2NRO_TARGET)
 		set(intarget "${ELF2NRO_TARGET}")
@@ -146,6 +153,18 @@ endfunction()
 function(nx_create_exefs target)
 	cmake_parse_arguments(PARSE_ARGV 1 NX_EXEFS "" "TARGET;OUTPUT;CONFIG" "")
 
+	if (NOT NX_ELF2NSO_EXE)
+		message(FATAL_ERROR "Could not find elf2nso: try installing switch-tools")
+	endif()
+
+	if (NOT NX_NPDMTOOL_EXE)
+		message(FATAL_ERROR "Could not find npdmtool: try installing switch-tools")
+	endif()
+
+	if (NOT NX_BUILD_PFS0_EXE)
+		message(FATAL_ERROR "Could not find build_pfs0: try installing switch-tools")
+	endif()
+
 	if(DEFINED NX_EXEFS_TARGET)
 		set(intarget "${NX_EXEFS_TARGET}")
 		set(outtarget "${target}")
@@ -209,6 +228,10 @@ endfunction()
 function(nx_create_kip target)
 	cmake_parse_arguments(PARSE_ARGV 1 NX_ELF2KIP "" "TARGET;OUTPUT;CONFIG" "")
 
+	if (NOT NX_ELF2KIP_EXE)
+		message(FATAL_ERROR "Could not find elf2kip: try installing switch-tools")
+	endif()
+
 	if(DEFINED NX_ELF2KIP_TARGET)
 		set(intarget "${NX_ELF2KIP_TARGET}")
 		set(outtarget "${target}")
@@ -249,6 +272,10 @@ endfunction()
 
 function(nx_add_shader_program target source type)
 	cmake_parse_arguments(PARSE_ARGV 3 NX_UAM "" "OUTPUT" "")
+
+	if (NOT NX_UAM_EXE)
+		message(FATAL_ERROR "Could not find uam: try installing uam")
+	endif()
 
 	if(DEFINED NX_UAM_OUTPUT)
 		get_filename_component(NX_UAM_OUTPUT "${NX_UAM_OUTPUT}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_BINARY_DIR}")

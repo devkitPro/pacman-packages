@@ -8,6 +8,10 @@ macro(__grit_parse_options_common)
 	set(GRIT_DEPS "")
 	set(GRIT_RENAME_CMDS "")
 
+	if (NOT GRIT_EXE)
+		message(FATAL_ERROR "Could not find grit: try installing grit")
+	endif()
+
 	if(GRIT_TEXTURE)
 		set(GRIT_BITMAP TRUE)
 		list(APPEND GRIT_ARGS -gb -gx)
@@ -131,6 +135,10 @@ function(mm_add_soundbank_target target)
 
 	set(MMUTIL_ARGS "")
 	set(MMUTIL_OUTPUTS "")
+
+	if (NOT MMUTIL_EXE)
+		message(FATAL_ERROR "Could not find mmutil: try installing mmutil")
+	endif()
 
 	if(NINTENDO_GBA)
 		# Nothing on purpose

@@ -35,6 +35,10 @@ __dkp_init_platform_settings(GBA)
 function(gba_create_rom target)
 	cmake_parse_arguments(PARSE_ARGV 1 GBA "MULTIBOOT;PAD" "OUTPUT;TITLE;GAMECODE;MAKERCODE;VERSION;DEBUG" "")
 
+	if (NOT GBA_GBAFIX_EXE)
+		message(FATAL_ERROR "Could not find gbafix: try installing gba-tools")
+	endif()
+
 	if(NOT TARGET "${target}")
 		message(FATAL_ERROR "gba_create_rom: target '${target}' not defined")
 	endif()

@@ -36,6 +36,10 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv5te")
 function(nds_create_rom target)
 	cmake_parse_arguments(PARSE_ARGV 1 NDSTOOL "" "OUTPUT;ARM9;ARM7;NAME;SUBTITLE1;SUBTITLE2;ICON;NITROFS" "FLAGS")
 
+	if (NOT NDS_NDSTOOL_EXE)
+		message(FATAL_ERROR "Could not find ndstool: try installing ndstool")
+	endif()
+
 	if(DEFINED NDSTOOL_ARM9)
 		set(intarget "${NDSTOOL_ARM9}")
 		set(outtarget "${target}")

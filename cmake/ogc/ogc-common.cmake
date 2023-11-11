@@ -30,16 +30,5 @@ if (NOT PKG_CONFIG_EXECUTABLE)
 endif()
 
 find_program(ELF2DOL_EXE NAMES elf2dol HINTS "${DEVKITPRO}/tools/bin")
-if (NOT ELF2DOL_EXE)
-    message(FATAL_ERROR "Could not find elf2dol: try installing gamecube-tools")
-endif()
-
 find_program(GCDSPTOOL_EXE NAMES gcdsptool HINTS "${DEVKITPRO}/tools/bin")
-if (NOT GCDSPTOOL_EXE)
-    message(FATAL_ERROR "Could not find gcdsptool: try installing gamecube-tools")
-endif()
-
 find_program(GXTEXCONV_EXE NAMES gxtexconv HINTS "${DEVKITPRO}/tools/bin")
-if (NOT GXTEXCONV_EXE)
-    message(FATAL_ERROR "Could not find gxtexconv: try installing gamecube-tools")
-endif()

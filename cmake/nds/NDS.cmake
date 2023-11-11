@@ -25,9 +25,6 @@ if (NOT PKG_CONFIG_EXECUTABLE)
 endif()
 
 find_program(NDS_NDSTOOL_EXE NAMES ndstool HINTS "${DEVKITPRO}/tools/bin")
-if (NOT NDS_NDSTOOL_EXE)
-	message(FATAL_ERROR "Could not find ndstool: try installing ndstool")
-endif()
 
 find_file(NDS_DEFAULT_ICON NAMES icon.bmp HINTS "${DEVKITPRO}/libnds" NO_CMAKE_FIND_ROOT_PATH)
 find_file(NDS_DEFAULT_ARM7 NAMES default.elf HINTS "${DEVKITPRO}/libnds" NO_CMAKE_FIND_ROOT_PATH)

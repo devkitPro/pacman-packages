@@ -25,23 +25,8 @@ if (NOT PKG_CONFIG_EXECUTABLE)
 endif()
 
 find_program(CTR_SMDHTOOL_EXE NAMES smdhtool HINTS "${DEVKITPRO}/tools/bin")
-if (NOT CTR_SMDHTOOL_EXE)
-	message(FATAL_ERROR "Could not find smdhtool: try installing 3ds-tools")
-endif()
-
 find_program(CTR_3DSXTOOL_EXE NAMES 3dsxtool HINTS "${DEVKITPRO}/tools/bin")
-if (NOT CTR_3DSXTOOL_EXE)
-	message(FATAL_ERROR "Could not find 3dsxtool: try installing 3ds-tools")
-endif()
-
 find_program(CTR_PICASSO_EXE NAMES picasso HINTS "${DEVKITPRO}/tools/bin")
-if (NOT CTR_PICASSO_EXE)
-	message(FATAL_ERROR "Could not find picasso: try installing picasso")
-endif()
-
 find_program(CTR_TEX3DS_EXE NAMES tex3ds HINTS "${DEVKITPRO}/tools/bin")
-if (NOT CTR_TEX3DS_EXE)
-	message(FATAL_ERROR "Could not find tex3ds: try installing tex3ds")
-endif()
 
 find_file(CTR_DEFAULT_ICON NAMES default_icon.png HINTS "${CTR_ROOT}" NO_CMAKE_FIND_ROOT_PATH)

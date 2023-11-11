@@ -49,13 +49,7 @@ macro(__dkp_toolchain name arch triplet)
 		${DEVKITPRO}/tools
 	)
 
-	find_program(DKP_BIN2S NAMES bin2s HINTS "${DEVKITPRO}/tools/bin")
-	if (NOT DKP_BIN2S)
-		message(WARNING "Could not find bin2s: try installing general-tools")
-	endif()
-
 	set(TOOL_HINT ${DEVKITPRO}/${name}/bin)
-
 	find_program(CMAKE_ASM_COMPILER ${triplet}-gcc        HINTS ${TOOL_HINT})
 	find_program(CMAKE_C_COMPILER   ${triplet}-gcc        HINTS ${TOOL_HINT})
 	find_program(CMAKE_CXX_COMPILER ${triplet}-g++        HINTS ${TOOL_HINT})
@@ -66,6 +60,8 @@ macro(__dkp_toolchain name arch triplet)
 	find_program(DKP_OBJCOPY        ${triplet}-objcopy    HINTS ${TOOL_HINT})
 	find_program(DKP_NM             ${triplet}-nm         HINTS ${TOOL_HINT})
 
+	set(TOOL_HINT ${DEVKITPRO}/tools/bin)
+	find_program(DKP_BIN2S NAMES bin2s HINTS ${TOOL_HINT})
 endmacro()
 
 macro(__dkp_platform_prefix)

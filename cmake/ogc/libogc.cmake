@@ -20,6 +20,10 @@ __dkp_init_platform_settings(OGC)
 # Platform-specific helper utilities
 
 function(ogc_create_dol target)
+    if (NOT ELF2DOL_EXE)
+        message(FATAL_ERROR "Could not find elf2dol: try installing gamecube-tools")
+    endif()
+
     __dkp_target_derive_name(DOL_OUTPUT ${target} ".dol")
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${ELF2DOL_EXE}" "$<TARGET_FILE:${target}>" "${DOL_OUTPUT}"
