@@ -1,0 +1,44 @@
+# Contributor: Otorhin <github@otorh.in>
+
+pkgname=switch-libavif
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="Library for encoding and decoding .avif files"
+arch=('any')
+url="https://github.com/AOMediaCodec/libavif"
+license=("zlib")
+options=(!strip libtool staticlibs)
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+depends=(
+  'switch-dav1d'
+)
+source=("${url}/archive/refs/tags/v${pkgver}.tar.gz" "CMakeLists.txt.patch")
+sha256sums=('398fe7039ce35db80fe7da8d116035924f2c02ea4a4aa9f4903df6699287599c'
+            'a08d3a263c49aea9c8ad8a22b5c462f708c1247e1ab67d55466669ea4ecc370e')
+groups=('switch-portlibs')
+DEVKITPRO=/opt/devkitpro
+
+build() {
+  cd libavif-$pkgver
+
+  source $DEVKITPRO/switchvars.sh
+
+  patch -Np1 -i "$srcdir"/CMakeLists.txt.patch CMakeLists.txt
+
+  aarch64-none-elf-cmake -G"Unix Makefiles" -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" -DCMAKE_AR="$DEVKITPRO/devkitA64/bin/aarch64-none-elf-gcc-ar" .
+  make
+}
+
+package() {
+  cd libavif-$pkgver
+
+  source $DEVKITPRO/switchvars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # add our static libs
+  echo "Requires.private: dav1d" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/libavif.pc"
+
+  # License
+  install -Dm644 "LICENSE" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE"
+}
