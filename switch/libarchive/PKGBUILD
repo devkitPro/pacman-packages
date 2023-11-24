@@ -13,8 +13,8 @@ source=(
  "libarchive-3.7.2.patch"
 )
 sha256sums=(
- 'ed2dbd6954792b2c054ccf8ec4b330a54b85904a80cef477a1c74643ddafa0ce'
- '85e8b67dcae86ea865bd6eb6a16c806744ed0a2580d82b035508752bdc87ecd4'
+ 'df404eb7222cf30b4f8f93828677890a2986b66ff8bf39dac32a804e96ddf104'
+ '104117a234ad8a6ab6ffb7201828be6cf4063d52a712abc2034B2dd42d2845d1'
 )
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 depends=('switch-bzip2' 'switch-zlib' 'switch-liblzma' 'switch-lz4' 'switch-libexpat')
