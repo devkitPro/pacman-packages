@@ -1,0 +1,89 @@
+diff --git a/libarchive/archive_read_disk_posix.c b/libarchive/archive_read_disk_posix.c
+index 76a4fa44..37835cd3 100644
+--- a/libarchive/archive_read_disk_posix.c
++++ b/libarchive/archive_read_disk_posix.c
+@@ -98,8 +98,10 @@
+ #include "archive_read_disk_private.h"
+ 
+ #ifndef HAVE_FCHDIR
++#ifndef __SWITCH__
+ #error fchdir function required.
+ #endif
++#endif
+ #ifndef O_BINARY
+ #define O_BINARY	0
+ #endif
+diff --git a/libarchive/archive_read_support_filter_program.c b/libarchive/archive_read_support_filter_program.c
+index 0482c57c..af930e88 100644
+--- a/libarchive/archive_read_support_filter_program.c
++++ b/libarchive/archive_read_support_filter_program.c
+@@ -57,6 +57,13 @@
+ #include "archive_read_private.h"
+ #include "filter_fork.h"
+ 
++#ifndef __SWITCH__
++int 
++__archive_read_program(struct archive_read_filter *self, const char *cmd) {
++	return (ARCHIVE_OK);
++}
++#endif
++
+ 
+ #if ARCHIVE_VERSION_NUMBER < 4000000
+ /* Deprecated; remove in libarchive 4.0 */
+diff --git a/libarchive/archive_write_set_format_iso9660.c b/libarchive/archive_write_set_format_iso9660.c
+index 2a3ae07f..b93dadda 100644
+--- a/libarchive/archive_write_set_format_iso9660.c
++++ b/libarchive/archive_write_set_format_iso9660.c
+@@ -2178,9 +2178,11 @@ get_system_identitier(char *system_id, size_t size)
+ 	strncpy(system_id, "Windows", size-1);
+ 	system_id[size-1] = '\0';
+ #else
++#ifndef __SWITCH__
+ 	strncpy(system_id, "Unknown", size-1);
+ 	system_id[size-1] = '\0';
+ #endif
++#endif
+ }
+ 
+ static void
+@@ -2506,7 +2508,7 @@ get_gmoffset(struct tm *tm)
+ 
+ #if defined(HAVE__GET_TIMEZONE)
+ 	_get_timezone(&offset);
+-#elif defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
++#elif defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__) || defined(__SWITCH__)
+ 	offset = _timezone;
+ #else
+ 	offset = timezone;
+diff --git a/libarchive_fe/passphrase.c b/libarchive_fe/passphrase.c
+index b6dff486..338e31a5 100644
+--- a/libarchive_fe/passphrase.c
++++ b/libarchive_fe/passphrase.c
+@@ -129,9 +129,12 @@ readpassphrase(const char *prompt, char *buf, size_t bufsiz, int flags)
+ #endif
+ #include <signal.h>
+ #include <string.h>
++#ifndef __SWITCH__
+ #include <termios.h>
++#endif
+ #include <unistd.h>
+ 
++#ifndef __SWITCH__
+ #ifndef _PATH_TTY
+ #define _PATH_TTY "/dev/tty"
+ #endif
+@@ -316,7 +319,12 @@ restart:
+ }
+ #endif /* _WIN32 && !__CYGWIN__ */
+ #endif /* HAVE_READPASSPHRASE */
+-
++#else
++static char* readpassphrase(const char *prompt, char *buf, size_t bufsiz, int flags)
++{
++  return NULL;
++}
++#endif /* __SWITCH__ */
+ char *
+ lafe_readpassphrase(const char *prompt, char *buf, size_t bufsiz)
+ {
