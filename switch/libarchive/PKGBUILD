@@ -12,10 +12,7 @@ source=(
  "http://www.libarchive.org/downloads/libarchive-${pkgver}.tar.gz"
  "libarchive-3.7.2.patch"
 )
-sha256sums=(
- 'df404eb7222cf30b4f8f93828677890a2986b66ff8bf39dac32a804e96ddf104'
- '104117a234ad8a6ab6ffb7201828be6cf4063d52a712abc2034B2dd42d2845d1'
-)
+
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 depends=('switch-bzip2' 'switch-zlib' 'switch-liblzma' 'switch-lz4' 'switch-libexpat')
 groups=('switch-portlibs')
@@ -31,6 +28,7 @@ build() {
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static \
     --disable-bsdtar --disable-bsdcat \
+    --disable-bsdunzip \
     --disable-bsdcpio --disable-acl --without-xml2
 
   make
@@ -49,3 +47,5 @@ package() {
   rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }
 
+sha256sums=('df404eb7222cf30b4f8f93828677890a2986b66ff8bf39dac32a804e96ddf104'
+            '3600315b7a13d9fbf38c2ea8075420534a35014bd29968a68897bdf73481d81b')
