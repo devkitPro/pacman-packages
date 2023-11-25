@@ -2,8 +2,8 @@
 
 pkgname=switch-libarchive
 pkgver=3.7.2
-pkgrel=3
-pkgdesc='library that can create and read several streaming archive format (for Nintendo Switch homebrew development)'
+pkgrel=4
+pkgdesc='library that can create and read several streaming archive formats'
 arch=('any')
 url="https://www.libarchive.org"
 license=('Simplified BSD')
@@ -14,7 +14,7 @@ source=(
 )
 
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
-depends=('switch-bzip2' 'switch-zlib' 'switch-liblzma' 'switch-lz4' 'switch-libexpat')
+depends=('switch-bzip2' 'switch-zlib' 'switch-liblzma' 'switch-lz4' 'switch-libexpat' 'switch-libzstd')
 groups=('switch-portlibs')
 
 build() {
