@@ -2,7 +2,7 @@
 
 pkgname=switch-libarchive
 pkgver=3.7.2
-pkgrel=1
+pkgrel=3
 pkgdesc='library that can create and read several streaming archive format (for Nintendo Switch homebrew development)'
 arch=('any')
 url="https://www.libarchive.org"
@@ -28,8 +28,8 @@ build() {
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static \
     --disable-bsdtar --disable-bsdcat \
-    --disable-bsdunzip \
-    --disable-bsdcpio --disable-acl --without-xml2
+    --disable-bsdunzip --disable-bsdcpio --disable-acl \
+    --without-xml2 --without-openssl
 
   make
 }
@@ -48,4 +48,4 @@ package() {
 }
 
 sha256sums=('df404eb7222cf30b4f8f93828677890a2986b66ff8bf39dac32a804e96ddf104'
-            '3600315b7a13d9fbf38c2ea8075420534a35014bd29968a68897bdf73481d81b')
+            'ae03ec0e722e99534708432d83f907178f84d735a5df55fb3a19ad337966bab7')

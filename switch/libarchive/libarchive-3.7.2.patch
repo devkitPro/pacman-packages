@@ -1,8 +1,8 @@
 diff --git a/libarchive/archive_read_disk_posix.c b/libarchive/archive_read_disk_posix.c
-index 76a4fa44..37835cd3 100644
+index 8d5c32f0..0b57969d 100644
 --- a/libarchive/archive_read_disk_posix.c
 +++ b/libarchive/archive_read_disk_posix.c
-@@ -98,8 +98,10 @@
+@@ -99,8 +99,10 @@ __FBSDID("$FreeBSD$");
  #include "archive_read_disk_private.h"
  
  #ifndef HAVE_FCHDIR
@@ -14,23 +14,30 @@ index 76a4fa44..37835cd3 100644
  #define O_BINARY	0
  #endif
 diff --git a/libarchive/archive_read_support_filter_program.c b/libarchive/archive_read_support_filter_program.c
-index 0482c57c..af930e88 100644
+index 885b2c20..83ad505a 100644
 --- a/libarchive/archive_read_support_filter_program.c
 +++ b/libarchive/archive_read_support_filter_program.c
-@@ -57,6 +57,13 @@
+@@ -58,6 +58,13 @@ __FBSDID("$FreeBSD$");
  #include "archive_read_private.h"
  #include "filter_fork.h"
  
-+#ifndef __SWITCH__
-+int 
++#ifdef __SWITCH__
++int
 +__archive_read_program(struct archive_read_filter *self, const char *cmd) {
 +	return (ARCHIVE_OK);
 +}
-+#endif
++#else
 +
  
  #if ARCHIVE_VERSION_NUMBER < 4000000
  /* Deprecated; remove in libarchive 4.0 */
+@@ -494,3 +501,6 @@ program_filter_close(struct archive_read_filter *self)
+ 
+ 	return (e);
+ }
++
++#endif
++
 diff --git a/libarchive/archive_write_set_format_iso9660.c b/libarchive/archive_write_set_format_iso9660.c
 index 2a3ae07f..b93dadda 100644
 --- a/libarchive/archive_write_set_format_iso9660.c
@@ -57,10 +64,10 @@ index 2a3ae07f..b93dadda 100644
  #else
  	offset = timezone;
 diff --git a/libarchive_fe/passphrase.c b/libarchive_fe/passphrase.c
-index b6dff486..338e31a5 100644
+index 1cae6a7b..40168957 100644
 --- a/libarchive_fe/passphrase.c
 +++ b/libarchive_fe/passphrase.c
-@@ -129,9 +129,12 @@ readpassphrase(const char *prompt, char *buf, size_t bufsiz, int flags)
+@@ -131,9 +131,12 @@ readpassphrase(const char *prompt, char *buf, size_t bufsiz, int flags)
  #endif
  #include <signal.h>
  #include <string.h>
@@ -73,7 +80,7 @@ index b6dff486..338e31a5 100644
  #ifndef _PATH_TTY
  #define _PATH_TTY "/dev/tty"
  #endif
-@@ -316,7 +319,12 @@ restart:
+@@ -318,7 +321,12 @@ restart:
  }
  #endif /* _WIN32 && !__CYGWIN__ */
  #endif /* HAVE_READPASSPHRASE */
