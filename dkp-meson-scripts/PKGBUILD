@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-meson-scripts
-pkgver=1.0.1
-pkgrel=3
+pkgver=1.0.2
+pkgrel=1
 
 pkgdesc='makepkg helpers for devkitPro portlibs'
 
@@ -23,5 +23,5 @@ package() {
 
 }
 
-sha256sums=('75d285197c3d7d08ed11da397c67adab02e96e5e7f4f86b4d9eeb1987fb38958'
+sha256sums=('039d51cebb15ab7695a436344cbb0617c9c94d4d9a12758744d36e95acc851d6'
             '22e4636a04731745e1e4e8f7da92c66369a24bbe24c8434bdc1aa1d81fd3bb3a')

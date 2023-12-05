@@ -17,4 +17,4 @@ shift 2
 
 PORTLIBS_PREFIX=$(${SCRIPTDIR}/portlibs_prefix.sh ${PLATFORM})
 ${SCRIPTDIR}/meson-toolchain.sh ${PLATFORM} > ${CROSSFILE} || exit 1
-meson --buildtype=release --cross-file="${CROSSFILE}" --default-library=static --prefix="${PORTLIBS_PREFIX}" --libdir=lib "$@"
+meson setup --buildtype=plain --cross-file="${CROSSFILE}" --default-library=static --prefix="${PORTLIBS_PREFIX}" --libdir=lib "$@"
