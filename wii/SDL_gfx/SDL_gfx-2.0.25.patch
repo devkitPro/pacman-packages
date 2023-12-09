@@ -1,0 +1,13 @@
+--- SDL_gfx-2.0.25/SDL_rotozoom.c~	2023-12-09 21:24:48.317633493 +0000
++++ SDL_gfx-2.0.25/SDL_rotozoom.c	2023-12-09 21:23:31.163959705 +0000
+@@ -841,8 +841,8 @@
+ 	if (SDL_MUSTLOCK(dst)) {
+ 		SDL_LockSurface(dst);
+ 	}
+-	if (SDL_MUSTLOCK(dst)) {
+-		SDL_LockSurface(dst);
++	if (SDL_MUSTLOCK(src)) {
++		SDL_LockSurface(src);
+ 	}
+ 
+ 	/* Calculate int-per-row */
