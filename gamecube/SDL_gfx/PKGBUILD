@@ -2,7 +2,7 @@
 
 pkgname=gamecube-sdl_gfx
 pkgver=2.0.25
-pkgrel=2
+pkgrel=3
 pkgdesc="Graphics drawing primitives and other support functions wrapped up in an add-on, C-based library for the Simple Direct Media (SDL) cross-platform API layer"
 arch=('any')
 url="http://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/"
@@ -15,16 +15,18 @@ makedepends=(
  'gamecube-pkg-config'
  'dkp-toolchain-vars'
 )
-source=("https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-${pkgver}.tar.gz")
-groups=('gamecube-portlibs' 'gamecube-sdl-libs')
-sha256sums=(
-'556eedc06b6cf29eb495b6d27f2dcc51bf909ad82389ba2fa7bdc4dec89059c0'
+source=(
+  "https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-${pkgver}.tar.gz"
+  "SDL_gfx-${pkgver}.patch"
 )
+groups=('gamecube-portlibs' 'gamecube-sdl-libs')
 
 build() {
   cd SDL_gfx-$pkgver
 
-  source /opt/devkitpro/gamecubevars.sh
+  source /opt/devkitpro/cubevars.sh
+
+  patch -Np1 -i ${srcdir}/SDL_gfx-${pkgver}.patch
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static \
@@ -36,8 +38,10 @@ build() {
 package() {
   cd SDL_gfx-$pkgver
 
-  source /opt/devkitpro/gamecubevars.sh
+  source /opt/devkitpro/cubevars.sh
 
   make DESTDIR="$pkgdir" install
 
 }
+sha256sums=('556eedc06b6cf29eb495b6d27f2dcc51bf909ad82389ba2fa7bdc4dec89059c0'
+            'ef60f5376c358da65856892ae1dd438a84d661deb65abfd99ee4c36dc4be819d')
