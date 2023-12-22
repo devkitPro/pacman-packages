@@ -1,0 +1,79 @@
+From d5e53f90cbd1ae0e999ec66e4113558c024c904e Mon Sep 17 00:00:00 2001
+From: Dave Murphy <davem@devkitpro.org>
+Date: Fri, 22 Dec 2023 11:04:00 +0000
+Subject: [PATCH] fix mismatched function signatures
+
+---
+ lib/legacy/zstd_v06.c | 10 +++++-----
+ lib/legacy/zstd_v07.c |  4 ++--
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/lib/legacy/zstd_v06.c b/lib/legacy/zstd_v06.c
+index 175f7cc4..81ea07e8 100644
+--- a/lib/legacy/zstd_v06.c
++++ b/lib/legacy/zstd_v06.c
+@@ -789,7 +789,7 @@ typedef enum { BITv06_DStream_unfinished = 0,
+                /* 1,2,4,8 would be better for bitmap combinations, but slows down performance a bit ... :( */
+ 
+ MEM_STATIC size_t   BITv06_initDStream(BITv06_DStream_t* bitD, const void* srcBuffer, size_t srcSize);
+-MEM_STATIC size_t   BITv06_readBits(BITv06_DStream_t* bitD, unsigned nbBits);
++MEM_STATIC size_t   BITv06_readBits(BITv06_DStream_t* bitD, U32 nbBits);
+ MEM_STATIC BITv06_DStream_status BITv06_reloadDStream(BITv06_DStream_t* bitD);
+ MEM_STATIC unsigned BITv06_endOfDStream(const BITv06_DStream_t* bitD);
+ 
+@@ -798,7 +798,7 @@ MEM_STATIC unsigned BITv06_endOfDStream(const BITv06_DStream_t* bitD);
+ /*-****************************************
+ *  unsafe API
+ ******************************************/
+-MEM_STATIC size_t BITv06_readBitsFast(BITv06_DStream_t* bitD, unsigned nbBits);
++MEM_STATIC size_t BITv06_readBitsFast(BITv06_DStream_t* bitD, U32 nbBits);
+ /* faster, but works only if nbBits >= 1 */
+ 
+ 
+@@ -1770,10 +1770,10 @@ HUFv06_decompress() does the following:
+ 3. decode 1 or 4 segments in parallel using HUFv06_decompressSXn_usingDTable
+ */
+ size_t HUFv06_readDTableX2 (unsigned short* DTable, const void* src, size_t srcSize);
+-size_t HUFv06_readDTableX4 (unsigned* DTable, const void* src, size_t srcSize);
++size_t HUFv06_readDTableX4 (U32* DTable, const void* src, size_t srcSize);
+ 
+ size_t HUFv06_decompress4X2_usingDTable(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const unsigned short* DTable);
+-size_t HUFv06_decompress4X4_usingDTable(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const unsigned* DTable);
++size_t HUFv06_decompress4X4_usingDTable(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const U32* DTable);
+ 
+ 
+ /* single stream variants */
+@@ -1781,7 +1781,7 @@ size_t HUFv06_decompress1X2 (void* dst, size_t dstSize, const void* cSrc, size_t
+ size_t HUFv06_decompress1X4 (void* dst, size_t dstSize, const void* cSrc, size_t cSrcSize);   /* double-symbol decoder */
+ 
+ size_t HUFv06_decompress1X2_usingDTable(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const unsigned short* DTable);
+-size_t HUFv06_decompress1X4_usingDTable(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const unsigned* DTable);
++size_t HUFv06_decompress1X4_usingDTable(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const U32* DTable);
+ 
+ 
+ 
+diff --git a/lib/legacy/zstd_v07.c b/lib/legacy/zstd_v07.c
+index 15dc3ef7..100f6cf3 100644
+--- a/lib/legacy/zstd_v07.c
++++ b/lib/legacy/zstd_v07.c
+@@ -460,7 +460,7 @@ typedef enum { BITv07_DStream_unfinished = 0,
+                /* 1,2,4,8 would be better for bitmap combinations, but slows down performance a bit ... :( */
+ 
+ MEM_STATIC size_t   BITv07_initDStream(BITv07_DStream_t* bitD, const void* srcBuffer, size_t srcSize);
+-MEM_STATIC size_t   BITv07_readBits(BITv07_DStream_t* bitD, unsigned nbBits);
++MEM_STATIC size_t   BITv07_readBits(BITv07_DStream_t* bitD, U32 nbBits);
+ MEM_STATIC BITv07_DStream_status BITv07_reloadDStream(BITv07_DStream_t* bitD);
+ MEM_STATIC unsigned BITv07_endOfDStream(const BITv07_DStream_t* bitD);
+ 
+@@ -469,7 +469,7 @@ MEM_STATIC unsigned BITv07_endOfDStream(const BITv07_DStream_t* bitD);
+ /*-****************************************
+ *  unsafe API
+ ******************************************/
+-MEM_STATIC size_t BITv07_readBitsFast(BITv07_DStream_t* bitD, unsigned nbBits);
++MEM_STATIC size_t BITv07_readBitsFast(BITv07_DStream_t* bitD, U32 nbBits);
+ /* faster, but works only if nbBits >= 1 */
+ 
+ 
+-- 
+2.30.2
+

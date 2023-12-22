@@ -1,0 +1,41 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=3ds-libzstd
+pkgver=1.5.5
+pkgrel=2
+pkgdesc='Zstd, short for Zstandard, is a fast lossless compression algorithm, targeting real-time compression scenarios at zlib-level compression ratio (for Nintendo Switch homebrew development)'
+arch=('any')
+url='https://zstd.net'
+license=('BSD and GPLv2')
+options=(!strip libtool staticlibs)
+source=(
+  "https://github.com/facebook/zstd/releases/download/v$pkgver/zstd-${pkgver}.tar.gz"
+  zstd-${pkgver}.patch
+)
+sha256sums=('59ef70ebb757ffe74a7b3fe9c305e2ba3350021a918d168a046c6300aeea9315')
+makedepends=('dkp-toolchain-vars')
+groups=('3ds-portlibs')
+
+prepare() {
+  cd zstd-${pkgver}
+  patch -Np1 -i ${srcdir}/zstd-${pkgver}.patch
+}
+
+build() {
+  source /opt/devkitpro/3dsvars.sh
+  cd zstd-${pkgver}/lib
+
+  make CC=${TOOL_PREFIX}gcc PREFIX=${PORTLIBS_PREFIX} libzstd.a libzstd.pc
+}
+
+package() {
+  source /opt/devkitpro/3dsvars.sh
+  cd zstd-${pkgver}/lib
+  make DESTDIR="${pkgdir}" PREFIX=${PORTLIBS_PREFIX} install-pc install-static install-includes
+  install -d "${pkgdir}"/opt/devkitpro/portlibs/3ds/licenses/${pkgname}
+  install ../COPYING "${pkgdir}"/opt/devkitpro/portlibs/3ds/licenses/${pkgname}/COPYING
+  install ../LICENSE "${pkgdir}"/opt/devkitpro/portlibs/3ds/licenses/${pkgname}/LICENSE
+}
+sha256sums=('9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4')
+sha256sums=('9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4'
+            'dd4980ee49323cbaa3b5b83271fa033eb1c0e911437127d70d84c4ac05619eb1')
