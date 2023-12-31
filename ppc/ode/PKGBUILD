@@ -1,7 +1,7 @@
 
 # Maintainer: davidgfnet <david@davidgf.net>
 pkgname=ppc-ode
-pkgver=0.16.3
+pkgver=0.16.4
 pkgrel=1
 pkgdesc='High performance library for simulating rigid body dynamics'
 arch=('any')
@@ -36,3 +36,4 @@ package() {
 }
 
 
+sha256sums=('71037b8281c6c86b0a55729f90d5db697abe4cbec1d8118157e00d48ec253467')
