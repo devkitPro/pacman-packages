@@ -1,0 +1,53 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Cpasjuste <cpasjuste@gmail.com>
+# Contributor: carstene1ns <dev f4ke de>
+
+pkgname=wii-sdl2_image
+pkgver=2.0.4
+pkgrel=1
+pkgdesc="SDL2 image loading library."
+arch=('any')
+url="https://libsdl.org/projects/SDL_image/"
+license=("zlib")
+options=(!strip libtool staticlibs)
+makedepends=('wii-pkg-config' 'dkp-toolchain-vars')
+depends=(
+  'wii-sdl2'
+  'ppc-libpng'
+  'ppc-libjpeg-turbo'
+)
+source=("${url}release/SDL2_image-${pkgver}.tar.gz" "Makefile.in.patch")
+sha256sums=(
+  'e74ec49c2402eb242fbfa16f2f43a19582a74c2eabfbfb873f00d4250038ceac'
+  'c15da8e087e7ca4ceef3dcce8501b21cbe6569563c345cf2a1591f20316d8d86'
+)
+groups=('wii-portlibs' 'wii-sdl2-libs')
+
+build() {
+  cd SDL2_image-$pkgver
+
+  source ${DEVKITPRO}/wiivars.sh
+
+  patch -Np1 -i "$srcdir"/Makefile.in.patch Makefile.in
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=powerpc-eabi --disable-shared --enable-static \
+    --disable-sdltest \
+    --with-sdl-prefix=${PORTLIBS_PREFIX}
+
+  make
+}
+
+package() {
+  cd SDL2_image-$pkgver
+
+  source /opt/devkitpro/wiivars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # add our static libs
+  echo "Requires.private: libpng libjpeg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_image.pc"
+
+  # License
+  #install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
+}
