@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libgba')
-pkgver=0.5.3
+pkgver=0.5.4
 pkgrel=1
 pkgdesc="Nintendo GBA library."
 arch=('any')
@@ -27,4 +27,4 @@ package() {
   make -C $srcdir/${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('8b0181128ed65c71a151c8b4adbdd98222c4d305f104eb5d41a05f1bbdec6e73')
+sha256sums=('0058a7d506029cc52aa24ed6a16c88c3be6c5a6674e8c2fd2fa129a5cc3142f7')
