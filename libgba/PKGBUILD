@@ -2,14 +2,15 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libgba')
-pkgver=0.5.2
-pkgrel=2
+pkgver=0.5.3
+pkgrel=1
 pkgdesc="Nintendo GBA library."
 arch=('any')
 license=('LGPL')
 url="http://github.com/devkitpro"
 options=(!strip libtool staticlibs)
-source=(${url}/${pkgname}/releases/download/v${pkgver}/${pkgname}-src-${pkgver}.tar.bz2)
+#https://github.com/devkitPro/libgba/archive/refs/tags/v0.5.3.tar.gz
+source=(${pkgname}-${pkgver}.tar.gz::${url}/${pkgname}/archive/refs/tags/v${pkgver}.tar.gz)
 sha256sums=('1eb1289510d3ddc7729ecf977c93b77bde1dff71c135bc2700fa230bd493c388')
 depends=('devkitARM' 'devkitarm-rules' 'devkitarm-crtls')
 
@@ -17,12 +18,13 @@ groups=('gba-dev')
 
 build() {
 
-  make -C $srcdir
+  make -C $srcdir/${pkgname}-${pkgver}
 
 }
 
 package() {
 
-  make -C $srcdir DESTDIR=$pkgdir install
+  make -C $srcdir/${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
+sha256sums=('8b0181128ed65c71a151c8b4adbdd98222c4d305f104eb5d41a05f1bbdec6e73')
