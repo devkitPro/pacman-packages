@@ -1,0 +1,33 @@
+pkgname=ppc-libexpat
+pkgver=2.5.0
+pkgrel=1
+pkgdesc="Expat, a stream-oriented XML parser library written in C."
+arch=('any')
+url="https://libexpat.github.io/"
+license=('MIT')
+options=(!strip libtool staticlibs)
+groups=("ppc-portlibs")
+source=("https://github.com/libexpat/libexpat/releases/download/R_${pkgver//./_}/expat-$pkgver.tar.bz2")
+sha256sums=('6f0e6e01f7b30025fa05c85fdad1e5d0ec7fd35d9f61b22f34998de11969ff67')
+makedepends=('dkp-toolchain-vars' 'ppc-pkg-config')
+
+build() {
+  cd expat-$pkgver
+
+  source /opt/devkitpro/ppcvars.sh
+
+  ./configure \
+    --prefix="${PORTLIBS_PREFIX}" \
+    --host="powerpc-eabi" \
+    --disable-shared --enable-static
+
+  make
+}
+
+package() {
+  cd expat-$pkgver
+
+  source /opt/devkitpro/ppcvars.sh
+
+  make DESTDIR="$pkgdir" install
+}
