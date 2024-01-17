@@ -11,10 +11,7 @@ options=(!strip libtool staticlibs)
 source=( "${_realname}-${pkgver}.tar.gz::https://github.com/icculus/physfs/archive/refs/tags/release-${pkgver}.tar.gz"
          "physfs-${pkgver}.patch")
 makedepends=('devkitA64' 'dkp-toolchain-vars' 'switch-cmake')
-sha256sums=(
-  '1991500eaeb8d5325e3a8361847ff3bf8e03ec89252b7915e1f25b3f8ab5d560'
-  '2a8f0d2fb09bdd534e0d3819842cf2861476d77e6464e6fdcedeb916e78acfad'
-  )
+
 groups=('switch-portlibs')
 build() {
   cd physfs-release-$pkgver
@@ -37,3 +34,6 @@ package() {
 
   make install DESTDIR="$pkgdir"
 }
+
+sha256sums=('1991500eaeb8d5325e3a8361847ff3bf8e03ec89252b7915e1f25b3f8ab5d560'
+            '12e6df2b53f2ee51a205f363d51b4b01f92e4a67159bb63628a6d1cec482985f')
