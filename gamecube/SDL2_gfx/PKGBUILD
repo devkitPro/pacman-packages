@@ -1,0 +1,41 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: TurtleP     <jeremy.postelnek@gmail.co>
+
+pkgname=gamecube-sdl2_gfx
+pkgver=1.0.4
+pkgrel=3
+pkgdesc="SDL2 graphics drawing primitives."
+arch=('any')
+url="https://libsdl.org"
+license=("zlib")
+options=(!strip libtool staticlibs)
+makedepends=('wii-pkg-config' 'dkp-toolchain-vars')
+depends=('wii-sdl2')
+source=("http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-1.0.4.tar.gz")
+
+groups=('gamecube-portlibs' 'gamecube-sdl2-libs')
+
+build() {
+
+  cd SDL2_gfx-$pkgver
+
+  source /opt/devkitpro/cubevars.sh
+  
+  ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --enable-mmx=no \
+    --host=powerpc-eabi \
+    --disable-shared --enable-static \
+    --with-sdl-prefix=${PORTLIBS_PREFIX}
+
+  make
+}
+
+package() {
+  cd SDL2_gfx-$pkgver
+
+  source /opt/devkitpro/cubevars.sh
+
+  make DESTDIR="$pkgdir" install
+
+}
+sha256sums=('63e0e01addedc9df2f85b93a248f06e8a04affa014a835c2ea34bfe34e576262')
