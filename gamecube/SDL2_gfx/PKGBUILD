@@ -3,14 +3,14 @@
 
 pkgname=gamecube-sdl2_gfx
 pkgver=1.0.4
-pkgrel=3
+pkgrel=4
 pkgdesc="SDL2 graphics drawing primitives."
 arch=('any')
 url="https://libsdl.org"
 license=("zlib")
 options=(!strip libtool staticlibs)
 makedepends=('wii-pkg-config' 'dkp-toolchain-vars')
-depends=('wii-sdl2')
+depends=('gamecube-sdl2')
 source=("http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-1.0.4.tar.gz")
 
 groups=('gamecube-portlibs' 'gamecube-sdl2-libs')
