@@ -1,0 +1,55 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Cpasjuste <cpasjuste@gmail.com>
+# Contributor: carstene1ns <dev f4ke de>
+
+pkgname=gamecube-sdl2_mixer
+pkgver=2.6.3
+pkgrel=1
+pkgdesc="A sample multi-channel audio mixer library."
+arch=('any')
+url="https://libsdl.org/projects/SDL_mixer/"
+license=("zlib")
+options=(!strip libtool staticlibs)
+makedepends=('gamecube-pkg-config' 'dkp-toolchain-vars')
+depends=(
+  'gamecube-sdl2'
+  'ppc-flac'
+  'ppc-libvorbisidec'
+  'ppc-libmodplug'
+  'ppc-mpg123'
+  'ppc-opusfile'
+)
+source=("${url}release/SDL2_mixer-${pkgver}.tar.gz")
+groups=('gamecube-portlibs' 'gamecube-sdl2-libs')
+
+build() {
+  cd SDL2_mixer-$pkgver
+
+  source /opt/devkitpro/cubevars.sh
+
+  # patch out compiling playwave and playmus
+  sed 's|\$(objects)/play.*mus\$(EXE)||' -i Makefile.in
+
+  LIBS="-lm" ./configure --prefix="${PORTLIBS_PREFIX}" \
+    --host=powerpc-eabi --disable-shared --enable-static \
+    --disable-music-cmd \
+    --enable-music-ogg-tremor \
+    --enable-music-mod-modplug
+
+  make
+}
+
+package() {
+  cd SDL2_mixer-$pkgver
+
+  source /opt/devkitpro/cubevars.sh
+
+  make DESTDIR="$pkgdir" install
+
+  # add our static libs
+  echo "Requires.private: vorbisidec libmodplug libmpg123 opusfile flac" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_mixer.pc"
+
+  # License
+  install -Dm644 "LICENSE.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.txt"
+}
+sha256sums=('7a6ba86a478648ce617e3a5e9277181bc67f7ce9876605eea6affd4a0d6eea8f')
