@@ -2,7 +2,7 @@
 
 pkgname=gamecube-sdl2
 pkgver=2.28.5
-pkgrel=4
+pkgrel=5
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
 arch=('any')
 url="https://libsdl.org"
@@ -29,7 +29,5 @@ package() {
   DESTDIR=${pkgdir} cmake --install _build
 
 }
-sha256sums=('332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4'
-            '07b6cb9c4cc40f8a4fecf175898b2127bb7c1b423febe550b8e32ff122dc2ef3')
 sha256sums=('332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4'
             '685e0f467e0b4a9042a4a28c3c934009bee049582cef4e20c616ee55df8e340c')
