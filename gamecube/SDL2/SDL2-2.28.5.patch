@@ -865,7 +865,7 @@ index a93fa662c..3d3329ae5 100644
  #ifdef __cplusplus
 diff --git a/src/joystick/ogc/SDL_sysjoystick.c b/src/joystick/ogc/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..b767e88b5
+index 000000000..fc7ea71c1
 --- /dev/null
 +++ b/src/joystick/ogc/SDL_sysjoystick.c
 @@ -0,0 +1,1321 @@
@@ -1367,7 +1367,7 @@ index 000000000..b767e88b5
 +     * Since we want the gamepads to appear with the numeric ID in their
 +     * name, we make them unique by assigning a different product depending on
 +     * the port. */
-+    product = index << 8;
++    product = (index + 1) << 8;
 +    if (index >= GC_JOYSTICKS_START && index < GC_JOYSTICKS_END) {
 +        bus = SDL_HARDWARE_BUS_UNKNOWN;
 +    } else {
@@ -2375,7 +2375,7 @@ index 36e9555bb..d3db2b387 100644
  extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);
 diff --git a/src/render/ogc/SDL_render_ogc.c b/src/render/ogc/SDL_render_ogc.c
 new file mode 100644
-index 000000000..bb6613121
+index 000000000..f03251720
 --- /dev/null
 +++ b/src/render/ogc/SDL_render_ogc.c
 @@ -0,0 +1,652 @@
@@ -2454,7 +2454,7 @@ index 000000000..bb6613121
 +
 +    switch (blend_mode) {
 +    case SDL_BLENDMODE_NONE:
-+        GX_SetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
++        GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 +        break;
 +    case SDL_BLENDMODE_BLEND:
 +        GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
@@ -2975,7 +2975,7 @@ index 000000000..bb6613121
 +    }
 +
 +    data->efb_pixel_format = GX_PF_RGB8_Z24;
-+    data->current_blend_mode = SDL_BLENDMODE_NONE;
++    data->current_blend_mode = SDL_BLENDMODE_INVALID;
 +    data->vsync = true;
 +
 +    renderer->WindowEvent = OGC_WindowEvent;
@@ -5390,7 +5390,7 @@ index 000000000..c92d032aa
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcvideo.c b/src/video/ogc/SDL_ogcvideo.c
 new file mode 100644
-index 000000000..85de13439
+index 000000000..3c9cd2d91
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcvideo.c
 @@ -0,0 +1,217 @@
@@ -5549,7 +5549,7 @@ index 000000000..85de13439
 +    SDL_zero(mode);
 +    mode.format = SDL_PIXELFORMAT_ARGB8888;
 +    mode.w = vmode->fbWidth;
-+    mode.h = vmode->xfbHeight;
++    mode.h = vmode->efbHeight;
 +    mode.refresh_rate = 60;
 +    mode.driverdata = NULL;
 +    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
