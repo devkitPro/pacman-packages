@@ -46,6 +46,27 @@ case "$1" in
 	PLAT_ENDIAN="big"
 	source ${SCRIPTDIR}/ppcvars.sh
 	;;
+"gamecube")
+	PLAT_SYSTEM="bare"
+	PLAT_CPU_FAMILY="ppc"
+	PLAT_CPU="ppc750"
+	PLAT_ENDIAN="big"
+	source ${SCRIPTDIR}/cubevars.sh
+	;;
+"wii")
+	PLAT_SYSTEM="bare"
+	PLAT_CPU_FAMILY="ppc"
+	PLAT_CPU="ppc750"
+	PLAT_ENDIAN="big"
+	source ${SCRIPTDIR}/wiivars.sh
+	;;
+"wiiu")
+	PLAT_SYSTEM="bare"
+	PLAT_CPU_FAMILY="ppc"
+	PLAT_CPU="ppc750"
+	PLAT_ENDIAN="big"
+	source ${SCRIPTDIR}/wiiuvars.sh
+	;;
 *)
 	echo "Unsupported platform." 1>&2
 	exit 1
