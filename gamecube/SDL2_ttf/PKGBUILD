@@ -3,8 +3,8 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=gamecube-sdl2_ttf
-pkgver=2.0.15
-pkgrel=3
+pkgver=2.22.0
+pkgrel=0
 pkgdesc="SDL2 TrueType font library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_ttf/"
@@ -29,6 +29,8 @@ build() {
 
   ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=powerpc-eabi --disable-shared --enable-static \
+    --disable-harfbuzz-builtin \
+    --disable-freetype-builtin \
     --disable-sdltest --without-x
 
   make
@@ -47,3 +49,4 @@ package() {
   # License
   #install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
 }
+sha256sums=('d48cbd1ce475b9e178206bf3b72d56b66d84d44f64ac05803328396234d67723')
