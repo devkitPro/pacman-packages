@@ -107,7 +107,7 @@ index 000000000..bcfb4cc5f
 +          cmake/test/test_pkgconfig.sh
 \ No newline at end of file
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b38a8bbc1..77649b817 100644
+index b38a8bbc1..b4c0805fe 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -141,6 +141,7 @@ check_cpu_architecture(x64 SDL_CPU_X64)
@@ -145,7 +145,7 @@ index b38a8bbc1..77649b817 100644
        set(CMAKE_REQUIRED_FLAGS "-maltivec")
        check_c_source_compiles("
            #include <altivec.h>
-@@ -2883,6 +2884,64 @@ elseif(N3DS)
+@@ -2883,6 +2884,69 @@ elseif(N3DS)
      endif()
      list(APPEND EXTRA_LIBS ${lib})
    endforeach()
@@ -207,6 +207,11 @@ index b38a8bbc1..77649b817 100644
 +    list(INSERT SDL_LIBS 0 "-lSDL2main")
 +    list(APPEND EXTRA_LIBS "fat")
 +  endif()
++  list(APPEND EXTRA_LDFLAGS "${OGC_ARCH_SETTINGS} ${OGC_LINKER_FLAGS}")
++  if(NINTENDO_WII)
++    list(APPEND EXTRA_LIBS "wiiuse;bte")
++  endif()
++  list(APPEND EXTRA_LIBS "ogc;m")
  endif()
  
  if(HAVE_VULKAN AND NOT SDL_LOADSO)
@@ -2375,10 +2380,10 @@ index 36e9555bb..d3db2b387 100644
  extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);
 diff --git a/src/render/ogc/SDL_render_ogc.c b/src/render/ogc/SDL_render_ogc.c
 new file mode 100644
-index 000000000..f03251720
+index 000000000..705a02467
 --- /dev/null
 +++ b/src/render/ogc/SDL_render_ogc.c
-@@ -0,0 +1,652 @@
+@@ -0,0 +1,649 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -2714,10 +2719,7 @@ index 000000000..f03251720
 +{
 +    const SDL_Rect *viewport = &cmd->data.viewport.rect;
 +
-+    float v_aspect = viewport->h / 2.0;
-+    float h_aspect = viewport->w / 2.0;
-+    OGC_set_viewport(viewport->x, viewport->y, viewport->w, viewport->h,
-+                     h_aspect, v_aspect);
++    OGC_set_viewport(viewport->x, viewport->y, viewport->w, viewport->h);
 +    return 0;
 +}
 +
@@ -4527,10 +4529,10 @@ index 000000000..af58bbcc1
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcgxcommon.c b/src/video/ogc/SDL_ogcgxcommon.c
 new file mode 100644
-index 000000000..eeb1146ad
+index 000000000..56c017f27
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcgxcommon.c
-@@ -0,0 +1,149 @@
+@@ -0,0 +1,141 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4562,18 +4564,6 @@ index 000000000..eeb1146ad
 +#include <ogc/gx.h>
 +#include <ogc/video.h>
 +
-+typedef struct tagcamera {
-+    guVector pos;
-+    guVector up;
-+    guVector view;
-+} camera;
-+
-+static camera cam = {
-+    { 0.0F, 0.0F, 0.0F },
-+    { 0.0F, -0.5F, 0.0F },
-+    { 0.0F, 0.0F, 0.5F }
-+};
-+
 +static const f32 tex_pos[] __attribute__((aligned(32))) = {
 +    0.0,
 +    0.0,
@@ -4585,29 +4575,33 @@ index 000000000..eeb1146ad
 +    1.0,
 +};
 +
-+void OGC_set_viewport(int x, int y, int w, int h, float h_aspect, float v_aspect)
++void OGC_set_viewport(int x, int y, int w, int h)
 +{
-+    Mtx m, mv, view;
 +    Mtx44 proj;
 +
 +    GX_SetViewport(x, y, w, h, 0, 1);
 +    GX_SetScissor(x, y, w, h);
 +
-+    memset(&view, 0, sizeof(Mtx));
-+    guLookAt(view, &cam.pos, &cam.up, &cam.view);
-+    guMtxIdentity(m);
-+    guMtxTransApply(m, m, 0.5 + (-w / 2.0), 0.5 + (-h / 2.0), 1000);
-+    guMtxConcat(view, m, mv);
-+    GX_LoadPosMtxImm(mv, GX_PNMTX0);
-+
 +    // matrix, t, b, l, r, n, f
-+    guOrtho(proj, v_aspect, -v_aspect, -h_aspect, h_aspect, 100, 1000);
++    guOrtho(proj, 0, h, 0, w, 0, 1);
 +    GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 +}
 +
-+void OGC_draw_init(int w, int h, int h_aspect, int v_aspect)
++void OGC_draw_init(int w, int h)
 +{
++    Mtx mv;
++
 +    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "OGC_draw_init called with %d, %d", w, h);
++
++    guMtxIdentity(mv);
++    /* Ideally we would use 0.5 to center the coordinates on the pixels, but
++     * this causes some visual artifacts due to rounding: in the VVVVVV game,
++     * all 8x8 pixel textures lose their rightmost column and bottom row,
++     * except when they are drawn on the bottom-right quadrant of the screen.
++     * Values from 0.1 to 0.4 fix this issue, while preserving pixel accuracy
++     * on drawing operations. */
++    guMtxTransApply(mv, mv, 0.4, 0.4, 0);
++    GX_LoadPosMtxImm(mv, GX_PNMTX0);
 +
 +    GX_ClearVtxDesc();
 +    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -4627,7 +4621,7 @@ index 000000000..eeb1146ad
 +    GX_SetTevOp(GX_TEVSTAGE0, GX_REPLACE);
 +    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 +
-+    OGC_set_viewport(0, 0, w, h, h_aspect, v_aspect);
++    OGC_set_viewport(0, 0, w, h);
 +
 +    GX_InvVtxCache(); // update vertex cache
 +}
@@ -4682,7 +4676,7 @@ index 000000000..eeb1146ad
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcgxcommon.h b/src/video/ogc/SDL_ogcgxcommon.h
 new file mode 100644
-index 000000000..fe3360fe0
+index 000000000..1b2ed5b32
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcgxcommon.h
 @@ -0,0 +1,39 @@
@@ -4717,8 +4711,8 @@ index 000000000..fe3360fe0
 +
 +#define GX_COLOR_AS_U32(c) *((u32*)&c)
 +
-+void OGC_draw_init(int w, int h, int h_aspect, int v_aspect);
-+void OGC_set_viewport(int x, int y, int w, int h, float h_aspect, float v_aspect);
++void OGC_draw_init(int w, int h);
++void OGC_set_viewport(int x, int y, int w, int h);
 +void OGC_load_texture(void *texels, int w, int h, u8 gx_format,
 +                      SDL_ScaleMode scale_mode);
 +
@@ -5390,10 +5384,10 @@ index 000000000..c92d032aa
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcvideo.c b/src/video/ogc/SDL_ogcvideo.c
 new file mode 100644
-index 000000000..3c9cd2d91
+index 000000000..e03446f89
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcvideo.c
-@@ -0,0 +1,217 @@
+@@ -0,0 +1,213 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -5503,7 +5497,6 @@ index 000000000..3c9cd2d91
 +    SDL_DisplayMode mode;
 +    GXRModeObj *vmode;
 +    static const GXColor background = { 0, 0, 0, 255 };
-+    int h_aspect, v_aspect;
 +
 +    VIDEO_Init();
 +
@@ -5538,10 +5531,7 @@ index 000000000..3c9cd2d91
 +
 +    GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 +
-+    /* Should we need to adjust the aspect, this is the place to do it */
-+    h_aspect = 320;
-+    v_aspect = 240;
-+    OGC_draw_init(vmode->fbWidth, vmode->efbHeight, h_aspect, v_aspect);
++    OGC_draw_init(vmode->fbWidth, vmode->efbHeight);
 +
 +    GX_Flush();
 +
