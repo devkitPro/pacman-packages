@@ -3,8 +3,8 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=wii-sdl2_ttf
-pkgver=2.0.15
-pkgrel=3
+pkgver=2.22.0
+pkgrel=1
 pkgdesc="SDL2 TrueType font library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_ttf/"
@@ -14,6 +14,7 @@ makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 depends=(
   'wii-sdl2'
   'ppc-freetype'
+  'ppc-harfbuzz'
 )
 source=("${url}release/SDL2_ttf-${pkgver}.tar.gz")
 sha256sums=('a9eceb1ad88c1f1545cd7bd28e7cbc0b2c14191d40238f531a15b01b1b22cd33')
@@ -29,6 +30,8 @@ build() {
 
   ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=powerpc-eabi --disable-shared --enable-static \
+    --disable-harfbuzz-builtin \
+    --disable-freetype-builtin \
     --disable-sdltest --without-x
 
   make
@@ -47,3 +50,4 @@ package() {
   # License
   #install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
 }
+sha256sums=('d48cbd1ce475b9e178206bf3b72d56b66d84d44f64ac05803328396234d67723')
