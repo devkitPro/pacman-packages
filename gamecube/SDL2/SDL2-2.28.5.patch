@@ -107,7 +107,7 @@ index 000000000..bcfb4cc5f
 +          cmake/test/test_pkgconfig.sh
 \ No newline at end of file
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b38a8bbc1..b4c0805fe 100644
+index b38a8bbc1..7dc928208 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -141,6 +141,7 @@ check_cpu_architecture(x64 SDL_CPU_X64)
@@ -145,6 +145,15 @@ index b38a8bbc1..b4c0805fe 100644
        set(CMAKE_REQUIRED_FLAGS "-maltivec")
        check_c_source_compiles("
            #include <altivec.h>
+@@ -1082,7 +1083,7 @@ if(SDL_LIBC)
+     endforeach()
+     if(HAVE_LIBM)
+       set(CMAKE_REQUIRED_LIBRARIES)
+-      if(NOT VITA)
++      if(NOT VITA AND NOT NINTENDO_SWITCH AND NOT NINTENDO_WII)
+         list(APPEND EXTRA_LIBS m)
+       endif()
+     endif()
 @@ -2883,6 +2884,69 @@ elseif(N3DS)
      endif()
      list(APPEND EXTRA_LIBS ${lib})
