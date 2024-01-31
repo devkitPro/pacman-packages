@@ -1,8 +1,8 @@
 # Maintainer:  Mary Strodl <ipadlover8322@gmail.com>
 
 pkgname=ppc-harfbuzz
-pkgver=7.2.0
-pkgrel=1
+pkgver=8.2.0
+pkgrel=2
 pkgdesc='HarfBuzz is a text shaping library. Using the HarfBuzz library allows programs to convert a sequence of Unicode input into properly formatted and positioned glyph output—for any writing system and language.'
 arch=('any')
 url='https://harfbuzz.github.io/'
@@ -23,7 +23,9 @@ build() {
 
   export CXXFLAGS="${CXXFLAGS} -DHB_NO_MT"
 
-  ./configure --prefix=${PORTLIBS_PREFIX} --host=powerpc-eabi --disable-shared --enable-static
+  ./configure --prefix=${PORTLIBS_PREFIX} --host=powerpc-eabi \
+    --disable-shared --enable-static \
+    --with-freetype=yes
 
   make
 }
@@ -37,3 +39,6 @@ package() {
   rm -fr ${pkgdir}/${PORTLIBS_PREFIX}/share
 
 }
+sha256sums=('8cb7117a62f42d5ad25d4a697e1bbfc65933b3eed2ee7f247203c79c9f1b514c')
+sha256sums=('fc5560c807eae0efd5f95b5aa4c65800c7a8eed6642008a6b1e7e3ffff7873cc')
+sha256sums=('8cb7117a62f42d5ad25d4a697e1bbfc65933b3eed2ee7f247203c79c9f1b514c')
