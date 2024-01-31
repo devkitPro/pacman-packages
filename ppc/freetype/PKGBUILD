@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-freetype
-pkgver=2.13.0
+pkgver=2.13.2
 pkgrel=1
 pkgdesc='FreeType is a freely available software library to render fonts.'
 arch=('any')
@@ -12,6 +12,7 @@ groups=('ppc-portlibs')
 depends=("ppc-bzip2"
          "ppc-libpng"
          "ppc-zlib"
+         "ppc-harfbuzz"
 )
 makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz")
@@ -52,3 +53,4 @@ package() {
   # remove useless stuff
   rm -r "${pkgdir}/${PORTLIBS_PREFIX}/share"
 }
+sha256sums=('12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d')
