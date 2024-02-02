@@ -1,0 +1,40 @@
+# Maintainer: Ezekiel Bethel <zek@9net.org>
+_realname=physfs
+pkgname=wii-${_realname}
+pkgver=3.2.0
+pkgrel=1
+pkgdesc='A library to provide abstract access to various archives.'
+arch=('any')
+url='https://icculus.org/physfs/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+source=( "${_realname}-${pkgver}.tar.gz::https://github.com/icculus/physfs/archive/refs/tags/release-${pkgver}.tar.gz"
+         "physfs-${pkgver}.patch")
+makedepends=('devkitPPC' 'dkp-toolchain-vars' 'wii-cmake')
+
+groups=('wii-portlibs')
+build() {
+  cd physfs-release-$pkgver
+
+  patch -Np1 -i "$srcdir"/physfs-${pkgver}.patch
+
+  source ${DEVKITPRO}/wiivars.sh
+
+  powerpc-eabi-cmake -GNinja \
+    -DPHYSFS_BUILD_STATIC=ON -DPHYSFS_BUILD_SHARED=OFF \
+    -DPHYSFS_BUILD_TEST=OFF \
+    -B _build -S .
+
+  cmake --build _build
+}
+
+package() {
+  cd physfs-release-$pkgver
+
+  DESTDIR="$pkgdir" cmake --install _build
+}
+
+sha256sums=('1991500eaeb8d5325e3a8361847ff3bf8e03ec89252b7915e1f25b3f8ab5d560'
+            '8e16519e12228cfb49152b4c042ccbae728df18c00b7a72e81d5e219bf5ebe3d')
+sha256sums=('1991500eaeb8d5325e3a8361847ff3bf8e03ec89252b7915e1f25b3f8ab5d560'
+            '4f63dd63d38e8784ded3666403acffa3a128d888f656c0808df19e34794287ba')
