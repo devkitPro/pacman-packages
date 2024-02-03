@@ -1,3 +1,39 @@
+diff --git a/.github/workflows/switch.yml b/.github/workflows/switch.yml
+new file mode 100644
+index 000000000..3ec5ae313
+--- /dev/null
++++ b/.github/workflows/switch.yml
+@@ -0,0 +1,30 @@
++name: Build (Nintendo Switch)
++
++on: [push, pull_request]
++
++jobs:
++  switch:
++    runs-on: ubuntu-latest
++    container:
++      image: devkitpro/devkita64:latest
++    steps:
++      - uses: actions/checkout@v3
++      - name: Configure
++        run: |
++          . /opt/devkitpro/switchvars.sh \
++          mkdir _build && cd _build \
++          ../configure --host=aarch64-none-elf \
++              --prefix=switch-sdl2 \
++              --disable-shared --enable-static \
++              --enable-audio \
++              --enable-joystick \
++              --disable-power \
++              --disable-filesystem \
++              --enable-cpuinfo \
++              --enable-pthreads \
++              --enable-timers \
++              --enable-video
++      - name: Build
++        run: make 
++      - name: install
++        run: make -C _build install
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index b38a8bbc1..9c97b5f13 100644
 --- a/CMakeLists.txt
@@ -90,7 +126,7 @@ index b38a8bbc1..9c97b5f13 100644
  
  if(HAVE_VULKAN AND NOT SDL_LOADSO)
 diff --git a/configure b/configure
-index c5b466b5f..eda359a7a 100755
+index c5b466b5f..6ac3205c3 100755
 --- a/configure
 +++ b/configure
 @@ -1,10 +1,9 @@
@@ -22979,13 +23015,13 @@ index c5b466b5f..eda359a7a 100755
          ;;
 +    aarch64-none-elf*)
 +        ARCH=switch
-+        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 \
++        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a+crc+crypto -mtune=cortex-a57 \
 +            -mtp=soft -ftls-model=local-exec \
 +            -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -fPIC"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
-+        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lstdc++ -lglapi -ldrm_nouveau -lnx"
++        EXTRA_LDFLAGS="-fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lstdc++ -lglapi -ldrm_nouveau -lnx"
 +
 +        CheckDeclarationAfterStatement
 +        CheckClockGettime
@@ -23806,7 +23842,7 @@ index c5b466b5f..eda359a7a 100755
  
 -
 diff --git a/configure.ac b/configure.ac
-index 558895859..59a2ee058 100644
+index 558895859..440c49aea 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -4667,6 +4667,63 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
@@ -23815,13 +23851,13 @@ index 558895859..59a2ee058 100644
          ;;
 +    aarch64-none-elf*)
 +        ARCH=switch
-+        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a -mtune=cortex-a57 \
++        SDL_CFLAGS="$SDL_CFLAGS -D__SWITCH__ -march=armv8-a+crc+crypto -mtune=cortex-a57 \
 +            -mtp=soft -ftls-model=local-exec \
 +            -isystem ${DEVKITPRO}/libnx/include -I${DEVKITPRO}/portlibs/switch/include"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -fPIC"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $SDL_CFLAGS -g -O3"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_VIDEO_STATIC_ANGLE"
-+        EXTRA_LDFLAGS="-march=armv8-a -fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lstdc++ -lglapi -ldrm_nouveau -lnx"
++        EXTRA_LDFLAGS="-fPIE -L${DEVKITPRO}/libnx/lib -lEGL -lstdc++ -lglapi -ldrm_nouveau -lnx"
 +
 +        CheckDeclarationAfterStatement
 +        CheckClockGettime
@@ -24042,6 +24078,19 @@ index d6460b783..42ec968fe 100644
  
  /* Enable misc subsystem */
  #undef SDL_MISC_DUMMY
+diff --git a/sdl2-config.cmake.in b/sdl2-config.cmake.in
+index 842f826bb..96b000774 100644
+--- a/sdl2-config.cmake.in
++++ b/sdl2-config.cmake.in
+@@ -53,7 +53,7 @@ string(REGEX REPLACE ";-L" ";" _sdl2_libdirs "${_sdl2_libdirs}")
+ list(APPEND _sdl2_libdirs "${SDL2_LIBDIR}")
+ 
+ # Convert _sdl2_static_private_libs to list and keep only libraries + library directories
+-string(REGEX MATCHALL "(-[lm]([-a-zA-Z0-9._]+))|(-Wl,[^ ]*framework[^ ]*)|(-pthread)" _sdl2_static_private_libs "${_sdl2_static_private_libs_in}")
++string(REGEX MATCHALL "(-[lm]([-a-zA-Z0-9._+]+))|(-Wl,[^ ]*framework[^ ]*)|(-pthread)" _sdl2_static_private_libs "${_sdl2_static_private_libs_in}")
+ string(REGEX REPLACE "^-l" "" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
+ string(REGEX REPLACE ";-l" ";" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
+ string(REGEX MATCHALL "-L([-a-zA-Z0-9._/]+)" _sdl2_static_private_libdirs "${_sdl2_static_private_libs_in}")
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
 index 60242e60a..b5756cf05 100644
 --- a/src/audio/SDL_audio.c
