@@ -2,7 +2,7 @@
 
 pkgname=ppc-freetype
 pkgver=2.13.2
-pkgrel=2
+pkgrel=3
 pkgdesc='FreeType is a freely available software library to render fonts.'
 arch=('any')
 url='https://www.freetype.org/'
@@ -12,13 +12,9 @@ groups=('ppc-portlibs')
 depends=("ppc-bzip2"
          "ppc-libpng"
          "ppc-zlib"
-         "ppc-harfbuzz"
 )
 makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz")
-sha256sums=(
-  '5ee23abd047636c24b2d43c6625dcafc66661d1aca64dec9e0d05df29592624c'
-)
 
 build() {
   cd freetype-$pkgver
@@ -30,6 +26,7 @@ build() {
     --disable-shared --enable-static \
     --with-zlib \
     --with-bzip2 \
+    --without-harfbuzz \
     --with-png
 
   make
