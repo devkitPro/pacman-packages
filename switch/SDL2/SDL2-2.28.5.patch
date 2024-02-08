@@ -1,6 +1,6 @@
 diff --git a/.github/workflows/switch.yml b/.github/workflows/switch.yml
 new file mode 100644
-index 000000000..3ec5ae313
+index 000000000..517f3b5ae
 --- /dev/null
 +++ b/.github/workflows/switch.yml
 @@ -0,0 +1,30 @@
@@ -17,10 +17,10 @@ index 000000000..3ec5ae313
 +      - uses: actions/checkout@v3
 +      - name: Configure
 +        run: |
-+          . /opt/devkitpro/switchvars.sh \
-+          mkdir _build && cd _build \
++          . /opt/devkitpro/switchvars.sh
++          mkdir _build && cd _build
 +          ../configure --host=aarch64-none-elf \
-+              --prefix=switch-sdl2 \
++              --prefix=`pwd`/switch-sdl2 \
 +              --disable-shared --enable-static \
 +              --enable-audio \
 +              --enable-joystick \
@@ -28,10 +28,10 @@ index 000000000..3ec5ae313
 +              --disable-filesystem \
 +              --enable-cpuinfo \
 +              --enable-pthreads \
-+              --enable-timers \
++              --enable-timers \ 
 +              --enable-video
 +      - name: Build
-+        run: make 
++        run: make -C _build 
 +      - name: install
 +        run: make -C _build install
 diff --git a/CMakeLists.txt b/CMakeLists.txt
@@ -24467,7 +24467,7 @@ index 000000000..6053c6f43
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/joystick/SDL_gamecontrollerdb.h b/src/joystick/SDL_gamecontrollerdb.h
-index f926c1612..d1ed8061d 100644
+index f926c1612..8eda5b703 100644
 --- a/src/joystick/SDL_gamecontrollerdb.h
 +++ b/src/joystick/SDL_gamecontrollerdb.h
 @@ -991,6 +991,9 @@ static const char *s_ControllerMappings[] = {
@@ -24476,7 +24476,7 @@ index f926c1612..d1ed8061d 100644
      "000000004e696e74656e646f20334400,Nintendo 3DS,crc:3210,a:b0,b:b1,back:b2,dpdown:b7,dpleft:b5,dpright:b4,dpup:b6,leftshoulder:b9,lefttrigger:b14,leftx:a0,lefty:a1,rightshoulder:b8,righttrigger:b15,rightx:a2,righty:a3,start:b3,x:b10,y:b11,",
 +#endif
 +#if defined(SDL_JOYSTICK_SWITCH)
-+    "53776974636820436F6E74726F6C6C65,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
++    "000038f853776974636820436f6e7400,Switch Controller,a:b1,b:b0,back:b11,dpdown:b15,dpleft:b12,dpright:b14,dpup:b13,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,",
  #endif
      "hidapi,*,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,",
      NULL
@@ -24508,10 +24508,10 @@ index a93fa662c..c0f3e9ec1 100644
  #ifdef __cplusplus
 diff --git a/src/joystick/switch/SDL_sysjoystick.c b/src/joystick/switch/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..c7ab49528
+index 000000000..043363b2b
 --- /dev/null
 +++ b/src/joystick/switch/SDL_sysjoystick.c
-@@ -0,0 +1,373 @@
+@@ -0,0 +1,370 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -24715,12 +24715,9 @@ index 000000000..c7ab49528
 +}
 +
 +static SDL_JoystickGUID SWITCH_JoystickGetDeviceGUID(int device_index) {
-+    SDL_JoystickGUID guid;
-+    /* the GUID is just the first 16 chars of the name for now */
++    /* the GUID is just the name for now */
 +    const char *name = SWITCH_JoystickGetDeviceName(device_index);
-+    SDL_zero(guid);
-+    SDL_memcpy(&guid, name, SDL_min(sizeof(guid), SDL_strlen(name)));
-+    return guid;
++    return SDL_CreateJoystickGUIDForName(name);
 +}
 +
 +/* Function to perform the mapping from device index to the instance id for this index */
