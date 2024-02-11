@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname="3ds-freetype"
-pkgver=2.13.0
-pkgrel=2
+pkgver=2.13.2
+pkgrel=1
 pkgdesc="TrueType font rendering library (mingw-w64)"
 arch=('any')
 url="https://www.freetype.org/"
@@ -13,9 +13,6 @@ depends=("3ds-bzip2"
 makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 options=('!strip' '!libtool' 'staticlibs')
 source=(https://downloads.sourceforge.net/sourceforge/freetype/freetype-${pkgver}.tar.xz)
-sha256sums=(
-  '5ee23abd047636c24b2d43c6625dcafc66661d1aca64dec9e0d05df29592624c'
-)
 groups=('3ds-portlibs')
 
 build() {
@@ -33,6 +30,7 @@ build() {
     --disable-shared \
     --with-zlib \
     --with-bzip2 \
+    --without-harfbuzz \
     --with-png
 
   make
@@ -54,3 +52,4 @@ package () {
   install -Dm644 "docs/GPLv2.TXT"   "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
   install -Dm644 "docs/FTL.TXT"     "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
 }
+sha256sums=('12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d')
