@@ -1,0 +1,33 @@
+# Contributor: averne <averne381@gmail.com>
+
+pkgbasename=xxhash
+pkgname=switch-${pkgbasename}
+pkgver=0.8.2
+pkgrel=1
+pkgdesc='Extremely fast non-cryptographic hash algorithm'
+arch=('any')
+url="http://www.xxhash.com/"
+license=('BSD')
+options=(!strip libtool staticlibs)
+source=("https://github.com/Cyan4973/xxHash/archive/refs/tags/v${pkgver}.zip")
+
+makedepends=('dkp-toolchain-vars')
+groups=('switch-portlibs')
+
+build() {
+  cd xxHash-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make libxxhash.a
+}
+
+package() {
+  cd xxHash-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make PREFIX="$PORTLIBS_PREFIX" DESTDIR="$pkgdir" install_libxxhash.a install_libxxhash.includes install_libxxhash.pc
+  install -Dm644 LICENSE "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE"
+}
+sha256sums=('a33d7e8798bebb297095b715f93a71c5e535919434ce27ddc65e72e4e0fda3b9')
