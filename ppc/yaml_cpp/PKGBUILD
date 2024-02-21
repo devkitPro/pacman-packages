@@ -1,0 +1,29 @@
+_realname=yaml_cpp
+pkgname=ppc-${_realname}
+pkgver=0.8.0
+pkgrel=1
+pkgdesc='A YAML parser and emitter in C++ matching the YAML 1.2 spec.'
+arch=('any')
+url='https://github.com/jbeder/yaml-cpp'
+license=('zlib')
+options=(!strip libtool staticlibs)
+source=( ${_realname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz)
+makedepends=('devkitPPC' 'devkitppc-cmake')
+
+groups=('ppc-portlibs')
+
+build() {
+
+  cd yaml-cpp-${pkgver}
+  /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake -B _build -S . -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc -DYAML_CPP_BUILD_TOOLS=OFF -GNinja
+  cmake --build _build --parallel
+
+}
+
+package() {
+  cd yaml-cpp-${pkgver}
+
+  DESTDIR="${pkgdir}" cmake --install _build
+}
+
+sha256sums=('fbe74bbdcee21d656715688706da3c8becfd946d92cd44705cc6098bb23b3a16')
