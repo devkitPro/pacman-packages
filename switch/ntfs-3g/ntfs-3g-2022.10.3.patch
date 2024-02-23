@@ -1,0 +1,29 @@
+diff --git a/include/ntfs-3g/ntfstime.h b/include/ntfs-3g/ntfstime.h
+index f3a89dd8..ce0d4586 100644
+--- a/include/ntfs-3g/ntfstime.h
++++ b/include/ntfs-3g/ntfstime.h
+@@ -36,6 +36,10 @@
+ 
+ #include "types.h"
+ 
++#ifdef _SYS__TIMESPEC_H_
++#define __timespec_defined
++#endif
++
+ /*
+  * assume "struct timespec" is not defined if st_mtime is not defined
+  */
+diff --git a/libntfs-3g/ioctl.c b/libntfs-3g/ioctl.c
+index b059a53f..a3a56722 100644
+--- a/libntfs-3g/ioctl.c
++++ b/libntfs-3g/ioctl.c
+@@ -48,7 +48,9 @@
+ #ifdef HAVE_LIMITS_H
+ #include <limits.h>
+ #endif
++#ifdef HAVE_SYSLOG_H
+ #include <syslog.h>
++#endif
+ #ifdef HAVE_SYS_TYPES_H
+ #include <sys/types.h>
+ #endif
