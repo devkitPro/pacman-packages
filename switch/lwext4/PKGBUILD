@@ -13,13 +13,8 @@ groups=('switch-portlibs')
 makedepends=('devkitA64' 'dkp-toolchain-vars' 'switch-cmake')
 
 source=(
-  "lwext4-${pkgver}.zip::${url}/archive/${pkgcommithash}.zip"
+  "lwext4-${pkgver}.tar.gz::${url}/archive/${pkgcommithash}.tar.gz"
   "lwext4-${pkgver}.patch"
-)
-
-sha256sums=(
-  'bf1de2bd3430d11173ffb6482e2d0d38f991318d8bc9c5dc4051c33b2c407911'
-  '59d674ca846c0ccbef189d7153ba864bb8940d26be65826843fb00bdcc58b519'
 )
 
 prepare() {
@@ -51,3 +46,5 @@ package() {
   install -Dm644 build_lib_only/src/liblwext4.a "${pkgdir}${PORTLIBS_PREFIX}/lib/liblwext4.a"
   install -Dm644 LICENSE "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE"
 }
+sha256sums=('8f7cce20f5dad2719cb22982e64c75069af51741555c98d34a247a5d8f154890'
+            '59d674ca846c0ccbef189d7153ba864bb8940d26be65826843fb00bdcc58b519')
