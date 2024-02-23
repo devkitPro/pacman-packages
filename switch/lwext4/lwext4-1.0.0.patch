@@ -1,0 +1,108 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index eec0993..ce64c51 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -30,11 +30,21 @@ elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL  msp430g2210)
+     add_definitions(-DCONFIG_DEBUG_ASSERT=0)
+     #...
+ elseif(LIB_ONLY)
+-    add_definitions(-DCONFIG_DEBUG_PRINTF=0)
+-    add_definitions(-DCONFIG_DEBUG_ASSERT=0)
+-    add_definitions(-DCONFIG_HAVE_OWN_OFLAGS=1)
++    if (CMAKE_BUILD_TYPE STREQUAL Release)
++        add_definitions(-DCONFIG_DEBUG_PRINTF=0)
++        add_definitions(-DCONFIG_DEBUG_ASSERT=0)
++    else()
++        add_definitions(-DCONFIG_DEBUG_PRINTF=1)
++        add_definitions(-DCONFIG_DEBUG_ASSERT=1)
++    endif()
++    add_definitions(-DCONFIG_HAVE_OWN_ASSERT=0)
+     add_definitions(-DCONFIG_HAVE_OWN_ERRNO=0)
+     add_definitions(-DCONFIG_BLOCK_DEV_CACHE_SIZE=16)
++    add_definitions(-DCONFIG_EXT4_BLOCKDEVS_COUNT=8)
++    add_definitions(-DCONFIG_EXT4_MOUNTPOINTS_COUNT=8)
++    add_definitions(-DCONFIG_HAVE_OWN_OFLAGS=0)
++    add_definitions(-DCONFIG_UNALIGNED_ACCESS=1)
++    add_definitions(-DCONFIG_USE_USER_MALLOC=0)
+ else()
+     #Generic example target
+     if (WIN32)
+@@ -74,8 +84,6 @@ macro(output_configure)
+ endmacro()
+ output_configure()
+ 
+-add_subdirectory(blockdev)
+-
+ #Library build
+ add_subdirectory(src)
+ #Detect all possible warnings for lwext4 target
+diff --git a/Makefile b/Makefile
+index 12ee5c7..413317d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -65,7 +65,7 @@ mingw:
+ lib_only:
+ 	rm -R -f build_lib_only
+ 	mkdir build_lib_only
+-	cd build_lib_only && cmake $(COMMON_DEFINITIONS) -DLIB_ONLY=TRUE ..
++	cd build_lib_only && aarch64-none-elf-cmake $(COMMON_DEFINITIONS) -DLIB_ONLY=TRUE ..
+ 
+ all: 
+ 	generic
+diff --git a/src/ext4.c b/src/ext4.c
+index 90ce45e..2bdd520 100644
+--- a/src/ext4.c
++++ b/src/ext4.c
+@@ -461,14 +461,13 @@ int ext4_umount(const char *mount_point)
+ 	if (r != EOK)
+ 		goto Finish;
+ 
+-	mp->mounted = 0;
+-
+ 	ext4_bcache_cleanup(mp->fs.bdev->bc);
+ 	ext4_bcache_fini_dynamic(mp->fs.bdev->bc);
+ 
+ 	r = ext4_block_fini(mp->fs.bdev);
+ Finish:
+ 	mp->fs.bdev->fs = NULL;
++	memset(mp, 0, sizeof(struct ext4_mountpoint));
+ 	return r;
+ }
+ 
+@@ -1616,7 +1615,7 @@ static int ext4_ftruncate_no_lock(ext4_file *file, uint64_t size)
+ 	/*Sync file size*/
+ 	file->fsize = ext4_inode_get_size(&file->mp->fs.sb, ref.inode);
+ 	if (file->fsize <= size) {
+-		r = EOK;
++		r = ENOTSUP;
+ 		goto Finish;
+ 	}
+ 
+@@ -1659,11 +1658,12 @@ int ext4_ftruncate(ext4_file *f, uint64_t size)
+ 	EXT4_MP_LOCK(f->mp);
+ 
+ 	ext4_trans_start(f->mp);
++
+ 	r = ext4_ftruncate_no_lock(f, size);
+-	if (r != EOK)
+-		ext4_trans_abort(f->mp);
+-	else
++	if (r == EOK || r == ENOTSUP)
+ 		ext4_trans_stop(f->mp);
++	else
++		ext4_trans_abort(f->mp);
+ 
+ 	EXT4_MP_UNLOCK(f->mp);
+ 	return r;
+@@ -3146,8 +3146,10 @@ int ext4_dir_mk(const char *path)
+ 
+ 	/*Check if exist.*/
+ 	r = ext4_generic_open(&f, path, "r", false, 0, 0);
+-	if (r == EOK)
++	if (r == EOK) {
++		r = EEXIST;
+ 		goto Finish;
++	}
+ 
+ 	/*Create new directory.*/
+ 	r = ext4_generic_open(&f, path, "w", false, 0, 0);
