@@ -3,7 +3,7 @@
 
 pkgname=switch-ntfs-3g
 pkgver=2022.10.3
-pkgrel=1
+pkgrel=2
 pkgdesc='An open source, freely available read/write NTFS driver'
 arch=('any')
 url='https://www.tuxera.com/community/open-source-ntfs-3g/'
@@ -15,11 +15,6 @@ makedepends=('devkitA64' 'dkp-toolchain-vars')
 source=(
   "ntfs-3g-${pkgver}.tar.gz::https://github.com/tuxera/ntfs-3g/archive/refs/tags/${pkgver}.tar.gz"
   "ntfs-3g-${pkgver}.patch"
-)
-
-sha256sums=(
-  '8bd7749ea9d8534c9f0664d48b576e90b96d45ec8803c9427f6ffaa2f0dde299'
-  '66962f5632b3d24dacf178cc136e302038f2ed3ae8306ba9407695a77f369ebd'
 )
 
 prepare() {
@@ -52,7 +47,12 @@ package() {
 
   source /opt/devkitpro/switchvars.sh
 
+  make install DESTDIR=${pkgdir}
+
   install -Dm644 COPYING "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING"
 
   rm -fr "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
+
+sha256sums=('8bd7749ea9d8534c9f0664d48b576e90b96d45ec8803c9427f6ffaa2f0dde299'
+            '484253654d8a0ed090b20a1b37deba54b1537dd688531c8e914e4494b5a2cd8f')
