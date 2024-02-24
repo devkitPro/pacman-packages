@@ -3,7 +3,7 @@
 
 pkgname=switch-ntfs-3g
 pkgver=2022.10.3
-pkgrel=3
+pkgrel=4
 pkgdesc='An open source, freely available read/write NTFS driver'
 arch=('any')
 url='https://www.tuxera.com/community/open-source-ntfs-3g/'
@@ -13,21 +13,18 @@ groups=('switch-portlibs')
 makedepends=('devkitA64' 'dkp-toolchain-vars')
 
 source=(
-  "ntfs-3g-${pkgver}.tar.gz::https://github.com/tuxera/ntfs-3g/archive/refs/tags/${pkgver}.tar.gz"
-  "ntfs-3g-${pkgver}.patch"
+  https://tuxera.com/opensource/ntfs-3g_ntfsprogs-${pkgver}.tgz
+  ntfs-3g-${pkgver}.patch
 )
 
-sha256sums=('8bd7749ea9d8534c9f0664d48b576e90b96d45ec8803c9427f6ffaa2f0dde299'
-            '484253654d8a0ed090b20a1b37deba54b1537dd688531c8e914e4494b5a2cd8f')
-
 prepare() {
-  cd "ntfs-3g-${pkgver}"
-  patch -Np1 -i "${srcdir}/ntfs-3g-${pkgver}.patch"
-  ./autogen.sh
+  cd ntfs-3g_ntfsprogs-${pkgver}
+  patch -Np1 -i ${srcdir}/ntfs-3g-${pkgver}.patch
+  sed -i 's#$(MAKE) $(AM_MAKEFLAGS) install-exec-hook#$(MAKE) $(AM_MAKEFLAGS)#' libntfs-3g/Makefile.in 
 }
 
 build() {
-  cd "ntfs-3g-${pkgver}"
+  cd ntfs-3g_ntfsprogs-${pkgver}
 
   source /opt/devkitpro/switchvars.sh
 
@@ -46,7 +43,7 @@ build() {
 }
 
 package() {
-  cd "ntfs-3g-${pkgver}"
+  cd ntfs-3g_ntfsprogs-${pkgver}
 
   source /opt/devkitpro/switchvars.sh
 
@@ -57,3 +54,5 @@ package() {
 
   rm -fr "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
+sha256sums=('f20e36ee68074b845e3629e6bced4706ad053804cbaf062fbae60738f854170c'
+            'a37bd1ce5e8e9f8471bbc521a6e4b268d74db6d5ca07607fdab3b09084d5f415')
