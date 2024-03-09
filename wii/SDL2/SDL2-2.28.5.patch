@@ -2389,10 +2389,10 @@ index 36e9555bb..d3db2b387 100644
  extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);
 diff --git a/src/render/ogc/SDL_render_ogc.c b/src/render/ogc/SDL_render_ogc.c
 new file mode 100644
-index 000000000..705a02467
+index 000000000..3aa86c1c0
 --- /dev/null
 +++ b/src/render/ogc/SDL_render_ogc.c
-@@ -0,0 +1,649 @@
+@@ -0,0 +1,659 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -2456,15 +2456,9 @@ index 000000000..705a02467
 +{
 +}
 +
-+static inline void OGC_SetBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend_mode)
++static void set_blend_mode_real(SDL_Renderer *renderer, SDL_BlendMode blend_mode)
 +{
 +    OGC_RenderData *data = renderer->driverdata;
-+
-+    if (data->ops_after_present > 0 &&
-+        blend_mode == data->current_blend_mode) {
-+        /* Nothing to do */
-+        return;
-+    }
 +
 +    switch (blend_mode) {
 +    case SDL_BLENDMODE_NONE:
@@ -2487,6 +2481,19 @@ index 000000000..705a02467
 +    }
 +
 +    data->current_blend_mode = blend_mode;
++}
++
++static inline void OGC_SetBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend_mode)
++{
++    OGC_RenderData *data = renderer->driverdata;
++
++    if (data->ops_after_present > 0 &&
++        blend_mode == data->current_blend_mode) {
++        /* Nothing to do */
++        return;
++    }
++
++    set_blend_mode_real(renderer, blend_mode);
 +}
 +
 +static void save_efb_to_texture(SDL_Renderer *renderer)
@@ -2933,6 +2940,9 @@ index 000000000..705a02467
 +    GX_DrawDone();
 +
 +    OGC_video_flip(SDL_GetVideoDevice(), data->vsync);
++
++    /* Mouse cursor and OSK can change the blending mode; restore it. */
++    set_blend_mode_real(renderer, data->current_blend_mode);
 +
 +    data->ops_after_present = 0;
 +    return 0;
@@ -4199,10 +4209,10 @@ index 000000000..24d0608c3
 +
 diff --git a/src/video/ogc/SDL_ogcevents.c b/src/video/ogc/SDL_ogcevents.c
 new file mode 100644
-index 000000000..c8702706d
+index 000000000..4498f17ec
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcevents.c
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,101 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4254,9 +4264,6 @@ index 000000000..c8702706d
 +
 +static void pump_ir_events(_THIS)
 +{
-+    SDL_Mouse *mouse = SDL_GetMouse();
-+    bool wiimote_pointed_at_screen = false;
-+
 +    if (!_this->windows) return;
 +
 +    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
@@ -4271,7 +4278,6 @@ index 000000000..c8702706d
 +
 +        if (!data->ir.valid) continue;
 +
-+        wiimote_pointed_at_screen = true;
 +        SDL_SendMouseMotion(_this->windows, i,
 +                            0, data->ir.x, data->ir.y);
 +
@@ -4285,18 +4291,6 @@ index 000000000..c8702706d
 +                                    SDL_RELEASED, s_mouse_button_map[b].mouse);
 +            }
 +        }
-+    }
-+
-+    /* Unfortunately SDL in practice supports only one mouse, so we are
-+     * consolidating all the wiimotes as a single device.
-+     * Here we check if any wiimote is pointed at the screen, in which case we
-+     * show the default cursor (the Wii hand); if not, then the default cursor
-+     * is hidden. Note that this only affects applications which haven't
-+     * explicitly set a cursor: the others remain in full control of whether a
-+     * cursor should be shown or not. */
-+    if (mouse && mouse->cur_cursor == mouse->def_cursor &&
-+        mouse->cursor_shown != wiimote_pointed_at_screen) {
-+        SDL_ShowCursor(wiimote_pointed_at_screen);
 +    }
 +}
 +#endif
