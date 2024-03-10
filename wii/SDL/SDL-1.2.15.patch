@@ -202,6 +202,32 @@ index ab50ef1e2..9824c5063 100644
  
  #ifdef __cplusplus
  #define C_LINKAGE	"C"
+diff --git a/src/SDL.c b/src/SDL.c
+index 87f1b1af2..bcb53f7e0 100644
+--- a/src/SDL.c
++++ b/src/SDL.c
+@@ -121,6 +121,10 @@ int SDL_InitSubSystem(Uint32 flags)
+ 		if ( SDL_JoystickInit() < 0 ) {
+ 			return(-1);
+ 		}
++// joystick 0 is used for mouse emulation on wii & cube.
++#if defined (__wii__) || defined (__gamecube__)
++		SDL_JoystickOpen(0);
++#endif
+ 		SDL_initialized |= SDL_INIT_JOYSTICK;
+ 	}
+ #else
+@@ -155,6 +159,10 @@ int SDL_Init(Uint32 flags)
+ 	}
+ #endif
+ 
++// On Wii & GameCube always initialise joysticks.
++#if defined(__wii__) || defined (__gamecube__)
++  flags |= SDL_INIT_JOYSTICK;
++#endif
+ 	/* Clear the error message */
+ 	SDL_ClearError();
+ 
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
 index beb26e0b4..fbbeb459f 100644
 --- a/src/audio/SDL_audio.c
@@ -3006,10 +3032,10 @@ index 000000000..a86ad89b4
 +#endif /* _SDL_wiivideo_h */
 diff --git a/src/video/wii/SDL_wiievents.c b/src/video/wii/SDL_wiievents.c
 new file mode 100644
-index 000000000..048f12415
+index 000000000..2688bda3f
 --- /dev/null
 +++ b/src/video/wii/SDL_wiievents.c
-@@ -0,0 +1,242 @@
+@@ -0,0 +1,264 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2006 Sam Lantinga
@@ -3065,9 +3091,31 @@ index 000000000..048f12415
 +
 +	// this will only work if Joystick 0 has been opened and has been polled
 +	WPADData *wd = WPAD_Data(WPAD_CHAN_0);
++
++	static Uint8 lastButtonStateA = SDL_RELEASED;
++	static Uint8 lastButtonStateB = SDL_RELEASED;
++
++	Uint8 stateA = (wd->btns_h & WPAD_BUTTON_A) ? SDL_PRESSED : SDL_RELEASED;
++	Uint8 stateB = (wd->btns_h & WPAD_BUTTON_B) ? SDL_PRESSED : SDL_RELEASED;
++
++	if (stateA != lastButtonStateA)
++	{
++		lastButtonStateA = stateA;
++		posted += SDL_PrivateMouseButton(stateA, SDL_BUTTON_LEFT, 0, 0);
++	}
++
++	if (stateB != lastButtonStateB)
++	{
++		lastButtonStateB = stateB;
++		posted += SDL_PrivateMouseButton(stateB, SDL_BUTTON_RIGHT, 0, 0);
++	}
++
++
 +	if (wd && wd->exp.type != WPAD_EXP_CLASSIC && wd->ir.valid) {
++
 +		// use SDL_BUTTON_X2 to signal that this is the wiimote acting as a mouse
 +		Uint8 Buttons = SDL_GetMouseState(NULL, NULL)|SDL_BUTTON_X2MASK;
++
 +		if (wd->ir.x < vresx/8)
 +			wd->ir.x = vresx/8;
 +		else if (wd->ir.x > (vresx + vresx/8))
