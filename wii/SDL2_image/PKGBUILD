@@ -4,7 +4,7 @@
 
 pkgname=wii-sdl2_image
 pkgver=2.0.4
-pkgrel=1
+pkgrel=2
 pkgdesc="SDL2 image loading library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_image/"
