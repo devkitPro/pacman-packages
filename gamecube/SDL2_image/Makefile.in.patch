@@ -1,0 +1,39 @@
+--- Makefile.in.orig	2018-10-31 09:59:00.000000000 -0500
++++ Makefile.in	2019-06-26 01:23:45.000000000 -0500
+@@ -95,7 +95,6 @@
+ host_triplet = @host@
+ @USE_VERSION_RC_FALSE@libSDL2_image_la_DEPENDENCIES =  \
+ @USE_VERSION_RC_FALSE@	$(am__DEPENDENCIES_1)
+-noinst_PROGRAMS = showimage$(EXEEXT)
+ subdir = .
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+ am__aclocal_m4_deps = $(top_srcdir)/acinclude/libtool.m4 \
+@@ -164,9 +163,6 @@
+ libSDL2_image_la_LINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
+ 	$(LIBTOOLFLAGS) --mode=link $(OBJCLD) $(AM_OBJCFLAGS) \
+ 	$(OBJCFLAGS) $(libSDL2_image_la_LDFLAGS) $(LDFLAGS) -o $@
+-showimage_SOURCES = showimage.c
+-showimage_OBJECTS = showimage.$(OBJEXT)
+-showimage_DEPENDENCIES = libSDL2_image.la
+ AM_V_P = $(am__v_P_@AM_V@)
+ am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
+ am__v_P_0 = false
+@@ -476,7 +472,6 @@
+ @USE_VERSION_RC_TRUE@libSDL2_image_la_DEPENDENCIES = version.o
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = SDL2_image.pc
+-showimage_LDADD = libSDL2_image.la
+ all: all-am
+ 
+ .SUFFIXES:
+@@ -566,10 +561,6 @@
+ libSDL2_image.la: $(libSDL2_image_la_OBJECTS) $(libSDL2_image_la_DEPENDENCIES) $(EXTRA_libSDL2_image_la_DEPENDENCIES) 
+ 	$(AM_V_OBJCLD)$(libSDL2_image_la_LINK) -rpath $(libdir) $(libSDL2_image_la_OBJECTS) $(libSDL2_image_la_LIBADD) $(LIBS)
+ 
+-showimage$(EXEEXT): $(showimage_OBJECTS) $(showimage_DEPENDENCIES) $(EXTRA_showimage_DEPENDENCIES) 
+-	@rm -f showimage$(EXEEXT)
+-	$(AM_V_CCLD)$(LINK) $(showimage_OBJECTS) $(showimage_LDADD) $(LIBS)
+-
+ mostlyclean-compile:
+ 	-rm -f *.$(OBJEXT)
+ 
