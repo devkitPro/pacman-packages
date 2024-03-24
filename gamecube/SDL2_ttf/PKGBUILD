@@ -10,7 +10,7 @@ arch=('any')
 url="https://libsdl.org/projects/SDL_ttf/"
 license=("zlib")
 options=(!strip libtool staticlibs)
-makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+makedepends=('wii-pkg-config' 'dkp-toolchain-vars')
 depends=(
   'gamecube-sdl2'
   'ppc-freetype'
