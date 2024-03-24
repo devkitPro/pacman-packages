@@ -4,7 +4,7 @@
 
 pkgname=wii-sdl2_ttf
 pkgver=2.22.0
-pkgrel=1
+pkgrel=2
 pkgdesc="SDL2 TrueType font library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_ttf/"
@@ -43,9 +43,6 @@ package() {
   source /opt/devkitpro/wiivars.sh
 
   make DESTDIR="$pkgdir" install
-
-  # add our static lib
-  echo "Requires.private: freetype2" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_ttf.pc"
 
   # License
   #install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
