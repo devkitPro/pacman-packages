@@ -4,7 +4,7 @@
 
 pkgname=gamecube-sdl2_ttf
 pkgver=2.22.0
-pkgrel=0
+pkgrel=2
 pkgdesc="SDL2 TrueType font library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_ttf/"
@@ -43,10 +43,8 @@ package() {
 
   make DESTDIR="$pkgdir" install
 
-  # add our static lib
-  echo "Requires.private: freetype2" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_ttf.pc"
-
   # License
   #install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
 }
+
 sha256sums=('d48cbd1ce475b9e178206bf3b72d56b66d84d44f64ac05803328396234d67723')
