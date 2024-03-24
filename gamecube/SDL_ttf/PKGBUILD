@@ -2,7 +2,7 @@
 
 pkgname=gamecube-sdl_ttf
 pkgver=2.0.11
-pkgrel=3
+pkgrel=4
 pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications"
 arch=('any')
 url="https://libsdl.org"
