@@ -1,9 +1,9 @@
 diff --git a/.github/workflows/switch.yml b/.github/workflows/switch.yml
 new file mode 100644
-index 000000000..517f3b5ae
+index 000000000..f6e5babab
 --- /dev/null
 +++ b/.github/workflows/switch.yml
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,32 @@
 +name: Build (Nintendo Switch)
 +
 +on: [push, pull_request]
@@ -14,26 +14,28 @@ index 000000000..517f3b5ae
 +    container:
 +      image: devkitpro/devkita64:latest
 +    steps:
-+      - uses: actions/checkout@v3
++      - uses: actions/checkout@v4
 +      - name: Configure
 +        run: |
 +          . /opt/devkitpro/switchvars.sh
-+          mkdir _build && cd _build
-+          ../configure --host=aarch64-none-elf \
-+              --prefix=`pwd`/switch-sdl2 \
-+              --disable-shared --enable-static \
-+              --enable-audio \
-+              --enable-joystick \
-+              --disable-power \
-+              --disable-filesystem \
-+              --enable-cpuinfo \
-+              --enable-pthreads \
-+              --enable-timers \ 
-+              --enable-video
++          ./configure --prefix=`pwd`/switch-sdl2 --host=aarch64-none-elf \
++            --disable-shared --enable-static \
++            --enable-audio \
++            --enable-joystick \
++            --disable-power \
++            --disable-filesystem \
++            --enable-cpuinfo \
++            --enable-pthreads \
++            --enable-timers \
++            --enable-video
 +      - name: Build
-+        run: make -C _build 
-+      - name: install
-+        run: make -C _build install
++        run: |
++          . /opt/devkitpro/switchvars.sh
++          make
++      - name: Install
++        run: |
++          . /opt/devkitpro/switchvars.sh
++          make install
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index b38a8bbc1..9c97b5f13 100644
 --- a/CMakeLists.txt
@@ -24092,7 +24094,7 @@ index 842f826bb..96b000774 100644
  string(REGEX REPLACE ";-l" ";" _sdl2_static_private_libs "${_sdl2_static_private_libs}")
  string(REGEX MATCHALL "-L([-a-zA-Z0-9._/]+)" _sdl2_static_private_libdirs "${_sdl2_static_private_libs_in}")
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index 60242e60a..b5756cf05 100644
+index 60242e60a..bf319fa57 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
 @@ -111,6 +111,9 @@ static const AudioBootStrap *const bootstrap[] = {
@@ -24100,29 +24102,29 @@ index 60242e60a..b5756cf05 100644
      &EMSCRIPTENAUDIO_bootstrap,
  #endif
 +#if SDL_AUDIO_DRIVER_SWITCH
-+    &SWITCHAUDIOOUT_bootstrap,
++    &SWITCHAUDIO_bootstrap,
 +#endif
  #if SDL_AUDIO_DRIVER_JACK
      &JACK_bootstrap,
  #endif
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index c755d4341..c3c2085d8 100644
+index c755d4341..7581d70cb 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
 @@ -209,6 +209,7 @@ extern AudioBootStrap VITAAUD_bootstrap;
  extern AudioBootStrap N3DSAUDIO_bootstrap;
  extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
  extern AudioBootStrap OS2AUDIO_bootstrap;
-+extern AudioBootStrap SWITCHAUDIOOUT_bootstrap;
++extern AudioBootStrap SWITCHAUDIO_bootstrap;
  
  #endif /* SDL_sysaudio_h_ */
  
 diff --git a/src/audio/switch/SDL_switchaudio.c b/src/audio/switch/SDL_switchaudio.c
 new file mode 100644
-index 000000000..ae608248f
+index 000000000..33710b5aa
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.c
-@@ -0,0 +1,190 @@
+@@ -0,0 +1,227 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -24158,12 +24160,25 @@ index 000000000..ae608248f
 +
 +#include "SDL_switchaudio.h"
 +
++static const AudioRendererConfig arConfig =
++    {
++        .output_rate     = AudioRendererOutputRate_48kHz,
++        .num_voices      = 24,
++        .num_effects     = 0,
++        .num_sinks       = 1,
++        .num_mix_objs    = 1,
++        .num_mix_buffers = 2,
++    };
++
 +static int
 +SWITCHAUDIO_OpenDevice(_THIS, const char *devname)
 +{
++    static const u8 sink_channels[] = {0, 1};
++    SDL_bool supported_format = SDL_FALSE;
++    SDL_AudioFormat test_format;
 +    Result res;
-+    PcmFormat fmt;
-+    int mixlen, aligned_size, i;
++    u32 size;
++    int mpid;
 +
 +    this->hidden = (struct SDL_PrivateAudioData *) SDL_malloc(sizeof(*this->hidden));
 +    if (this->hidden == NULL) {
@@ -24171,84 +24186,68 @@ index 000000000..ae608248f
 +    }
 +    SDL_zerop(this->hidden);
 +
-+    res = audoutInitialize();
++    res = audrenInitialize(&arConfig);
 +    if (R_FAILED(res)) {
-+        SDL_free(this->hidden);
-+        this->hidden = NULL;
-+        return SDL_SetError("audoutInitialize failed (0x%x)", res);
++        return SDL_SetError("audrenInitialize failed (0x%x)", res);
++    }
++    this->hidden->audr_device = true;
++
++    res = audrvCreate(&this->hidden->driver, &arConfig, 2);
++    if (R_FAILED(res)) {
++        return SDL_SetError("audrvCreate failed (0x%x)", res);
++    }
++    this->hidden->audr_driver = true;
++
++    test_format = SDL_FirstAudioFormat(this->spec.format);
++    while ((!supported_format) && (test_format)) {
++        if (test_format == AUDIO_S16SYS) {
++            supported_format = SDL_TRUE;
++        }
++        else {
++            test_format = SDL_NextAudioFormat();
++        }
++    }
++    if (!supported_format) {
++        return SDL_SetError("Unsupported audio format");
 +    }
 +
-+    fmt = audoutGetPcmFormat();
-+    switch (fmt) {
-+    case PcmFormat_Invalid:
-+        SDL_free(this->hidden);
-+        this->hidden = NULL;
-+        return SDL_SetError("audoutGetPcmFormat returned invalid value (0x%x)", (int)fmt);
-+    case PcmFormat_Int8:
-+        this->spec.format = AUDIO_S8;
-+        break;
-+    case PcmFormat_Int16:
-+        this->spec.format = AUDIO_S16SYS;
-+        break;
-+    case PcmFormat_Int32:
-+        this->spec.format = AUDIO_S32SYS;
-+        break;
-+    case PcmFormat_Float:
-+        this->spec.format = AUDIO_F32SYS;
-+        break;
-+    case PcmFormat_Int24:
-+    case PcmFormat_Adpcm:
-+        SDL_free(this->hidden);
-+        this->hidden = NULL;
-+        return SDL_SetError("audoutGetPcmFormat returned unsupported sample format (0x%x)", (int)fmt);
-+        break;
-+    }
-+
-+    this->spec.freq = (int)audoutGetSampleRate();
-+    this->spec.channels = audoutGetChannelCount();
-+
++    this->spec.format = test_format;
 +    SDL_CalculateAudioSpec(&this->spec);
 +
-+    aligned_size = (this->spec.size + 0xfff) & ~0xfff;
-+    mixlen = aligned_size * NUM_BUFFERS;
-+
-+    this->hidden->rawbuf = memalign(0x1000, mixlen);
-+    if (this->hidden->rawbuf == NULL) {
-+        SDL_free(this->hidden);
-+        this->hidden = NULL;
-+        return SDL_SetError("Couldn't allocate mixing buffer");
++    size = (u32) ((this->spec.size * 2) + 0xfff) & ~0xfff;
++    this->hidden->pool = memalign(0x1000, size);
++    for (int i = 0; i < 2; i++) {
++        this->hidden->buffer[i].data_raw = this->hidden->pool;
++        this->hidden->buffer[i].size = this->spec.size * 2;
++        this->hidden->buffer[i].start_sample_offset = i * this->spec.samples;
++        this->hidden->buffer[i].end_sample_offset = this->hidden->buffer[i].start_sample_offset + this->spec.samples;
++        this->hidden->buffer_tmp = malloc(this->spec.size);
 +    }
 +
-+    SDL_memset(this->hidden->rawbuf, 0, mixlen);
-+    for (i = 0; i < NUM_BUFFERS; i++) {
-+        this->hidden->out_buffers[i] = &this->hidden->rawbuf[i * aligned_size];
-+        this->hidden->buffer[i].next = NULL;
-+        this->hidden->buffer[i].buffer = this->hidden->out_buffers[i];
-+        this->hidden->buffer[i].buffer_size = aligned_size;
-+        this->hidden->buffer[i].data_size = this->spec.size;
-+        this->hidden->buffer[i].data_offset = 0;
-+    }
++    mpid = audrvMemPoolAdd(&this->hidden->driver, this->hidden->pool, size);
++    audrvMemPoolAttach(&this->hidden->driver, mpid);
 +
-+    this->hidden->cur_buffer = this->hidden->next_buffer;
-+    this->hidden->next_buffer = (this->hidden->next_buffer + 1) % NUM_BUFFERS;
++    audrvDeviceSinkAdd(&this->hidden->driver, AUDREN_DEFAULT_DEVICE_NAME, 2, sink_channels);
 +
-+    res = audoutAppendAudioOutBuffer(&this->hidden->buffer[this->hidden->cur_buffer]);
++    res = audrenStartAudioRenderer();
 +    if (R_FAILED(res)) {
-+        free(this->hidden->rawbuf);
-+        this->hidden->rawbuf = NULL;
-+        SDL_free(this->hidden);
-+        this->hidden = NULL;
-+        return SDL_SetError("audoutAppendAudioOutBuffer failed (0x%x)", res);
++        return SDL_SetError("audrenStartAudioRenderer failed (0x%x)", res);
 +    }
 +
-+    res = audoutStartAudioOut();
-+    if (R_FAILED(res)) {
-+        free(this->hidden->rawbuf);
-+        this->hidden->rawbuf = NULL;
-+        SDL_free(this->hidden);
-+        this->hidden = NULL;
-+        return SDL_SetError("audoutStartAudioOut failed (0x%x)", res);
++    audrvVoiceInit(&this->hidden->driver, 0, this->spec.channels, PcmFormat_Int16, this->spec.freq);
++    audrvVoiceSetDestinationMix(&this->hidden->driver, 0, AUDREN_FINAL_MIX_ID);
++    if (this->spec.channels == 1) {
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 0);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 1);
 +    }
++    else {
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 0, 0);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 0.0f, 0, 1);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 0.0f, 1, 0);
++        audrvVoiceSetMixFactor(&this->hidden->driver, 0, 1.0f, 1, 1);
++    }
++
++    audrvVoiceStart(&this->hidden->driver, 0);
 +
 +    return 0;
 +}
@@ -24256,32 +24255,72 @@ index 000000000..ae608248f
 +static void
 +SWITCHAUDIO_PlayDevice(_THIS)
 +{
-+    this->hidden->cur_buffer = this->hidden->next_buffer;
-+    audoutAppendAudioOutBuffer(&this->hidden->buffer[this->hidden->cur_buffer]);
-+    this->hidden->next_buffer = (this->hidden->next_buffer + 1) % NUM_BUFFERS;
++    int current = -1;
++    for (int i = 0; i < 2; i++) {
++        if (this->hidden->buffer[i].state == AudioDriverWaveBufState_Free
++            || this->hidden->buffer[i].state == AudioDriverWaveBufState_Done) {
++            current = i;
++            break;
++        }
++    }
++
++    if (current >= 0) {
++        Uint8 *ptr = (Uint8 *) (this->hidden->pool + (current * this->spec.size));
++        memcpy(ptr, this->hidden->buffer_tmp, this->spec.size);
++        armDCacheFlush(ptr, this->spec.size);
++        audrvVoiceAddWaveBuf(&this->hidden->driver, 0, &this->hidden->buffer[current]);
++    }
++    else if (!audrvVoiceIsPlaying(&this->hidden->driver, 0)) {
++        audrvVoiceStart(&this->hidden->driver, 0);
++    }
++
++    audrvUpdate(&this->hidden->driver);
++
++    if (current >= 0) {
++        while (this->hidden->buffer[current].state != AudioDriverWaveBufState_Playing) {
++            audrvUpdate(&this->hidden->driver);
++            audrenWaitFrame();
++        }
++    }
++    else {
++        current = -1;
++        for (int i = 0; i < 2; i++) {
++            if (this->hidden->buffer[i].state == AudioDriverWaveBufState_Playing) {
++                current = i;
++                break;
++            }
++        }
++        while (this->hidden->buffer[current].state == AudioDriverWaveBufState_Playing) {
++            audrvUpdate(&this->hidden->driver);
++            audrenWaitFrame();
++        }
++    }
 +}
 +
 +static void
 +SWITCHAUDIO_WaitDevice(_THIS)
 +{
-+    audoutWaitPlayFinish(&this->hidden->released_out_buffer, &this->hidden->released_out_count, UINT64_MAX);
 +}
 +
 +static Uint8
 +*SWITCHAUDIO_GetDeviceBuf(_THIS)
 +{
-+    return this->hidden->out_buffers[this->hidden->next_buffer];
++    return this->hidden->buffer_tmp;
 +}
 +
 +static void
 +SWITCHAUDIO_CloseDevice(_THIS)
 +{
-+    audoutStopAudioOut();
-+    audoutExit();
++    if (this->hidden->audr_driver) {
++        audrvClose(&this->hidden->driver);
++    }
 +
-+    if (this->hidden->rawbuf) {
-+        free(this->hidden->rawbuf);
-+        this->hidden->rawbuf = NULL;
++    if (this->hidden->audr_device) {
++        audrenExit();
++    }
++
++    if (this->hidden->buffer_tmp) {
++        free(this->hidden->buffer_tmp);
 +    }
 +
 +    SDL_free(this->hidden);
@@ -24290,7 +24329,7 @@ index 000000000..ae608248f
 +static void
 +SWITCHAUDIO_ThreadInit(_THIS)
 +{
-+    (void)this;
++
 +}
 +
 +static SDL_bool
@@ -24303,22 +24342,22 @@ index 000000000..ae608248f
 +    impl->CloseDevice = SWITCHAUDIO_CloseDevice;
 +    impl->ThreadInit = SWITCHAUDIO_ThreadInit;
 +
-+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
++    impl->OnlyHasDefaultOutputDevice = 1;
 +
-+    return SDL_TRUE;
++    return 1;
 +}
 +
-+AudioBootStrap SWITCHAUDIOOUT_bootstrap = {
-+    "switchout", "Nintendo Switch audio out driver", SWITCHAUDIO_Init, SDL_FALSE
++AudioBootStrap SWITCHAUDIO_bootstrap = {
++    "switch", "Nintendo Switch audio driver", SWITCHAUDIO_Init, 0
 +};
 +
 +#endif /* SDL_AUDIO_DRIVER_SWITCH */
 diff --git a/src/audio/switch/SDL_switchaudio.h b/src/audio/switch/SDL_switchaudio.h
 new file mode 100644
-index 000000000..b618e2ae1
+index 000000000..f5e0340fb
 --- /dev/null
 +++ b/src/audio/switch/SDL_switchaudio.h
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,41 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
@@ -24349,21 +24388,14 @@ index 000000000..b618e2ae1
 +/* Hidden "this" pointer for the audio functions */
 +#define _THIS   SDL_AudioDevice *this
 +
-+#define NUM_BUFFERS 2
-+
 +struct SDL_PrivateAudioData
 +{
-+    AudioOutBuffer buffer[NUM_BUFFERS];
-+    AudioOutBuffer *released_out_buffer;
-+    u32 released_out_count;
-+    /* The raw allocated mixing buffer. */
-+    Uint8   *rawbuf;
-+    /* Individual mixing buffers. */
-+    void *out_buffers[NUM_BUFFERS];
-+    /* Index of the next available mixing buffer. */
-+    int     next_buffer;
-+    /* Currently playing buffer */
-+    int     cur_buffer;
++    AudioDriver driver;
++    AudioDriverWaveBuf buffer[2];
++    void *buffer_tmp;
++    void *pool;
++    bool audr_device;
++    bool audr_driver;
 +};
 +
 +#endif /* SDL_switchaudio_h_ */
