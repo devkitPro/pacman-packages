@@ -1,0 +1,33 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+_realname=jsoncpp
+pkgname=ppc-${_realname}
+pkgver=1.9.5
+pkgrel=1
+pkgdesc="A C++ library for interacting with JSON"
+arch=('any')
+url='https://github.com/open-source-parsers/jsoncpp'
+license=('zlib')
+options=(!strip libtool staticlibs)
+source=( ${_realname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz)
+makedepends=('devkitPPC' 'devkitppc-cmake')
+
+groups=('ppc-portlibs')
+
+build() {
+
+  /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake \
+    -B _build -S ${_realname}-${pkgver} \
+    -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc \
+    -DJSONCPP_WITH_TESTS=OFF \
+    -GNinja
+  cmake --build _build --parallel
+
+}
+
+package() {
+
+  DESTDIR="${pkgdir}" cmake --install _build
+}
+
+sha256sums=('fbe74bbdcee21d656715688706da3c8becfd946d92cd44705cc6098bb23b3a16')
+sha256sums=('f409856e5920c18d0c2fb85276e24ee607d2a09b5e7d5f0a371368903c275da2')
