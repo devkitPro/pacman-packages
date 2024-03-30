@@ -2,7 +2,7 @@
 
 pkgname=gamecube-sdl2
 pkgver=2.28.5
-pkgrel=9
+pkgrel=10
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
 arch=('any')
 url="https://libsdl.org"
@@ -31,3 +31,5 @@ package() {
 }
 sha256sums=('332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4'
             '72863493c2668de538c97cf64ffd41552450c8745b3874597fed1cb34793426e')
+sha256sums=('332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4'
+            'cd4ecd96905831870b0c1a0175f18bfce43e5508f29d560b61a1fbcc06519ff5')

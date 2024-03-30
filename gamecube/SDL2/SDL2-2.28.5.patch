@@ -1,6 +1,6 @@
 diff --git a/.github/workflows/ngc.yml b/.github/workflows/ngc.yml
 new file mode 100644
-index 000000000..b018d7dc3
+index 000000000..aeaf6b926
 --- /dev/null
 +++ b/.github/workflows/ngc.yml
 @@ -0,0 +1,47 @@
@@ -14,7 +14,7 @@ index 000000000..b018d7dc3
 +    container:
 +      image: devkitpro/devkitppc:latest
 +    steps:
-+      - uses: actions/checkout@v3
++      - uses: actions/checkout@v4
 +      - name: Install build requirements
 +        run: |
 +          apt update
@@ -51,10 +51,9 @@ index 000000000..b018d7dc3
 +        run: |
 +          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
 +          cmake/test/test_pkgconfig.sh
-\ No newline at end of file
 diff --git a/.github/workflows/nwii.yml b/.github/workflows/nwii.yml
 new file mode 100644
-index 000000000..bcfb4cc5f
+index 000000000..625de93b9
 --- /dev/null
 +++ b/.github/workflows/nwii.yml
 @@ -0,0 +1,47 @@
@@ -68,7 +67,7 @@ index 000000000..bcfb4cc5f
 +    container:
 +      image: devkitpro/devkitppc:latest
 +    steps:
-+      - uses: actions/checkout@v3
++      - uses: actions/checkout@v4
 +      - name: Install build requirements
 +        run: |
 +          apt update
@@ -105,7 +104,6 @@ index 000000000..bcfb4cc5f
 +        run: |
 +          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
 +          cmake/test/test_pkgconfig.sh
-\ No newline at end of file
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index b38a8bbc1..7dc928208 100644
 --- a/CMakeLists.txt
@@ -879,10 +877,10 @@ index a93fa662c..3d3329ae5 100644
  #ifdef __cplusplus
 diff --git a/src/joystick/ogc/SDL_sysjoystick.c b/src/joystick/ogc/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..fc7ea71c1
+index 000000000..56d5beccc
 --- /dev/null
 +++ b/src/joystick/ogc/SDL_sysjoystick.c
-@@ -0,0 +1,1321 @@
+@@ -0,0 +1,1328 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -1078,6 +1076,7 @@ index 000000000..fc7ea71c1
 +#ifdef __wii__
 +static bool s_wii_has_new_data[MAX_WII_JOYSTICKS];
 +static bool s_accelerometers_as_axes = false;
++static bool s_wiimote_sideways = false;
 +
 +static void SDLCALL
 +on_hint_accel_as_joystick_cb(void *userdata, const char *name,
@@ -1210,6 +1209,12 @@ index 000000000..fc7ea71c1
 +#ifdef __wii__
 +    SDL_AddHintCallback(SDL_HINT_ACCELEROMETER_AS_JOYSTICK,
 +                        on_hint_accel_as_joystick_cb, NULL);
++    /* If this is set, the Wiimote directional keys will be translated. */
++    {
++        const char *sideways_joystick_env = getenv("SDL_WII_JOYSTICK_SIDEWAYS");
++        s_wiimote_sideways =
++            sideways_joystick_env && strcmp(sideways_joystick_env, "1") == 0;
++    }
 +#endif
 +
 +    /* Initialize the needed variables */
@@ -1622,13 +1627,13 @@ index 000000000..fc7ea71c1
 +        int hat = SDL_HAT_CENTERED;
 +
 +        if (pressed & buttons[0])
-+            hat |= SDL_HAT_UP;
++            hat |= s_wiimote_sideways ? SDL_HAT_LEFT : SDL_HAT_UP;
 +        if (pressed & buttons[1])
-+            hat |= SDL_HAT_DOWN;
++            hat |= s_wiimote_sideways ? SDL_HAT_RIGHT : SDL_HAT_DOWN;
 +        if (pressed & buttons[2])
-+            hat |= SDL_HAT_LEFT;
++            hat |= s_wiimote_sideways ? SDL_HAT_DOWN : SDL_HAT_LEFT;
 +        if (pressed & buttons[3])
-+            hat |= SDL_HAT_RIGHT;
++            hat |= s_wiimote_sideways ? SDL_HAT_UP : SDL_HAT_RIGHT;
 +        SDL_PrivateJoystickHat(joystick, 0, hat);
 +    }
 +}
@@ -3493,10 +3498,10 @@ index 000000000..825de911f
 +}
 diff --git a/src/thread/ogc/SDL_systhread.c b/src/thread/ogc/SDL_systhread.c
 new file mode 100644
-index 000000000..3bc96af47
+index 000000000..558cce7e9
 --- /dev/null
 +++ b/src/thread/ogc/SDL_systhread.c
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,92 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2006 Sam Lantinga
@@ -3577,6 +3582,12 @@ index 000000000..3bc96af47
 +    void *v;
 +    LWP_JoinThread(thread->handle, &v);
 +    return;
++}
++
++void SDL_SYS_DetachThread(SDL_Thread *thread)
++{
++    /* Do nothing. */
++    thread->handle = LWP_THREAD_NULL;
 +}
 +
 +void SDL_SYS_KillThread(SDL_Thread *thread)
@@ -4209,10 +4220,10 @@ index 000000000..24d0608c3
 +
 diff --git a/src/video/ogc/SDL_ogcevents.c b/src/video/ogc/SDL_ogcevents.c
 new file mode 100644
-index 000000000..4498f17ec
+index 000000000..a3ebc0d3d
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcevents.c
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,107 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4264,6 +4275,8 @@ index 000000000..4498f17ec
 +
 +static void pump_ir_events(_THIS)
 +{
++    int screen_w, screen_h;
++
 +    if (!_this->windows) return;
 +
 +    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
@@ -4273,13 +4286,17 @@ index 000000000..4498f17ec
 +        WPAD_ReadPending(WPAD_CHAN_ALL, NULL);
 +    }
 +
++    screen_w = _this->displays[0].current_mode.w;
++    screen_h = _this->displays[0].current_mode.h;
++
 +    for (int i = 0; i < 4; i++) {
 +        WPADData *data = WPAD_Data(i);
 +
 +        if (!data->ir.valid) continue;
 +
-+        SDL_SendMouseMotion(_this->windows, i,
-+                            0, data->ir.x, data->ir.y);
++        SDL_SendMouseMotion(_this->windows, i, 0,
++                            data->ir.x * screen_w / 640,
++                            data->ir.y * screen_h / 480);
 +
 +        for (int b = 0; b < MAX_WII_MOUSE_BUTTONS; b++) {
 +            if (data->btns_d & s_mouse_button_map[b].wii) {
@@ -4724,10 +4741,10 @@ index 000000000..1b2ed5b32
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcmouse.c b/src/video/ogc/SDL_ogcmouse.c
 new file mode 100644
-index 000000000..220e84286
+index 000000000..c6c8afc9b
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcmouse.c
-@@ -0,0 +1,207 @@
+@@ -0,0 +1,227 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4765,6 +4782,7 @@ index 000000000..220e84286
 +#include <malloc.h>
 +#include <ogc/cache.h>
 +#include <ogc/gx.h>
++#include <wiiuse/wpad.h>
 +
 +typedef struct _OGC_CursorData
 +{
@@ -4773,16 +4791,16 @@ index 000000000..220e84286
 +    int w, h;
 +} OGC_CursorData;
 +
-+static void draw_cursor_rect(OGC_CursorData *curdata, int x, int y)
++static void draw_cursor_rect(OGC_CursorData *curdata)
 +{
 +    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-+    GX_Position2s16(x, y);
++    GX_Position2s16(-curdata->hot_x, -curdata->hot_y);
 +    GX_TexCoord2u8(0, 0);
-+    GX_Position2s16(x + curdata->w, y);
++    GX_Position2s16(curdata->w - curdata->hot_x, -curdata->hot_y);
 +    GX_TexCoord2u8(1, 0);
-+    GX_Position2s16(x + curdata->w, y + curdata->h);
++    GX_Position2s16(curdata->w - curdata->hot_x, curdata->h - curdata->hot_y);
 +    GX_TexCoord2u8(1, 1);
-+    GX_Position2s16(x, y + curdata->h);
++    GX_Position2s16(-curdata->hot_x, curdata->h - curdata->hot_y);
 +    GX_TexCoord2u8(0, 1);
 +    GX_End();
 +}
@@ -4902,18 +4920,35 @@ index 000000000..220e84286
 +{
 +    SDL_Mouse *mouse = SDL_GetMouse();
 +    OGC_CursorData *curdata;
-+    int x, y;
++    Mtx mv;
++    int screen_w, screen_h;
 +
 +    if (!mouse || !mouse->cursor_shown ||
 +        !mouse->cur_cursor || !mouse->cur_cursor->driverdata) {
 +        return;
 +    }
 +
++    screen_w = _this->displays[0].current_mode.w;
++    screen_h = _this->displays[0].current_mode.h;
++
 +    curdata = mouse->cur_cursor->driverdata;
-+    x = mouse->x - curdata->hot_x;
-+    y = mouse->y - curdata->hot_y;
 +    OGC_load_texture(curdata->texels, curdata->w, curdata->h, GX_TF_RGBA8,
 +                     SDL_ScaleModeNearest);
++
++    guMtxIdentity(mv);
++    guMtxScaleApply(mv, mv, screen_w / 640.0f, screen_h / 480.0f, 1.0f);
++    /* If this is the default cursor, rotate it too */
++    if (mouse->cur_cursor == mouse->def_cursor) {
++        Mtx rot;
++        float angle;
++        WPADData *data = WPAD_Data(mouse->mouseID);
++
++        angle = data->ir.angle;
++        guMtxRotDeg(rot, 'z', angle);
++        guMtxConcat(mv, rot, mv);
++    }
++    guMtxTransApply(mv, mv, mouse->x, mouse->y, 0);
++    GX_LoadPosMtxImm(mv, GX_PNMTX1);
 +
 +    GX_ClearVtxDesc();
 +    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -4928,7 +4963,9 @@ index 000000000..220e84286
 +    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 +
 +    GX_SetNumTexGens(1);
-+    draw_cursor_rect(curdata, x, y);
++    GX_SetCurrentMtx(GX_PNMTX1);
++    draw_cursor_rect(curdata);
++    GX_SetCurrentMtx(GX_PNMTX0);
 +    GX_DrawDone();
 +}
 +
@@ -5387,10 +5424,10 @@ index 000000000..c92d032aa
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcvideo.c b/src/video/ogc/SDL_ogcvideo.c
 new file mode 100644
-index 000000000..e03446f89
+index 000000000..d62723c7a
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcvideo.c
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,350 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -5436,9 +5473,158 @@ index 000000000..e03446f89
 +
 +#define DEFAULT_FIFO_SIZE 256 * 1024
 +
++// Inverse of the VI_TVMODE macro
++#define VI_FORMAT_FROM_MODE(tvmode) (tvmode >> 2)
++
++/* A video mode with a 320 width; we'll build it programmatically. */
++static GXRModeObj s_mode320;
++
++static const GXRModeObj *s_ntsc_modes[] = {
++    &TVNtsc240Ds,
++    &TVNtsc480Prog,
++    NULL,
++};
++
++static const GXRModeObj *s_mpal_modes[] = {
++    &TVMpal240Ds,
++    &TVMpal480Prog,
++    NULL,
++};
++
++static const GXRModeObj *s_eurgb60_modes[] = {
++    &TVEurgb60Hz240Ds,
++    &TVEurgb60Hz480Prog,
++    // Also add some PAL modes, since EURGB60 supports them too
++    &TVPal264Ds,
++    &TVPal528Prog,
++    &TVPal576ProgScale,
++    NULL,
++};
++
++static const GXRModeObj *s_pal_modes[] = {
++    &TVPal264Ds,
++    &TVPal528Prog,
++    &TVPal576ProgScale,
++    NULL,
++};
++
 +/* Initialization/Query functions */
 +static int OGC_VideoInit(_THIS);
 +static void OGC_VideoQuit(_THIS);
++
++static void init_display_mode(SDL_DisplayMode *mode, const GXRModeObj *vmode)
++{
++    u32 format = VI_FORMAT_FROM_MODE(vmode->viTVMode);
++
++    /* Use a fake 32-bpp desktop mode */
++    SDL_zero(*mode);
++    mode->format = SDL_PIXELFORMAT_ARGB8888;
++    mode->w = vmode->fbWidth;
++    mode->h = vmode->efbHeight;
++    switch (format) {
++    case VI_DEBUG:
++    case VI_NTSC:
++    case VI_EURGB60:
++    case VI_MPAL:
++        mode->refresh_rate = 60;
++        break;
++    case VI_PAL:
++    case VI_DEBUG_PAL:
++        mode->refresh_rate = 50;
++        break;
++    }
++    mode->driverdata = (GXRModeObj*)vmode;
++}
++
++static void add_supported_modes(SDL_VideoDisplay *display, u32 tv_format)
++{
++    const GXRModeObj **gx_modes;
++    SDL_DisplayMode mode;
++
++    switch (tv_format) {
++    case VI_DEBUG:
++    case VI_NTSC:
++        gx_modes = s_ntsc_modes;
++        break;
++    case VI_MPAL:
++        gx_modes = s_mpal_modes;
++        break;
++    case VI_EURGB60:
++        gx_modes = s_eurgb60_modes;
++        break;
++    case VI_PAL:
++    case VI_DEBUG_PAL:
++        gx_modes = s_pal_modes;
++        break;
++    default:
++        return;
++    }
++
++    /* All libogc video modes are 640 pixel wide, even the 240p ones. While
++     * this can be useful for some applications, others might prefer a video
++     * mode with less elongated pixels, such as 320x240. Therefore, let's
++     * create one: we take the first video mode in the array (which has always
++     * a height of approximately 240p) and we use it as template to build the
++     * "mode320": we just set the fbWidth field to 320: the VI interface will
++     * take care of the horizontal scale for us. */
++    memcpy(&s_mode320, gx_modes[0], sizeof(s_mode320));
++    s_mode320.fbWidth = 320;
++    init_display_mode(&mode, &s_mode320);
++    SDL_AddDisplayMode(display, &mode);
++
++    /* Now add all the "standard" modes from libogc */
++    while (*gx_modes) {
++        init_display_mode(&mode, *gx_modes);
++        SDL_AddDisplayMode(display, &mode);
++        gx_modes++;
++    }
++}
++
++static void setup_video_mode(_THIS, GXRModeObj *vmode)
++{
++    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
++
++    VIDEO_SetBlack(true);
++    VIDEO_Configure(vmode);
++
++    /* Allocate the XFB */
++    videodata->xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
++    videodata->xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
++
++    VIDEO_ClearFrameBuffer(vmode, videodata->xfb[0], COLOR_BLACK);
++    VIDEO_SetNextFramebuffer(videodata->xfb[0]);
++    VIDEO_SetBlack(false);
++    VIDEO_Flush();
++
++    VIDEO_WaitVSync();
++    if (vmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
++
++    /* Setup the EFB -> XFB copy operation */
++    GX_SetDispCopySrc(0, 0, vmode->fbWidth, vmode->efbHeight);
++    GX_SetDispCopyDst(vmode->fbWidth, vmode->xfbHeight);
++    GX_SetDispCopyYScale((f32)vmode->xfbHeight / (f32)vmode->efbHeight);
++    GX_SetCopyFilter(vmode->aa, vmode->sample_pattern, GX_FALSE, vmode->vfilter);
++    GX_SetFieldMode(vmode->field_rendering,
++                    ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
++
++    OGC_draw_init(vmode->fbWidth, vmode->efbHeight);
++}
++
++static int OGC_SetDisplayMode(_THIS, SDL_VideoDisplay *display,
++                              SDL_DisplayMode *mode)
++{
++    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
++    /* The GX video mode is stored in the driverdata pointer */
++    GXRModeObj *vmode = mode->driverdata;
++
++    if (videodata->xfb[0])
++        free(MEM_K1_TO_K0(videodata->xfb[0]));
++    if (videodata->xfb[1])
++        free(MEM_K1_TO_K0(videodata->xfb[1]));
++
++    setup_video_mode(_this, vmode);
++    return 0;
++}
 +
 +static void OGC_ShowWindow(_THIS, SDL_Window *window)
 +{
@@ -5478,6 +5664,7 @@ index 000000000..e03446f89
 +    /* Set the function pointers */
 +    device->VideoInit = OGC_VideoInit;
 +    device->VideoQuit = OGC_VideoQuit;
++    device->SetDisplayMode = OGC_SetDisplayMode;
 +    device->PumpEvents = OGC_PumpEvents;
 +    device->ShowWindow = OGC_ShowWindow;
 +    device->CreateWindowFramebuffer = SDL_OGC_CreateWindowFramebuffer;
@@ -5504,52 +5691,29 @@ index 000000000..e03446f89
 +    VIDEO_Init();
 +
 +    vmode = VIDEO_GetPreferredMode(NULL);
-+    VIDEO_Configure(vmode);
-+
-+    /* Allocate the XFB */
-+    videodata->xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
-+    videodata->xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
-+
-+    VIDEO_ClearFrameBuffer(vmode, videodata->xfb[0], COLOR_BLACK);
-+    VIDEO_SetNextFramebuffer(videodata->xfb[0]);
-+    VIDEO_SetBlack(false);
-+    VIDEO_Flush();
 +
 +    videodata->gp_fifo = memalign(32, DEFAULT_FIFO_SIZE);
 +    memset(videodata->gp_fifo, 0, DEFAULT_FIFO_SIZE);
 +    GX_Init(videodata->gp_fifo, DEFAULT_FIFO_SIZE);
 +
-+    /* Setup the EFB -> XFB copy operation */
-+    GX_SetDispCopySrc(0, 0, vmode->fbWidth, vmode->efbHeight);
-+    GX_SetDispCopyDst(vmode->fbWidth, vmode->xfbHeight);
-+    GX_SetDispCopyYScale((f32)vmode->xfbHeight / (f32)vmode->efbHeight);
-+    GX_SetCopyFilter(vmode->aa, vmode->sample_pattern, GX_FALSE, vmode->vfilter);
++    setup_video_mode(_this, vmode);
 +    GX_SetCopyClear(background, GX_MAX_Z24);
 +
-+    GX_SetFieldMode(vmode->field_rendering,
-+                    ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 +    GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
 +    GX_SetCullMode(GX_CULL_NONE);
 +    GX_SetBlendMode(GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 +
 +    GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 +
-+    OGC_draw_init(vmode->fbWidth, vmode->efbHeight);
-+
 +    GX_Flush();
 +
-+    /* Use a fake 32-bpp desktop mode */
-+    SDL_zero(mode);
-+    mode.format = SDL_PIXELFORMAT_ARGB8888;
-+    mode.w = vmode->fbWidth;
-+    mode.h = vmode->efbHeight;
-+    mode.refresh_rate = 60;
-+    mode.driverdata = NULL;
++    init_display_mode(&mode, vmode);
 +    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
 +        return -1;
 +    }
 +
 +    SDL_AddDisplayMode(&_this->displays[0], &mode);
++    add_supported_modes(&_this->displays[0], VI_FORMAT_FROM_MODE(vmode->viTVMode));
 +
 +    videodata->vmode = vmode;
 +
@@ -5562,6 +5726,7 @@ index 000000000..e03446f89
 +void OGC_VideoQuit(_THIS)
 +{
 +    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
++    SDL_VideoDisplay *display;
 +
 +#ifdef __wii__
 +    OGC_QuitMouse(_this);
@@ -5572,6 +5737,15 @@ index 000000000..e03446f89
 +        free(MEM_K1_TO_K0(videodata->xfb[0]));
 +    if (videodata->xfb[1])
 +        free(MEM_K1_TO_K0(videodata->xfb[1]));
++
++    /* During shutdown, SDL_ResetDisplayModes() will be called and will invoke
++     * SDL_free() on driverdata. Nullify the pointers in order to avoid a
++     * crash, since we didn't actually allocate this memory. */
++    display = &_this->displays[0];
++    for (int i = display->num_display_modes; i--;) {
++        display->display_modes[i].driverdata = NULL;
++    }
++    display->desktop_mode.driverdata = NULL;
 +}
 +
 +void *OGC_video_get_xfb(_THIS)
