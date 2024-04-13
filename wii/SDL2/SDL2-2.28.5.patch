@@ -105,7 +105,7 @@ index 000000000..625de93b9
 +          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
 +          cmake/test/test_pkgconfig.sh
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b38a8bbc1..7dc928208 100644
+index b38a8bbc1..56629f588 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -141,6 +141,7 @@ check_cpu_architecture(x64 SDL_CPU_X64)
@@ -216,7 +216,7 @@ index b38a8bbc1..7dc928208 100644
 +  endif()
 +  list(APPEND EXTRA_LDFLAGS "${OGC_ARCH_SETTINGS} ${OGC_LINKER_FLAGS}")
 +  if(NINTENDO_WII)
-+    list(APPEND EXTRA_LIBS "wiiuse;bte")
++    list(APPEND EXTRA_LIBS "wiiuse;bte;wiikeyboard")
 +  endif()
 +  list(APPEND EXTRA_LIBS "ogc;m")
  endif()
@@ -2271,7 +2271,7 @@ index 000000000..f0d42bed9
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/main/wii/SDL_wii_main.c b/src/main/wii/SDL_wii_main.c
 new file mode 100644
-index 000000000..9a42125aa
+index 000000000..47b8b207f
 --- /dev/null
 +++ b/src/main/wii/SDL_wii_main.c
 @@ -0,0 +1,91 @@
@@ -2350,7 +2350,7 @@ index 000000000..9a42125aa
 +    WPAD_SetVRes(WPAD_CHAN_ALL, 640, 480);
 +
 +    MOUSE_Init();
-+    // TODO KEYBOARD_Init(NULL);
++    KEYBOARD_Init(NULL);
 +    fatInitDefault();
 +
 +    /* Call the user's main function. Make sure that argv contains at least one
@@ -4220,10 +4220,10 @@ index 000000000..24d0608c3
 +
 diff --git a/src/video/ogc/SDL_ogcevents.c b/src/video/ogc/SDL_ogcevents.c
 new file mode 100644
-index 000000000..a3ebc0d3d
+index 000000000..6fb8ac455
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcevents.c
-@@ -0,0 +1,107 @@
+@@ -0,0 +1,109 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4253,6 +4253,7 @@ index 000000000..a3ebc0d3d
 +#include "../../events/SDL_events_c.h"
 +
 +#include "SDL_ogcevents_c.h"
++#include "SDL_ogckeyboard.h"
 +#include "SDL_ogcmouse.h"
 +#include "SDL_ogcvideo.h"
 +
@@ -4325,6 +4326,7 @@ index 000000000..a3ebc0d3d
 +
 +#ifdef __wii__
 +    pump_ir_events(_this);
++    OGC_PumpKeyboardEvents(_this);
 +#endif
 +}
 +
@@ -4737,6 +4739,111 @@ index 000000000..1b2ed5b32
 +                      SDL_ScaleMode scale_mode);
 +
 +#endif /* SDL_ogcgxcommon_h_ */
++
++/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/ogc/SDL_ogckeyboard.c b/src/video/ogc/SDL_ogckeyboard.c
+new file mode 100644
+index 000000000..1ebf0f8fc
+--- /dev/null
++++ b/src/video/ogc/SDL_ogckeyboard.c
+@@ -0,0 +1,59 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "SDL_ogckeyboard.h"
++#include "../../events/SDL_keyboard_c.h"
++
++#if defined(SDL_VIDEO_DRIVER_OGC) && defined(__wii__)
++#include <gctypes.h>
++#include <wiikeyboard/keyboard.h>
++
++void OGC_PumpKeyboardEvents(_THIS) {
++    keyboard_event ke;
++
++    s32 res = KEYBOARD_GetEvent(&ke);
++    if (res && (ke.type == KEYBOARD_RELEASED || ke.type == KEYBOARD_PRESSED)) {
++        SDL_SendKeyboardKey((ke.type == KEYBOARD_PRESSED) ? SDL_PRESSED : SDL_RELEASED, (SDL_Scancode)ke.keycode);
++
++        if (ke.type == KEYBOARD_PRESSED) {
++            const Uint16 symbol = ke.symbol;
++            char utf8[4] = {'\0'};
++
++            /* ignore private symbols, used by wiikeyboard for special keys */
++            if ((symbol >= 0xE000 && symbol <= 0xF8FF) || symbol == 0xFFFF)
++                return;
++
++            /* convert UCS-2 to UTF-8 */
++            if (symbol < 0x80) {
++                utf8[0] = symbol;
++            } else if (symbol < 0x800) {
++                utf8[0] = 0xC0 | (symbol >> 6);
++                utf8[1] = 0x80 | (symbol & 0x3F);
++            } else {
++                utf8[0] = 0xE0 |  (symbol >> 12);
++                utf8[1] = 0x80 | ((symbol >> 6) & 0x3F);
++                utf8[2] = 0x80 |  (symbol & 0x3F);
++            }
++
++            SDL_SendKeyboardText(utf8);
++        }
++    }
++}
++#endif
+diff --git a/src/video/ogc/SDL_ogckeyboard.h b/src/video/ogc/SDL_ogckeyboard.h
+new file mode 100644
+index 000000000..ca8c0464d
+--- /dev/null
++++ b/src/video/ogc/SDL_ogckeyboard.h
+@@ -0,0 +1,34 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#ifndef SDL_OGC_keyboard_h_
++#define SDL_OGC_keyboard_h_
++
++#include "../../SDL_internal.h"
++#include "SDL_ogcvideo.h"
++
++#ifdef __wii__
++void OGC_PumpKeyboardEvents(_THIS);
++#endif
++
++#endif /* SDL_OGC_keyboard_h_ */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcmouse.c b/src/video/ogc/SDL_ogcmouse.c
