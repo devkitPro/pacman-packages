@@ -2,22 +2,25 @@
 
 pkgbasename=glu
 pkgname=switch-$pkgbasename
-pkgver=9.0.1
+pkgver=9.0.3
 pkgrel=1
 pkgdesc='SGI implementation of the OpenGL Utility library'
 arch=('any')
 url='https://mesa.freedesktop.org/archive/glu/'
 license=('custom')
 options=(!strip libtool staticlibs)
-source=("${url}/${pkgbasename}-${pkgver}.tar.xz")
-sha256sums=('fb5a4c2dd6ba6d1c21ab7c05129b0769544e1d68e1e3b0ffecb18e73c93055bc')
+source=(
+  "${url}/${pkgbasename}-${pkgver}.tar.xz"
+  "glu-9.0.3-meson-enable-egl-arg.patch"
+  "LICENSE"
+)
 depends=('switch-mesa')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=("switch-pkg-config" "dkp-toolchain-vars" "dkp-meson-scripts")
 groups=('switch-portlibs')
 
 prepare() {
   cd ${pkgbasename}-${pkgver}
-  patch -Np1 -i "${startdir}/${pkgbasename}-9.0.1-configure-ac-enable-egl-arg.patch"
+  patch -Np2 -i "${srcdir}/glu-9.0.3-meson-enable-egl-arg.patch"
 }
 
 build() {
@@ -25,17 +28,22 @@ build() {
 
   source /opt/devkitpro/switchvars.sh
 
-  autoconf
+  /opt/devkitpro/meson-cross.sh switch ../crossfile.txt \
+    -Dgl_provider=egl \
+    build
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static --enable-egl
-
-  make
 }
 
 package() {
   cd ${pkgbasename}-${pkgver}
 
-  make DESTDIR="$pkgdir" install
-  install -Dm644 "${startdir}"/LICENSE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE 
+  DESTDIR="$pkgdir" meson install -C build
+  install -dm755 "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname
+  install -m644 "${srcdir}"/LICENSE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/
+
 }
+
+sha256sums=('bd43fe12f374b1192eb15fe20e45ff456b9bc26ab57f0eee919f96ca0f8a330f'
+            '5dccad835d8229d8a10daa87b70fd2fddd193702df23fd47b1934d6721acc52c'
+            '0d27597d42ef0c1ad0e52887de19d3c985608daa60581e9c075c1a978aa5bf40')
+

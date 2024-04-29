@@ -1,0 +1,11 @@
+--- src/glu-9.0.3/meson_options.txt~	2024-04-29 09:41:20
++++ src/glu-9.0.3/meson_options.txt	2024-04-29 09:41:27
+@@ -4,7 +4,7 @@
+ option(
+   'gl_provider',
+   type : 'combo',
+-  choices : ['glvnd', 'gl', 'osmesa'],
++  choices : ['glvnd', 'gl', 'osmesa', 'egl'],
+   value : 'glvnd',
+   description : 'Which OpenGL to link with'
+ )
