@@ -35,18 +35,18 @@ index 2c2a876b0..bf2925c97 100644
  #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
  #endif
  
-@@ -423,6 +423,7 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
+@@ -411,6 +411,7 @@
              }
  
-             memcpy(client_ip, &addr4->sin_addr.s_addr, *ip_len);
+             memcpy(client_ip, &addr4->sin_addr.s_addr, *cip_len);
 +#ifndef __3DS__
          } else {
              struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) &client_addr;
-             *ip_len = sizeof(addr6->sin6_addr.s6_addr);
-@@ -432,6 +433,7 @@ int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
+             *cip_len = sizeof(addr6->sin6_addr.s6_addr);
+@@ -420,6 +421,7 @@
              }
  
-             memcpy(client_ip, &addr6->sin6_addr.s6_addr, *ip_len);
+             memcpy(client_ip, &addr6->sin6_addr.s6_addr, *cip_len);
 +#endif
          }
      }
