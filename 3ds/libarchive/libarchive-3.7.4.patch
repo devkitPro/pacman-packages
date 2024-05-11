@@ -1,0 +1,183 @@
+diff --git a/libarchive/archive_read_disk_posix.c b/libarchive/archive_read_disk_posix.c
+index 76a4fa44..efd192ec 100644
+--- a/libarchive/archive_read_disk_posix.c
++++ b/libarchive/archive_read_disk_posix.c
+@@ -98,8 +98,10 @@
+ #include "archive_read_disk_private.h"
+ 
+ #ifndef HAVE_FCHDIR
++#ifndef __3DS__
+ #error fchdir function required.
+ #endif
++#endif
+ #ifndef O_BINARY
+ #define O_BINARY	0
+ #endif
+diff --git a/libarchive/archive_read_support_filter_program.c b/libarchive/archive_read_support_filter_program.c
+index 0482c57c..87b8fa76 100644
+--- a/libarchive/archive_read_support_filter_program.c
++++ b/libarchive/archive_read_support_filter_program.c
+@@ -57,6 +57,13 @@
+ #include "archive_read_private.h"
+ #include "filter_fork.h"
+ 
++#ifdef __3DS__
++int
++__archive_read_program(struct archive_read_filter *self, const char *cmd) {
++	return (ARCHIVE_OK);
++}
++#else
++
+ 
+ #if ARCHIVE_VERSION_NUMBER < 4000000
+ /* Deprecated; remove in libarchive 4.0 */
+@@ -493,3 +500,6 @@ program_filter_close(struct archive_read_filter *self)
+ 
+ 	return (e);
+ }
++
++#endif
++
+diff --git a/libarchive/archive_write_set_format_iso9660.c b/libarchive/archive_write_set_format_iso9660.c
+index 2a3ae07f..56627bc0 100644
+--- a/libarchive/archive_write_set_format_iso9660.c
++++ b/libarchive/archive_write_set_format_iso9660.c
+@@ -2178,9 +2178,11 @@ get_system_identitier(char *system_id, size_t size)
+ 	strncpy(system_id, "Windows", size-1);
+ 	system_id[size-1] = '\0';
+ #else
++#ifndef __3DS__
+ 	strncpy(system_id, "Unknown", size-1);
+ 	system_id[size-1] = '\0';
+ #endif
++#endif
+ }
+ 
+ static void
+@@ -2506,7 +2508,7 @@ get_gmoffset(struct tm *tm)
+ 
+ #if defined(HAVE__GET_TIMEZONE)
+ 	_get_timezone(&offset);
+-#elif defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
++#elif defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__) || defined(__3DS__)
+ 	offset = _timezone;
+ #else
+ 	offset = timezone;
+diff --git a/libarchive/archive_xxhash.h b/libarchive/archive_xxhash.h
+index 1c7131ca..b665b65c 100644
+--- a/libarchive/archive_xxhash.h
++++ b/libarchive/archive_xxhash.h
+@@ -31,16 +31,33 @@
+ #error This header is only to be used internally to libarchive.
+ #endif
+ 
++/***************************************
++** Basic Types
++****************************************/
++#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
++# include <stdint.h>
++  typedef uint8_t  BYTE;
++  typedef uint16_t U16;
++  typedef uint32_t U32;
++  typedef  int32_t S32;
++  typedef uint64_t U64;
++#else
++  typedef unsigned char      BYTE;
++  typedef unsigned short     U16;
++  typedef unsigned int       U32;
++  typedef   signed int       S32;
++  typedef unsigned long long U64;
++#endif
+ 
+ typedef enum { XXH_OK=0, XXH_ERROR } XXH_errorcode;
+ 
+ struct archive_xxhash {
+-	unsigned int  (*XXH32)(const void* input, unsigned int len,
+-			unsigned int seed);
+-	void*         (*XXH32_init)(unsigned int seed);
++	U32  (*XXH32)(const void* input, unsigned int len,
++			U32 seed);
++	void*         (*XXH32_init)(U32 seed);
+ 	XXH_errorcode (*XXH32_update)(void* state, const void* input,
+ 			unsigned int len);
+-	unsigned int  (*XXH32_digest)(void* state);
++	U32  (*XXH32_digest)(void* state);
+ };
+ 
+ extern const struct archive_xxhash __archive_xxhash;
+diff --git a/libarchive/xxhash.c b/libarchive/xxhash.c
+index beacd239..06b44ff4 100644
+--- a/libarchive/xxhash.c
++++ b/libarchive/xxhash.c
+@@ -93,33 +93,15 @@ You can contact the author at :
+ #define XXH_memcpy memcpy
+ 
+ 
+-static unsigned int	  XXH32 (const void*, unsigned int, unsigned int);
+-static void*		  XXH32_init   (unsigned int);
+-static XXH_errorcode	  XXH32_update (void*, const void*, unsigned int);
+-static unsigned int	  XXH32_digest (void*);
+-/*static int		  XXH32_sizeofState(void);*/
+-static XXH_errorcode	  XXH32_resetState(void*, unsigned int);
++static U32    XXH32 (const void*, unsigned int, U32);
++static void*          XXH32_init   (U32);
++static XXH_errorcode      XXH32_update (void*, const void*, unsigned int);
++static U32    XXH32_digest (void*);
++/*static int          XXH32_sizeofState(void);*/
++static XXH_errorcode      XXH32_resetState(void*, U32);
+ #define       XXH32_SIZEOFSTATE 48
+ typedef struct { long long ll[(XXH32_SIZEOFSTATE+(sizeof(long long)-1))/sizeof(long long)]; } XXH32_stateSpace_t;
+-static unsigned int	  XXH32_intermediateDigest (void*);
+-
+-/***************************************
+-** Basic Types
+-****************************************/
+-#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
+-# include <stdint.h>
+-  typedef uint8_t  BYTE;
+-  typedef uint16_t U16;
+-  typedef uint32_t U32;
+-  typedef  int32_t S32;
+-  typedef uint64_t U64;
+-#else
+-  typedef unsigned char      BYTE;
+-  typedef unsigned short     U16;
+-  typedef unsigned int       U32;
+-  typedef   signed int       S32;
+-  typedef unsigned long long U64;
+-#endif
++static U32    XXH32_intermediateDigest (void*);
+ 
+ #if defined(__GNUC__)  && !defined(XXH_USE_UNALIGNED_ACCESS)
+ #  define _PACKED __attribute__ ((packed))
+diff --git a/libarchive_fe/passphrase.c b/libarchive_fe/passphrase.c
+index 90fef32d..a74f3f05 100644
+--- a/libarchive_fe/passphrase.c
++++ b/libarchive_fe/passphrase.c
+@@ -129,9 +129,12 @@ readpassphrase(const char *prompt, char *buf, size_t bufsiz, int flags)
+ #endif
+ #include <signal.h>
+ #include <string.h>
++#ifndef __3DS__
+ #include <termios.h>
++#endif
+ #include <unistd.h>
+ 
++#ifndef __3DS__
+ #ifndef _PATH_TTY
+ #define _PATH_TTY "/dev/tty"
+ #endif
+@@ -316,7 +319,12 @@ restart:
+ }
+ #endif /* _WIN32 && !__CYGWIN__ */
+ #endif /* HAVE_READPASSPHRASE */
+-
++#else
++static char* readpassphrase(const char *prompt, char *buf, size_t bufsiz, int flags)
++{
++  return NULL;
++}
++#endif /* __3DS__ */
+ char *
+ lafe_readpassphrase(const char *prompt, char *buf, size_t bufsiz)
+ {

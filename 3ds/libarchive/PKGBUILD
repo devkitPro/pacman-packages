@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=3ds-libarchive
-pkgver=3.7.2
+pkgver=3.7.4
 pkgrel=1
 pkgdesc='library that can create and read several streaming archive format (for Nintendo 3DS homebrew development)'
 arch=('any')
@@ -24,13 +24,14 @@ build() {
 
   patch -Np1 -i "$srcdir"/libarchive-${pkgver}.patch
 
-  ./configure --disable-shared --enable-static --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
-    --disable-shared --enable-static \
-    --disable-bsdtar --disable-bsdcat \
-    --disable-bsdunzip --disable-bsdcpio --disable-acl \
-    --without-xml2 --without-openssl
+  arm-none-eabi-cmake -B _3ds -S . -GNinja \
+    -DENABLE_TAR=OFF \
+    -DENABLE_TEST=OFF \
+    -DENABLE_CAT=OFF \
+    -DENABLE_CPIO=OFF \
+    -DENABLE_UNZIP=OFF
 
-  make
+  cmake --build _3ds
 }
 
 package() {
@@ -38,13 +39,14 @@ package() {
 
   source /opt/devkitpro/3dsvars.sh
 
-  make DESTDIR="$pkgdir" install
+  DESTDIR="$pkgdir" cmake --install _3ds
+
   # license
   install -Dm644 "$srcdir"/libarchive-${pkgver}/COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
   # remove useless stuff
-  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
-  rm -r "$pkgdir"${PORTLIBS_PREFIX}/bin
+  rm -fr "$pkgdir"${PORTLIBS_PREFIX}/share
+
 }
 
-sha256sums=('df404eb7222cf30b4f8f93828677890a2986b66ff8bf39dac32a804e96ddf104'
-            '61ee662a2b2fd0daa853d09c78df42cdb23a08a67a9fd19d207f945383aa3dba')
+sha256sums=('7875d49596286055b52439ed42f044bd8ad426aa4cc5aabd96bfe7abb971d5e8'
+            'b08920a298b3142e2075379542d85e6471baac634034b25009d6b5c5d30d56e1')
