@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkitarm-crtls')
-pkgver=1.2.5
+pkgver=1.2.6
 pkgrel=1
 pkgdesc="devkitARM crtls."
 arch=('any')
@@ -27,4 +27,4 @@ package() {
 
 }
 
-sha256sums=('14d2061e160ddd599e22e4eaad6c050f44659442a1551e84e214c49680051c4b')
+sha256sums=('0c7b991a2a8427bca0a64db37138ecc95276eef3958a9be6da6310afd1a1066f')
