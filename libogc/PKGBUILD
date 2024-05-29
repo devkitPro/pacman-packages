@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libogc')
-pkgver=2.6.0
-pkgrel=2
+pkgver=2.7.0
+pkgrel=1
 pkgdesc="Nintendo Gamecube & Wii library."
 arch=('any')
 license=('custom')
@@ -26,4 +26,4 @@ package() {
 
 }
 
-sha256sums=('193bf17c72fec880d7dc7ed265be93c96c480b14d860bde4f4afaac958e8872d')
+sha256sums=('0bea120fbf7b4f4e1c5eb1a1fdeb52f447ab2b5b76a2a1d798a3ee816f797108')
