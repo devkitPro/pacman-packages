@@ -1,0 +1,39 @@
+pkgname=ppc-tinyxml2
+pkgver=10.0.0
+pkgrel=1
+pkgdesc='A simple, small, efficient, C++ XML parser that can be easily integrated into other programs (for Gamecube/Wii/WiiU homebrew development)'
+arch=('any')
+url='http://leethomason.github.io/tinyxml2/'
+license=('zlib')
+options=(!strip libtool staticlibs)
+source=( "https://github.com/leethomason/tinyxml2/archive/${pkgver}.tar.gz" )
+makedepends=('ppc-pkg-config' 'dkp-toolchain-vars' 'devkitppc-cmake')
+sha256sums=('3bdf15128ba16686e69bce256cc468e76c7b94ff2c7f391cc5ec09e40bff3839')
+groups=('ppc-portlibs')
+
+build() {
+  cd tinyxml2-$pkgver
+
+  source /opt/devkitpro/ppcvars.sh
+
+  powerpc-eabi-cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CFLAGS" \
+    -DBUILD_TESTING:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF \
+    -G"Unix Makefiles" \
+    .
+
+  make
+
+}
+
+package() {
+
+  cd tinyxml2-$pkgver
+
+  source /opt/devkitpro/ppcvars.sh
+
+  make install DESTDIR="$pkgdir"
+
+}
