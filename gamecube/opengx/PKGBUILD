@@ -1,0 +1,27 @@
+pkgname=gamecube-opengx
+pkgver=0.5.0
+pkgrel=2
+pkgdesc='opengl/gx translation library'
+arch=('any')
+url='https://github.com/devkitPro/opengx'
+license=('BSD')
+options=(!strip libtool staticlibs)
+makedepends=('catnip')
+depends=('libogc')
+groups=('gamecube-portlibs')
+
+source=(
+  "opengx-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
+)
+
+build() {
+  cd opengx-${pkgver}
+  catnip -t gamecube
+}
+
+package() {
+  cd opengx-${pkgver}
+  DESTDIR=${pkgdir} catnip install
+}
+
+sha256sums=('db813eefa570507388f656b6fc846cf0e102e0761af5c68f49289f3b3369627e')
