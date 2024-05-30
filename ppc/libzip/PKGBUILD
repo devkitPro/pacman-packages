@@ -1,0 +1,46 @@
+pkgname=ppc-libzip
+pkgver=1.10.1
+pkgrel=1
+pkgdesc='Library for reading, creating, and modifying zip archives'
+arch=('any')
+url='https://libzip.org/'
+license=('BSD')
+options=(!strip libtool staticlibs)
+groups=('ppc-portlibs')
+source=("https://libzip.org/download/libzip-${pkgver}.tar.gz")
+sha256sums=('9669ae5dfe3ac5b3897536dc8466a874c8cf2c0e3b1fdd08d75b273884299363')
+makedepends=('dkp-toolchain-vars' 'devkitppc-cmake')
+depends=('ppc-zlib' 'ppc-bzip2')
+
+build() {
+  cd libzip-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
+
+  /opt/devkitpro/devkitPPC/bin/powerpc-eabi-cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_PREFIX_PATH=$PORTLIBS_PREFIX \
+    -DENABLE_BZIP2=ON \
+    -DENABLE_LZMA=OFF \
+    -DENABLE_ZSTD=OFF \
+    -DENABLE_GNUTLS=OFF \
+    -DENABLE_OPENSSL=OFF \
+    -DENABLE_MBEDTLS=OFF \
+    -DBUILD_TOOLS=OFF \
+    -DBUILD_REGRESS=OFF \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_DOC=OFF \
+    .
+
+  make
+}
+
+package() {
+  cd libzip-$pkgver
+
+  source /opt/devkitpro/devkitppc.sh
+
+  make DESTDIR="$pkgdir" install
+  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+}
