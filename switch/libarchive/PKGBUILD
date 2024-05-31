@@ -2,7 +2,7 @@
 
 pkgname=switch-libarchive
 pkgver=3.7.2
-pkgrel=4
+pkgrel=5
 pkgdesc='library that can create and read several streaming archive formats'
 arch=('any')
 url="https://www.libarchive.org"
@@ -48,4 +48,4 @@ package() {
 }
 
 sha256sums=('df404eb7222cf30b4f8f93828677890a2986b66ff8bf39dac32a804e96ddf104'
-            'ae03ec0e722e99534708432d83f907178f84d735a5df55fb3a19ad337966bab7')
+            '975c46e9ce765407fb369ec369a2e7f746801f801238a830a38ec61676929fa3')
