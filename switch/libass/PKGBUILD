@@ -3,7 +3,7 @@
 
 pkgname=switch-libass
 pkgver=0.14.0
-pkgrel=1
+pkgrel=2
 pkgdesc='A portable subtitle renderer (Nintendo Switch port)'
 arch=('any')
 url="https://github.com/libass/libass"
