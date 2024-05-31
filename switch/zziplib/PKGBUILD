@@ -1,7 +1,7 @@
 # Maintainer: COMP Omega <compomega@tutanota.com>
 pkgname=switch-zziplib
-pkgver=0.13.69
-pkgrel=3
+pkgver=0.13.76
+pkgrel=1
 pkgdesc='The ZZIPlib provides read access on ZIP-archives and unpacked data. It features an additional simplified API following the standard Posix API for file access'
 arch=('any')
 url='https://github.com/gdraheim/zziplib/'
@@ -10,13 +10,15 @@ options=(!strip libtool staticlibs)
 source=("https://github.com/gdraheim/zziplib/archive/v${pkgver}.tar.gz")
 depends=('switch-zlib')
 makedepends=('devkitA64' 'dkp-toolchain-vars')
-sha256sums=('846246d7cdeee405d8d21e2922c6e97f55f24ecbe3b6dcf5778073a88f120544')
 groups=('switch-portlibs')
 
 build() {
   cd zziplib-$pkgver
 
   source /opt/devkitpro/switchvars.sh
+
+  mv old.configure configure
+  mv old.configure.ac configure.ac
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static
@@ -32,3 +34,4 @@ package() {
   # Clean out the binaries we don't care about.
   rm -rf "$pkgdir/${PORTLIBS_PREFIX}/bin"
 }
+sha256sums=('08b0e300126329c928a41b6d68e397379fad02469e34a0855d361929968ea4c0')
