@@ -2,7 +2,7 @@
 
 pkgname=switch-openal-soft
 pkgver=1.21.1
-pkgrel=4
+pkgrel=5
 pkgdesc='OpenAL Soft is a software implementation of the OpenAL 3D audio API.'
 arch=('any')
 url='https://openal-soft.org/'
@@ -24,6 +24,7 @@ groups=('switch-portlibs')
 prepare() {
   cd openal-soft-${pkgver}
   patch -Np1 -i ${srcdir}/avoid-readlink.patch
+  sed -i 's#SDL2/##' alc/backends/sdl2.cpp
 }
 
 build() {
