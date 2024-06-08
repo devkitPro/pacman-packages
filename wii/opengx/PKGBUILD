@@ -1,6 +1,6 @@
 pkgname=wii-opengx
 pkgver=0.6.0
-pkgrel=1
+pkgrel=2
 pkgdesc='wii opengl/gx translation library'
 arch=('any')
 url='https://github.com/devkitPro/opengx'
