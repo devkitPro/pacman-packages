@@ -1,14 +1,14 @@
 _realname=freeglut
 pkgname=wii-${_realname}
 pkgver=3.6.0
-pkgrel=1
+pkgrel=2
 pkgdesc='wii freeglut'
 arch=('any')
 url='https://github.com/freeglut/freeglut/'
 license=('BSD')
 options=(!strip libtool staticlibs)
 makedepends=('catnip')
-depends=('libogc' 'wii-opengx')
+depends=('libogc' 'wii-opengx' 'wii-glu')
 groups=('wii-portlibs')
 
 source=(
