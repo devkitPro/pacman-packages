@@ -1,7 +1,7 @@
 _realname=freeglut
 pkgname=wii-${_realname}
 pkgver=3.6.0
-pkgrel=2
+pkgrel=3
 pkgdesc='wii freeglut'
 arch=('any')
 url='https://github.com/freeglut/freeglut/'
@@ -12,24 +12,17 @@ depends=('libogc' 'wii-opengx' 'wii-glu')
 groups=('wii-portlibs')
 
 source=(
-  "${_realname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}-rc1.tar.gz"
-  "https://patch-diff.githubusercontent.com/raw/freeglut/freeglut/pull/175.patch"
+  "${_realname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
 )
 
-prepare() {
-  cd ${_realname}-${pkgver}-rc1/
-  patch -Np1 -i ${srcdir}/175.patch
-}
-
 build() {
-  cd ${_realname}-${pkgver}-rc1/
+  cd ${_realname}-${pkgver}
   catnip -t wii -DFREEGLUT_BUILD_DEMOS=OFF
 }
 
 package() {
-  cd ${_realname}-${pkgver}-rc1
+  cd ${_realname}-${pkgver}
   DESTDIR=${pkgdir} catnip install
 }
 
-sha256sums=('8cf4f4f3ee4d17a348c84c64044280bbf196999f10ac75637f7a5a15e3b8cc04'
-            'd26c4d835835b3057137cc566c03c89391b6f6824aaa04b865586f123fc0e170')
+sha256sums=('16de4f51dc1efd663a1a58ba5552e54f8783b77478289c95dca474a4d39ddd02')
