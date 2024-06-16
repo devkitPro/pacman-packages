@@ -3,7 +3,7 @@
 
 pkgname=switch-libjson-c
 pkgver=0.16
-pkgrel=1
+pkgrel=2
 pkgdesc='A JSON implementation in C.'
 arch=('any')
 url='https://github.com/json-c/json-c/'
