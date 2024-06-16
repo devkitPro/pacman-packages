@@ -3,7 +3,7 @@
 
 pkgname=switch-jansson
 pkgver=2.11
-pkgrel=2
+pkgrel=3
 pkgdesc='A C library for encoding, decoding and manipulating JSON data.'
 arch=('any')
 url='http://www.digip.org/jansson/'
