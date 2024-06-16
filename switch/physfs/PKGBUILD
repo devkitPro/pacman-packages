@@ -2,7 +2,7 @@
 _realname=physfs
 pkgname=switch-${_realname}
 pkgver=3.2.0
-pkgrel=2
+pkgrel=3
 pkgdesc='A library to provide abstract access to various archives.'
 arch=('any')
 url='https://icculus.org/physfs/'
