@@ -2,7 +2,7 @@
 
 pkgname=switch-libarchive
 pkgver=3.7.2
-pkgrel=5
+pkgrel=6
 pkgdesc='library that can create and read several streaming archive formats'
 arch=('any')
 url="https://www.libarchive.org"
