@@ -2,7 +2,7 @@
 # Contributor: rsn8887 <raist66676@gmx.de>
 
 pkgname=switch-libsodium
-pkgver=1.0.18
+pkgver=1.0.20
 pkgrel=1
 pkgdesc='A modern and easy-to-use crypto library.'
 arch=('any')
@@ -11,7 +11,6 @@ license=('custom')
 options=(!strip libtool staticlibs)
 makedepends=('dkp-toolchain-vars')
 source=("https://download.libsodium.org/libsodium/releases/libsodium-$pkgver-stable.tar.gz")
-sha256sums=('4f3130e5511f94dbd2312312755a50be91cece6ad1c99f9fda9c4634613b227a')
 groups=('switch-portlibs')
 
 build() {
@@ -34,3 +33,4 @@ package() {
   # license
   install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
 }
+sha256sums=('e6d3c91bbc08d3f5f548079bd88abd9e51de9c5b48b3f8b1d120b2160e6537d0')
