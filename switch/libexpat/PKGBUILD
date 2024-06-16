@@ -3,7 +3,7 @@
 
 pkgname=switch-libexpat
 pkgver=2.2.5
-pkgrel=2
+pkgrel=3
 pkgdesc='Expat, a stream-oriented XML parser library written in C.'
 arch=('any')
 url='https://libexpat.github.io/'
