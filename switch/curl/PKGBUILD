@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-curl
 pkgver=7.69.1
-pkgrel=4
+pkgrel=5
 pkgdesc='An URL retrieval utility and library'
 arch=('any')
 url='http://www.zlib.net/'
