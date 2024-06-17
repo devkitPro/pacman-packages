@@ -1,13 +1,13 @@
 # Maintainer: COMP Omega <compomega@tutanota.com>
 pkgname=switch-zziplib
 pkgver=0.13.76
-pkgrel=1
+pkgrel=2
 pkgdesc='The ZZIPlib provides read access on ZIP-archives and unpacked data. It features an additional simplified API following the standard Posix API for file access'
 arch=('any')
 url='https://github.com/gdraheim/zziplib/'
 license=('LGPL')
 options=(!strip libtool staticlibs)
-source=("https://github.com/gdraheim/zziplib/archive/v${pkgver}.tar.gz")
+source=("zziplib-${pkgver}.tar.gz::https://github.com/gdraheim/zziplib/archive/v${pkgver}.tar.gz")
 depends=('switch-zlib')
 makedepends=('devkitA64' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
@@ -15,23 +15,23 @@ groups=('switch-portlibs')
 build() {
   cd zziplib-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
+  /opt/devkitpro/portlibs/switch/bin/aarch64-none-elf-cmake -B _build -S . \
+    -DZZIPMMAPPED=OFF \
+    -DZZIPWRAP=OFF \
+    -DZZIPSDL=OFF \
+    -DZZIPBINS=OFF \
+    -DZZIPTEST=OFF \
+    -DZZIPDOCS=OFF \
+    -DZZIP_PKGCONFIG=ON
 
-  mv old.configure configure
-  mv old.configure.ac configure.ac
-
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static
-
-  make
+  cmake --build _build
 }
 
 package() {
   cd zziplib-$pkgver
 
-  make DESTDIR="$pkgdir" install
+  DESTDIR="$pkgdir" cmake --install _build
 
-  # Clean out the binaries we don't care about.
-  rm -rf "$pkgdir/${PORTLIBS_PREFIX}/bin"
 }
+
 sha256sums=('08b0e300126329c928a41b6d68e397379fad02469e34a0855d361929968ea4c0')
