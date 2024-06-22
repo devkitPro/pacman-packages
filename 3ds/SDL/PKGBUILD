@@ -12,7 +12,8 @@ makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 source=("${url}/release/SDL-${pkgver}.tar.gz" "SDL-1.2.15.patch")
 groups=('3ds-portlibs' '3ds-sdl-libs')
 
-build() {
+
+prepare() {
   cd SDL-$pkgver
 
   source /opt/devkitpro/3dsvars.sh
@@ -22,6 +23,14 @@ build() {
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
     --disable-shared --enable-static --enable-n3ds
+
+}
+
+build() {
+  cd SDL-$pkgver
+
+  source /opt/devkitpro/3dsvars.sh
+
   make
 }
 
