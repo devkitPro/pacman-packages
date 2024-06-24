@@ -1,0 +1,32 @@
+pkgname=switch-glew
+pkgver=0.2.1
+pkgrel=1
+pkgdesc="OpenGL Loader (modified for Switch)"
+arch=('any')
+license=('BSD')
+url="https://github.com/nigels-com/glew"
+options=(!strip libtool staticlibs)
+source=(
+  "${url}/releases/download/glew-${pkgver}/glew-${pkgver}.tgz"
+  "${pkgname}-${pkgver}.patch"
+)
+sha256sums=(
+	'04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95'
+	'726f42734454869a90fbdffd4a22bd212690fb3e66f11f8f7ef08a29f2c58993'
+)
+makedepends=('devkitA64')
+depends=('switch-mesa')
+
+build() {
+
+  make -C $srcdir/auto
+  make -C $srcdir SYSTEM=switch glew.lib.static
+
+}
+
+package() {
+
+  export SYSTEM=switch
+  make -C $srcdir SYSTEM=switch GLEW_DEST=$pkgdir install.static
+
+}
