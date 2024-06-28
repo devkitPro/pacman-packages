@@ -1,0 +1,54 @@
+# Maintainer: Rhys Koedijk <rhys@koedijk.co.nz>
+
+pkgname=switch-libsmb2
+pkgver=r307.aef1888
+pkgrel=1
+pkgdesc='SMB2/3 userspace client'
+arch=('any')
+url='https://github.com/sahlberg/libsmb2'
+license=('(L)GPL')
+options=(!strip libtool staticlibs)
+source=(${pkgname}::"git+https://github.com/sahlberg/libsmb2.git#commit=aef1888f0f04bb41a38262d3388d7b673e48a1ed")
+sha256sums=('SKIP')
+makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+
+pkgver() {
+  cd "$srcdir/${pkgname}"
+  printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd ${pkgname}
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-define_endian_macros.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-define_getlogin_r.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-define_net_readv_writev.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-fix_portable_endian_include.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-fix_getaddrinfo_hints.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-fix_makefile_libnx_include.patch"
+}
+
+build() {
+  cd ${pkgname}
+
+  source /opt/devkitpro/switchvars.sh
+
+  libtoolize
+  aclocal
+  autoheader
+  automake --add-missing
+  autoconf
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static --without-libkrb5
+
+  make
+}
+
+package() {
+  cd ${pkgname}
+  
+  make DESTDIR="$pkgdir" install
+  
+  install -Dm644 LICENCE-LGPL-2.1.txt "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENCE
+}
