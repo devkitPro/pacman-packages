@@ -1,0 +1,40 @@
+# Maintainer: Jonathan Schleifer <js@nil.im>
+pkgname=3ds-objfw
+pkgver=1.0.4
+pkgrel=1
+pkgdesc="Portable, lightweight framework for the Objective-C language"
+arch=('any')
+url="https://objfw.nil.im/"
+license=('custom:QPL' 'GPL3' 'GPL2')
+source=("objfw-$pkgver.tar.gz::https://objfw.nil.im/downloads/objfw-$pkgver.tar.gz")
+sha256sums=(c62c61fc3f1b2d5c1d78369c602a6e82b32ade5c8ec0e9c410646d1554bf1e26)
+groups=('3ds-portlibs')
+
+build() {
+  export DEVKITPRO=/opt/devkitpro
+  export DEVKITARM="$DEVKITPRO/devkitARM"
+  export PORTLIBS_PREFIX="$DEVKITPRO/portlibs/3ds"
+  export PATH="$DEVKITARM/bin:$DEVKITPRO/bin:$PATH"
+
+  cd "objfw-$pkgver"
+  ./configure --prefix="$PORTLIBS_PREFIX" --host=arm-none-eabi --with-3ds \
+    --with-tls=none
+  make
+}
+
+package() {
+  cd "objfw-$pkgver"
+  make DESTDIR="$pkgdir/" install
+
+  for i in LICENSE.QPL LICENSE.GPLv3 LICENSE.GPLv2; do
+    install -D -m 644 "$i" "$pkgdir$PORTLIBS_PREFIX/licenses/$pkgname/$i"
+  done
+
+  # We don't want the tools - we're not gonna run them on a 3DS.
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/objfw-new"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofarc"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofdns"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofhash"
+  rm -f "$pkgdir$PORTLIBS_PREFIX/bin/ofhttp"
+  rm -fr "$pkgdir$PORTLIBS_PREFIX/share"
+}
