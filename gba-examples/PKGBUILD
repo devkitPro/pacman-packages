@@ -2,21 +2,21 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('gba-examples')
-pkgver=20190122
+pkgver=20240626
 pkgrel=1
 pkgdesc="Nintendo GBA example code."
 arch=('any')
 license=('custom')
 url="http://github.com/devkitpro/${pkgname}"
 options=(!strip libtool staticlibs)
-source=(${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('908a406613cedcdcb8d3893e827245efd3cabc81fd0c33e7c21e38d5c3f3891d')
+source=(${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz)
 makedepends=('devkitARM')
 
 groups=('gba-dev')
 
 package() {
-  rm $srcdir/${pkgname}-${pkgver}.tar.bz2
   mkdir -p "$pkgdir"/opt/devkitpro/examples/gba
-  cp -R $srcdir/* "$pkgdir"/opt/devkitpro/examples/gba  
+  cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/gba
 }
+
+sha256sums=('8b33160c18158a51dbafc024efe367374ddcc4cfda30542fb197ebca5cb45a1c')
