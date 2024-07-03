@@ -105,7 +105,7 @@ index 000000000..625de93b9
 +          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
 +          cmake/test/test_pkgconfig.sh
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b38a8bbc1..56629f588 100644
+index b38a8bbc1..9129cea2a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -141,6 +141,7 @@ check_cpu_architecture(x64 SDL_CPU_X64)
@@ -152,7 +152,7 @@ index b38a8bbc1..56629f588 100644
          list(APPEND EXTRA_LIBS m)
        endif()
      endif()
-@@ -2883,6 +2884,69 @@ elseif(N3DS)
+@@ -2883,6 +2884,76 @@ elseif(N3DS)
      endif()
      list(APPEND EXTRA_LIBS ${lib})
    endforeach()
@@ -208,6 +208,13 @@ index b38a8bbc1..56629f588 100644
 +    list(APPEND SOURCE_FILES ${OGC_VIDEO_SOURCES})
 +    set(SDL_VIDEO_OPENGL 0)
 +    set(HAVE_SDL_VIDEO TRUE)
++    if(SDL_OPENGL)
++      pkg_search_module(OPENGX opengl REQUIRED IMPORTED_TARGET)
++      set(SDL_VIDEO_OPENGL 1)
++      set(HAVE_OPENGL TRUE)
++      list(APPEND EXTRA_LIBS "opengx")
++      target_include_directories(sdl-build-options INTERFACE ${OPENGX_INCLUDE_DIRS})
++    endif()
 +  endif()
 +
 +  if(NOT SDL2_DISABLE_SDL2MAIN)
@@ -4637,6 +4644,163 @@ index 000000000..af58bbcc1
 +#endif /* SDL_ogcframebuffer_c_h_ */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
+diff --git a/src/video/ogc/SDL_ogcgl.c b/src/video/ogc/SDL_ogcgl.c
+new file mode 100644
+index 000000000..65035af20
+--- /dev/null
++++ b/src/video/ogc/SDL_ogcgl.c
+@@ -0,0 +1,101 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++#include "../../SDL_internal.h"
++
++#if defined(SDL_VIDEO_DRIVER_OGC) && defined(SDL_VIDEO_OPENGL)
++
++#include "../SDL_sysvideo.h"
++
++#include "SDL_ogcgl.h"
++#include "SDL_ogcvideo.h"
++
++#include <opengx.h>
++
++typedef struct
++{
++    SDL_Window *window;
++    int swap_interval;
++} OGC_GL_Context;
++
++int SDL_OGC_GL_LoadLibrary(_THIS, const char *path)
++{
++    return 0;
++}
++
++void *SDL_OGC_GL_GetProcAddress(_THIS, const char *proc)
++{
++    return ogx_get_proc_address(proc);
++}
++
++void SDL_OGC_GL_UnloadLibrary(_THIS)
++{
++    // nothing to do
++}
++
++SDL_GLContext SDL_OGC_GL_CreateContext(_THIS, SDL_Window * window)
++{
++    OGC_GL_Context *context = SDL_calloc(1, sizeof(*context));
++    context->window = window;
++    context->swap_interval = 1;
++    ogx_initialize();
++    return context;
++}
++
++int SDL_OGC_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
++{
++    return 0;
++}
++
++int SDL_OGC_GL_SetSwapInterval(_THIS, int interval)
++{
++    OGC_GL_Context *context = _this->current_glctx;
++    context->swap_interval = interval;
++    return 0;
++}
++
++int SDL_OGC_GL_GetSwapInterval(_THIS)
++{
++    OGC_GL_Context *context = _this->current_glctx;
++    return context->swap_interval;
++}
++
++int SDL_OGC_GL_SwapWindow(_THIS, SDL_Window * window)
++{
++    OGC_GL_Context *context = _this->current_glctx;
++
++    bool vsync = context->swap_interval == 1;
++    OGC_video_flip(_this, vsync);
++    return 0;
++}
++
++void SDL_OGC_GL_DeleteContext(_THIS, SDL_GLContext context)
++{
++    SDL_free(context);
++}
++
++void SDL_OGC_GL_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
++{
++    *mask = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
++    *major = 1;
++    *minor = 1;
++}
++
++#endif /* SDL_VIDEO_DRIVER_OGC */
+diff --git a/src/video/ogc/SDL_ogcgl.h b/src/video/ogc/SDL_ogcgl.h
+new file mode 100644
+index 000000000..dcaee4188
+--- /dev/null
++++ b/src/video/ogc/SDL_ogcgl.h
+@@ -0,0 +1,44 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#ifndef SDL_OGC_gl_h_
++#define SDL_OGC_gl_h_
++
++#ifdef SDL_VIDEO_OPENGL
++
++#include "../SDL_sysvideo.h"
++
++int SDL_OGC_GL_LoadLibrary(_THIS, const char *path);
++void *SDL_OGC_GL_GetProcAddress(_THIS, const char *proc);
++void SDL_OGC_GL_UnloadLibrary(_THIS);
++SDL_GLContext SDL_OGC_GL_CreateContext(_THIS, SDL_Window * window);
++int SDL_OGC_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
++int SDL_OGC_GL_SetSwapInterval(_THIS, int interval);
++int SDL_OGC_GL_GetSwapInterval(_THIS);
++int SDL_OGC_GL_SwapWindow(_THIS, SDL_Window * window);
++void SDL_OGC_GL_DeleteContext(_THIS, SDL_GLContext context);
++void SDL_OGC_GL_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor);
++
++#endif /* SDL_VIDEO_OPENGL */
++
++#endif /* SDL_OGC_gl_h_ */
++
++/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcgxcommon.c b/src/video/ogc/SDL_ogcgxcommon.c
 new file mode 100644
 index 000000000..56c017f27
@@ -5619,10 +5783,10 @@ index 000000000..c92d032aa
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcvideo.c b/src/video/ogc/SDL_ogcvideo.c
 new file mode 100644
-index 000000000..d62723c7a
+index 000000000..317484d91
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcvideo.c
-@@ -0,0 +1,350 @@
+@@ -0,0 +1,364 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -5656,6 +5820,7 @@ index 000000000..d62723c7a
 +#include "SDL_hints.h"
 +#include "SDL_ogcevents_c.h"
 +#include "SDL_ogcframebuffer_c.h"
++#include "SDL_ogcgl.h"
 +#include "SDL_ogcgxcommon.h"
 +#include "SDL_ogcmouse.h"
 +#include "SDL_ogcvideo.h"
@@ -5865,6 +6030,19 @@ index 000000000..d62723c7a
 +    device->CreateWindowFramebuffer = SDL_OGC_CreateWindowFramebuffer;
 +    device->UpdateWindowFramebuffer = SDL_OGC_UpdateWindowFramebuffer;
 +    device->DestroyWindowFramebuffer = SDL_OGC_DestroyWindowFramebuffer;
++
++#ifdef SDL_VIDEO_OPENGL
++    device->GL_LoadLibrary = SDL_OGC_GL_LoadLibrary;
++    device->GL_GetProcAddress = SDL_OGC_GL_GetProcAddress;
++    device->GL_UnloadLibrary = SDL_OGC_GL_UnloadLibrary;
++    device->GL_CreateContext = SDL_OGC_GL_CreateContext;
++    device->GL_MakeCurrent = SDL_OGC_GL_MakeCurrent;
++    device->GL_SetSwapInterval = SDL_OGC_GL_SetSwapInterval;
++    device->GL_GetSwapInterval = SDL_OGC_GL_GetSwapInterval;
++    device->GL_SwapWindow = SDL_OGC_GL_SwapWindow;
++    device->GL_DeleteContext = SDL_OGC_GL_DeleteContext;
++    device->GL_DefaultProfileConfig = SDL_OGC_GL_DefaultProfileConfig;
++#endif
 +
 +    device->free = OGC_DeleteDevice;
 +
