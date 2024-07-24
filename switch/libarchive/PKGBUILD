@@ -2,7 +2,7 @@
 
 pkgname=switch-libarchive
 pkgver=3.7.2
-pkgrel=6
+pkgrel=7
 pkgdesc='library that can create and read several streaming archive formats'
 arch=('any')
 url="https://www.libarchive.org"
@@ -24,14 +24,19 @@ build() {
 
   patch -Np1 -i "$srcdir"/libarchive-${pkgver}.patch
 
-  CFLAGS="${CFLAGS} -DHAVE_ARC4RANDOM_BUF" \
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static \
-    --disable-bsdtar --disable-bsdcat \
-    --disable-bsdunzip --disable-bsdcpio --disable-acl \
-    --without-xml2 --without-openssl
+  aarch64-none-elf-cmake -B _build -S . -GNinja \
+    -DENABLE_CAT=OFF \
+    -DENABLE_CPIO=OFF \
+    -DENABLE_TAR=OFF \
+    -DENABLE_UNZIP=OFF \
+    -DENABLE_ZSTD=ON \
+    -DENABLE_OPENSSL=OFF \
+    -DENABLE_LIBXML2=OFF \
+    -DENABLE_ACL=OFF \
+    -DENABLE_TEST=OFF \
+    -DBUILD_TESTING=OFF
 
-  make
+  cmake --build _build
 }
 
 package() {
@@ -39,11 +44,11 @@ package() {
 
   source /opt/devkitpro/switchvars.sh
 
-  make DESTDIR="$pkgdir" install
+  DESTDIR="$pkgdir" cmake --install _build
+
   # license
   install -Dm644 "$srcdir"/libarchive-${pkgver}/COPYING  "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
   # remove useless stuff
-  rm -r "$pkgdir"${PORTLIBS_PREFIX}/bin
   rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }
 
