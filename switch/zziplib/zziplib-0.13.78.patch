@@ -1,0 +1,12 @@
+diff --git a/zzip/CMakeLists.txt b/zzip/CMakeLists.txt
+index 28f03aa..050fea2 100644
+--- a/zzip/CMakeLists.txt
++++ b/zzip/CMakeLists.txt
+@@ -149,7 +149,6 @@ endif()
+ # Zlib library needed
+ find_package ( ZLIB REQUIRED )
+ 
+-set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
+ add_definitions ( -DHAVE_CONFIG_H )
+ 
+ set(RELNUM "${PROJECT_VERSION_MAJOR}")

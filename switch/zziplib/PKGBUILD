@@ -1,19 +1,27 @@
 # Maintainer: COMP Omega <compomega@tutanota.com>
 pkgname=switch-zziplib
-pkgver=0.13.76
-pkgrel=2
+pkgver=0.13.78
+pkgrel=1
 pkgdesc='The ZZIPlib provides read access on ZIP-archives and unpacked data. It features an additional simplified API following the standard Posix API for file access'
 arch=('any')
 url='https://github.com/gdraheim/zziplib/'
 license=('LGPL')
 options=(!strip libtool staticlibs)
-source=("zziplib-${pkgver}.tar.gz::https://github.com/gdraheim/zziplib/archive/v${pkgver}.tar.gz")
+source=(
+  "zziplib-${pkgver}.tar.gz::https://github.com/gdraheim/zziplib/archive/v${pkgver}.tar.gz"
+  zziplib-${pkgver}.patch
+)
 depends=('switch-zlib')
 makedepends=('devkitA64' 'dkp-toolchain-vars')
 groups=('switch-portlibs')
 
+prepare() {
+  cd zziplib-${pkgver}
+  patch -Np1 -i ${srcdir}/zziplib-${pkgver}.patch
+}
+
 build() {
-  cd zziplib-$pkgver
+  cd zziplib-${pkgver}
 
   /opt/devkitpro/portlibs/switch/bin/aarch64-none-elf-cmake -B _build -S . \
     -DZZIPMMAPPED=OFF \
@@ -34,4 +42,5 @@ package() {
 
 }
 
-sha256sums=('08b0e300126329c928a41b6d68e397379fad02469e34a0855d361929968ea4c0')
+sha256sums=('feaeee7c34f18aa27bd3da643cc6a47d04d2c41753a59369d09102d79b9b0a31'
+            '3d9f795c6999ac8fcfc8a6a68cfa7b4a847c3511ed24c8f5eaf7c4dd85ad0e6c')
