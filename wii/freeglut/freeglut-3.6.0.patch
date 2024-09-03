@@ -1,0 +1,977 @@
+diff --git a/src/mswin/fg_spaceball_mswin.c b/src/mswin/fg_spaceball_mswin.c
+index 5cb97450..fce4acdb 100644
+--- a/src/mswin/fg_spaceball_mswin.c
++++ b/src/mswin/fg_spaceball_mswin.c
+@@ -36,12 +36,12 @@
+  * six degree of freedom navigator.
+  */
+ 
+-#if(_WIN32_WINNT >= 0x0501)
+-
+ #include <GL/freeglut.h>
+ #include <stdlib.h>
+ #include "../fg_internal.h"
+ 
++#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0501)
++
+ enum {
+     SPNAV_EVENT_ANY,
+     SPNAV_EVENT_MOTION_TRANSLATION,
+@@ -66,28 +66,40 @@ struct fgRAWHID {
+ };
+ 
+ 
++typedef BOOL(*RegRawInpDevFunc)(PCRAWINPUTDEVICE, UINT, UINT);
++typedef UINT(*GetRawInpDataFunc)(HRAWINPUT, UINT, LPVOID, PUINT, UINT);
++typedef UINT(*GetRawInpDevInfoFunc)(HANDLE, UINT, LPVOID, PUINT);
++
++static RegRawInpDevFunc fgRegisterRawInputDevices;
++static GetRawInpDataFunc fgGetRawInputData;
++static GetRawInpDevInfoFunc fgGetRawInputDeviceInfo;
++
++
+ void fgPlatformInitializeSpaceball(void)
+ {
+-    HWND hwnd;
+-    fg_sball_initialized = 1;
+-    if (!fgStructure.CurrentWindow)
+-    {
+-        fg_sball_initialized = 0;
++    HMODULE dllmod;
++
++    if(!fgStructure.CurrentWindow) return;
++
++    if(!(dllmod = GetModuleHandle("user32.dll"))) {
+         return;
+     }
+-    hwnd = fgStructure.CurrentWindow->Window.Handle;
++    fgRegisterRawInputDevices = (RegRawInpDevFunc)GetProcAddress(dllmod, "RegisterRawInputDevices");
++    fgGetRawInputData = (GetRawInpDataFunc)GetProcAddress(dllmod, "GetRawInputData");
++    fgGetRawInputDeviceInfo = (GetRawInpDevInfoFunc)GetProcAddress(dllmod, "GetRawInputDeviceInfoA");
+ 
+-    {
+-        BOOL ok;
+-        UINT cbSize = sizeof(__fgSpaceball);
+-        __fgSpaceball.hwndTarget = hwnd;
+-        ok = RegisterRawInputDevices(&__fgSpaceball, 1, cbSize);
++    if(!fgRegisterRawInputDevices || !fgGetRawInputData || !fgGetRawInputDeviceInfo) {
++        return;
++    }
+ 
+-        if (!ok){
+-            __fgSpaceball.hwndTarget = NULL;
+-            fg_sball_initialized = 0;
+-        }
++    __fgSpaceball.hwndTarget = fgStructure.CurrentWindow->Window.Handle;
++
++    if(!fgRegisterRawInputDevices(&__fgSpaceball, 1, sizeof __fgSpaceball)) {
++        __fgSpaceball.hwndTarget = NULL;
++        return;
+     }
++
++    fg_sball_initialized = 1;
+ }
+ 
+ void fgPlatformSpaceballClose(void)
+@@ -115,98 +127,142 @@ int fgIsSpaceballWinEvent(HWND hwnd, WPARAM wParam, LPARAM lParam)
+     return 0;
+ }
+ 
++#define VID_LOGITECH    0x46d
++#define VID_3DCONN      0x256f
++
+ void fgSpaceballHandleWinEvent(HWND hwnd, WPARAM wParam, LPARAM lParam)
+ {
+-    #define LOGITECH_VENDOR_ID 0x46d
++    int i, x, y, z;
++    short *dataptr;
++    unsigned long keystate;
+     HRAWINPUT hRawInput = (HRAWINPUT)lParam;
+     UINT size;
+     BYTE *rawInputBuffer;
+     PRAWINPUT pRawInput;
+-    UINT res;
+     RID_DEVICE_INFO sRidDeviceInfo;
++    SFG_Window *window;
+ 
+-    if (!fg_sball_initialized)
+-    {
++    if(!fg_sball_initialized) {
+         fgPlatformInitializeSpaceball();
+-        if (!fg_sball_initialized)
+-        {
+-            return;
+-        }
++        if(!fg_sball_initialized) return;
+     }
+ 
+-    res = GetRawInputData(hRawInput, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
+-    if (res == -1)
++    if(fgGetRawInputData(hRawInput, RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER)) == -1) {
+         return;
++    }
+ 
+-    rawInputBuffer = malloc(size * sizeof *rawInputBuffer);
++    if(!(rawInputBuffer = malloc(size * sizeof *rawInputBuffer))) {
++        return;
++    }
+     pRawInput = (PRAWINPUT)rawInputBuffer;
+ 
+-    res = GetRawInputData(hRawInput, RID_INPUT, pRawInput, &size, sizeof(RAWINPUTHEADER));
+-    if (res == -1)
++    if(fgGetRawInputData(hRawInput, RID_INPUT, pRawInput, &size, sizeof(RAWINPUTHEADER)) == -1) {
++        free(rawInputBuffer);
+         return;
+-    if (pRawInput->header.dwType != RIM_TYPEHID)
++    }
++    if(pRawInput->header.dwType != RIM_TYPEHID) {
++        free(rawInputBuffer);
+         return;
++    }
+ 
+     sRidDeviceInfo.cbSize = sizeof(RID_DEVICE_INFO);
+     size = sizeof(RID_DEVICE_INFO);
+-    res = GetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_DEVICEINFO, &sRidDeviceInfo, &size);
+-    if (res == -1)
++    if(fgGetRawInputDeviceInfo(pRawInput->header.hDevice, RIDI_DEVICEINFO, &sRidDeviceInfo, &size) == -1) {
++        free(rawInputBuffer);
+         return;
+-    {
+-        SFG_Window* window = fgWindowByHandle(hwnd);
+-        if ((window == NULL))
+-            return;
+-
+-        if (sRidDeviceInfo.hid.dwVendorId == LOGITECH_VENDOR_ID)
+-        {
+-            /* see definition of fgRAWHID at the top of this file, for an
+-             * explanation of why we're doing this.
+-             */
+-            struct fgRAWHID *hid = (struct fgRAWHID*)&pRawInput->data.hid;
+-
+-            /* Motion data comes in two parts: motion type and */
+-            /* displacement/rotation along three axis. */
+-            /* Orientation is a right handed coordinate system with */
+-            /* X goes right, Y goes up and Z goes towards viewer, e.g. */
+-            /* the one used in OpenGL */
+-            if (hid->bRawData[0] == SPNAV_EVENT_MOTION_TRANSLATION)
+-            { /* Translation vector */
+-                short* pnData = (short*)(&hid->bRawData[1]);
+-                short X = pnData[0];
+-                short Y = -pnData[2];
+-                short Z = pnData[1];
+-                INVOKE_WCB(*window, SpaceMotion, (X, Y, Z));
+-            }
+-            else if (hid->bRawData[0] == SPNAV_EVENT_MOTION_ROTATION)
+-            { /* Axis aligned rotation vector */
+-                short* pnData = (short*)(&hid->bRawData[1]);
+-                short rX = pnData[0];
+-                short rY = -pnData[2];
+-                short rZ = pnData[1];
+-                INVOKE_WCB(*window, SpaceRotation, (rX, rY, rZ));
+-            }
+-            else if (hid->bRawData[0] == SPNAV_EVENT_BUTTON)
+-            { /* State of the keys */
+-                unsigned long dwKeystate = *(unsigned long*)(&hid->bRawData[1]);
+-                if (FETCH_WCB(*window, SpaceButton))
+-                {
+-                    int i;
+-                    for (i = 0; i < 32; i++)
+-                    {
+-                        unsigned long stateBefore = __fgSpaceKeystate&(1 << i);
+-                        unsigned long stateNow = dwKeystate&(1 << i);
+-
+-                        if (stateBefore && !stateNow)
+-                            INVOKE_WCB(*window, SpaceButton, (stateBefore, GLUT_UP));
+-                        if (!stateBefore && stateNow)
+-                            INVOKE_WCB(*window, SpaceButton, (stateNow, GLUT_DOWN));
++    }
++    if(!(window = fgWindowByHandle(hwnd))) {
++        return;
++    }
++
++    if(sRidDeviceInfo.hid.dwVendorId == VID_LOGITECH || sRidDeviceInfo.hid.dwVendorId == VID_3DCONN) {
++        /* see definition of fgRAWHID at the top of this file, for an
++         * explanation of why we're doing this.
++         */
++        struct fgRAWHID *hid = (struct fgRAWHID*)&pRawInput->data.hid;
++
++        /* Motion data comes in two parts: motion type and */
++        /* displacement/rotation along three axis. */
++        /* Orientation is a right handed coordinate system with */
++        /* X goes right, Y goes up and Z goes towards viewer, e.g. */
++        /* the one used in OpenGL */
+ 
++        switch(hid->bRawData[0]) {
++        case SPNAV_EVENT_MOTION_TRANSLATION:
++            /* Translation vector */
++            dataptr = (short*)(&hid->bRawData[1]);
++            x = dataptr[0];
++            y = -dataptr[2];
++            z = dataptr[1];
++            INVOKE_WCB(*window, SpaceMotion, (x, y, z));
++            break;
++
++        case SPNAV_EVENT_MOTION_ROTATION:
++            /* Axis aligned rotation vector */
++            dataptr = (short*)(&hid->bRawData[1]);
++            x = dataptr[0];
++            y = -dataptr[2];
++            z = dataptr[1];
++            INVOKE_WCB(*window, SpaceRotation, (x, y, z));
++
++        case SPNAV_EVENT_BUTTON:
++            /* State of the keys */
++            keystate = *(unsigned long*)(&hid->bRawData[1]);
++            if(FETCH_WCB(*window, SpaceButton)) {
++                for(i=0; i<32; i++) {
++                    unsigned long stateBefore = __fgSpaceKeystate & (1 << i);
++                    unsigned long stateNow = keystate & (1 << i);
++
++                    if(stateBefore && !stateNow) {
++                        INVOKE_WCB(*window, SpaceButton, (stateBefore, GLUT_UP));
++                    }
++                    if(!stateBefore && stateNow) {
++                        INVOKE_WCB(*window, SpaceButton, (stateNow, GLUT_DOWN));
+                     }
+                 }
+-                __fgSpaceKeystate = dwKeystate;
+             }
++            __fgSpaceKeystate = keystate;
++            break;
+         }
+     }
+ }
+ 
++#else
++/* windows versions older than winxp don't have the raw HID support used by this
++ * spaceball implementation. For now just leave the functions blank to make it
++ * build without spaceball support on older versions of windows, until we can
++ * investigate a fallback route.
++ */
++
++void fgPlatformInitializeSpaceball(void)
++{
++}
++
++void fgPlatformSpaceballClose(void)
++{
++}
++
++int fgPlatformHasSpaceball(void)
++{
++    return 0;
++}
++
++int fgPlatformSpaceballNumButtons(void)
++{
++    return 0;
++}
++
++void fgPlatformSpaceballSetWindow(SFG_Window *window)
++{
++}
++
++int fgIsSpaceballWinEvent(HWND hwnd, WPARAM wParam, LPARAM lParam)
++{
++    return 0;
++}
++
++void fgSpaceballHandleWinEvent(HWND hwnd, WPARAM wParam, LPARAM lParam)
++{
++}
++
+ #endif
+diff --git a/src/ogc/fg_display_ogc.c b/src/ogc/fg_display_ogc.c
+index e7a5a793..233818e0 100644
+--- a/src/ogc/fg_display_ogc.c
++++ b/src/ogc/fg_display_ogc.c
+@@ -47,6 +47,10 @@ void fgOgcDisplaySetupXfb()
+         fgDisplay.pDisplay.xfb[1] =
+             MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
+     }
++
++    if (fgState.DisplayMode & GLUT_STENCIL) {
++        ogx_stencil_create(OGX_STENCIL_DIRTY_Z);
++    }
+ }
+ 
+ void fgOgcDisplaySetupVideoMode()
+diff --git a/src/ogc/fg_main_ogc.c b/src/ogc/fg_main_ogc.c
+index 499ec8dc..502bcc4a 100644
+--- a/src/ogc/fg_main_ogc.c
++++ b/src/ogc/fg_main_ogc.c
+@@ -206,14 +206,21 @@ fg_time_t fgPlatformSystemTime(void)
+ 
+ void fgPlatformSleepForEvents(fg_time_t ms)
+ {
+-    fgWarning("%s() : sleeping for %lld ms", __func__, ms);
+-
+     /* FreeGlut does not offer a hook for redrawing the window in single-buffer
+      * mode, so let's to it here. */
+     if (!(fgState.DisplayMode & GLUT_DOUBLE)) {
+         fgOgcDisplayShowEFB();
+     }
+ 
++    /* If the mouse is active, reduce the sleep time to a few milliseconds
++     * only, since our mouse is emulated via the Wiimote, which must be
++     * regularly polled */
++    if (ms > 10 && fgStructure.CurrentWindow &&
++        (FETCH_WCB(*fgStructure.CurrentWindow, Motion) ||
++         FETCH_WCB(*fgStructure.CurrentWindow, Mouse))) {
++        ms = 10;
++    }
++
+     struct timespec tv;
+     tv.tv_sec = ms / 1000;
+     tv.tv_nsec = (ms % 1000) * 1000000;
+@@ -261,7 +268,7 @@ void fgPlatformPosResZordWork(SFG_Window *window, unsigned int workMask)
+ 
+ void fgPlatformVisibilityWork(SFG_Window *window)
+ {
+-    fgWarning("%s() : not implemented", __func__);
++    INVOKE_WCB(*window, WindowStatus, (GLUT_FULLY_RETAINED));
+ }
+ 
+ void fgPlatformSetColor(int idx, float r, float g, float b)
+diff --git a/src/ogc/fg_state_ogc.c b/src/ogc/fg_state_ogc.c
+index 876644c9..91235498 100644
+--- a/src/ogc/fg_state_ogc.c
++++ b/src/ogc/fg_state_ogc.c
+@@ -29,6 +29,8 @@ int fgPlatformGlutDeviceGet(GLenum eWhat)
+ 
+ int fgPlatformGlutGet(GLenum eWhat)
+ {
++    GLint ret = -1;
++
+     switch (eWhat) {
+     case GLUT_WINDOW_WIDTH:
+         return fgStructure.CurrentWindow ?
+@@ -36,10 +38,13 @@ int fgPlatformGlutGet(GLenum eWhat)
+     case GLUT_WINDOW_HEIGHT:
+         return fgStructure.CurrentWindow ?
+             fgStructure.CurrentWindow->State.Height : 0;
++    case GLUT_WINDOW_STENCIL_SIZE:
++        glGetIntegerv(GL_STENCIL_BITS, &ret);
++        break;
+     default:
+         fgWarning("%s() : not implemented for %d", __func__, eWhat);
+     }
+-    return -1;
++    return ret;
+ }
+ 
+ int *fgPlatformGlutGetModeValues(GLenum eWhat, int *size)
+diff --git a/src/ogc/fg_window_ogc.c b/src/ogc/fg_window_ogc.c
+index 34dca9d8..4051a2fe 100644
+--- a/src/ogc/fg_window_ogc.c
++++ b/src/ogc/fg_window_ogc.c
+@@ -37,7 +37,7 @@ void fgPlatformOpenWindow(SFG_Window *window, const char *title,
+     window->State.Xpos = 0;
+     window->State.Ypos = 0;
+ 
+-    window->State.WorkMask |= GLUT_INIT_WORK;
++    window->State.WorkMask |= GLUT_INIT_WORK | GLUT_VISIBILITY_WORK;
+     window->State.Visible = GL_TRUE;
+ 
+     /* This sets up the XFB for the chosen buffering scheme */
+diff --git a/src/x11/fg_spaceball_x11.c b/src/x11/fg_spaceball_x11.c
+index 155d24b1..eb825bb7 100644
+--- a/src/x11/fg_spaceball_x11.c
++++ b/src/x11/fg_spaceball_x11.c
+@@ -17,29 +17,29 @@
+ extern int fg_sball_initialized;
+ 
+ enum {
+-    SPNAV_EVENT_ANY,  /* used by spnav_remove_events() */
+-    SPNAV_EVENT_MOTION,
+-    SPNAV_EVENT_BUTTON  /* includes both press and release */
++	SPNAV_EVENT_ANY,  /* used by spnav_remove_events() */
++	SPNAV_EVENT_MOTION,
++	SPNAV_EVENT_BUTTON  /* includes both press and release */
+ };
+ 
+ struct spnav_event_motion {
+-    int type;
+-    int x, y, z;
+-    int rx, ry, rz;
+-    unsigned int period;
+-    int *data;
++	int type;
++	int x, y, z;
++	int rx, ry, rz;
++	unsigned int period;
++	int *data;
+ };
+ 
+ struct spnav_event_button {
+-    int type;
+-    int press;
+-    int bnum;
++	int type;
++	int press;
++	int bnum;
+ };
+ 
+ typedef union spnav_event {
+-    int type;
+-    struct spnav_event_motion motion;
+-    struct spnav_event_button button;
++	int type;
++	struct spnav_event_motion motion;
++	struct spnav_event_button button;
+ } spnav_event;
+ 
+ 
+@@ -54,96 +54,97 @@ static SFG_Window *spnav_win;
+ 
+ void fgPlatformInitializeSpaceball(void)
+ {
+-    Window w;
+-
+-    fg_sball_initialized = 1;
+-    if(!fgStructure.CurrentWindow)
+-    {
+-        fg_sball_initialized = -1;
+-        return;
+-    }
+-
+-    w = fgStructure.CurrentWindow->Window.Handle;
+-    if(spnav_x11_open(fgDisplay.pDisplay.Display, w) == -1)
+-    {
+-        fg_sball_initialized = -1;
+-        return;
+-    }
++	Window w;
++
++	fg_sball_initialized = 1;
++	if(!fgStructure.CurrentWindow)
++	{
++		fg_sball_initialized = -1;
++		return;
++	}
++
++	w = fgStructure.CurrentWindow->Window.Handle;
++	if(spnav_x11_open(fgDisplay.pDisplay.Display, w) == -1)
++	{
++		fg_sball_initialized = -1;
++		return;
++	}
+ }
+ 
+-void fgPlatformSpaceballClose(void) 
++void fgPlatformSpaceballClose(void)
+ {
+-    spnav_close();
++	spnav_close();
+ }
+ 
+-int fgPlatformHasSpaceball(void) 
++int fgPlatformHasSpaceball(void)
+ {
+-    /* XXX this function should somehow query the driver if there's a device
+-     * plugged in, as opposed to just checking if there's a driver to talk to.
+-     */
+-    return spnav_fd() == -1 ? 0 : 1;
++	/* XXX this function should somehow query the driver if there's a device
++	 * plugged in, as opposed to just checking if there's a driver to talk to.
++	 */
++	return spnav_fd() == -1 ? 0 : 1;
+ }
+ 
+-int fgPlatformSpaceballNumButtons(void) {
+-    return 2;
++int fgPlatformSpaceballNumButtons(void)
++{
++	return 2;
+ }
+ 
+-void fgPlatformSpaceballSetWindow(SFG_Window *window) 
++void fgPlatformSpaceballSetWindow(SFG_Window *window)
+ {
+-       if(spnav_win != window) {
+-        spnav_x11_window(window->Window.Handle);
+-        spnav_win = window;
+-    }
++	if(spnav_win != window) {
++		spnav_x11_window(window->Window.Handle);
++		spnav_win = window;
++	}
+ }
+ 
+ int fgIsSpaceballXEvent(const XEvent *xev)
+ {
+-    spnav_event sev;
++	spnav_event sev;
+ 
+-    if(spnav_win != fgStructure.CurrentWindow) {
+-        /* this will also initialize spaceball if needed (first call) */
+-        fgSpaceballSetWindow(fgStructure.CurrentWindow);
+-    }
++	if(spnav_win != fgStructure.CurrentWindow) {
++		/* this will also initialize spaceball if needed (first call) */
++		fgSpaceballSetWindow(fgStructure.CurrentWindow);
++	}
+ 
+-    if(fg_sball_initialized != 1) {
+-        return 0;
+-    }
++	if(fg_sball_initialized != 1) {
++		return 0;
++	}
+ 
+-    return spnav_x11_event(xev, &sev);
++	return spnav_x11_event(xev, &sev);
+ }
+ 
+ void fgSpaceballHandleXEvent(const XEvent *xev)
+ {
+-    spnav_event sev;
+-
+-    if(fg_sball_initialized == 0) {
+-        fgInitialiseSpaceball();
+-        if(fg_sball_initialized != 1) {
+-            return;
+-        }
+-    }
+-
+-    if(spnav_x11_event(xev, &sev)) {
+-        switch(sev.type) {
+-        case SPNAV_EVENT_MOTION:
+-            if(sev.motion.x | sev.motion.y | sev.motion.z) {
+-                INVOKE_WCB(*spnav_win, SpaceMotion, (sev.motion.x, sev.motion.y, sev.motion.z));
+-            }
+-            if(sev.motion.rx | sev.motion.ry | sev.motion.rz) {
+-                INVOKE_WCB(*spnav_win, SpaceRotation, (sev.motion.rx, sev.motion.ry, sev.motion.rz));
+-            }
+-            spnav_remove_events(SPNAV_EVENT_MOTION);
+-            break;
+-
+-        case SPNAV_EVENT_BUTTON:
+-            /* button numbers are 1-based in glutSpaceballButtonFunc */
+-            INVOKE_WCB(*spnav_win, SpaceButton, (sev.button.bnum + 1, sev.button.press ? GLUT_DOWN : GLUT_UP));
+-            break;
+-
+-        default:
+-            break;
+-        }
+-    }
++	spnav_event sev;
++
++	if(fg_sball_initialized == 0) {
++		fgInitialiseSpaceball();
++		if(fg_sball_initialized != 1) {
++			return;
++		}
++	}
++
++	if(spnav_x11_event(xev, &sev)) {
++		switch(sev.type) {
++		case SPNAV_EVENT_MOTION:
++			if(sev.motion.x | sev.motion.y | sev.motion.z) {
++				INVOKE_WCB(*spnav_win, SpaceMotion, (sev.motion.x, sev.motion.y, sev.motion.z));
++			}
++			if(sev.motion.rx | sev.motion.ry | sev.motion.rz) {
++				INVOKE_WCB(*spnav_win, SpaceRotation, (sev.motion.rx, sev.motion.ry, sev.motion.rz));
++			}
++			spnav_remove_events(SPNAV_EVENT_MOTION);
++			break;
++
++		case SPNAV_EVENT_BUTTON:
++			/* button numbers are 1-based in glutSpaceballButtonFunc */
++			INVOKE_WCB(*spnav_win, SpaceButton, (sev.button.bnum + 1, sev.button.press ? GLUT_DOWN : GLUT_UP));
++			break;
++
++		default:
++			break;
++		}
++	}
+ }
+ 
+ /*
+@@ -188,226 +189,226 @@ static Window app_win;
+ static Atom motion_event, button_press_event, button_release_event, command_event;
+ 
+ enum {
+-  CMD_APP_WINDOW = 27695,
+-  CMD_APP_SENS
++	CMD_APP_WINDOW = 27695,
++	CMD_APP_SENS
+ };
+ 
+-#define IS_OPEN    dpy
++#define IS_OPEN	dpy
+ 
+ struct event_node {
+-  spnav_event event;
+-  struct event_node *next;
++	spnav_event event;
++	struct event_node *next;
+ };
+ 
+ static int spnav_x11_open(Display *display, Window win)
+ {
+-  if(IS_OPEN) {
+-    return -1;
+-  }
++	if(IS_OPEN) {
++		return -1;
++	}
+ 
+-  dpy = display;
++	dpy = display;
+ 
+-  motion_event = XInternAtom(dpy, "MotionEvent", True);
+-  button_press_event = XInternAtom(dpy, "ButtonPressEvent", True);
+-  button_release_event = XInternAtom(dpy, "ButtonReleaseEvent", True);
+-  command_event = XInternAtom(dpy, "CommandEvent", True);
++	motion_event = XInternAtom(dpy, "MotionEvent", True);
++	button_press_event = XInternAtom(dpy, "ButtonPressEvent", True);
++	button_release_event = XInternAtom(dpy, "ButtonReleaseEvent", True);
++	command_event = XInternAtom(dpy, "CommandEvent", True);
+ 
+-  if(!motion_event || !button_press_event || !button_release_event || !command_event) {
+-    dpy = 0;
+-    return -1;  /* daemon not started */
+-  }
++	if(!motion_event || !button_press_event || !button_release_event || !command_event) {
++		dpy = 0;
++		return -1;	/* daemon not started */
++	}
+ 
+-  if(spnav_x11_window(win) == -1) {
+-    dpy = 0;
+-    return -1;  /* daemon not started */
+-  }
++	if(spnav_x11_window(win) == -1) {
++		dpy = 0;
++		return -1;	/* daemon not started */
++	}
+ 
+-  app_win = win;
+-  return 0;
++	app_win = win;
++	return 0;
+ }
+ 
+ static int spnav_close(void)
+ {
+-  if(dpy) {
+-    spnav_x11_window(DefaultRootWindow(dpy));
+-    app_win = 0;
+-    dpy = 0;
+-    return 0;
+-  }
+-  return -1;
++	if(dpy) {
++		spnav_x11_window(DefaultRootWindow(dpy));
++		app_win = 0;
++		dpy = 0;
++		return 0;
++	}
++	return -1;
+ }
+ 
+ static int spnav_x11_window(Window win)
+ {
+-  int (*prev_xerr_handler)(Display*, XErrorEvent*);
+-  XEvent xev;
+-  Window daemon_win;
+-
+-  if(!IS_OPEN) {
+-    return -1;
+-  }
+-
+-  if(!(daemon_win = get_daemon_window(dpy))) {
+-    return -1;
+-  }
+-
+-  prev_xerr_handler = XSetErrorHandler(catch_badwin);
+-
+-  xev.type = ClientMessage;
+-  xev.xclient.send_event = False;
+-  xev.xclient.display = dpy;
+-  xev.xclient.window = win;
+-  xev.xclient.message_type = command_event;
+-  xev.xclient.format = 16;
+-  xev.xclient.data.s[0] = ((unsigned int)win & 0xffff0000) >> 16;
+-  xev.xclient.data.s[1] = (unsigned int)win & 0xffff;
+-  xev.xclient.data.s[2] = CMD_APP_WINDOW;
+-
+-  XSendEvent(dpy, daemon_win, False, 0, &xev);
+-  XSync(dpy, False);
+-
+-  XSetErrorHandler(prev_xerr_handler);
+-  return 0;
++	int (*prev_xerr_handler)(Display*, XErrorEvent*);
++	XEvent xev;
++	Window daemon_win;
++
++	if(!IS_OPEN) {
++		return -1;
++	}
++
++	if(!(daemon_win = get_daemon_window(dpy))) {
++		return -1;
++	}
++
++	prev_xerr_handler = XSetErrorHandler(catch_badwin);
++
++	xev.type = ClientMessage;
++	xev.xclient.send_event = False;
++	xev.xclient.display = dpy;
++	xev.xclient.window = win;
++	xev.xclient.message_type = command_event;
++	xev.xclient.format = 16;
++	xev.xclient.data.s[0] = ((unsigned int)win & 0xffff0000) >> 16;
++	xev.xclient.data.s[1] = (unsigned int)win & 0xffff;
++	xev.xclient.data.s[2] = CMD_APP_WINDOW;
++
++	XSendEvent(dpy, daemon_win, False, 0, &xev);
++	XSync(dpy, False);
++
++	XSetErrorHandler(prev_xerr_handler);
++	return 0;
+ }
+ 
+ static int spnav_fd(void)
+ {
+-  if(dpy) {
+-    return ConnectionNumber(dpy);
+-  }
+-  return -1;
++	if(dpy) {
++		return ConnectionNumber(dpy);
++	}
++	return -1;
+ }
+ 
+ /*static int spnav_wait_event(spnav_event *event)
+ {
+-  if(dpy) {
+-    for(;;) {
+-      XEvent xev;
+-      XNextEvent(dpy, &xev);
+-
+-      if(spnav_x11_event(&xev, event) > 0) {
+-        return event->type;
+-      }
+-    }
+-  }
+-  return 0;
++	if(dpy) {
++		for(;;) {
++			XEvent xev;
++			XNextEvent(dpy, &xev);
++
++			if(spnav_x11_event(&xev, event) > 0) {
++				return event->type;
++			}
++		}
++	}
++	return 0;
+ }
+ 
+ static int spnav_poll_event(spnav_event *event)
+ {
+-  if(dpy) {
+-    if(XPending(dpy)) {
+-      XEvent xev;
+-      XNextEvent(dpy, &xev);
+-
+-      return spnav_x11_event(&xev, event);
+-    }
+-  }
+-  return 0;
++	if(dpy) {
++		if(XPending(dpy)) {
++			XEvent xev;
++			XNextEvent(dpy, &xev);
++
++			return spnav_x11_event(&xev, event);
++		}
++	}
++	return 0;
+ }*/
+ 
+ static Bool match_events(Display *dpy, XEvent *xev, char *arg)
+ {
+-  int evtype = *(int*)arg;
+-
+-  if(xev->type != ClientMessage) {
+-    return False;
+-  }
+-
+-  if(xev->xclient.message_type == motion_event) {
+-    return !evtype || evtype == SPNAV_EVENT_MOTION ? True : False;
+-  }
+-  if(xev->xclient.message_type == button_press_event ||
+-      xev->xclient.message_type == button_release_event) {
+-    return !evtype || evtype == SPNAV_EVENT_BUTTON ? True : False;
+-  }
+-  return False;
++	int evtype = *(int*)arg;
++
++	if(xev->type != ClientMessage) {
++		return False;
++	}
++
++	if(xev->xclient.message_type == motion_event) {
++		return !evtype || evtype == SPNAV_EVENT_MOTION ? True : False;
++	}
++	if(xev->xclient.message_type == button_press_event ||
++			xev->xclient.message_type == button_release_event) {
++		return !evtype || evtype == SPNAV_EVENT_BUTTON ? True : False;
++	}
++	return False;
+ }
+ 
+ static int spnav_remove_events(int type)
+ {
+-  int rm_count = 0;
++	int rm_count = 0;
+ 
+-  if(dpy) {
+-    XEvent xev;
++	if(dpy) {
++		XEvent xev;
+ 
+-    while(XCheckIfEvent(dpy, &xev, match_events, (char*)&type)) {
+-      rm_count++;
+-    }
+-    return rm_count;
+-  }
+-  return 0;
++		while(XCheckIfEvent(dpy, &xev, match_events, (char*)&type)) {
++			rm_count++;
++		}
++		return rm_count;
++	}
++	return 0;
+ }
+ 
+ static int spnav_x11_event(const XEvent *xev, spnav_event *event)
+ {
+-  int i;
+-  int xmsg_type;
+-
+-  if(xev->type != ClientMessage) {
+-    return 0;
+-  }
+-
+-  xmsg_type = xev->xclient.message_type;
+-
+-  if(xmsg_type != motion_event && xmsg_type != button_press_event &&
+-      xmsg_type != button_release_event) {
+-    return 0;
+-  }
+-
+-  if(xmsg_type == motion_event) {
+-    event->type = SPNAV_EVENT_MOTION;
+-    event->motion.data = &event->motion.x;
+-
+-    for(i=0; i<6; i++) {
+-      event->motion.data[i] = xev->xclient.data.s[i + 2];
+-    }
+-    event->motion.period = xev->xclient.data.s[8];
+-  } else {
+-    event->type = SPNAV_EVENT_BUTTON;
+-    event->button.press = xmsg_type == button_press_event ? 1 : 0;
+-    event->button.bnum = xev->xclient.data.s[2];
+-  }
+-  return event->type;
++	int i;
++	int xmsg_type;
++
++	if(xev->type != ClientMessage) {
++		return 0;
++	}
++
++	xmsg_type = xev->xclient.message_type;
++
++	if(xmsg_type != motion_event && xmsg_type != button_press_event &&
++			xmsg_type != button_release_event) {
++		return 0;
++	}
++
++	if(xmsg_type == motion_event) {
++		event->type = SPNAV_EVENT_MOTION;
++		event->motion.data = &event->motion.x;
++
++		for(i=0; i<6; i++) {
++			event->motion.data[i] = xev->xclient.data.s[i + 2];
++		}
++		event->motion.period = xev->xclient.data.s[8];
++	} else {
++		event->type = SPNAV_EVENT_BUTTON;
++		event->button.press = xmsg_type == button_press_event ? 1 : 0;
++		event->button.bnum = xev->xclient.data.s[2];
++	}
++	return event->type;
+ }
+ 
+ 
+ static Window get_daemon_window(Display *dpy)
+ {
+-  Window win, root_win;
+-  XTextProperty wname;
+-  Atom type;
+-  int fmt;
+-  unsigned long nitems, bytes_after;
+-  unsigned char *prop;
++	Window win, root_win;
++	XTextProperty wname;
++	Atom type;
++	int fmt;
++	unsigned long nitems, bytes_after;
++	unsigned char *prop;
+ 
+-  root_win = DefaultRootWindow(dpy);
++	root_win = DefaultRootWindow(dpy);
+ 
+-  XGetWindowProperty(dpy, root_win, command_event, 0, 1, False, AnyPropertyType, &type, &fmt, &nitems, &bytes_after, &prop);
+-  if(!prop) {
+-    return 0;
+-  }
++	XGetWindowProperty(dpy, root_win, command_event, 0, 1, False, AnyPropertyType, &type, &fmt, &nitems, &bytes_after, &prop);
++	if(!prop) {
++		return 0;
++	}
+ 
+-  win = *(Window*)prop;
+-  XFree(prop);
++	win = *(Window*)prop;
++	XFree(prop);
+ 
+-  if(!XGetWMName(dpy, win, &wname) || strcmp("Magellan Window", (char*)wname.value) != 0) {
+-    return 0;
+-  }
++	if(!XGetWMName(dpy, win, &wname) || strcmp("Magellan Window", (char*)wname.value) != 0) {
++		return 0;
++	}
+ 
+-  return win;
++	return win;
+ }
+ 
+ static int catch_badwin(Display *dpy, XErrorEvent *err)
+ {
+-  char buf[256];
+-
+-  if(err->error_code == BadWindow) {
+-    /* do nothing? */
+-  } else {
+-    XGetErrorText(dpy, err->error_code, buf, sizeof buf);
+-    fprintf(stderr, "Caught unexpected X error: %s\n", buf);
+-  }
+-  return 0;
++	char buf[256];
++
++	if(err->error_code == BadWindow) {
++		/* do nothing? */
++	} else {
++		XGetErrorText(dpy, err->error_code, buf, sizeof buf);
++		fprintf(stderr, "Caught unexpected X error: %s\n", buf);
++	}
++	return 0;
+ }
+ 
