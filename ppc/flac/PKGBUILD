@@ -2,7 +2,7 @@
 
 pkgname=ppc-flac
 pkgver=1.4.3
-pkgrel=1
+pkgrel=2
 pkgdesc='FLAC stands for Free Lossless Audio Codec, an audio format similar to MP3, but lossless...'
 arch=('any')
 url='https://xiph.org/flac/'
@@ -31,6 +31,7 @@ build() {
   CFLAGS="${CFLAGS} -D__WIIU__ " \
     ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static \
+    --without-pic \
     --enable-cpplibs \
     --disable-programs \
     --disable-examples
