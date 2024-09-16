@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('3ds-examples')
-pkgver=20230610
+pkgver=20240917
 pkgrel=1
 pkgdesc="Nintendo 3DS example code."
 arch=('any')
@@ -18,4 +18,4 @@ package() {
   mkdir -p "$pkgdir"/opt/devkitpro/examples/3ds
   cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/3ds  
 }
-sha256sums=('16dfaca05d3431ca36a792e57c8f01bc6f0183991c345d2074e8e74ad82b207f')
+sha256sums=('38ef002fe43d20852a0c9e539c33d8fcd8580bf5ee04331ed48860cb3283eb47')
