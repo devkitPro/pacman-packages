@@ -1,5 +1,5 @@
 pkgname=wii-opengx
-pkgver=0.9.1
+pkgver=0.9.2
 pkgrel=1
 pkgdesc='wii opengl/gx translation library'
 arch=('any')
@@ -24,4 +24,4 @@ package() {
   DESTDIR=${pkgdir} catnip install
 }
 
-sha256sums=('194b4b65201f7c0b624c8359ac849ebb2524e61e6a6d6a4a418b61a108d676b8')
+sha256sums=('f103784fffe9be10818e05bf91af1af4f2c4b7eda2ba3691a27d12f82365dc44')
