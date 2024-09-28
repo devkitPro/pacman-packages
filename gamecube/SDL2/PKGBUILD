@@ -2,14 +2,14 @@
 
 pkgname=gamecube-sdl2
 pkgver=2.28.5
-pkgrel=13
+pkgrel=14
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard"
 arch=('any')
 url="https://libsdl.org"
 license=("LGPL")
 options=(!strip libtool staticlibs)
 makedepends=('wii-pkg-config' 'dkp-toolchain-vars')
-depends=('libogc')
+depends=('gamecube-opengx' 'libogc')
 source=("${url}/release/SDL2-${pkgver}.tar.gz" "SDL2-${pkgver}.patch")
 groups=('gamecube-portlibs' 'gamecube-sdl2-libs')
 
@@ -31,4 +31,4 @@ package() {
 }
 
 sha256sums=('332cb37d0be20cb9541739c61f79bae5a477427d79ae85e352089afdaf6666e4'
-            'b2ea2a1826800a19915c665eef4f9b57831e476c0dae89b3eb8a55c9a045ad52')
+            'd89771e8e2d5f2b1d01af8129f5efb4e1e65016cea7d8dfbe2b76278bc6c7c69')
