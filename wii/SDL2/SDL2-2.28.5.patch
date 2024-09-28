@@ -4646,10 +4646,10 @@ index 000000000..af58bbcc1
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcgl.c b/src/video/ogc/SDL_ogcgl.c
 new file mode 100644
-index 000000000..65035af20
+index 000000000..d2270110e
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcgl.c
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,116 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4686,6 +4686,21 @@ index 000000000..65035af20
 +    SDL_Window *window;
 +    int swap_interval;
 +} OGC_GL_Context;
++
++/* Weak symbols for the opengx functions used by SDL, so that the client does
++ * not need to link to opengx, unless it actually uses OpenGL. */
++void __attribute__((weak)) ogx_initialize(void)
++{
++    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
++                "%s() called but opengx not used in build!", __func__);
++}
++
++void __attribute__((weak)) *ogx_get_proc_address(const char *)
++{
++    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
++                "%s() called but opengx not used in build!", __func__);
++    return NULL;
++}
 +
 +int SDL_OGC_GL_LoadLibrary(_THIS, const char *path)
 +{
