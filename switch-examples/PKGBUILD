@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('switch-examples')
-pkgver=20231028
+pkgver=20241018
 pkgrel=1
 pkgdesc="Nintendo Switch example code."
 arch=('any')
@@ -19,3 +19,4 @@ package() {
   mkdir -p $pkgdir/opt/devkitpro/examples/switch
   cp -R $srcdir/$pkgname-$pkgver/* $pkgdir/opt/devkitpro/examples/switch  
 }
+sha256sums=('a078152d36d568137774e8597e535940864eb17b48a3b25d5ab8a735eb49a0f5')
