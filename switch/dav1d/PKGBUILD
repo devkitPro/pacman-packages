@@ -2,7 +2,7 @@
 
 pkgbasename=dav1d
 pkgname=switch-$pkgbasename
-pkgver=1.2.1
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="dav1d is an AV1 cross-platform decoder, open-source, and focused on speed and correctness."
 arch=("any")
@@ -36,5 +36,5 @@ package() {
 
   DESTDIR="$pkgdir" meson install -C build
 }
-sha256sums=('2dd85860d213479672b1c708e31593446e8c2b53ff41e2ca25a2eafb718424e2'
-            '424e132380ea9afb0e13fcdf5d2893a7895094fff4ee297cdb30ead422256542')
+sha256sums=('14bd6f5157808ed9aedcafbe50df689d304fd4810ac20be6eec1ab037436afd6'
+            'b9b48db3f8b1c070f6fb1581f0cea666f34a3dd3f53cd0dd018980c985b36515')
