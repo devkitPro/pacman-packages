@@ -3,14 +3,14 @@
 
 pkgbasename=libass
 pkgname=switch-$pkgbasename
-pkgver=0.17.2
+pkgver=0.17.3
 pkgrel=1
 pkgdesc='A portable subtitle renderer (Nintendo Switch port)'
 arch=('any')
 url="https://github.com/libass/libass"
 license=('custom: ISC')
 options=(!strip libtool staticlibs)
-depends=('switch-freetype' 'switch-libfribidi')
+depends=('switch-freetype' 'switch-libfribidi' 'switch-harfbuzz')
 makedepends=('dkp-toolchain-vars' 'switch-pkg-config')
 source=("$url/releases/download/$pkgver/$pkgbasename-$pkgver.tar.gz")
 groups=('switch-portlibs')
@@ -39,4 +39,4 @@ package() {
   install -Dm644 "COPYING" "$pkgdir/$PORTLIBS_PREFIX/licenses/$pkgname/COPYING"
 }
 
-sha256sums=('a9afb52bf76a2569263fe2038896774c991b35c0968342a03be708e56ea60c3b')
+sha256sums=('eae425da50f0015c21f7b3a9c7262a910f0218af469e22e2931462fed3c50959')
