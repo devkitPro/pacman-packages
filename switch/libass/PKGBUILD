@@ -39,4 +39,4 @@ package() {
   install -Dm644 "COPYING" "$pkgdir/$PORTLIBS_PREFIX/licenses/$pkgname/COPYING"
 }
 
-sha256sums=('eae425da50f0015c21f7b3a9c7262a910f0218af469e22e2931462fed3c50959')
+sha256sums=('da7c348deb6fa6c24507afab2dee7545ba5dd5bbf90a137bfe9e738f7df68537')
