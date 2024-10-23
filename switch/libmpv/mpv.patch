@@ -1,7 +1,41 @@
-diff '--exclude=*waf*' '--exclude=__pycache__' '--exclude=build' '--exclude=wscript_build.py.orig' -NBaur mpv-0.33.0/osdep/io.c mpv-0.33.0-switch/osdep/io.c
---- mpv-0.33.0/osdep/io.c	2020-11-22 18:46:28.000000000 +0100
-+++ mpv-0.33.0-switch/osdep/io.c	2021-01-21 11:14:31.172503720 +0100
-@@ -61,7 +61,7 @@
+diff --git a/meson.build b/meson.build
+index f9fe4e7263..33cd9fdae6 100644
+--- a/meson.build
++++ b/meson.build
+@@ -294,7 +294,8 @@ endif
+ 
+ darwin = host_machine.system() == 'darwin'
+ win32 = host_machine.system() == 'cygwin' or host_machine.system() == 'windows'
+-posix = not win32
++hos = host_machine.system() == 'horizon'
++posix = not (win32 or hos)
+ 
+ features += {'darwin': darwin}
+ features += {'posix': posix}
+@@ -419,6 +420,18 @@ if darwin
+ 
+ endif
+ 
++if hos
++    sources += files('osdep/path-unix.c',
++                     'osdep/timer-linux.c',
++                     'osdep/subprocess-dummy.c',
++                     'osdep/terminal-dummy.c',
++                     'osdep/main-fn-unix.c',
++                     'osdep/language-posix.c',
++                     'input/ipc-dummy.c',
++                     'osdep/polldev.c',
++                     'sub/filter_regex.c')
++endif
++
+ if posix and not darwin
+     sources += files('osdep/path-unix.c',
+                      'osdep/timer-linux.c')
+diff --git a/osdep/io.c b/osdep/io.c
+index 8cd6dede85..1304c8f12f 100644
+--- a/osdep/io.c
++++ b/osdep/io.c
+@@ -62,7 +62,7 @@ bool mp_set_cloexec(int fd)
      return true;
  }
  
@@ -10,9 +44,24 @@ diff '--exclude=*waf*' '--exclude=__pycache__' '--exclude=build' '--exclude=wscr
  int mp_make_cloexec_pipe(int pipes[2])
  {
      pipes[0] = pipes[1] = -1;
-diff '--exclude=*waf*' '--exclude=__pycache__' '--exclude=build' '--exclude=wscript_build.py.orig' -NBaur mpv-0.33.0/osdep/switch/sys/mman.h mpv-0.33.0-switch/osdep/switch/sys/mman.h
---- mpv-0.33.0/osdep/switch/sys/mman.h	1970-01-01 01:00:00.000000000 +0100
-+++ mpv-0.33.0-switch/osdep/switch/sys/mman.h	2021-01-21 11:14:31.172503720 +0100
+diff --git a/osdep/io.h b/osdep/io.h
+index 905558c284..f616f58575 100644
+--- a/osdep/io.h
++++ b/osdep/io.h
+@@ -210,7 +210,7 @@ void freelocale(locale_t);
+ 
+ #else /* __MINGW32__ */
+ 
+-#include <sys/mman.h>
++#include "switch/sys/mman.h"
+ 
+ extern char **environ;
+ 
+diff --git a/osdep/switch/sys/mman.h b/osdep/switch/sys/mman.h
+new file mode 100644
+index 0000000000..398ff01729
+--- /dev/null
++++ b/osdep/switch/sys/mman.h
 @@ -0,0 +1,15 @@
 +#ifndef _MEMMAP_H_
 +#define _MEMMAP_H_
@@ -29,9 +78,23 @@ diff '--exclude=*waf*' '--exclude=__pycache__' '--exclude=build' '--exclude=wscr
 +#define munmap(a, b) free(a)
 +
 +#endif
-diff '--exclude=*waf*' '--exclude=__pycache__' '--exclude=build' '--exclude=wscript_build.py.orig' -NBaur mpv-0.33.0/sub/filter_regex.c mpv-0.33.0-switch/sub/filter_regex.c
---- mpv-0.33.0/sub/filter_regex.c	2020-11-22 18:46:28.000000000 +0100
-+++ mpv-0.33.0-switch/sub/filter_regex.c	2021-01-21 11:14:31.172503720 +0100
+diff --git a/player/lua/stats.lua b/player/lua/stats.lua
+index 9a33815c40..c4f5a4acf3 100644
+--- a/player/lua/stats.lua
++++ b/player/lua/stats.lua
+@@ -43,7 +43,7 @@ local o = {
+     plot_color = "FFFFFF",
+ 
+     -- Text style
+-    font = "sans-serif",
++    font = "nintendo_udsg-r_std_003",
+     font_mono = "monospace",   -- monospaced digits are sufficient
+     font_size = 8,
+     font_color = "FFFFFF",
+diff --git a/sub/filter_regex.c b/sub/filter_regex.c
+index 8e299918ce..c7b08f5273 100644
+--- a/sub/filter_regex.c
++++ b/sub/filter_regex.c
 @@ -1,5 +1,5 @@
 -#include <regex.h>
  #include <sys/types.h>
@@ -39,28 +102,85 @@ diff '--exclude=*waf*' '--exclude=__pycache__' '--exclude=build' '--exclude=wscr
  
  #include "common/common.h"
  #include "common/msg.h"
-diff '--exclude=*waf*' '--exclude=__pycache__' '--exclude=build' '--exclude=wscript_build.py.orig' -NBaur mpv-0.33.0/wscript_build.py mpv-0.33.0-switch/wscript_build.py
---- mpv-0.33.0/wscript_build.py	2020-11-22 18:46:28.000000000 +0100
-+++ mpv-0.33.0-switch/wscript_build.py	2021-01-21 11:17:47.714178820 +0100
-@@ -191,7 +191,6 @@
-         ])
+diff --git a/sub/osd.c b/sub/osd.c
+index 811b6c821b..1db7db8444 100644
+--- a/sub/osd.c
++++ b/sub/osd.c
+@@ -76,7 +76,7 @@ const struct m_sub_options osd_style_conf = {
+     .opts = style_opts,
+     .size = sizeof(struct osd_style_opts),
+     .defaults = &(const struct osd_style_opts){
+-        .font = "sans-serif",
++        .font = "nintendo_udsg-r_std_003",
+         .font_size = 55,
+         .color = {255, 255, 255, 255},
+         .border_color = {0, 0, 0, 255},
+@@ -95,7 +95,7 @@ const struct m_sub_options sub_style_conf = {
+     .opts = style_opts,
+     .size = sizeof(struct osd_style_opts),
+     .defaults = &(const struct osd_style_opts){
+-        .font = "sans-serif",
++        .font = "nintendo_udsg-r_std_003",
+         .font_size = 55,
+         .color = {255, 255, 255, 255},
+         .border_color = {0, 0, 0, 255},
+diff --git a/sub/sd_ass.c b/sub/sd_ass.c
+index e4e5652875..6ecd2dd2c5 100644
+--- a/sub/sd_ass.c
++++ b/sub/sd_ass.c
+@@ -21,6 +21,10 @@
+ #include <math.h>
+ #include <limits.h>
  
-     getch2_c = ctx.pick_first_matching_dep([
--        ( "osdep/terminal-unix.c",               "posix" ),
-         ( "osdep/terminal-win.c",                "win32-desktop" ),
-         ( "osdep/terminal-dummy.c" ),
-     ])
-@@ -203,13 +202,11 @@
-     ])
++#ifdef __SWITCH__
++#include <switch.h>
++#endif
++
+ #include <libavutil/common.h>
+ #include <ass/ass.h>
  
-     ipc_c = ctx.pick_first_matching_dep([
--        ( "input/ipc-unix.c",                    "posix" ),
-         ( "input/ipc-win.c",                     "win32-desktop" ),
-         ( "input/ipc-dummy.c" ),
-     ])
+@@ -198,6 +202,18 @@ static void enable_output(struct sd *sd, bool enable)
+     } else {
+         ctx->ass_renderer = ass_renderer_init(ctx->ass_library);
  
-     subprocess_c = ctx.pick_first_matching_dep([
--        ( "osdep/subprocess-posix.c",            "posix" ),
-         ( "osdep/subprocess-win.c",              "win32-desktop" ),
-         ( "osdep/subprocess-dummy.c" ),
-     ])
++#ifdef __SWITCH__
++        if (R_SUCCEEDED(plInitialize(PlServiceType_User))) {
++            PlFontData font;
++            Result rc = plGetSharedFontByType(&font, PlSharedFontType_Standard);
++            if (R_SUCCEEDED(rc))
++                ass_add_font(ctx->ass_library, "nintendo_udsg-r_std_003", font.address, font.size);
++            else
++                MP_ERR(sd, "Failed to add font from pl: %#x\n", rc);
++            plExit();
++        }
++#endif
++
+         mp_ass_configure_fonts(ctx->ass_renderer, sd->opts->sub_style,
+                                sd->global, sd->log);
+     }
+diff --git a/video/mp_image.c b/video/mp_image.c
+index 40678d10bd..0baddd3e78 100644
+--- a/video/mp_image.c
++++ b/video/mp_image.c
+@@ -176,7 +176,7 @@ static bool mp_image_alloc_planes(struct mp_image *mpi)
+         return false;
+ 
+     // Note: mp_image_pool assumes this creates only 1 AVBufferRef.
+-    mpi->bufs[0] = av_buffer_alloc(size + align);
++    mpi->bufs[0] = av_buffer_aligned_alloc(size + align, 0x100); // Alignment required for plane offsets
+     if (!mpi->bufs[0])
+         return false;
+ 
+diff --git a/video/mp_image.h b/video/mp_image.h
+index 98dd666412..376e269356 100644
+--- a/video/mp_image.h
++++ b/video/mp_image.h
+@@ -32,7 +32,7 @@
+ // libraries except libavcodec don't really know what alignment they want.
+ // Things will randomly crash or get slower if the alignment is not satisfied.
+ // Whatever. This value should be pretty safe with current CPU architectures.
+-#define MP_IMAGE_BYTE_ALIGN 64
++#define MP_IMAGE_BYTE_ALIGN 256 // VIC alignement
+ 
+ #define MP_IMGFIELD_TOP_FIRST 0x02
+ #define MP_IMGFIELD_REPEAT_FIRST 0x04
