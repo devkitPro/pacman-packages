@@ -1,5 +1,5 @@
 diff --git a/meson.build b/meson.build
-index 798abc1deb..cff6de6931 100644
+index 798abc1..cff6de6 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -196,6 +196,11 @@ if host_machine.system() == 'linux'
@@ -15,20 +15,19 @@ index 798abc1deb..cff6de6931 100644
  
  
 diff --git a/src/cpu.c b/src/cpu.c
-index 415266711e..1b8886e837 100644
+index 4152667..bbd3cbb 100644
 --- a/src/cpu.c
 +++ b/src/cpu.c
-@@ -37,6 +37,9 @@
+@@ -37,6 +37,8 @@
  #ifdef __APPLE__
  #include <sys/sysctl.h>
  #include <sys/types.h>
 +#elif defined(__SWITCH__)
-+#undef PACKED // libdav1d's definition is incompatible with libnx' usage of the macro
 +#include <switch.h>
  #endif
  #if HAVE_UNISTD_H
  #include <unistd.h>
-@@ -91,6 +94,10 @@ COLD int dav1d_num_logical_processors(Dav1dContext *const c) {
+@@ -91,6 +93,10 @@ COLD int dav1d_num_logical_processors(Dav1dContext *const c) {
      GetNativeSystemInfo(&system_info);
      return system_info.dwNumberOfProcessors;
  #endif
@@ -40,7 +39,7 @@ index 415266711e..1b8886e837 100644
      cpu_set_t affinity;
      if (!pthread_getaffinity_np(pthread_self(), sizeof(affinity), &affinity))
 diff --git a/src/meson.build b/src/meson.build
-index 29fd5d6c76..bbbfc8545f 100644
+index 29fd5d6..bbbfc85 100644
 --- a/src/meson.build
 +++ b/src/meson.build
 @@ -384,6 +384,7 @@ libdav1d = library('dav1d',

@@ -36,5 +36,5 @@ package() {
 
   DESTDIR="$pkgdir" meson install -C build
 }
-sha256sums=('14bd6f5157808ed9aedcafbe50df689d304fd4810ac20be6eec1ab037436afd6'
-            'b9b48db3f8b1c070f6fb1581f0cea666f34a3dd3f53cd0dd018980c985b36515')
+sha256sums=('78b15d9954b513ea92d27f39362535ded2243e1b0924fde39f37a31ebed5f76b'
+            '7a59b36d2f0abd31368a11422066e2edbd5334e9504ef200b7688c3f7b81f205')
