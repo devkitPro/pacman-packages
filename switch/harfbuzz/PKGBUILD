@@ -1,7 +1,7 @@
 # Maintainer:  Mary Strodl <ipadlover8322@gmail.com>
 
 pkgname=switch-harfbuzz
-pkgver=7.1.0
+pkgver=10.0.1
 pkgrel=1
 pkgdesc='HarfBuzz is a text shaping library. Using the HarfBuzz library allows programs to convert a sequence of Unicode input into properly formatted and positioned glyph output—for any writing system and language.'
 arch=('any')
@@ -10,29 +10,25 @@ license=(LGPL)
 options=(!strip libtool staticlibs)
 source=("https://github.com/harfbuzz/harfbuzz/releases/download/$pkgver/harfbuzz-$pkgver.tar.xz")
 sha256sums=(
-  'f135a61cd464c9ed6bc9823764c188f276c3850a8dc904628de2a87966b7077b'
+  'b2cb13bd351904cb9038f907dc0dee0ae07127061242fe3556b2795c4e9748fc'
 )
-makedepends=('switch-pkg-config' 'switch-cmake' 'switch-freetype')
+makedepends=('dkp-toolchain-vars' 'dkp-meson-scripts')
 depends=('switch-freetype')
 
 groups=('switch-portlibs')
 
 build() {
-
-  source "${DEVKITPRO}/switchvars.sh"
   cd harfbuzz-${pkgver}
-
-  source "${DEVKITPRO}/switchvars.sh"
-
-  ./configure --prefix=${PORTLIBS_PREFIX} --host=aarch64-none-elf --disable-shared --enable-static
-
-  make
+  /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build \
+    -Dicu=disabled -Dglib=disabled -Dcairo=disabled -Dgobject=disabled \
+    -Dtests=disabled -Ddocs=disabled -Dbenchmark=disabled
+  meson compile -C build
 }
 
 package() {
 
   cd harfbuzz-${pkgver}
-  make install DESTDIR="${pkgdir}"
+  DESTDIR="${pkgdir}" meson install -C build
   rm -fr ${pkgdir}/${PORTLIBS_PREFIX}/share
 
 }
