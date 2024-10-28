@@ -15,15 +15,17 @@ options=(!strip staticlibs)
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 depends=('switch-zlib' 'switch-bzip2' 'switch-libass' 'switch-libfribidi'
          'switch-freetype' 'switch-dav1d')
-source=("https://ffmpeg.org/releases/ffmpeg-${pkgver}.tar.xz" "ffmpeg-${pkgver}.patch")
+source=("https://ffmpeg.org/releases/ffmpeg-${pkgver}.tar.xz" "ffmpeg-${pkgver}.patch" "tls.patch")
 sha256sums=('40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6'
-            '1792380b992e3554a4abcddf0d7b395bfd8c118ac7c6e38c8f2fb0d39753a390')
+            '1792380b992e3554a4abcddf0d7b395bfd8c118ac7c6e38c8f2fb0d39753a390'
+            '89add0bbd145c29acf9b1f83b10b5513c35c21dea48c3a853ee1de4e34e29169')
 
 groups=('switch-portlibs')
 
 prepare() {
   cd ffmpeg-$pkgver
   patch -Np1 -i "$srcdir/ffmpeg-${pkgver}.patch"
+  patch -Np1 -i "$srcdir/tls.patch"
 }
 
 build() {
@@ -41,9 +43,9 @@ build() {
     --enable-asm --enable-neon \
     --disable-avdevice --disable-encoders --disable-muxers \
     --enable-swscale --enable-swresample --enable-network  \
-    --disable-protocols --enable-protocol=file,http,ftp,tcp,udp,rtmp \
+    --disable-protocols --enable-protocol=file,http,ftp,tcp,udp,rtmp,tls,httpproxy \
     --enable-zlib --enable-bzlib --enable-libass --enable-libfreetype --enable-libfribidi --enable-libdav1d \
-    --enable-nvtegra
+    --enable-libnx --enable-nvtegra
 
   make
 }
