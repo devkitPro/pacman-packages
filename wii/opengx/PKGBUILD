@@ -1,5 +1,5 @@
 pkgname=wii-opengx
-pkgver=0.9.2
+pkgver=0.10.0
 pkgrel=1
 pkgdesc='wii opengl/gx translation library'
 arch=('any')
