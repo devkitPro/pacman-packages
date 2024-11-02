@@ -1,8 +1,347 @@
+diff --git a/audio/out/ao.c b/audio/out/ao.c
+index ee20b736a3..11fa28929f 100644
+--- a/audio/out/ao.c
++++ b/audio/out/ao.c
+@@ -54,6 +54,7 @@ extern const struct ao_driver audio_out_wasapi;
+ extern const struct ao_driver audio_out_pcm;
+ extern const struct ao_driver audio_out_lavc;
+ extern const struct ao_driver audio_out_sdl;
++extern const struct ao_driver audio_out_hos;
+ 
+ static const struct ao_driver * const audio_out_drivers[] = {
+ // native:
+@@ -99,6 +100,9 @@ static const struct ao_driver * const audio_out_drivers[] = {
+ #endif
+ #if HAVE_SNDIO
+     &audio_out_sndio,
++#endif
++#if HAVE_HOS_AUDIO
++    &audio_out_hos,
+ #endif
+     &audio_out_null,
+ #if HAVE_COREAUDIO
+diff --git a/audio/out/ao_hos.c b/audio/out/ao_hos.c
+new file mode 100644
+index 0000000000..83bd03de7d
+--- /dev/null
++++ b/audio/out/ao_hos.c
+@@ -0,0 +1,298 @@
++/*
++ * audio output driver for Horizon OS using audren
++ * Copyright (c) 2024 averne <averne381@gmail.com>
++ *
++ * This file is part of mpv.
++ *
++ * mpv is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * mpv is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with mpv.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <switch.h>
++
++#include "config.h"
++#include "common/common.h"
++#include "common/msg.h"
++#include "options/m_option.h"
++#include "audio/format.h"
++#include "ao.h"
++#include "internal.h"
++
++#define MAX_CHANS 6 // 5.1
++#define MAX_BUF 16
++#define MAX_SAMPLES 32768
++
++struct priv {
++    AudioDriver driver;
++    int num_buffers;
++    int num_samples;
++
++    void *pool;
++    AudioDriverWaveBuf *buffers;
++
++    int cur_buf_idx;
++    uint32_t cur_queued_samples, total_queued_samples;
++};
++
++static const AudioRendererConfig ar_config = {
++    .output_rate     = AudioRendererOutputRate_48kHz,
++    .num_voices      = MAX_CHANS,
++    .num_effects     = 0,
++    .num_sinks       = 1,
++    .num_mix_objs    = 1,
++    .num_mix_buffers = MAX_CHANS,
++};
++
++static const uint8_t sink_channel_ids[] = { 0, 1, 2, 3, 4, 5 };
++
++static const struct mp_chmap possible_channel_layouts[] = {
++    {0},
++    MP_CHMAP_INIT_MONO,                 // mono
++    MP_CHMAP_INIT_STEREO,               // stereo
++    MP_CHMAP3(FL, FR, LFE),             // 2.1
++    MP_CHMAP4(FL, FR, BL, BR),          // 4.0
++    MP_CHMAP5(FL, FR, FC, BL, BR),      // 5.0
++    MP_CHMAP6(FL, FR, FC, LFE, BL, BR), // 5.1
++};
++
++static int init(struct ao *ao) {
++    struct priv *priv = ao->priv;
++
++    Result rc;
++
++    MP_VERBOSE(ao, "Initializing hos audio\n");
++
++    ao->format   = AF_FORMAT_S16; // Only format supported by audrv with Adpcm which mpv can't output
++    ao->channels = possible_channel_layouts[MPMIN(ao->channels.num, MAX_CHANS)];
++
++    rc = audrenInitialize(&ar_config);
++    if (R_FAILED(rc))
++        return -rc;
++
++    rc = audrvCreate(&priv->driver, &ar_config, MAX_CHANS);
++    if (R_FAILED(rc))
++        return -rc;
++
++    size_t mempool_size = MP_ALIGN_UP(priv->num_samples * ao->channels.num *
++        priv->num_buffers * sizeof(int16_t), AUDREN_MEMPOOL_ALIGNMENT);
++
++    priv->pool = aligned_alloc(AUDREN_MEMPOOL_ALIGNMENT, mempool_size);
++    if (!priv->pool)
++        return -1;
++
++    priv->buffers = talloc_array(priv, AudioDriverWaveBuf, priv->num_buffers);
++    for (int i = 0; i < priv->num_buffers; ++i) {
++        priv->buffers[i] = (AudioDriverWaveBuf){
++            .data_raw            = priv->pool,
++            .size                = mempool_size,
++            .start_sample_offset = priv->num_samples * i,
++            .end_sample_offset   = priv->num_samples * (i + 1),
++        };
++    }
++
++    int mpid = audrvMemPoolAdd(&priv->driver, priv->pool, mempool_size);
++    audrvMemPoolAttach(&priv->driver, mpid);
++
++    ao->device_buffer = priv->num_buffers * priv->num_samples;
++
++    audrvDeviceSinkAdd(&priv->driver, AUDREN_DEFAULT_DEVICE_NAME, MAX_CHANS, sink_channel_ids);
++
++    rc = audrenStartAudioRenderer();
++    if (R_FAILED(rc))
++        return -rc;
++
++    audrvVoiceInit(&priv->driver, 0, ao->channels.num, PcmFormat_Int16, ao->samplerate);
++    audrvVoiceSetDestinationMix(&priv->driver, 0, AUDREN_FINAL_MIX_ID);
++
++    for (int i = 0; i < ao->channels.num; ++i)
++        audrvVoiceSetMixFactor(&priv->driver, 0, 1.0f, ao->channels.speaker[i], ao->channels.speaker[i]);
++
++    return 0;
++}
++
++static void uninit(struct ao *ao) {
++    struct priv *priv = ao->priv;
++
++    MP_VERBOSE(ao, "Deinitializing hos audio\n");
++
++    audrvVoiceStop(&priv->driver, 0);
++    audrvUpdate(&priv->driver);
++
++    audrvClose(&priv->driver);
++    audrenExit();
++
++    free(priv->pool);
++}
++
++static void reset(struct ao *ao) {
++    struct priv *priv = ao->priv;
++
++    priv->cur_buf_idx = -1;
++    priv->cur_queued_samples = priv->total_queued_samples = 0;
++    audrvVoiceStop(&priv->driver, 0);
++    audrvUpdate(&priv->driver);
++}
++
++static bool set_pause(struct ao *ao, bool paused) {
++    struct priv *priv = ao->priv;
++
++    audrvVoiceSetPaused(&priv->driver, 0, paused);
++    return R_SUCCEEDED(audrvUpdate(&priv->driver));
++}
++
++static void start(struct ao *ao) {
++    struct priv *priv = ao->priv;
++
++    audrvVoiceStart(&priv->driver, 0);
++    audrvUpdate(&priv->driver);
++}
++
++static int find_free_wavebuf(struct priv *priv) {
++    for (int i = 0; i < priv->num_buffers; ++i) {
++        AudioDriverWaveBuf *buf = &priv->buffers[i];
++        if (buf->state == AudioDriverWaveBufState_Done ||
++                buf->state == AudioDriverWaveBufState_Free)
++            return i;
++    }
++    return -1;
++}
++
++static bool audio_write(struct ao *ao, void **data, int samples) {
++    struct priv *priv = ao->priv;
++
++    // We requested a linear format so there is only one buffer
++    uint8_t *dat = data[0];
++
++    while (samples) {
++        int idx = (priv->cur_buf_idx != -1) ? priv->cur_buf_idx : find_free_wavebuf(priv);
++        if (idx == -1)
++            return false;
++        priv->cur_buf_idx = idx;
++
++        AudioDriverWaveBuf *buf = &priv->buffers[idx];
++        uint8_t *buf_offset = (uint8_t *)buf->data_raw + (idx * priv->num_samples * ao->sstride);
++
++        size_t num_samples = MPMIN(samples, priv->num_samples - priv->cur_queued_samples);
++
++        memcpy(buf_offset + priv->cur_queued_samples * ao->sstride, dat, num_samples * ao->sstride);
++        priv->cur_queued_samples   += num_samples;
++        priv->total_queued_samples += num_samples;
++
++        dat     += num_samples * ao->sstride;
++        samples -= num_samples;
++
++        // Append buffer once it's full
++        if (priv->cur_queued_samples >= priv->num_samples) {
++            armDCacheFlush(buf_offset, priv->num_samples * ao->sstride);
++            audrvVoiceAddWaveBuf(&priv->driver, 0, buf);
++            audrvUpdate(&priv->driver);
++
++            priv->cur_buf_idx = -1, priv->cur_queued_samples = 0;
++        }
++    }
++
++    return true;
++}
++
++static void get_state(struct ao *ao, struct mp_pcm_state *state) {
++    struct priv *priv = ao->priv;
++
++    Result rc = audrvUpdate(&priv->driver);
++    if (R_FAILED(rc))
++        return;
++
++    state->free_samples = state->queued_samples = 0;
++    for (int i = 0; i < priv->num_buffers; ++i) {
++        AudioDriverWaveBuf *buf = &priv->buffers[i];
++        if (buf->state == AudioDriverWaveBufState_Free
++                || buf->state == AudioDriverWaveBufState_Done)
++            state->free_samples += priv->num_samples;
++    }
++
++    if (priv->cur_buf_idx != -1)
++        state->free_samples -= priv->num_samples - priv->cur_queued_samples;
++
++    state->queued_samples = priv->total_queued_samples -
++        audrvVoiceGetPlayedSampleCount(&priv->driver, 0);
++
++    state->delay = (double)state->queued_samples / ao->samplerate;
++
++    state->playing = audrvVoiceIsPlaying(&priv->driver, 0);
++}
++
++static int control(struct ao *ao, enum aocontrol cmd, void *arg) {
++    struct priv *priv = ao->priv;
++
++    int rc;
++
++    switch (cmd) {
++        case AOCONTROL_SET_MUTE:
++        case AOCONTROL_SET_VOLUME: {
++                float vol;
++                if (cmd == AOCONTROL_SET_MUTE) {
++                    bool in = *(bool *)arg;
++                    vol = !in;
++                } else {
++                    float *in = arg;
++                    vol = *in / 100.0f;
++                }
++
++                audrvMixSetVolume(&priv->driver, 0, vol);
++                rc = audrvUpdate(&priv->driver);
++            }
++            break;
++        case AOCONTROL_GET_MUTE:
++        case AOCONTROL_GET_VOLUME: {
++                rc = audrvUpdate(&priv->driver);
++                float vol = priv->driver.in_mixes[0].volume;
++                if (cmd == AOCONTROL_GET_MUTE) {
++                    bool *out = (bool *)arg;
++                    *out = !vol;
++                } else {
++                    float *out = arg;
++                    *out = vol * 100.0f;
++                }
++            }
++            break;
++        default:
++            return CONTROL_UNKNOWN;
++    }
++
++    return R_SUCCEEDED(rc) ? CONTROL_OK : CONTROL_ERROR;
++}
++
++#define OPT_BASE_STRUCT struct priv
++
++const struct ao_driver audio_out_hos = {
++    .description     = "HOS Audio",
++    .name            = "hos",
++    .init            = init,
++    .uninit          = uninit,
++    .reset           = reset,
++    .control         = control,
++    .set_pause       = set_pause,
++    .start           = start,
++    .write           = audio_write,
++    .get_state       = get_state,
++    .priv_size       = sizeof(struct priv),
++    .priv_defaults   = &(const struct priv){
++        .num_buffers = 4,
++        .num_samples = 8192,
++    },
++    .options         = (const struct m_option[]){
++        {"num-buffers", OPT_INT(num_buffers), M_RANGE(2,   MAX_BUF)},
++        {"num-samples", OPT_INT(num_samples), M_RANGE(256, MAX_SAMPLES)},
++        {0}
++    },
++    .options_prefix   = "ao-hos",
++};
+diff --git a/common/common.h b/common/common.h
+index 7466ea2d61..a14d2084c6 100644
+--- a/common/common.h
++++ b/common/common.h
+@@ -26,7 +26,7 @@
+ 
+ #include "config.h"
+ 
+-#if HAVE_POSIX || defined(__MINGW32__)
++#if HAVE_POSIX || defined(__MINGW32__) || defined(__SWITCH__)
+ #include <strings.h>
+ #include <unistd.h>
+ #endif
 diff --git a/meson.build b/meson.build
-index f9fe4e7263..33cd9fdae6 100644
+index b7bcb1b0ba..266fbbb75d 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -294,7 +294,8 @@ endif
+@@ -301,7 +301,8 @@ endif
  
  darwin = host_machine.system() == 'darwin'
  win32 = host_machine.system() == 'cygwin' or host_machine.system() == 'windows'
@@ -12,43 +351,73 @@ index f9fe4e7263..33cd9fdae6 100644
  
  features += {'darwin': darwin}
  features += {'posix': posix}
-@@ -419,6 +420,18 @@ if darwin
+@@ -322,7 +323,7 @@ if host_machine.system() == 'cygwin'
+     flags += [mswin_flags, '-mwin32']
+ endif
  
+-if posix
++if posix or hos
+     flags += ['-D_GNU_SOURCE']
+ endif
+ 
+@@ -347,6 +348,8 @@ if features['libdl']
+     dependencies += libdl
+ endif
+ 
++libnx = cc.find_library('nx', required: false)
++
+ # C11 atomics are mandatory but linking to the library is not always required.
+ dependencies += cc.find_library('atomic', required: false)
+ 
+@@ -407,6 +410,17 @@ if features['cocoa']
+     main_fn_source = files('osdep/main-fn-mac.c')
  endif
  
 +if hos
-+    sources += files('osdep/path-unix.c',
-+                     'osdep/timer-linux.c',
-+                     'osdep/subprocess-dummy.c',
++    path_source  = files('osdep/path-unix.c')
++    timer_source = files('osdep/timer-linux.c')
++    sources += files('osdep/subprocess-dummy.c',
 +                     'osdep/terminal-dummy.c',
 +                     'osdep/main-fn-unix.c',
 +                     'osdep/language-posix.c',
 +                     'input/ipc-dummy.c',
-+                     'osdep/polldev.c',
 +                     'sub/filter_regex.c')
 +endif
 +
- if posix and not darwin
-     sources += files('osdep/path-unix.c',
-                      'osdep/timer-linux.c')
+ if posix
+     path_source = files('osdep/path-unix.c')
+     if cc.has_function('fork', prefix : '#include <unistd.h>')
+@@ -895,6 +909,12 @@ if features['sdl2-audio']
+     sources += files('audio/out/ao_sdl.c')
+ endif
+ 
++features += {'hos-audio': hos and libnx.found()}
++if features['hos-audio']
++    sources += files('audio/out/ao_hos.c')
++    dependencies += libnx
++endif
++
+ sndio = dependency('sndio', required: get_option('sndio'))
+ features += {'sndio': sndio.found()}
+ features += {'sndio-1-9': sndio.version().version_compare('>= 1.9.0')}
 diff --git a/osdep/io.c b/osdep/io.c
-index 8cd6dede85..1304c8f12f 100644
+index 6c3c8b7c36..75ebae4128 100644
 --- a/osdep/io.c
 +++ b/osdep/io.c
 @@ -62,7 +62,7 @@ bool mp_set_cloexec(int fd)
      return true;
  }
  
--#ifdef __MINGW32__
+-#ifdef _WIN32
 +#if defined(__MINGW32__) || defined(__SWITCH__)
  int mp_make_cloexec_pipe(int pipes[2])
  {
      pipes[0] = pipes[1] = -1;
 diff --git a/osdep/io.h b/osdep/io.h
-index 905558c284..f616f58575 100644
+index 722413456d..9356ee4724 100644
 --- a/osdep/io.h
 +++ b/osdep/io.h
-@@ -210,7 +210,7 @@ void freelocale(locale_t);
+@@ -242,7 +242,7 @@ void freelocale(locale_t);
  
  #else /* __MINGW32__ */
  
@@ -78,21 +447,33 @@ index 0000000000..398ff01729
 +#define munmap(a, b) free(a)
 +
 +#endif
+diff --git a/osdep/terminal-dummy.c b/osdep/terminal-dummy.c
+index a2cfe741a8..5a01e5b7d1 100644
+--- a/osdep/terminal-dummy.c
++++ b/osdep/terminal-dummy.c
+@@ -42,3 +42,7 @@ bool terminal_try_attach(void)
+ {
+     return false;
+ }
++
++void terminal_set_mouse_input(bool enable)
++{
++}
 diff --git a/player/lua/stats.lua b/player/lua/stats.lua
-index 9a33815c40..c4f5a4acf3 100644
+index 8b8913fc45..7e904f2cc0 100644
 --- a/player/lua/stats.lua
 +++ b/player/lua/stats.lua
-@@ -43,7 +43,7 @@ local o = {
-     plot_color = "FFFFFF",
+@@ -52,7 +52,7 @@ local o = {
+     plot_bg_border_width = 0.5,
  
      -- Text style
--    font = "sans-serif",
+-    font = "",
 +    font = "nintendo_udsg-r_std_003",
      font_mono = "monospace",   -- monospaced digits are sufficient
      font_size = 8,
-     font_color = "FFFFFF",
+     font_color = "",
 diff --git a/sub/filter_regex.c b/sub/filter_regex.c
-index 8e299918ce..c7b08f5273 100644
+index 1d29ea1ac1..3218e12be5 100644
 --- a/sub/filter_regex.c
 +++ b/sub/filter_regex.c
 @@ -1,5 +1,5 @@
@@ -103,10 +484,10 @@ index 8e299918ce..c7b08f5273 100644
  #include "common/common.h"
  #include "common/msg.h"
 diff --git a/sub/osd.c b/sub/osd.c
-index 811b6c821b..1db7db8444 100644
+index 6a57574a52..83294f3139 100644
 --- a/sub/osd.c
 +++ b/sub/osd.c
-@@ -76,7 +76,7 @@ const struct m_sub_options osd_style_conf = {
+@@ -80,7 +80,7 @@ const struct m_sub_options osd_style_conf = {
      .opts = style_opts,
      .size = sizeof(struct osd_style_opts),
      .defaults = &(const struct osd_style_opts){
@@ -114,8 +495,8 @@ index 811b6c821b..1db7db8444 100644
 +        .font = "nintendo_udsg-r_std_003",
          .font_size = 55,
          .color = {255, 255, 255, 255},
-         .border_color = {0, 0, 0, 255},
-@@ -95,7 +95,7 @@ const struct m_sub_options sub_style_conf = {
+         .outline_color = {0, 0, 0, 255},
+@@ -100,7 +100,7 @@ const struct m_sub_options sub_style_conf = {
      .opts = style_opts,
      .size = sizeof(struct osd_style_opts),
      .defaults = &(const struct osd_style_opts){
@@ -123,9 +504,9 @@ index 811b6c821b..1db7db8444 100644
 +        .font = "nintendo_udsg-r_std_003",
          .font_size = 55,
          .color = {255, 255, 255, 255},
-         .border_color = {0, 0, 0, 255},
+         .outline_color = {0, 0, 0, 255},
 diff --git a/sub/sd_ass.c b/sub/sd_ass.c
-index e4e5652875..6ecd2dd2c5 100644
+index 47b3109ec7..f133298aea 100644
 --- a/sub/sd_ass.c
 +++ b/sub/sd_ass.c
 @@ -21,6 +21,10 @@
@@ -139,7 +520,7 @@ index e4e5652875..6ecd2dd2c5 100644
  #include <libavutil/common.h>
  #include <ass/ass.h>
  
-@@ -198,6 +202,18 @@ static void enable_output(struct sd *sd, bool enable)
+@@ -206,6 +210,18 @@ static void enable_output(struct sd *sd, bool enable)
      } else {
          ctx->ass_renderer = ass_renderer_init(ctx->ass_library);
  
@@ -159,10 +540,10 @@ index e4e5652875..6ecd2dd2c5 100644
                                 sd->global, sd->log);
      }
 diff --git a/video/mp_image.c b/video/mp_image.c
-index 40678d10bd..0baddd3e78 100644
+index b809dae765..0a9cace6db 100644
 --- a/video/mp_image.c
 +++ b/video/mp_image.c
-@@ -176,7 +176,7 @@ static bool mp_image_alloc_planes(struct mp_image *mpi)
+@@ -175,7 +175,7 @@ static bool mp_image_alloc_planes(struct mp_image *mpi)
          return false;
  
      // Note: mp_image_pool assumes this creates only 1 AVBufferRef.
@@ -172,7 +553,7 @@ index 40678d10bd..0baddd3e78 100644
          return false;
  
 diff --git a/video/mp_image.h b/video/mp_image.h
-index 98dd666412..376e269356 100644
+index 2208deb26d..751fccfaf7 100644
 --- a/video/mp_image.h
 +++ b/video/mp_image.h
 @@ -32,7 +32,7 @@
