@@ -1,0 +1,11 @@
+--- sdl2_mixer-config.cmake.in.orig	2024-11-03 13:41:46.831470270 +0000
++++ sdl2_mixer-config.cmake.in	2024-11-03 13:42:39.540513604 +0000
+@@ -79,7 +79,7 @@
+ set(_sdl2mixer_incdir   "${includedir}/SDL2")
+ 
+ # Convert _sdl2mixer_extra_static_libraries to list and keep only libraries
+-string(REGEX MATCHALL "(-[lm]([-a-zA-Z0-9._]+))|(-Wl,[^ ]*framework[^ ]*)" _sdl2mixer_extra_static_libraries "${_sdl2mixer_extra_static_libraries}")
++string(REGEX MATCHALL "(-[lm]([-a-zA-Z0-9._+]+))|(-Wl,[^ ]*framework[^ ]*)" _sdl2mixer_extra_static_libraries "${_sdl2mixer_extra_static_libraries}")
+ string(REGEX REPLACE "^-l" "" _sdl2mixer_extra_static_libraries "${_sdl2mixer_extra_static_libraries}")
+ string(REGEX REPLACE ";-l" ";" _sdl2mixer_extra_static_libraries "${_sdl2mixer_extra_static_libraries}")
+ 
