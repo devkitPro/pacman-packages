@@ -3,8 +3,8 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=wii-sdl2_image
-pkgver=2.0.4
-pkgrel=2
+pkgver=2.8.2
+pkgrel=1
 pkgdesc="SDL2 image loading library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_image/"
@@ -16,11 +16,8 @@ depends=(
   'ppc-libpng'
   'ppc-libjpeg-turbo'
 )
-source=("${url}release/SDL2_image-${pkgver}.tar.gz" "Makefile.in.patch")
-sha256sums=(
-  'e74ec49c2402eb242fbfa16f2f43a19582a74c2eabfbfb873f00d4250038ceac'
-  'c15da8e087e7ca4ceef3dcce8501b21cbe6569563c345cf2a1591f20316d8d86'
-)
+source=("${url}release/SDL2_image-${pkgver}.tar.gz")
+
 groups=('wii-portlibs' 'wii-sdl2-libs')
 
 build() {
@@ -28,7 +25,7 @@ build() {
 
   source ${DEVKITPRO}/wiivars.sh
 
-  patch -Np1 -i "$srcdir"/Makefile.in.patch Makefile.in
+  sed '/^noinst_PROGRAMS/d' -i Makefile.in
 
   ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=powerpc-eabi --disable-shared --enable-static \
@@ -51,3 +48,4 @@ package() {
   # License
   #install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
 }
+sha256sums=('8f486bbfbcf8464dd58c9e5d93394ab0255ce68b51c5a966a918244820a76ddc')
