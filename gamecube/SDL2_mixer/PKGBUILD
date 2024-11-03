@@ -4,7 +4,7 @@
 
 pkgname=gamecube-sdl2_mixer
 pkgver=2.6.3
-pkgrel=1
+pkgrel=2
 pkgdesc="A sample multi-channel audio mixer library."
 arch=('any')
 url="https://libsdl.org/projects/SDL_mixer/"
@@ -19,7 +19,10 @@ depends=(
   'ppc-mpg123'
   'ppc-opusfile'
 )
-source=("${url}release/SDL2_mixer-${pkgver}.tar.gz")
+source=(
+  "${url}release/SDL2_mixer-${pkgver}.tar.gz"
+  "sdl2_mixer-config.cmake.in.patch"
+)
 groups=('gamecube-portlibs' 'gamecube-sdl2-libs')
 
 build() {
@@ -29,6 +32,8 @@ build() {
 
   # patch out compiling playwave and playmus
   sed 's|\$(objects)/play.*mus\$(EXE)||' -i Makefile.in
+
+  patch -Np0 -i ${srcdir}/sdl2_mixer-config.cmake.in.patch
 
   LIBS="-lm" ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=powerpc-eabi --disable-shared --enable-static \
@@ -52,4 +57,6 @@ package() {
   # License
   install -Dm644 "LICENSE.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.txt"
 }
-sha256sums=('7a6ba86a478648ce617e3a5e9277181bc67f7ce9876605eea6affd4a0d6eea8f')
+
+sha256sums=('7a6ba86a478648ce617e3a5e9277181bc67f7ce9876605eea6affd4a0d6eea8f'
+            '124baf871d39dbceb31ff71beccd2c4f0497ae7cfcfd9f11d99b57e28a151da1')
