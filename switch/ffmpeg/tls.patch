@@ -75,10 +75,10 @@ index 4d6eb8a..3a54dec 100644
                     char *serv, int servlen, int flags)
 diff --git a/libavformat/tls_libnx.c b/libavformat/tls_libnx.c
 new file mode 100644
-index 0000000..3354879
+index 0000000..e09b8ed
 --- /dev/null
 +++ b/libavformat/tls_libnx.c
-@@ -0,0 +1,193 @@
+@@ -0,0 +1,194 @@
 +/*
 + * TLS/SSL Protocol
 + * Copyright (c) 2018 Thomas Volkert
@@ -107,6 +107,7 @@ index 0000000..3354879
 +#include "url.h"
 +#include "tls.h"
 +#include "libavutil/parseutils.h"
++#include "libavutil/time.h"
 +
 +typedef struct TLSContext {
 +    const AVClass *class;
@@ -186,7 +187,7 @@ index 0000000..3354879
 +
 +    while (rc = sslConnectionDoHandshake(&tls_ctx->conn, NULL, NULL, NULL, 0)) {
 +        if (R_VALUE(rc) == MAKERESULT(123, 204)) { // PR_WOULD_BLOCK_ERROR
-+            svcSleepThread(100000000);
++            av_usleep(10000);
 +            continue;
 +        }
 +        if (R_VALUE(rc) == MAKERESULT(123, 207)) {
