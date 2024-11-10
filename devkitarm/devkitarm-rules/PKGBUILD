@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('devkitarm-rules')
-pkgver=1.5.1
-pkgrel=1
+pkgver=1.6.0
+pkgrel=4
 pkgdesc="devkitARM build rules."
 arch=('any')
 license=('custom')
@@ -17,4 +17,4 @@ package() {
   make -C ${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('3fe92a97978a5b342750aadbf4a87b8afe51ce693a14edf904611a1fbece5f96')
+sha256sums=('8682a98116fd70efaeb2c75a5e9f7a9029c7127f7ad9b58935077c716c622287')
