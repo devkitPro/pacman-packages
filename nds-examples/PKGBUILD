@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('nds-examples')
-pkgver=20200727
+pkgver=20241110
 pkgrel=1
 pkgdesc="Nintendo NDS example code."
 arch=('any')
@@ -19,3 +19,4 @@ package() {
   mkdir -p "$pkgdir"/opt/devkitpro/examples/nds
   cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/nds
 }
+sha256sums=('5d97f533ee398049cecdddda743ea395c756fa3805cd683b0af595312d0a140a')
