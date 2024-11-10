@@ -2,8 +2,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libnds')
-pkgver=1.8.3
-pkgrel=1
+pkgver=2.0.0
+pkgrel=6
 pkgdesc="Nintendo DS library."
 arch=('any')
 license=('zlib')
@@ -21,4 +21,4 @@ package() {
   make -C  $srcdir/${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('3d5537d1a3e4cf88c8ee9385109abf6e8c1cf55f71b7c25c0ac18970d2d94a0e')
+sha256sums=('744a3fd9e695a296e75f97183bbb57f4d6d89be4d482015d997c888165f267cc')
