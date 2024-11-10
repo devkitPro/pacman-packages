@@ -8,44 +8,56 @@ fi
 
 if [ "$PLATFORM" = "gba" ]; then
   platdesc="Nintendo GBA"
-  makedepends=('devkitARM')
+  depends=('devkitARM' 'libgba')
   groups=('gba-dev')
-elif [ "$PLATFORM" = "ogc" ]; then
-  platdesc="Nintendo Wii & Gamecube"
-  makedepends=('devkitPPC')
-  groups=('wii-dev' 'gamecube-dev')
+  _target=gba
 elif [ "$PLATFORM" = "nds" ]; then
   platdesc="Nintendo NDS"
-  makedepends=('devkitARM')
+  depends=('libnds')
   groups=('nds-dev')
+  _target=ds
+elif [ "$PLATFORM" = "ogc" ]; then
+  platdesc="Nintendo GameCube/Wii"
+  depends=('libogc')
+  groups=('wii-dev' 'gamecube-dev')
+  _target="wii cube"
 else
   echo "$PLATFORM unsupported"
   exit 1
 fi
 
-
-pkgname=("${pkgbasename}-${PLATFORM}")
-pkgver=1.2.0
-pkgrel=1
-pkgdesc="${platdesc} FAT library."
+pkgname=${pkgbasename}-${PLATFORM}
+pkgver=2.0.0
+libdvm_ver=1.0.0
+fatfs_mod_ver=1.0.0
+pkgrel=7
+pkgdesc="libdvm"
 arch=('any')
-license=('custom')
-url="http://github.com/devkitpro/${pkgbasename}"
+license=('ZPL')
+url="http://github.com/devkitpro/"
 options=(!strip libtool staticlibs)
-source=(${pkgbasename}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz)
-sha256sums=(
-  '6bb461dd128b09abbf1a895249dd59c22da98557939930e0483e8b5b36988e10'
+source=(
+  libdvm-${libdvm_ver}.tar.gz::${url}/libdvm/archive/v${libdvm_ver}.tar.gz
+  fatfs-mod-${fatfs_mod_ver}.tar.gz::${url}/fatfs-mod/archive/v${fatfs_mod_ver}.tar.gz
 )
+makedepends=('catnip' 'devkitARM' 'devkitarm-rules' 'devkitarm-crtls' 'libnds')
 
+if [ "$PLATFORM" = "nds" ]; then
+  replaces+=('libfilesystem')
+  conflicts+=('libfilesystem')
+  provides=('libfilesystem')
+fi
 
-build() {
-
-  make -C $srcdir/${pkgbasename}-${pkgver} $PLATFORM-release
-
+prepare() {
+  mv ${srcdir}/fatfs-mod-${fatfs_mod_ver} ${srcdir}/libdvm-${libdvm_ver}/fatfs
 }
 
 package() {
 
-  make -C $srcdir/${pkgbasename}-${pkgver} DESTDIR=$pkgdir $PLATFORM-install
+  cd $srcdir/libdvm-${libdvm_ver}
+  DESTDIR=$pkgdir catnip install ${_target}
 
 }
+
+sha256sums=('5612202436909fda74c2dc8398974e34a36b73b196ed61f63303cb6966c9060e'
+            'ed1b7aa4af9e94547ba0e2bc024868aeb6d91a376a02d3ea8d09ced7ccd58098')
