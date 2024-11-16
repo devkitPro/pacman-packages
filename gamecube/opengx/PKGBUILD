@@ -1,5 +1,5 @@
 pkgname=gamecube-opengx
-pkgver=0.11.0
+pkgver=0.12.0
 pkgrel=1
 pkgdesc='opengl/gx translation library'
 arch=('any')
@@ -24,4 +24,4 @@ package() {
   DESTDIR=${pkgdir} catnip install
 }
 
-sha256sums=('cd400d2033a616ca96653668e57d7fc88b0d8eed6d73b2407ac789370212ed80')
+sha256sums=('73a76e01d664c27dbdf9ec8110c2240be058d440160a1973c379d09109804fb4')
