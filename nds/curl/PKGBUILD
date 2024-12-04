@@ -1,0 +1,85 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: ds-sloth
+
+pkgname=nds-curl
+pkgver=7.83.0
+pkgrel=1
+pkgdesc='This build includes only the HTTP/HTTPS, FTP/FTPS, and FILE protocols for codesize.'
+arch=('any')
+url='https://curl.haxx.se/'
+license=('MIT')
+options=(!strip libtool staticlibs)
+depends=(
+         "nds-mbedtls"
+         "dswifi"
+)
+makedepends=('nds-mbedtls' 'dswifi' 'nds-pkg-config' 'dkp-toolchain-vars')
+source=(
+  "https://curl.se/download/curl-$pkgver.tar.gz"
+  "curl.patch"
+)
+sha256sums=(
+  'c0e64302a33d2fb79e0fc4e674260a22941e92ee2f11b894bf94d32b8f5531af'
+  'eb32a445dbfeca3c0e71b0e06fd71367486357464e8fb6a274fa3934c88b9b18'
+)
+groups=("nds-portlibs")
+
+prepare() {
+  patch --directory="${srcdir}/curl-${pkgver}" --forward --strip=1 --input="${srcdir}/curl.patch"
+}
+
+build() {
+  cd curl-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  # important note: including ${DEVKITPRO}/libnds/include/sys/ is absolutely necessary; without this, closesocket is not detected
+
+  export CFLAGS="${CFLAGS} -Os"
+  export CPPFLAGS="${CPPFLAGS} -DIPPROTO_UDP=17 -DIPPROTO_TCP=6 -DMBEDTLS_ALLOW_PRIVATE_ACCESS -I${DEVKITPRO}/libnds/include/sys/"
+  export LIBS="-ldswifi9 -lnds9 -lcalico_ds9 ${LIBS}"
+  export LDFLAGS="${LDFLAGS} -Oz -L${DEVKITPRO}/calico/lib -specs=${DEVKITPRO}/calico/share/ds9.specs"
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
+    --disable-shared --enable-static \
+    --disable-ipv6 --with-mbedtls=${PORTLIBS_PREFIX} \
+    --disable-unix-sockets \
+    --disable-socketpair \
+    --disable-ntlm \
+    --disable-ntlm-wb \
+    --disable-dict \
+    --disable-gopher \
+    --disable-imap \
+    --disable-ldap \
+    --disable-ldaps \
+    --disable-mqtt \
+    --disable-pop3 \
+    --disable-rtsp \
+    --disable-scp \
+    --disable-sftp \
+    --disable-smb \
+    --disable-smtp \
+    --disable-telnet \
+    --disable-tftp \
+    --disable-mime \
+    --disable-progress-meter \
+    --disable-netrc \
+    --with-ca-bundle="/cacert.pem"
+
+  make DESTDIR="$pkgdir" -C lib
+}
+
+package() {
+  cd curl-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  make DESTDIR="$pkgdir" -C lib install
+
+  make DESTDIR="$pkgdir" -C include install
+
+  make DESTDIR="$pkgdir" install-binSCRIPTS install-pkgconfigDATA
+
+  # Licenses
+  install -Dm644 "COPYING" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING"
+}

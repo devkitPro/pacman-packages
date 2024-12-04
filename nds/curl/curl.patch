@@ -1,0 +1,13 @@
+diff --git a/lib/nonblock.c b/lib/nonblock.c
+index 28f6e75..b8a5267 100644
+--- a/lib/nonblock.c
++++ b/lib/nonblock.c
+@@ -47,7 +47,7 @@
+ int curlx_nonblock(curl_socket_t sockfd,    /* operate on this */
+                    int nonblock   /* TRUE or FALSE */)
+ {
+-#if defined(HAVE_FCNTL_O_NONBLOCK)
++#if defined(HAVE_FCNTL_O_NONBLOCK) && !defined(__NDS__)
+   /* most recent unix versions */
+   int flags;
+   flags = sfcntl(sockfd, F_GETFL, 0);

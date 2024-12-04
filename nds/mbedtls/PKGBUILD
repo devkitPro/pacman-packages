@@ -1,0 +1,51 @@
+# Maintainer: WinterMute <davem@devkitpro.org>
+# Contributor: ds-sloth
+
+pkgname=nds-mbedtls
+pkgver=3.1.0
+pkgrel=1
+pkgdesc='Provides a minimal SSL/TLS layer for embedded devices. Warning: takes ownership of the microphone while in use.'
+arch=('any')
+url='https://tls.mbed.org/'
+license=('Apache')
+options=(!strip libtool staticlibs)
+depends=(
+         "libnds" "calico" "dswifi"
+)
+makedepends=('nds-pkg-config' 'dkp-toolchain-vars')
+source=(
+  "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${pkgver}.tar.gz"
+  "mbedtls.patch"
+)
+sha256sums=(
+  'b02df6f68dd1537e115a8497d5c173dc71edc55ad084756e57a30f951b725acd'
+  '1a29761630e9b86a08f35f346b044fa11f6363bdc39cbf866333e37ebdd01ff8'
+)
+groups=("nds-portlibs")
+
+prepare() {
+  patch --directory="${srcdir}/mbedtls-$pkgver" --forward --strip=1 --input="${srcdir}/mbedtls.patch"
+}
+
+build() {
+  cd mbedtls-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+  export CFLAGS="${CFLAGS} ${CPPFLAGS} -I${DEVKITPRO}/calico/include -Os"
+
+  make DESTDIR="$pkgdir/${PORTLIBS_PREFIX}" lib
+}
+
+package() {
+  cd mbedtls-$pkgver
+
+  source /opt/devkitpro/ndsvars.sh
+
+  make DESTDIR="$pkgdir/${PORTLIBS_PREFIX}" lib install
+
+  # Licenses
+  install -Dm644 "LICENSE" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE"
+
+  # remove useless stuff
+  rm -r ${pkgdir}/${PORTLIBS_PREFIX}/bin/
+}
