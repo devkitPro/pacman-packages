@@ -1,6 +1,6 @@
 diff --git a/README.ogc b/README.ogc
 new file mode 100644
-index 000000000..ccda9877c
+index 0000000000..ccda9877c4
 --- /dev/null
 +++ b/README.ogc
 @@ -0,0 +1,37 @@
@@ -43,7 +43,7 @@ index 000000000..ccda9877c
 +Happy hacking!
 \ No newline at end of file
 diff --git a/configure.in b/configure.in
-index 08c8e1e97..8909c8042 100644
+index 08c8e1e97c..be3f073d64 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -925,6 +925,99 @@ AC_HELP_STRING([--enable-ipod], [configure SDL to work with iPodLinux [[default=
@@ -81,7 +81,7 @@ index 08c8e1e97..8909c8042 100644
 +        SDL_LIBS="-mrvl -mcpu=750 -meabi -mhard-float \
 +                  -L${DEVKITPRO}/portlibs/wii/lib \
 +                  -L${DEVKITPRO}/portlibs/ppc/lib -lSDLmain $SDL_LIBS $OPENGX_LIBS \
-+                  -L${DEVKITPRO}/libogc/lib/wii -laesnd -lwiiuse -lbte -lwiikeyboard -lfat -logc -lm"
++                  -L${DEVKITPRO}/libogc/lib/wii -laesnd -lwiiuse -lbte -lwiikeyboard -lfat -lopengx -logc -lm"
 +        AC_DEFINE(SDL_TIMER_OGC)
 +        SOURCES="$SOURCES $srcdir/src/timer/ogc/*.c"
 +        have_timers=yes
@@ -159,7 +159,7 @@ index 08c8e1e97..8909c8042 100644
          ARCH=linux
          CheckDummyVideo
 diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index 8bb1773c0..fa020eff5 100644
+index 8bb1773c0e..fa020eff5d 100644
 --- a/include/SDL_config.h.in
 +++ b/include/SDL_config.h.in
 @@ -185,6 +185,7 @@
@@ -203,7 +203,7 @@ index 8bb1773c0..fa020eff5 100644
  #undef SDL_VIDEO_DRIVER_WSCONS
  #undef SDL_VIDEO_DRIVER_X11
 diff --git a/include/SDL_main.h b/include/SDL_main.h
-index ab50ef1e2..9824c5063 100644
+index ab50ef1e29..9824c50634 100644
 --- a/include/SDL_main.h
 +++ b/include/SDL_main.h
 @@ -32,7 +32,8 @@
@@ -217,7 +217,7 @@ index ab50ef1e2..9824c5063 100644
  #ifdef __cplusplus
  #define C_LINKAGE	"C"
 diff --git a/src/SDL.c b/src/SDL.c
-index 87f1b1af2..bcb53f7e0 100644
+index 87f1b1af2a..bcb53f7e0d 100644
 --- a/src/SDL.c
 +++ b/src/SDL.c
 @@ -121,6 +121,10 @@ int SDL_InitSubSystem(Uint32 flags)
@@ -243,7 +243,7 @@ index 87f1b1af2..bcb53f7e0 100644
  	SDL_ClearError();
  
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index beb26e0b4..fbbeb459f 100644
+index beb26e0b4d..fbbeb459f7 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
 @@ -112,6 +112,9 @@ static AudioBootStrap *bootstrap[] = {
@@ -257,7 +257,7 @@ index beb26e0b4..fbbeb459f 100644
  	NULL
  };
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index 74ac21df0..e701a570a 100644
+index 74ac21df04..e701a570ac 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
 @@ -179,6 +179,9 @@ extern AudioBootStrap DART_bootstrap;
@@ -272,7 +272,7 @@ index 74ac21df0..e701a570a 100644
  extern SDL_AudioDevice *current_audio;
 diff --git a/src/audio/ogc/SDL_ogcAudio.c b/src/audio/ogc/SDL_ogcAudio.c
 new file mode 100644
-index 000000000..dab1c0134
+index 0000000000..dab1c0134b
 --- /dev/null
 +++ b/src/audio/ogc/SDL_ogcAudio.c
 @@ -0,0 +1,293 @@
@@ -571,7 +571,7 @@ index 000000000..dab1c0134
 +};
 diff --git a/src/audio/ogc/SDL_ogcAudio.h b/src/audio/ogc/SDL_ogcAudio.h
 new file mode 100644
-index 000000000..532db5742
+index 0000000000..532db57424
 --- /dev/null
 +++ b/src/audio/ogc/SDL_ogcAudio.h
 @@ -0,0 +1,49 @@
@@ -626,10 +626,10 @@ index 000000000..532db5742
 +#endif /* _SDL_dummyaudio_h */
 diff --git a/src/joystick/ogc/SDL_sysjoystick.c b/src/joystick/ogc/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..d969559aa
+index 0000000000..1ecf6df0ad
 --- /dev/null
 +++ b/src/joystick/ogc/SDL_sysjoystick.c
-@@ -0,0 +1,790 @@
+@@ -0,0 +1,796 @@
 +/*
 + SDL - Simple DirectMedia Layer
 + Copyright (C) 1997-2006 Sam Lantinga
@@ -749,6 +749,12 @@ index 000000000..d969559aa
 +
 +static const int __jspad_enabled = 1;
 +static const int __numgcjoysticks = 4;
++
++#ifdef __wii__
++#define GC_JOYSTICK_FROM_INDEX(index) (index - num_wii_joysticks)
++#else
++#define GC_JOYSTICK_FROM_INDEX(index) (index)
++#endif
 +
 +#ifdef __wii__
 +static const int __jswpad_enabled = 1;
@@ -1300,7 +1306,7 @@ index 000000000..d969559aa
 +	int i;
 +	int axis;
 +	joystick_hwdata *prev_state;
-+	int index = joystick->index - num_wii_joysticks;
++	int index = GC_JOYSTICK_FROM_INDEX(joystick->index);
 +
 +	buttons = PAD_ButtonsHeld(index);
 +	prev_state = (joystick_hwdata *)joystick->hwdata;
@@ -1422,7 +1428,7 @@ index 000000000..d969559aa
 +#endif /* SDL_JOYSTICK_DC */
 diff --git a/src/main/gamecube/SDL_gamecube_main.c b/src/main/gamecube/SDL_gamecube_main.c
 new file mode 100644
-index 000000000..1ad5a19bd
+index 0000000000..1ad5a19bd5
 --- /dev/null
 +++ b/src/main/gamecube/SDL_gamecube_main.c
 @@ -0,0 +1,26 @@
@@ -1454,7 +1460,7 @@ index 000000000..1ad5a19bd
 +}
 diff --git a/src/main/wii/SDL_wii_main.c b/src/main/wii/SDL_wii_main.c
 new file mode 100644
-index 000000000..297be8562
+index 0000000000..297be85622
 --- /dev/null
 +++ b/src/main/wii/SDL_wii_main.c
 @@ -0,0 +1,76 @@
@@ -1535,7 +1541,7 @@ index 000000000..297be8562
 +}
 +
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index 8af6e52f4..e2c21bd6f 100644
+index 8af6e52f41..e2c21bd6f6 100644
 --- a/src/thread/SDL_thread_c.h
 +++ b/src/thread/SDL_thread_c.h
 @@ -43,6 +43,8 @@
@@ -1549,7 +1555,7 @@ index 8af6e52f4..e2c21bd6f 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/ogc/SDL_syscond.c b/src/thread/ogc/SDL_syscond.c
 new file mode 100644
-index 000000000..70d76b97e
+index 0000000000..70d76b97ec
 --- /dev/null
 +++ b/src/thread/ogc/SDL_syscond.c
 @@ -0,0 +1,139 @@
@@ -1694,7 +1700,7 @@ index 000000000..70d76b97e
 +}
 diff --git a/src/thread/ogc/SDL_sysmutex.c b/src/thread/ogc/SDL_sysmutex.c
 new file mode 100644
-index 000000000..9fc57496c
+index 0000000000..9fc57496c8
 --- /dev/null
 +++ b/src/thread/ogc/SDL_sysmutex.c
 @@ -0,0 +1,87 @@
@@ -1787,7 +1793,7 @@ index 000000000..9fc57496c
 +}
 diff --git a/src/thread/ogc/SDL_sysmutex_c.h b/src/thread/ogc/SDL_sysmutex_c.h
 new file mode 100644
-index 000000000..8fdac822a
+index 0000000000..8fdac822a6
 --- /dev/null
 +++ b/src/thread/ogc/SDL_sysmutex_c.h
 @@ -0,0 +1,26 @@
@@ -1819,7 +1825,7 @@ index 000000000..8fdac822a
 +};
 diff --git a/src/thread/ogc/SDL_syssem.c b/src/thread/ogc/SDL_syssem.c
 new file mode 100644
-index 000000000..4c68ac3ea
+index 0000000000..4c68ac3ea9
 --- /dev/null
 +++ b/src/thread/ogc/SDL_syssem.c
 @@ -0,0 +1,175 @@
@@ -2000,7 +2006,7 @@ index 000000000..4c68ac3ea
 +}
 diff --git a/src/thread/ogc/SDL_systhread.c b/src/thread/ogc/SDL_systhread.c
 new file mode 100644
-index 000000000..c546df05d
+index 0000000000..c546df05d0
 --- /dev/null
 +++ b/src/thread/ogc/SDL_systhread.c
 @@ -0,0 +1,80 @@
@@ -2086,7 +2092,7 @@ index 000000000..c546df05d
 +}
 diff --git a/src/thread/ogc/SDL_systhread_c.h b/src/thread/ogc/SDL_systhread_c.h
 new file mode 100644
-index 000000000..fc13572ac
+index 0000000000..fc13572acc
 --- /dev/null
 +++ b/src/thread/ogc/SDL_systhread_c.h
 @@ -0,0 +1,26 @@
@@ -2118,7 +2124,7 @@ index 000000000..fc13572ac
 +typedef Uint32 SYS_ThreadHandle;
 diff --git a/src/timer/ogc/SDL_systimer.c b/src/timer/ogc/SDL_systimer.c
 new file mode 100644
-index 000000000..144ad38df
+index 0000000000..144ad38df5
 --- /dev/null
 +++ b/src/timer/ogc/SDL_systimer.c
 @@ -0,0 +1,105 @@
@@ -2228,7 +2234,7 @@ index 000000000..144ad38df
 +
 +#endif
 diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index 436450e33..65d56a56b 100644
+index 436450e330..65d56a56bd 100644
 --- a/src/video/SDL_sysvideo.h
 +++ b/src/video/SDL_sysvideo.h
 @@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
@@ -2242,7 +2248,7 @@ index 436450e33..65d56a56b 100644
  extern VideoBootStrap DUMMY_bootstrap;
  #endif
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 46285c990..bf379f4b6 100644
+index 46285c990e..bf379f4b61 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
 @@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
@@ -2257,7 +2263,7 @@ index 46285c990..bf379f4b6 100644
  #endif
 diff --git a/src/video/gamecube/SDL_gamecube_events.c b/src/video/gamecube/SDL_gamecube_events.c
 new file mode 100644
-index 000000000..e44a84a9e
+index 0000000000..e44a84a9eb
 --- /dev/null
 +++ b/src/video/gamecube/SDL_gamecube_events.c
 @@ -0,0 +1,13 @@
@@ -2276,7 +2282,7 @@ index 000000000..e44a84a9e
 +void GAMECUBE_InitOSKeymap(_THIS) {}
 diff --git a/src/video/gamecube/SDL_gamecube_events_c.h b/src/video/gamecube/SDL_gamecube_events_c.h
 new file mode 100644
-index 000000000..5084d26f5
+index 0000000000..5084d26f56
 --- /dev/null
 +++ b/src/video/gamecube/SDL_gamecube_events_c.h
 @@ -0,0 +1,4 @@
@@ -2286,7 +2292,7 @@ index 000000000..5084d26f5
 +extern void GAMECUBE_PumpEvents(_THIS);
 diff --git a/src/video/gamecube/SDL_gamecube_mouse.c b/src/video/gamecube/SDL_gamecube_mouse.c
 new file mode 100644
-index 000000000..9511d820b
+index 0000000000..9511d820b0
 --- /dev/null
 +++ b/src/video/gamecube/SDL_gamecube_mouse.c
 @@ -0,0 +1,8 @@
@@ -2300,10 +2306,10 @@ index 000000000..9511d820b
 +};
 diff --git a/src/video/ogc/SDL_ogc_video.c b/src/video/ogc/SDL_ogc_video.c
 new file mode 100644
-index 000000000..d79be5d53
+index 0000000000..69a3842c42
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogc_video.c
-@@ -0,0 +1,912 @@
+@@ -0,0 +1,923 @@
 +/*
 +	SDL - Simple DirectMedia Layer
 +	Copyright (C) 1997-2006 Sam Lantinga
@@ -3052,6 +3058,17 @@ index 000000000..d79be5d53
 +	videomutex=0;
 +}
 +
++/* Weak symbols for the opengx functions used by SDL, so that the client does
++ * not need to link to opengx, unless it actually uses OpenGL. */
++void __attribute__((weak)) ogx_initialize(void)
++{
++}
++
++void __attribute__((weak)) *ogx_get_proc_address(const char *)
++{
++    return NULL;
++}
++
 +int SDL_OGC_GL_LoadLibrary(_THIS, const char *path)
 +{
 +	return 0;
@@ -3218,7 +3235,7 @@ index 000000000..d79be5d53
 +}
 diff --git a/src/video/ogc/SDL_ogc_video.h b/src/video/ogc/SDL_ogc_video.h
 new file mode 100644
-index 000000000..a86ad89b4
+index 0000000000..a86ad89b45
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogc_video.h
 @@ -0,0 +1,37 @@
@@ -3261,7 +3278,7 @@ index 000000000..a86ad89b4
 +#endif /* _SDL_wiivideo_h */
 diff --git a/src/video/wii/SDL_wiievents.c b/src/video/wii/SDL_wiievents.c
 new file mode 100644
-index 000000000..2688bda3f
+index 0000000000..2688bda3f2
 --- /dev/null
 +++ b/src/video/wii/SDL_wiievents.c
 @@ -0,0 +1,264 @@
@@ -3531,7 +3548,7 @@ index 000000000..2688bda3f
 +}
 diff --git a/src/video/wii/SDL_wiievents_c.h b/src/video/wii/SDL_wiievents_c.h
 new file mode 100644
-index 000000000..030cb06c0
+index 0000000000..030cb06c09
 --- /dev/null
 +++ b/src/video/wii/SDL_wiievents_c.h
 @@ -0,0 +1,33 @@
@@ -3570,7 +3587,7 @@ index 000000000..030cb06c0
 +
 diff --git a/src/video/wii/SDL_wiimouse.c b/src/video/wii/SDL_wiimouse.c
 new file mode 100644
-index 000000000..cd41fbf7b
+index 0000000000..cd41fbf7b6
 --- /dev/null
 +++ b/src/video/wii/SDL_wiimouse.c
 @@ -0,0 +1,33 @@
@@ -3609,7 +3626,7 @@ index 000000000..cd41fbf7b
 +};
 diff --git a/src/video/wii/SDL_wiimouse_c.h b/src/video/wii/SDL_wiimouse_c.h
 new file mode 100644
-index 000000000..b4c260e6f
+index 0000000000..b4c260e6f1
 --- /dev/null
 +++ b/src/video/wii/SDL_wiimouse_c.h
 @@ -0,0 +1,26 @@
@@ -3640,7 +3657,7 @@ index 000000000..b4c260e6f
 +
 +/* Functions to be exported */
 diff --git a/src/video/wincommon/SDL_sysevents.c b/src/video/wincommon/SDL_sysevents.c
-index 090f6f161..76c67a1cc 100644
+index 090f6f161c..76c67a1ccd 100644
 --- a/src/video/wincommon/SDL_sysevents.c
 +++ b/src/video/wincommon/SDL_sysevents.c
 @@ -310,8 +310,8 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
