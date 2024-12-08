@@ -2,7 +2,7 @@
 
 pkgname=3ds-sdl
 pkgver=1.2.15
-pkgrel=18
+pkgrel=19
 pkgdesc="A library for portable low-level access to a video framebuffer, audio output, mouse, and keyboard (Nintendo 3DS port)"
 arch=('any')
 url="https://libsdl.org"
@@ -44,5 +44,6 @@ package() {
   # remove useless stuff
   rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }
+
 sha256sums=('d6d316a793e5e348155f0dd93b979798933fb98aa1edebcc108829d6474aad00'
-            'f55bfab26f5210c6d0c5cdec2ac630f11ed33239d7bd864b6dae88705af0a33f')
+            '83941419c8fc87a280b1d45db595b720fe190959a0094c727a566d2b9de20804')

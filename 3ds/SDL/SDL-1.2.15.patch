@@ -1,5 +1,5 @@
 diff --git a/build-scripts/makedep.sh b/build-scripts/makedep.sh
-index 3b3863b4c..7e7897480 100755
+index 3b3863b4c2..f24b851b2f 100755
 --- a/build-scripts/makedep.sh
 +++ b/build-scripts/makedep.sh
 @@ -42,13 +42,38 @@ for src in $SOURCES
@@ -26,7 +26,7 @@ index 3b3863b4c..7e7897480 100755
 +	@echo "extern const u8 ${stem}_shbin[];" > \$(objects)/$hdr
 +	@echo "extern const u8 ${stem}_shbin_end[];" >> \$(objects)/$hdr
 +	@echo "extern const u32 ${stem}_shbin_size;" >> \$(objects)/$hdr
-+	@bin2s \$(objects)/$shbin | arm-none-eabi-as -o \$(objects)/$obj
++	@bin2s \$(objects)/$shbin | \$(CC) \$(CFLAGS) \$(EXTRA_CFLAGS) -x assembler-with-cpp -c - -o \$(objects)/$obj
 +
 +
 +\$(objects)/$shbin: $src
@@ -52,7 +52,7 @@ index 3b3863b4c..7e7897480 100755
  mv ${output}.new ${output}
  rm -f ${cache_prefix}*
 diff --git a/configure.in b/configure.in
-index 08c8e1e97..946f8cbfe 100644
+index 08c8e1e97c..7192c31af5 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -62,7 +62,7 @@ AC_PROG_MAKE_SET
@@ -77,7 +77,7 @@ index 08c8e1e97..946f8cbfe 100644
 +        ARCH=n3ds
 +        N3DS_CFLAGS="-ffunction-sections -fdata-sections -march=armv6k \
 +                     -mtune=mpcore -mfloat-abi=hard -mword-relocations \
-+                     -I$DEVKITPRO/libctru/include -DARM11 -D_3DS"
++                     -I$DEVKITPRO/libctru/include -D__3DS__"
 +        EXTRA_CFLAGS="$EXTRA_CFLAGS $N3DS_CFLAGS"
 +        CFLAGS="$CFLAGS $N3DS_CFLAGS"
 +        SDL_CFLAGS="$SDL_CFLAGS $N3DS_CFLAGS"
@@ -125,7 +125,7 @@ index 08c8e1e97..946f8cbfe 100644
  SDLMAIN_OBJECTS=`echo $SDLMAIN_SOURCES | sed 's,[[^ ]]*/\([[^ ]]*\)\.cc,$(objects)/\1.lo,g'`
  SDLMAIN_OBJECTS=`echo $SDLMAIN_OBJECTS | sed 's,[[^ ]]*/\([[^ ]]*\)\.m,$(objects)/\1.lo,g'`
 diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index 8bb1773c0..d6f349499 100644
+index 8bb1773c0e..d6f349499c 100644
 --- a/include/SDL_config.h.in
 +++ b/include/SDL_config.h.in
 @@ -185,6 +185,7 @@
@@ -169,7 +169,7 @@ index 8bb1773c0..d6f349499 100644
  /* Enable OpenGL support */
  #undef SDL_VIDEO_OPENGL
 diff --git a/include/SDL_keyboard.h b/include/SDL_keyboard.h
-index 9d7129c52..b03422411 100644
+index 9d7129c526..b03422411e 100644
 --- a/include/SDL_keyboard.h
 +++ b/include/SDL_keyboard.h
 @@ -125,7 +125,6 @@ extern DECLSPEC void SDLCALL SDL_SetModState(SDLMod modstate);
@@ -181,7 +181,7 @@ index 9d7129c52..b03422411 100644
  #ifdef __cplusplus
  }
 diff --git a/include/SDL_stdinc.h b/include/SDL_stdinc.h
-index 35a4fdde5..5d8b62045 100644
+index 35a4fdde59..5d8b620459 100644
 --- a/include/SDL_stdinc.h
 +++ b/include/SDL_stdinc.h
 @@ -147,7 +147,7 @@ typedef enum {
@@ -194,7 +194,7 @@ index 35a4fdde5..5d8b62045 100644
  #endif
  /*@}*/
 diff --git a/include/SDL_video.h b/include/SDL_video.h
-index f9c4e0702..b2d064284 100644
+index f9c4e07025..b2d0642843 100644
 --- a/include/SDL_video.h
 +++ b/include/SDL_video.h
 @@ -142,7 +142,16 @@ typedef struct SDL_Surface {
@@ -216,7 +216,7 @@ index f9c4e0702..b2d064284 100644
  
  /** Used internally (read-only) */
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index beb26e0b4..4fd548c70 100644
+index beb26e0b4d..4fd548c70c 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
 @@ -104,6 +104,9 @@ static AudioBootStrap *bootstrap[] = {
@@ -230,7 +230,7 @@ index beb26e0b4..4fd548c70 100644
  	&MMEAUDIO_bootstrap,
  #endif
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index 74ac21df0..2cba86dae 100644
+index 74ac21df04..2cba86dae5 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
 @@ -170,6 +170,9 @@ extern AudioBootStrap DCAUD_bootstrap;
@@ -245,7 +245,7 @@ index 74ac21df0..2cba86dae 100644
  #endif
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.c b/src/audio/n3ds/SDL_n3dsaudio.c
 new file mode 100644
-index 000000000..019f205ba
+index 0000000000..019f205bab
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.c
 @@ -0,0 +1,339 @@
@@ -590,7 +590,7 @@ index 000000000..019f205ba
 +}
 diff --git a/src/audio/n3ds/SDL_n3dsaudio.h b/src/audio/n3ds/SDL_n3dsaudio.h
 new file mode 100644
-index 000000000..c51c850b9
+index 0000000000..c51c850b94
 --- /dev/null
 +++ b/src/audio/n3ds/SDL_n3dsaudio.h
 @@ -0,0 +1,50 @@
@@ -646,7 +646,7 @@ index 000000000..c51c850b9
 +#endif /* _SDL_n3dsaudio_h */
 diff --git a/src/joystick/n3ds/SDL_sysjoystick.c b/src/joystick/n3ds/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..c41e7a245
+index 0000000000..c41e7a2455
 --- /dev/null
 +++ b/src/joystick/n3ds/SDL_sysjoystick.c
 @@ -0,0 +1,183 @@
@@ -834,7 +834,7 @@ index 000000000..c41e7a245
 +void SDL_SYS_JoystickQuit (void) {
 +}
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index 8af6e52f4..c48803ff2 100644
+index 8af6e52f41..c48803ff2a 100644
 --- a/src/thread/SDL_thread_c.h
 +++ b/src/thread/SDL_thread_c.h
 @@ -43,6 +43,8 @@
@@ -848,7 +848,7 @@ index 8af6e52f4..c48803ff2 100644
  #include "generic/SDL_systhread_c.h"
 diff --git a/src/thread/n3ds/SDL_syscond.c b/src/thread/n3ds/SDL_syscond.c
 new file mode 100644
-index 000000000..df20c52e5
+index 0000000000..df20c52e58
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_syscond.c
 @@ -0,0 +1,137 @@
@@ -991,7 +991,7 @@ index 000000000..df20c52e5
 +}
 diff --git a/src/thread/n3ds/SDL_sysmutex.c b/src/thread/n3ds/SDL_sysmutex.c
 new file mode 100644
-index 000000000..9a84e761c
+index 0000000000..9a84e761ce
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_sysmutex.c
 @@ -0,0 +1,85 @@
@@ -1082,7 +1082,7 @@ index 000000000..9a84e761c
 +}
 diff --git a/src/thread/n3ds/SDL_sysmutex_c.h b/src/thread/n3ds/SDL_sysmutex_c.h
 new file mode 100644
-index 000000000..4f123f78c
+index 0000000000..4f123f78cd
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_sysmutex_c.h
 @@ -0,0 +1,31 @@
@@ -1119,7 +1119,7 @@ index 000000000..4f123f78c
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/thread/n3ds/SDL_syssem.c b/src/thread/n3ds/SDL_syssem.c
 new file mode 100644
-index 000000000..eefbd95fa
+index 0000000000..eefbd95faf
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_syssem.c
 @@ -0,0 +1,103 @@
@@ -1228,7 +1228,7 @@ index 000000000..eefbd95fa
 +}
 diff --git a/src/thread/n3ds/SDL_systhread.c b/src/thread/n3ds/SDL_systhread.c
 new file mode 100644
-index 000000000..aace52a72
+index 0000000000..aace52a72b
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_systhread.c
 @@ -0,0 +1,93 @@
@@ -1327,7 +1327,7 @@ index 000000000..aace52a72
 +
 diff --git a/src/thread/n3ds/SDL_systhread_c.h b/src/thread/n3ds/SDL_systhread_c.h
 new file mode 100644
-index 000000000..1baf0d721
+index 0000000000..1baf0d7210
 --- /dev/null
 +++ b/src/thread/n3ds/SDL_systhread_c.h
 @@ -0,0 +1,24 @@
@@ -1357,7 +1357,7 @@ index 000000000..1baf0d721
 +typedef Thread SYS_ThreadHandle;
 diff --git a/src/timer/n3ds/SDL_systimer.c b/src/timer/n3ds/SDL_systimer.c
 new file mode 100644
-index 000000000..d921cdc0e
+index 0000000000..d921cdc0eb
 --- /dev/null
 +++ b/src/timer/n3ds/SDL_systimer.c
 @@ -0,0 +1,42 @@
@@ -1404,7 +1404,7 @@ index 000000000..d921cdc0e
 +void SDL_SYS_StopTimer (void) {
 +}
 diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index 436450e33..50735f447 100644
+index 436450e330..50735f4476 100644
 --- a/src/video/SDL_sysvideo.h
 +++ b/src/video/SDL_sysvideo.h
 @@ -398,6 +398,9 @@ extern VideoBootStrap DC_bootstrap;
@@ -1418,7 +1418,7 @@ index 436450e33..50735f447 100644
  extern VideoBootStrap RISCOS_bootstrap;
  #endif
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 46285c990..94620ad04 100644
+index 46285c990e..94620ad04e 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
 @@ -114,6 +114,9 @@ static VideoBootStrap *bootstrap[] = {
@@ -1432,7 +1432,7 @@ index 46285c990..94620ad04 100644
  	&RISCOS_bootstrap,
  #endif
 diff --git a/src/video/dummy/SDL_nullvideo.c b/src/video/dummy/SDL_nullvideo.c
-index 7e096e2f7..23af477cc 100644
+index 7e096e2f7f..23af477cca 100644
 --- a/src/video/dummy/SDL_nullvideo.c
 +++ b/src/video/dummy/SDL_nullvideo.c
 @@ -68,12 +68,15 @@ static void DUMMY_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
@@ -1453,7 +1453,7 @@ index 7e096e2f7..23af477cc 100644
  static void DUMMY_DeleteDevice(SDL_VideoDevice *device)
 diff --git a/src/video/n3ds/SDL_n3dsevents.c b/src/video/n3ds/SDL_n3dsevents.c
 new file mode 100644
-index 000000000..42dda2f28
+index 0000000000..42dda2f289
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsevents.c
 @@ -0,0 +1,89 @@
@@ -1548,7 +1548,7 @@ index 000000000..42dda2f28
 +
 diff --git a/src/video/n3ds/SDL_n3dsevents_c.h b/src/video/n3ds/SDL_n3dsevents_c.h
 new file mode 100644
-index 000000000..af9957168
+index 0000000000..af9957168d
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsevents_c.h
 @@ -0,0 +1,34 @@
@@ -1588,7 +1588,7 @@ index 000000000..af9957168
 +
 diff --git a/src/video/n3ds/SDL_n3dsmouse.c b/src/video/n3ds/SDL_n3dsmouse.c
 new file mode 100644
-index 000000000..1da84a4e6
+index 0000000000..1da84a4e6d
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsmouse.c
 @@ -0,0 +1,33 @@
@@ -1627,7 +1627,7 @@ index 000000000..1da84a4e6
 +};
 diff --git a/src/video/n3ds/SDL_n3dsmouse_c.h b/src/video/n3ds/SDL_n3dsmouse_c.h
 new file mode 100644
-index 000000000..cdbdd17ce
+index 0000000000..cdbdd17ce5
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsmouse_c.h
 @@ -0,0 +1,26 @@
@@ -1659,7 +1659,7 @@ index 000000000..cdbdd17ce
 +/* Functions to be exported */
 diff --git a/src/video/n3ds/SDL_n3dsvideo.c b/src/video/n3ds/SDL_n3dsvideo.c
 new file mode 100644
-index 000000000..2fbb8ee82
+index 0000000000..2fbb8ee820
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.c
 @@ -0,0 +1,766 @@
@@ -2431,7 +2431,7 @@ index 000000000..2fbb8ee82
 +}
 diff --git a/src/video/n3ds/SDL_n3dsvideo.h b/src/video/n3ds/SDL_n3dsvideo.h
 new file mode 100644
-index 000000000..4b204224a
+index 0000000000..4b204224a3
 --- /dev/null
 +++ b/src/video/n3ds/SDL_n3dsvideo.h
 @@ -0,0 +1,63 @@
@@ -2500,10 +2500,10 @@ index 000000000..4b204224a
 +#endif /* _SDL_n3dsvideo_h */
 diff --git a/src/video/n3ds/vshader.pica b/src/video/n3ds/vshader.pica
 new file mode 100644
-index 000000000..ac5a64e5e
+index 0000000000..9f51b4a4dc
 --- /dev/null
 +++ b/src/video/n3ds/vshader.pica
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,34 @@
 +; Example PICA200 vertex shader
 +
 +; Uniforms
@@ -2519,11 +2519,9 @@ index 000000000..ac5a64e5e
 +.out outpos position
 +.out outtc0 texcoord0
 +
-+; Inputs (defined as aliases for convenience)
-+.alias inpos v0
-+.alias intex v1
-+
-+.bool test
++; Inputs
++.in inpos v0
++.in intex v1
 +
 +.proc main
 +	; Force the w component of inpos to be 1.0
