@@ -1,0 +1,31 @@
+# Maintainer: PGGKun <slunngdev@gmail.com>
+pkgname=3ds-lua
+pkgver=5.4.4
+pkgrel=1
+pkgdesc='Embeddable script language LUA (for Nintendo 3DS homebrew development)'
+arch=('any')
+url='http://www.lua.org/'
+license=('MIT')
+options=(!strip libtool staticlibs)
+source=("http://www.lua.org/ftp/lua-$pkgver.tar.gz")
+sha1sums=('03c27684b9d5d9783fb79a7c836ba1cdc5f309cd')
+makedepends=('devkitARM' 'dkp-toolchain-vars')
+groups=('3ds-portlibs')
+
+build() {
+  cd lua-$pkgver/src  
+  patch -p1 -i $srcdir/../lua-5.4.4.patch 
+}
+
+package() {
+  cd lua-$pkgver/src
+  source /opt/devkitpro/3dsvars.sh
+  
+  make DEPSDIR="$pkgdir" generic
+
+  mkdir -p $pkgdir$PORTLIBS_PREFIX/lib
+  install -Dm644 liblua.a $pkgdir$PORTLIBS_PREFIX/lib/
+
+  mkdir -p $pkgdir$PORTLIBS_PREFIX/include/LUA/
+  install -Dm644 ./*.h $pkgdir$PORTLIBS_PREFIX/include/LUA/ 
+}
