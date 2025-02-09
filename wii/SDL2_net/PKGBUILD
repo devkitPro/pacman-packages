@@ -1,0 +1,39 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Alberto Mardegan <mardy@users.sourceforge.net>
+
+_realname=sdl2_net
+_commit="da64344c8a48d49a764833fc46f691a21115887e"
+pkgname=wii-${_realname}
+pkgver=2.3.0
+pkgrel=1
+pkgdesc="A small sample cross-platform networking library."
+arch=('any')
+url="https://libsdl.org/projects/SDL_net/"
+license=("MIT")
+options=(!strip libtool staticlibs)
+makedepends=('wii-pkg-config' 'dkp-toolchain-vars')
+depends=(
+  'wii-sdl2'
+)
+source=( "${_realname}-${pkgver}.tar.gz::https://github.com/libsdl-org/SDL_net/archive/${_commit}.tar.gz"
+         "${_realname}-${pkgver}.patch"
+         "examples.patch")
+sha256sums=('73762d18db8310ee62efbba4ea5fcdd2a3fe9d2986332e484239192bacd49157'
+            '07de7d08aa11ea350080af02aa33b663a56a8270cf7251df4b06adcd51835bf6'
+            'fc530cf70abefca5592795fee0144149e7a573aca3b496db5f3e476067389a09')
+groups=('wii-portlibs' 'wii-sdl2-libs')
+
+build() {
+  cd SDL_net-${_commit}
+
+  source /opt/devkitpro/wiivars.sh
+
+  patch -p1 -i $srcdir/${_realname}-${pkgver}.patch
+  patch -p1 -i $srcdir/examples.patch
+  catnip -t wii
+}
+
+package() {
+  cd SDL_net-${_commit}
+  DESTDIR=${pkgdir} catnip install
+}

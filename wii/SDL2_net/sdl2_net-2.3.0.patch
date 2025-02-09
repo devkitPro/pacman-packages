@@ -1,0 +1,207 @@
+From 21063fa6dd9d182964a712df2567f7794fb1c1b1 Mon Sep 17 00:00:00 2001
+From: Alberto Mardegan <mardy@users.sourceforge.net>
+Date: Sun, 9 Feb 2025 19:09:08 +0300
+Subject: [PATCH 1/2] Port to GameCube/Wii consoles, via libogc
+
+A few "#ifdef __wii__" had to be added, since the Wii does not support
+the select() call.
+---
+ CMakeLists.txt     |  2 ++
+ src/SDLnet.c       |  4 ++++
+ src/SDLnetUDP.c    | 20 ++++++++++++++++++++
+ src/SDLnetselect.c | 30 ++++++++++++++++++++++++++++++
+ src/SDLnetsys.h    | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 100 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e04cefd..efb0284 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -112,6 +112,8 @@ if(WIN32)
+     if(MINGW)
+       target_link_options(SDL2_net PRIVATE -static-libgcc)
+     endif()
++elseif(CMAKE_SYSTEM_NAME MATCHES "NintendoWii|NintendoGameCube")
++    target_compile_definitions(SDL2_net PRIVATE WITH_LIBOGC)
+ endif()
+ set_target_properties(SDL2_net PROPERTIES
+     DEFINE_SYMBOL DLL_EXPORT
+diff --git a/src/SDLnet.c b/src/SDLnet.c
+index a4a6828..c02be4f 100644
+--- a/src/SDLnet.c
++++ b/src/SDLnet.c
+@@ -129,6 +129,8 @@ int  SDLNet_Init(void)
+             SDLNet_SetError("Couldn't initialize IBM OS/2 sockets");
+             return(-1);
+         }
++#elif defined(WITH_LIBOGC)
++        net_init();
+ #else
+         /* SIGPIPE is generated when a remote socket is closed */
+         void (*handler)(int);
+@@ -157,6 +159,8 @@ void SDLNet_Quit(void)
+         }
+ #elif defined(__OS2__) && !defined(__EMX__)
+         /* -- nothing */
++#elif defined(WITH_LIBOGC)
++        net_deinit();
+ #else
+         /* Restore the SIGPIPE handler */
+         void (*handler)(int);
+diff --git a/src/SDLnetUDP.c b/src/SDLnetUDP.c
+index d84c896..903c245 100644
+--- a/src/SDLnetUDP.c
++++ b/src/SDLnetUDP.c
+@@ -404,6 +404,25 @@ int SDLNet_UDP_Send(UDPsocket sock, int channel, UDPpacket *packet)
+ /* Returns true if a socket is has data available for reading right now */
+ static int SocketReady(SOCKET sock)
+ {
++#ifdef __wii__
++    /* We don't have select(), just poll() */
++    struct pollsd sds;
++    int retval;
++
++    sds.socket = sock;
++    sds.events = POLLIN;
++    sds.revents = 0;
++
++    /* Check the file descriptors for available data */
++    do {
++        SDLNet_SetLastError(0);
++
++        /* Look! */
++        retval = net_poll(&sds, 1, 0);
++    } while (SDLNet_GetLastError() == EINTR);
++
++    return retval > 0 && sds.revents;
++#else
+     int retval = 0;
+     struct timeval tv;
+     fd_set mask;
+@@ -425,6 +444,7 @@ static int SocketReady(SOCKET sock)
+     } while ( SDLNet_GetLastError() == EINTR );
+ 
+     return(retval == 1);
++#endif
+ }
+ 
+ /* Receive a vector of pending packets from the UDP socket.
+diff --git a/src/SDLnetselect.c b/src/SDLnetselect.c
+index 41862da..003ca04 100644
+--- a/src/SDLnetselect.c
++++ b/src/SDLnetselect.c
+@@ -107,6 +107,35 @@ int SDLNet_DelSocket(SDLNet_SocketSet set, SDLNet_GenericSocket sock)
+ */
+ int SDLNet_CheckSockets(SDLNet_SocketSet set, Uint32 timeout)
+ {
++#ifdef __wii__ /* we have only poll, not select */
++    struct pollsd sds[MAX_SOCKETS];
++    int i;
++    int retval;
++
++    for (i = 0; i < set->numsockets; i++) {
++        sds[i].socket = set->sockets[i]->channel;
++        sds[i].events = POLLIN;
++        sds[i].revents = 0;
++    }
++
++    /* Check the file descriptors for available data */
++    do {
++        SDLNet_SetLastError(0);
++
++        /* Look! */
++        retval = net_poll(sds, set->numsockets, timeout);
++    } while (SDLNet_GetLastError() == EINTR);
++
++    /* Mark all file descriptors ready that have data available */
++    if (retval > 0) {
++        for (i = 0; i < set->numsockets; i++) {
++            if (sds[i].revents) {
++                set->sockets[i]->ready = 1;
++            }
++        }
++    }
++    return retval;
++#else
+     int i;
+     SOCKET maxfd;
+     int retval;
+@@ -148,6 +177,7 @@ int SDLNet_CheckSockets(SDLNet_SocketSet set, Uint32 timeout)
+         }
+     }
+     return(retval);
++#endif
+ }
+ 
+ /* Free a set of sockets allocated by SDL_NetAllocSocketSet() */
+diff --git a/src/SDLnetsys.h b/src/SDLnetsys.h
+index 186a426..4e3d565 100644
+--- a/src/SDLnetsys.h
++++ b/src/SDLnetsys.h
+@@ -40,6 +40,42 @@
+ #include <winsock2.h>
+ #include <ws2tcpip.h>
+ #include <iphlpapi.h>
++#elif defined(WITH_LIBOGC)
++
++#include <network.h>
++#include <errno.h>
++#include <fcntl.h>
++
++#define MAX_SOCKETS 64
++#define SOCKET u8
++
++#define accept(fd, addr,len) net_accept(fd, addr, len)
++#define bind(fd, addr,len) net_bind(fd, addr, len)
++#define connect(fd, addr,len) net_connect(fd, addr, len)
++#define fcntl(fd, cmd, flags) net_fcntl(fd, cmd, flags)
++#define gethostbyname(host) net_gethostbyname(host)
++#define getsockname(fd, addr,len) net_getsockname(fd, addr, len)
++#define listen(fd, backlog) net_listen(fd, backlog)
++#define recv(fd, data, len, flags) net_recv(fd, data, len, flags)
++#define recvfrom(fd, data, len, flags, from, fromlen) \
++    net_recvfrom(fd, data, len, flags, from, fromlen)
++#define select(fd, readfds, writefds, exceptfds, timeout) \
++    net_select(fd, readfds, writefds, exceptfds, timeout)
++#define send(fd, data, len, flags) net_send(fd, data, len, flags)
++#define sendto(fd, data, len, flags, to, tolen) \
++    net_sendto(fd, data, len, flags, to, tolen)
++#define socket(domain, type, protocol) net_socket(domain, type, protocol)
++#define setsockopt(fd, level, optname, val, len) \
++    net_setsockopt(fd, level, optname, val, len)
++
++
++static inline struct hostent *gethostbyaddr(const char *addr,
++                                            socklen_t len, int type)
++{
++    /* This is not (yet?) implemented in libogc */
++    return NULL;
++}
++
+ #else /* UNIX */
+ #if defined(__OS2__) || defined(__PSP__)
+ #include <sys/param.h>
+@@ -81,12 +117,20 @@ typedef Uint32 socklen_t;
+ #ifndef __USE_W32_SOCKETS
+ #ifdef __OS2__
+ #define closesocket     soclose
++#elif defined(WITH_LIBOGC)
++#define closesocket     net_close
+ #else  /* !__OS2__ */
+ #define closesocket close
+ #endif /* __OS2__ */
++#ifndef SOCKET
+ #define SOCKET  int
++#endif
++#ifndef INVALID_SOCKET
+ #define INVALID_SOCKET  -1
++#endif
++#ifndef SOCKET_ERROR
+ #define SOCKET_ERROR    -1
++#endif
+ #endif /* __USE_W32_SOCKETS */
+ 
+ #ifdef __USE_W32_SOCKETS
+-- 
+2.43.0
+

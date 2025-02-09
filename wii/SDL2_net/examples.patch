@@ -1,0 +1,82 @@
+From d9324c44b925898c11f59c1015c7b4abd9194a75 Mon Sep 17 00:00:00 2001
+From: Alberto Mardegan <mardy@users.sourceforge.net>
+Date: Sun, 9 Feb 2025 20:14:36 +0300
+Subject: [PATCH 2/2] examples: make chat example run on a Wii/GameCube
+
+This requires manually changing the IP address of the chat server in the
+source code.
+---
+ examples/chat.c | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/examples/chat.c b/examples/chat.c
+index a074e02..6e3ad99 100644
+--- a/examples/chat.c
++++ b/examples/chat.c
+@@ -420,14 +420,16 @@ int main(int argc, char *argv[])
+     IPaddress serverIP;
+     SDL_Event event;
+ 
++#if !defined(__wii__) && !defined(__gamecube__)
+     /* Check command line arguments */
+     if ( argv[1] == NULL ) {
+         SDL_Log("Usage: %s <server>\n", argv[0]);
+         exit(1);
+     }
++#endif
+ 
+     /* Initialize SDL */
+-    if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
++    if ( SDL_Init(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK) < 0 ) {
+         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Couldn't initialize SDL: %s\n",
+                     SDL_GetError());
+@@ -465,7 +467,12 @@ int main(int argc, char *argv[])
+     }
+ 
+     /* Connect to remote host and create UDP endpoint */
++#if defined(__wii__) || defined(__gamecube__)
++    /* FIXME: write your server's IP address here */
++    server = "192.168.0.100";
++#else
+     server = argv[1];
++#endif
+     TextWindowAddText(termwin, "Connecting to %s ... ", server);
+     DisplayGUI(renderer);
+     SDLNet_ResolveHost(&serverIP, server, CHAT_PORT);
+@@ -502,7 +509,13 @@ int main(int argc, char *argv[])
+     SDLNet_UDP_AddSocket(socketset, udpsock);
+ 
+     /* Run the GUI, handling network data */
++#ifdef __wii__
++    SendHello("Wii");
++#elif defined(__gamecube__)
++    SendHello("GameCube");
++#else
+     SendHello(argv[2]);
++#endif
+     done = 0;
+     while ( !done ) {
+         HandleNet();
+@@ -512,6 +525,18 @@ int main(int argc, char *argv[])
+             case SDL_QUIT:
+                 done = 1;
+                 break;
++            case SDL_JOYDEVICEADDED:
++                SDL_JoystickOpen(event.jdevice.which);
++                SendBuf("Got a joystick!", 15);
++                break;
++            case SDL_JOYBUTTONDOWN:
++                {
++                    char buffer[20];
++                    int len = sprintf(buffer, "Button %d", event.jbutton.button);
++                    SendBuf(buffer, len);
++                }
++                if (event.jbutton.button == 5) done = 1;
++                break;
+             case SDL_KEYDOWN:
+                 switch ( event.key.keysym.sym ) {
+                 case SDLK_ESCAPE:
+-- 
+2.43.0
+
