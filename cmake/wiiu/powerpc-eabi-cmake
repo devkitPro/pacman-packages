@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/WiiU.cmake "$@"
+exec env CMAKE_TOOLCHAIN_FILE="${DEVKITPRO}/cmake/WiiU.cmake" cmake "$@"
