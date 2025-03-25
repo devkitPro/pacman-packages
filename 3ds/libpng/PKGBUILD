@@ -3,8 +3,8 @@
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
 pkgname=3ds-libpng
-pkgver=1.6.39
-pkgrel=3
+pkgver=1.6.46
+pkgrel=4
 pkgdesc='PNG format graphic files library'
 arch=('any')
 url='http://www.libpng.org'
@@ -15,7 +15,7 @@ groups=('3ds-portlibs')
 makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 source=("https://download.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
 sha256sums=(
-  '1f4696ce70b4ee5f85f1e1623dc1229b210029fa4b7aee573df3e2ba7b036937'
+  'f3aa8b7003998ab92a4e9906c18d19853e999f9d3bca9bd1668f54fa81707cb1'
 )
 build() {
   cd libpng-$pkgver
@@ -23,10 +23,8 @@ build() {
   source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/3dsvars.sh
 
-  sed -i 's/^bin_PROGRAMS = .*//' Makefile.in
-
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
-    --disable-shared --enable-static
+    --disable-tools --disable-shared --enable-static
   make
 }
 
