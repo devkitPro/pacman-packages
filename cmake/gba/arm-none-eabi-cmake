@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -e
 
-exec cmake -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/GBA.cmake "$@"
+exec env CMAKE_TOOLCHAIN_FILE="${DEVKITPRO}/cmake/GBA.cmake" cmake "$@"
