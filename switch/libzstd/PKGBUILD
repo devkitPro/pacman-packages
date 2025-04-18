@@ -1,7 +1,7 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-libzstd
-pkgver=1.4.4
+pkgver=1.5.7
 pkgrel=1
 pkgdesc='Zstd, short for Zstandard, is a fast lossless compression algorithm, targeting real-time compression scenarios at zlib-level compression ratio (for Nintendo Switch homebrew development)'
 arch=('any')
@@ -9,22 +9,27 @@ url='https://zstd.net'
 license=('BSD and GPLv2')
 options=(!strip libtool staticlibs)
 source=("https://github.com/facebook/zstd/releases/download/v$pkgver/zstd-$pkgver.tar.gz")
-sha256sums=('59ef70ebb757ffe74a7b3fe9c305e2ba3350021a918d168a046c6300aeea9315')
+sha256sums=('eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3')
 makedepends=('dkp-toolchain-vars')
 groups=('switch-portlibs')
 
 build() {
   source /opt/devkitpro/switchvars.sh
-  cd zstd-$pkgver/lib
+  cd zstd-$pkgver
 
-  make CC=${TOOL_PREFIX}gcc PREFIX=${PORTLIBS_PREFIX} libzstd.a libzstd.pc
+  aarch64-none-elf-cmake -B _build -S build/cmake -GNinja \
+    -DZSTD_BUILD_PROGRAMS=OFF \
+    -DZSTD_BUILD_STATIC=ON \
+    -DZSTD_BUILD_SHARED=OFF
+
+  cmake --build _build
 }
 
 package() {
   source /opt/devkitpro/switchvars.sh
-  cd zstd-$pkgver/lib
-  make DESTDIR="$pkgdir" PREFIX=${PORTLIBS_PREFIX} install-pc install-static install-includes
+  cd zstd-$pkgver
+  DESTDIR="$pkgdir" cmake --install _build
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname
-  install ../COPYING "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/COPYING
-  install ../LICENSE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
+  install COPYING "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/COPYING
+  install LICENSE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
 }
