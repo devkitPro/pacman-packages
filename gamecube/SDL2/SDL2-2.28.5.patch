@@ -1,6 +1,6 @@
 diff --git a/.github/workflows/ngc.yml b/.github/workflows/ngc.yml
 new file mode 100644
-index 000000000..aeaf6b926
+index 0000000000..aeaf6b9269
 --- /dev/null
 +++ b/.github/workflows/ngc.yml
 @@ -0,0 +1,47 @@
@@ -53,7 +53,7 @@ index 000000000..aeaf6b926
 +          cmake/test/test_pkgconfig.sh
 diff --git a/.github/workflows/nwii.yml b/.github/workflows/nwii.yml
 new file mode 100644
-index 000000000..625de93b9
+index 0000000000..625de93b93
 --- /dev/null
 +++ b/.github/workflows/nwii.yml
 @@ -0,0 +1,47 @@
@@ -105,7 +105,7 @@ index 000000000..625de93b9
 +          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
 +          cmake/test/test_pkgconfig.sh
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b38a8bbc1..9129cea2a 100644
+index b38a8bbc11..9129cea2a9 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -141,6 +141,7 @@ check_cpu_architecture(x64 SDL_CPU_X64)
@@ -230,7 +230,7 @@ index b38a8bbc1..9129cea2a 100644
  
  if(HAVE_VULKAN AND NOT SDL_LOADSO)
 diff --git a/cmake/CheckCPUArchitecture.cmake b/cmake/CheckCPUArchitecture.cmake
-index 7e3e45947..64ddea744 100644
+index 7e3e459470..64ddea7440 100644
 --- a/cmake/CheckCPUArchitecture.cmake
 +++ b/cmake/CheckCPUArchitecture.cmake
 @@ -34,6 +34,8 @@ function(check_cpu_architecture ARCH VARIABLE)
@@ -243,7 +243,7 @@ index 7e3e45947..64ddea744 100644
      message(WARNING "Unknown CPU architectures (${ARCH}).")
      set(${VARIABLE} FALSE)
 diff --git a/cmake/sdlplatform.cmake b/cmake/sdlplatform.cmake
-index 6d8ece6ac..ea0b7dd8d 100644
+index 6d8ece6ac5..ea0b7dd8d6 100644
 --- a/cmake/sdlplatform.cmake
 +++ b/cmake/sdlplatform.cmake
 @@ -50,6 +50,8 @@ macro(SDL_DetectCMakePlatform)
@@ -257,7 +257,7 @@ index 6d8ece6ac..ea0b7dd8d 100644
    endif()
 diff --git a/docs/README-ogc.md b/docs/README-ogc.md
 new file mode 100644
-index 000000000..619c87a0d
+index 0000000000..619c87a0dc
 --- /dev/null
 +++ b/docs/README-ogc.md
 @@ -0,0 +1,22 @@
@@ -284,7 +284,7 @@ index 000000000..619c87a0d
 +
 +-   Currently only software rendering is supported.
 diff --git a/include/SDL_config.h.cmake b/include/SDL_config.h.cmake
-index 35923d020..13f9a6022 100644
+index 35923d0207..13f9a6022f 100644
 --- a/include/SDL_config.h.cmake
 +++ b/include/SDL_config.h.cmake
 @@ -329,6 +329,7 @@
@@ -344,7 +344,7 @@ index 35923d020..13f9a6022 100644
  /* Enable misc subsystem */
  #cmakedefine SDL_MISC_DUMMY @SDL_MISC_DUMMY@
 diff --git a/include/SDL_config.h.in b/include/SDL_config.h.in
-index d6460b783..026c63bad 100644
+index d6460b783e..026c63bad9 100644
 --- a/include/SDL_config.h.in
 +++ b/include/SDL_config.h.in
 @@ -355,6 +355,7 @@
@@ -356,7 +356,7 @@ index d6460b783..026c63bad 100644
  #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
  #undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
 diff --git a/include/SDL_main.h b/include/SDL_main.h
-index 5cc8e5913..8416fb2df 100644
+index 5cc8e5913a..8416fb2df7 100644
 --- a/include/SDL_main.h
 +++ b/include/SDL_main.h
 @@ -117,6 +117,14 @@
@@ -375,7 +375,7 @@ index 5cc8e5913..8416fb2df 100644
  #endif /* SDL_MAIN_HANDLED */
  
 diff --git a/src/SDL.c b/src/SDL.c
-index 56049adf0..6d164b248 100644
+index 56049adf0b..6d164b2485 100644
 --- a/src/SDL.c
 +++ b/src/SDL.c
 @@ -610,6 +610,10 @@ const char *SDL_GetPlatform(void)
@@ -390,7 +390,7 @@ index 56049adf0..6d164b248 100644
      return "Unknown (see SDL_platform.h)";
  #endif
 diff --git a/src/audio/SDL_audio.c b/src/audio/SDL_audio.c
-index 60242e60a..0dd55916d 100644
+index 60242e60a0..0dd55916d4 100644
 --- a/src/audio/SDL_audio.c
 +++ b/src/audio/SDL_audio.c
 @@ -108,6 +108,9 @@ static const AudioBootStrap *const bootstrap[] = {
@@ -404,7 +404,7 @@ index 60242e60a..0dd55916d 100644
      &EMSCRIPTENAUDIO_bootstrap,
  #endif
 diff --git a/src/audio/SDL_sysaudio.h b/src/audio/SDL_sysaudio.h
-index c755d4341..9da933290 100644
+index c755d43415..9da933290b 100644
 --- a/src/audio/SDL_sysaudio.h
 +++ b/src/audio/SDL_sysaudio.h
 @@ -207,6 +207,7 @@ extern AudioBootStrap PS2AUDIO_bootstrap;
@@ -417,7 +417,7 @@ index c755d4341..9da933290 100644
  
 diff --git a/src/audio/ogc/SDL_ogcaudio.c b/src/audio/ogc/SDL_ogcaudio.c
 new file mode 100644
-index 000000000..7a770f1ab
+index 0000000000..7a770f1abc
 --- /dev/null
 +++ b/src/audio/ogc/SDL_ogcaudio.c
 @@ -0,0 +1,270 @@
@@ -693,7 +693,7 @@ index 000000000..7a770f1ab
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/audio/ogc/SDL_ogcaudio.h b/src/audio/ogc/SDL_ogcaudio.h
 new file mode 100644
-index 000000000..a575ac5aa
+index 0000000000..a575ac5aaa
 --- /dev/null
 +++ b/src/audio/ogc/SDL_ogcaudio.h
 @@ -0,0 +1,54 @@
@@ -752,7 +752,7 @@ index 000000000..a575ac5aa
 +#endif /* _SDL_ogcaudio_h_ */
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/dynapi/SDL_dynapi.h b/src/dynapi/SDL_dynapi.h
-index 99ca08008..d261a33f0 100644
+index 99ca08008f..d261a33f07 100644
 --- a/src/dynapi/SDL_dynapi.h
 +++ b/src/dynapi/SDL_dynapi.h
 @@ -67,6 +67,8 @@
@@ -766,7 +766,7 @@ index 99ca08008..d261a33f0 100644
  #endif
 diff --git a/src/filesystem/ogc/SDL_sysfilesystem.c b/src/filesystem/ogc/SDL_sysfilesystem.c
 new file mode 100644
-index 000000000..cf42b99f1
+index 0000000000..cf42b99f1e
 --- /dev/null
 +++ b/src/filesystem/ogc/SDL_sysfilesystem.c
 @@ -0,0 +1,86 @@
@@ -857,7 +857,7 @@ index 000000000..cf42b99f1
 +
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/joystick/SDL_joystick.c b/src/joystick/SDL_joystick.c
-index 834e83d99..65dc3ce68 100644
+index 834e83d99e..65dc3ce685 100644
 --- a/src/joystick/SDL_joystick.c
 +++ b/src/joystick/SDL_joystick.c
 @@ -105,6 +105,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
@@ -871,7 +871,7 @@ index 834e83d99..65dc3ce68 100644
          &SDL_DUMMY_JoystickDriver
  #endif
 diff --git a/src/joystick/SDL_sysjoystick.h b/src/joystick/SDL_sysjoystick.h
-index a93fa662c..3d3329ae5 100644
+index a93fa662ca..3d3329ae5a 100644
 --- a/src/joystick/SDL_sysjoystick.h
 +++ b/src/joystick/SDL_sysjoystick.h
 @@ -249,6 +249,7 @@ extern SDL_JoystickDriver SDL_PS2_JoystickDriver;
@@ -884,7 +884,7 @@ index a93fa662c..3d3329ae5 100644
  #ifdef __cplusplus
 diff --git a/src/joystick/ogc/SDL_sysjoystick.c b/src/joystick/ogc/SDL_sysjoystick.c
 new file mode 100644
-index 000000000..56d5beccc
+index 0000000000..56d5beccc4
 --- /dev/null
 +++ b/src/joystick/ogc/SDL_sysjoystick.c
 @@ -0,0 +1,1328 @@
@@ -2218,7 +2218,7 @@ index 000000000..56d5beccc
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/main/gamecube/SDL_gamecube_main.c b/src/main/gamecube/SDL_gamecube_main.c
 new file mode 100644
-index 000000000..f0d42bed9
+index 0000000000..f0d42bed96
 --- /dev/null
 +++ b/src/main/gamecube/SDL_gamecube_main.c
 @@ -0,0 +1,54 @@
@@ -2278,7 +2278,7 @@ index 000000000..f0d42bed9
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/main/wii/SDL_wii_main.c b/src/main/wii/SDL_wii_main.c
 new file mode 100644
-index 000000000..47b8b207f
+index 0000000000..47b8b207fe
 --- /dev/null
 +++ b/src/main/wii/SDL_wii_main.c
 @@ -0,0 +1,91 @@
@@ -2374,7 +2374,7 @@ index 000000000..47b8b207f
 +
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/render/SDL_render.c b/src/render/SDL_render.c
-index b650c6ac4..dc7a5b0b2 100644
+index b650c6ac40..dc7a5b0b26 100644
 --- a/src/render/SDL_render.c
 +++ b/src/render/SDL_render.c
 @@ -124,6 +124,9 @@ static const SDL_RenderDriver *render_drivers[] = {
@@ -2388,7 +2388,7 @@ index b650c6ac4..dc7a5b0b2 100644
      &SW_RenderDriver
  #endif
 diff --git a/src/render/SDL_sysrender.h b/src/render/SDL_sysrender.h
-index 36e9555bb..d3db2b387 100644
+index 36e9555bb1..d3db2b3879 100644
 --- a/src/render/SDL_sysrender.h
 +++ b/src/render/SDL_sysrender.h
 @@ -307,6 +307,7 @@ extern SDL_RenderDriver PS2_RenderDriver;
@@ -2401,10 +2401,10 @@ index 36e9555bb..d3db2b387 100644
  extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);
 diff --git a/src/render/ogc/SDL_render_ogc.c b/src/render/ogc/SDL_render_ogc.c
 new file mode 100644
-index 000000000..ece76c7fc
+index 0000000000..39996c8aec
 --- /dev/null
 +++ b/src/render/ogc/SDL_render_ogc.c
-@@ -0,0 +1,747 @@
+@@ -0,0 +1,786 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -2447,7 +2447,6 @@ index 000000000..ece76c7fc
 +typedef struct
 +{
 +    SDL_BlendMode current_blend_mode;
-+    GXColor clear_color;
 +    int ops_after_present;
 +    bool vsync;
 +    u8 efb_pixel_format;
@@ -2474,8 +2473,6 @@ index 000000000..ece76c7fc
 +
 +static void set_blend_mode_real(SDL_Renderer *renderer, SDL_BlendMode blend_mode)
 +{
-+    OGC_RenderData *data = renderer->driverdata;
-+
 +    switch (blend_mode) {
 +    case SDL_BLENDMODE_NONE:
 +        GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
@@ -2495,21 +2492,19 @@ index 000000000..ece76c7fc
 +    default:
 +        return;
 +    }
-+
-+    data->current_blend_mode = blend_mode;
 +}
 +
 +static inline void OGC_SetBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend_mode)
 +{
 +    OGC_RenderData *data = renderer->driverdata;
 +
-+    if (data->ops_after_present > 0 &&
-+        blend_mode == data->current_blend_mode) {
++    if (blend_mode == data->current_blend_mode) {
 +        /* Nothing to do */
 +        return;
 +    }
 +
 +    set_blend_mode_real(renderer, blend_mode);
++    data->current_blend_mode = blend_mode;
 +}
 +
 +static void load_efb_from_texture(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -2518,6 +2513,10 @@ index 000000000..ece76c7fc
 +
 +    OGC_load_texture(ogc_tex->texels, texture->w, texture->h,
 +                     ogc_tex->format, SDL_ScaleModeNearest);
++    OGC_SetBlendMode(renderer, SDL_BLENDMODE_NONE);
++
++    /* The viewport is reset when OGC_SetRenderTarget() returns. */
++    OGC_set_viewport(0, 0, texture->w, texture->h);
 +
 +    GX_ClearVtxDesc();
 +    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -2526,9 +2525,10 @@ index 000000000..ece76c7fc
 +    GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 +    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U8, 0);
 +    GX_SetNumTexGens(1);
++    GX_SetNumChans(0);
 +
 +    GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
-+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
++    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
 +    GX_SetTevOp(GX_TEVSTAGE0, GX_REPLACE);
 +    GX_SetNumTevStages(1);
 +
@@ -2544,7 +2544,7 @@ index 000000000..ece76c7fc
 +    GX_End();
 +}
 +
-+static void save_efb_to_texture(SDL_Texture *texture)
++static void save_efb_to_texture(SDL_Texture *texture, bool must_clear)
 +{
 +    OGC_TextureData *ogc_tex = texture->driverdata;
 +    u32 texture_size;
@@ -2555,7 +2555,7 @@ index 000000000..ece76c7fc
 +
 +    GX_SetTexCopySrc(0, 0, texture->w, texture->h);
 +    GX_SetTexCopyDst(texture->w, texture->h, ogc_tex->format, GX_FALSE);
-+    GX_CopyTex(ogc_tex->texels, GX_TRUE);
++    GX_CopyTex(ogc_tex->texels, must_clear ? GX_TRUE : GX_FALSE);
 +    GX_PixModeSync();
 +}
 +
@@ -2640,7 +2640,7 @@ index 000000000..ece76c7fc
 +     * loading it in OGC_load_texture(). */
 +}
 +
-+static SDL_Texture *create_efb_texture(OGC_RenderData *data, SDL_Texture *target)
++static SDL_Texture *create_efb_texture(OGC_RenderData *data, SDL_Window *window)
 +{
 +    /* Note: we do return a SDL_Texture, but not via SDL's API, since that does
 +     * a bunch of other stuffs we don't care about. We create this texture for
@@ -2655,10 +2655,10 @@ index 000000000..ece76c7fc
 +    ogc_tex = SDL_calloc(1, sizeof(OGC_TextureData));
 +    if (!ogc_tex) goto fail_ogc_tex_alloc;
 +
-+    ogc_tex->format = data->efb_pixel_format == GX_PF_RGB565_Z16 ?
-+        GX_TF_RGB565 : GX_TF_RGBA8;
-+    texture->w = target->w;
-+    texture->h = target->h;
++    ogc_tex->format = data->efb_pixel_format == GX_PF_RGBA6_Z24 ?
++        GX_TF_RGBA8 : GX_TF_RGB565;
++    texture->w = window->w;
++    texture->h = window->h;
 +    texture_size = GX_GetTexBufferSize(texture->w, texture->h, ogc_tex->format,
 +                                       GX_FALSE, 0);
 +    ogc_tex->texels = memalign(32, texture_size);
@@ -2681,24 +2681,25 @@ index 000000000..ece76c7fc
 +    OGC_RenderData *data = renderer->driverdata;
 +    u8 desired_efb_pixel_format = GX_PF_RGB8_Z24;
 +
++    if (data->render_target) {
++        save_efb_to_texture(data->render_target, false);
++    } else if (data->ops_after_present > 0) {
++        /* Save the current EFB contents if we already drew something onto
++         * it. We'll restore it later, when the rendering target is reset
++         * to NULL (the screen). */
++        if (!data->saved_efb_texture)
++            data->saved_efb_texture = create_efb_texture(data, renderer->window);
++        save_efb_to_texture(data->saved_efb_texture, false);
++    }
++
 +    if (texture) {
 +        if (texture->w > MAX_EFB_WIDTH || texture->h > MAX_EFB_HEIGHT) {
-+            return SDL_SetError("Render target bigger than EFB");
-+        }
-+
-+        if (data->ops_after_present > 0) {
-+            /* Save the current EFB contents if we already drew something onto
-+             * it. We'll restore it later, when the rendering target is reset
-+             * to NULL (the screen). */
-+            data->saved_efb_texture = create_efb_texture(data, texture);
-+            save_efb_to_texture(data->saved_efb_texture);
++            return SDL_SetError("Render target (%dx%d) bigger than EFB", texture->w, texture->h);
 +        }
 +
 +        if (SDL_ISPIXELFORMAT_ALPHA(texture->format)) {
 +            desired_efb_pixel_format = GX_PF_RGBA6_Z24;
 +        }
-+    } else if (data->render_target) {
-+        save_efb_to_texture(data->render_target);
 +    }
 +
 +    data->render_target = texture;
@@ -2708,15 +2709,13 @@ index 000000000..ece76c7fc
 +        GX_SetPixelFmt(data->efb_pixel_format, GX_ZC_LINEAR);
 +    }
 +
-+    /* Restore the EFB to how it was before the we started to render to a
-+     * texture. */
-+    if (!texture && data->saved_efb_texture) {
++    if (texture) {
++        load_efb_from_texture(renderer, texture);
++    } else if (data->saved_efb_texture) {
++        /* Restore the EFB to how it was before the we started to render to a
++         * texture. */
 +        load_efb_from_texture(renderer, data->saved_efb_texture);
-+        /* Flush the draw operation before destroying the texture */
-+        GX_DrawDone();
-+        OGC_DestroyTexture(renderer, data->saved_efb_texture);
-+        SDL_free(data->saved_efb_texture);
-+        data->saved_efb_texture = NULL;
++        /* We don't free data->saved_efb_texture, it will be reused */
 +    }
 +
 +    return 0;
@@ -2846,9 +2845,11 @@ index 000000000..ece76c7fc
 +        GX_SetScissor(renderer->viewport.x + rect->x,
 +                      renderer->viewport.y + rect->y,
 +                      rect->w, rect->h);
-+        GX_SetClipMode(GX_CLIP_ENABLE);
 +    } else {
-+        GX_SetClipMode(GX_CLIP_DISABLE);
++        GX_SetScissor(renderer->viewport.x,
++                      renderer->viewport.y,
++                      renderer->viewport.w,
++                      renderer->viewport.h);
 +    }
 +
 +    return 0;
@@ -2864,22 +2865,35 @@ index 000000000..ece76c7fc
 +        cmd->data.color.b,
 +        cmd->data.color.a
 +    };
++    int16_t x1 = 0;
++    int16_t y1 = 0;
++    int16_t x2 = renderer->window->w;
++    int16_t y2 = renderer->window->h;
++    OGC_set_viewport(0, 0, renderer->window->w, renderer->window->h);
++    OGC_SetBlendMode(renderer, SDL_BLENDMODE_NONE);
 +
-+    /* If nothing has been drawn after Present, and if the clear color has not
-+     * changed, there's no need to do anything here. */
-+    if (data->ops_after_present == 0 &&
-+        GX_COLOR_AS_U32(c) == GX_COLOR_AS_U32(data->clear_color)) {
-+        return 0;
-+    }
++    GX_ClearVtxDesc();
++    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
++    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_S16, 0);
++    GX_SetTevColor(GX_TEVREG0, c);
++    GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_C0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO);
++    GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_A0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
++    GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
++    GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
++    GX_SetNumTevStages(1);
++    GX_SetNumChans(0);
 +
-+    data->clear_color = c;
-+    GX_SetCopyClear(c, GX_MAX_Z24);
-+    if (renderer->target) {
-+        save_efb_to_texture(renderer->target);
-+    } else {
-+        GX_CopyDisp(OGC_video_get_xfb(SDL_GetVideoDevice()), GX_TRUE);
-+    }
++    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
++    GX_Position2s16(x1, y1);
++    GX_Position2s16(x2, y1);
++    GX_Position2s16(x2, y2);
++    GX_Position2s16(x1, y2);
++    GX_End();
++    data->ops_after_present++;
 +
++    /* Restore the viewport */
++    OGC_set_viewport(renderer->viewport.x, renderer->viewport.y,
++                     renderer->viewport.w, renderer->viewport.h);
 +    return 0;
 +}
 +
@@ -2920,7 +2934,9 @@ index 000000000..ece76c7fc
 +        GX_SetNumTevStages(stage - GX_TEVSTAGE0 + 1);
 +    } else {
 +        GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
++        GX_SetNumTevStages(1);
 +    }
++    GX_SetNumChans(1);
 +
 +    GX_Begin(GX_TRIANGLES, GX_VTXFMT0, count);
 +    for (int i = 0; i < count; i++) {
@@ -2945,6 +2961,8 @@ index 000000000..ece76c7fc
 +    OGC_RenderData *data = renderer->driverdata;
 +    size_t count = cmd->data.draw.count;
 +    const SDL_FPoint *verts = (SDL_FPoint *)(vertices + cmd->data.draw.first);
++    Mtx mv;
++    bool did_change_matrix = false;
 +    GXColor c = {
 +        cmd->data.draw.r,
 +        cmd->data.draw.g,
@@ -2954,6 +2972,14 @@ index 000000000..ece76c7fc
 +
 +    data->ops_after_present++;
 +    OGC_SetBlendMode(renderer, cmd->data.draw.blend);
++
++    if (primitive == GX_LINESTRIP || primitive == GX_POINTS) {
++        float adjustment = 0.5;
++        guMtxIdentity(mv);
++        guMtxTransApply(mv, mv, adjustment, adjustment, 0);
++        GX_LoadPosMtxImm(mv, GX_PNMTX0);
++        did_change_matrix = true;
++    }
 +
 +    /* TODO: optimize state changes. */
 +    GX_SetTevColor(GX_TEVREG0, c);
@@ -2976,9 +3002,16 @@ index 000000000..ece76c7fc
 +
 +    /* The last point is not drawn */
 +    if (primitive == GX_LINESTRIP) {
-+        GX_Begin(GX_POINTS, GX_VTXFMT0, 1);
-+        GX_Position2f32(verts[count - 1].x, verts[count - 1].y);
++        GX_Begin(GX_POINTS, GX_VTXFMT0, count);
++        for (int i = 0; i < count; i++) {
++            GX_Position2f32(verts[i].x, verts[i].y);
++        }
 +        GX_End();
++    }
++
++    if (did_change_matrix) {
++        guMtxIdentity(mv);
++        GX_LoadPosMtxImm(mv, GX_PNMTX0);
 +    }
 +
 +    return 0;
@@ -3064,6 +3097,12 @@ index 000000000..ece76c7fc
 +    OGC_RenderData *data = renderer->driverdata;
 +
 +    if (data) {
++        GX_DrawDone();
++        if (data->saved_efb_texture) {
++            OGC_DestroyTexture(renderer, data->saved_efb_texture);
++            SDL_free(data->saved_efb_texture);
++        }
++
 +        SDL_free(data);
 +    }
 +
@@ -3153,7 +3192,7 @@ index 000000000..ece76c7fc
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/thread/SDL_thread_c.h b/src/thread/SDL_thread_c.h
-index 278a68026..f2791f1ff 100644
+index 278a680268..f2791f1ffa 100644
 --- a/src/thread/SDL_thread_c.h
 +++ b/src/thread/SDL_thread_c.h
 @@ -32,7 +32,9 @@
@@ -3169,7 +3208,7 @@ index 278a68026..f2791f1ff 100644
  #include "psp/SDL_systhread_c.h"
 diff --git a/src/thread/ogc/SDL_syscond.c b/src/thread/ogc/SDL_syscond.c
 new file mode 100644
-index 000000000..352fd7bf6
+index 0000000000..352fd7bf66
 --- /dev/null
 +++ b/src/thread/ogc/SDL_syscond.c
 @@ -0,0 +1,131 @@
@@ -3306,7 +3345,7 @@ index 000000000..352fd7bf6
 +}
 diff --git a/src/thread/ogc/SDL_sysmutex.c b/src/thread/ogc/SDL_sysmutex.c
 new file mode 100644
-index 000000000..210fef09b
+index 0000000000..210fef09b7
 --- /dev/null
 +++ b/src/thread/ogc/SDL_sysmutex.c
 @@ -0,0 +1,81 @@
@@ -3393,7 +3432,7 @@ index 000000000..210fef09b
 +}
 diff --git a/src/thread/ogc/SDL_sysmutex_c.h b/src/thread/ogc/SDL_sysmutex_c.h
 new file mode 100644
-index 000000000..fe692acc0
+index 0000000000..fe692acc05
 --- /dev/null
 +++ b/src/thread/ogc/SDL_sysmutex_c.h
 @@ -0,0 +1,26 @@
@@ -3425,7 +3464,7 @@ index 000000000..fe692acc0
 +};
 diff --git a/src/thread/ogc/SDL_syssem.c b/src/thread/ogc/SDL_syssem.c
 new file mode 100644
-index 000000000..825de911f
+index 0000000000..825de911fb
 --- /dev/null
 +++ b/src/thread/ogc/SDL_syssem.c
 @@ -0,0 +1,162 @@
@@ -3593,7 +3632,7 @@ index 000000000..825de911f
 +}
 diff --git a/src/thread/ogc/SDL_systhread.c b/src/thread/ogc/SDL_systhread.c
 new file mode 100644
-index 000000000..558cce7e9
+index 0000000000..558cce7e9f
 --- /dev/null
 +++ b/src/thread/ogc/SDL_systhread.c
 @@ -0,0 +1,92 @@
@@ -3691,7 +3730,7 @@ index 000000000..558cce7e9
 +}
 diff --git a/src/thread/ogc/SDL_systhread_c.h b/src/thread/ogc/SDL_systhread_c.h
 new file mode 100644
-index 000000000..43caca7eb
+index 0000000000..43caca7ebc
 --- /dev/null
 +++ b/src/thread/ogc/SDL_systhread_c.h
 @@ -0,0 +1,24 @@
@@ -3721,7 +3760,7 @@ index 000000000..43caca7eb
 +typedef Uint32 SYS_ThreadHandle;
 diff --git a/src/timer/ogc/SDL_systimer.c b/src/timer/ogc/SDL_systimer.c
 new file mode 100644
-index 000000000..83a946d56
+index 0000000000..664e495c5f
 --- /dev/null
 +++ b/src/timer/ogc/SDL_systimer.c
 @@ -0,0 +1,76 @@
@@ -3780,12 +3819,12 @@ index 000000000..83a946d56
 +
 +Uint64 SDL_GetPerformanceCounter(void)
 +{
-+    return SDL_GetTicks64();
++    return gettime();
 +}
 +
 +Uint64 SDL_GetPerformanceFrequency(void)
 +{
-+    return 1000;
++    return secs_to_ticks(1);
 +}
 +
 +void SDL_Delay(Uint32 ms)
@@ -3802,7 +3841,7 @@ index 000000000..83a946d56
 +
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/video/SDL_sysvideo.h b/src/video/SDL_sysvideo.h
-index d7a42cc64..db2cb54c8 100644
+index d7a42cc64d..db2cb54c85 100644
 --- a/src/video/SDL_sysvideo.h
 +++ b/src/video/SDL_sysvideo.h
 @@ -468,6 +468,7 @@ extern VideoBootStrap PSP_bootstrap;
@@ -3814,7 +3853,7 @@ index d7a42cc64..db2cb54c8 100644
  extern VideoBootStrap KMSDRM_bootstrap;
  extern VideoBootStrap KMSDRM_LEGACY_bootstrap;
 diff --git a/src/video/SDL_video.c b/src/video/SDL_video.c
-index 8065a0b8c..e5412450c 100644
+index 8065a0b8cf..e5412450c7 100644
 --- a/src/video/SDL_video.c
 +++ b/src/video/SDL_video.c
 @@ -110,6 +110,9 @@ static VideoBootStrap *bootstrap[] = {
@@ -3829,7 +3868,7 @@ index 8065a0b8c..e5412450c 100644
  #endif
 diff --git a/src/video/ogc/SDL_ogccursors.h b/src/video/ogc/SDL_ogccursors.h
 new file mode 100644
-index 000000000..24d0608c3
+index 0000000000..24d0608c37
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogccursors.h
 @@ -0,0 +1,480 @@
@@ -4315,10 +4354,10 @@ index 000000000..24d0608c3
 +
 diff --git a/src/video/ogc/SDL_ogcevents.c b/src/video/ogc/SDL_ogcevents.c
 new file mode 100644
-index 000000000..6fb8ac455
+index 0000000000..4e4440d12d
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcevents.c
-@@ -0,0 +1,109 @@
+@@ -0,0 +1,113 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4405,6 +4444,10 @@ index 000000000..6fb8ac455
 +            }
 +        }
 +    }
++
++    if (OGC_prep_draw_cursor(_this)) {
++        OGC_video_flip(_this, false);
++    }
 +}
 +#endif
 +
@@ -4430,7 +4473,7 @@ index 000000000..6fb8ac455
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcevents_c.h b/src/video/ogc/SDL_ogcevents_c.h
 new file mode 100644
-index 000000000..6bc6b91e6
+index 0000000000..6bc6b91e68
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcevents_c.h
 @@ -0,0 +1,36 @@
@@ -4472,7 +4515,7 @@ index 000000000..6bc6b91e6
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcframebuffer.c b/src/video/ogc/SDL_ogcframebuffer.c
 new file mode 100644
-index 000000000..21fb7ee0c
+index 0000000000..21fb7ee0cb
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcframebuffer.c
 @@ -0,0 +1,129 @@
@@ -4607,7 +4650,7 @@ index 000000000..21fb7ee0c
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcframebuffer_c.h b/src/video/ogc/SDL_ogcframebuffer_c.h
 new file mode 100644
-index 000000000..af58bbcc1
+index 0000000000..af58bbcc14
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcframebuffer_c.h
 @@ -0,0 +1,33 @@
@@ -4646,10 +4689,10 @@ index 000000000..af58bbcc1
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcgl.c b/src/video/ogc/SDL_ogcgl.c
 new file mode 100644
-index 000000000..d2270110e
+index 0000000000..fd26d690e9
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcgl.c
-@@ -0,0 +1,116 @@
+@@ -0,0 +1,134 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4695,11 +4738,24 @@ index 000000000..d2270110e
 +                "%s() called but opengx not used in build!", __func__);
 +}
 +
++void __attribute__((weak)) ogx_stencil_create(OgxStencilFlags)
++{
++    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
++                "%s() called but opengx not used in build!", __func__);
++}
++
 +void __attribute__((weak)) *ogx_get_proc_address(const char *)
 +{
 +    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
 +                "%s() called but opengx not used in build!", __func__);
 +    return NULL;
++}
++
++int __attribute__((weak)) ogx_prepare_swap_buffers()
++{
++    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
++                "%s() called but opengx not used in build!", __func__);
++    return 0;
 +}
 +
 +int SDL_OGC_GL_LoadLibrary(_THIS, const char *path)
@@ -4723,6 +4779,11 @@ index 000000000..d2270110e
 +    context->window = window;
 +    context->swap_interval = 1;
 +    ogx_initialize();
++    if (_this->gl_config.stencil_size > 0) {
++        OgxStencilFlags flags = 0; /* Don't care if Z gets dirty on discarded fragments */
++        if (_this->gl_config.stencil_size > 4) flags |= OGX_STENCIL_8BIT;
++        ogx_stencil_create(flags);
++    }
 +    return context;
 +}
 +
@@ -4768,7 +4829,7 @@ index 000000000..d2270110e
 +#endif /* SDL_VIDEO_DRIVER_OGC */
 diff --git a/src/video/ogc/SDL_ogcgl.h b/src/video/ogc/SDL_ogcgl.h
 new file mode 100644
-index 000000000..dcaee4188
+index 0000000000..dcaee41880
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcgl.h
 @@ -0,0 +1,44 @@
@@ -4818,10 +4879,10 @@ index 000000000..dcaee4188
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcgxcommon.c b/src/video/ogc/SDL_ogcgxcommon.c
 new file mode 100644
-index 000000000..56c017f27
+index 0000000000..ed7e096369
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcgxcommon.c
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,129 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -4878,19 +4939,7 @@ index 000000000..56c017f27
 +
 +void OGC_draw_init(int w, int h)
 +{
-+    Mtx mv;
-+
 +    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "OGC_draw_init called with %d, %d", w, h);
-+
-+    guMtxIdentity(mv);
-+    /* Ideally we would use 0.5 to center the coordinates on the pixels, but
-+     * this causes some visual artifacts due to rounding: in the VVVVVV game,
-+     * all 8x8 pixel textures lose their rightmost column and bottom row,
-+     * except when they are drawn on the bottom-right quadrant of the screen.
-+     * Values from 0.1 to 0.4 fix this issue, while preserving pixel accuracy
-+     * on drawing operations. */
-+    guMtxTransApply(mv, mv, 0.4, 0.4, 0);
-+    GX_LoadPosMtxImm(mv, GX_PNMTX0);
 +
 +    GX_ClearVtxDesc();
 +    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -4965,7 +5014,7 @@ index 000000000..56c017f27
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcgxcommon.h b/src/video/ogc/SDL_ogcgxcommon.h
 new file mode 100644
-index 000000000..1b2ed5b32
+index 0000000000..1b2ed5b321
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcgxcommon.h
 @@ -0,0 +1,39 @@
@@ -5010,7 +5059,7 @@ index 000000000..1b2ed5b32
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogckeyboard.c b/src/video/ogc/SDL_ogckeyboard.c
 new file mode 100644
-index 000000000..1ebf0f8fc
+index 0000000000..1ebf0f8fc5
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogckeyboard.c
 @@ -0,0 +1,59 @@
@@ -5075,7 +5124,7 @@ index 000000000..1ebf0f8fc
 +#endif
 diff --git a/src/video/ogc/SDL_ogckeyboard.h b/src/video/ogc/SDL_ogckeyboard.h
 new file mode 100644
-index 000000000..ca8c0464d
+index 0000000000..ca8c0464df
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogckeyboard.h
 @@ -0,0 +1,34 @@
@@ -5115,10 +5164,10 @@ index 000000000..ca8c0464d
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcmouse.c b/src/video/ogc/SDL_ogcmouse.c
 new file mode 100644
-index 000000000..c6c8afc9b
+index 0000000000..6e3bda2565
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcmouse.c
-@@ -0,0 +1,227 @@
+@@ -0,0 +1,416 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -5152,10 +5201,14 @@ index 000000000..c6c8afc9b
 +#include "SDL_ogcpixels.h"
 +
 +#include "../SDL_sysvideo.h"
++#include "../../render/SDL_sysrender.h"
 +
++#include <limits.h>
 +#include <malloc.h>
 +#include <ogc/cache.h>
 +#include <ogc/gx.h>
++#include <ogc/lwp_watchdog.h>
++#include <opengx.h>
 +#include <wiiuse/wpad.h>
 +
 +typedef struct _OGC_CursorData
@@ -5165,18 +5218,67 @@ index 000000000..c6c8afc9b
 +    int w, h;
 +} OGC_CursorData;
 +
-+static void draw_cursor_rect(OGC_CursorData *curdata)
++typedef struct
++{
++    void *texels;
++    int16_t x, y;
++    uint16_t w, h, maxside;
++} OGC_CursorBackground;
++
++static OGC_CursorBackground s_cursor_background;
++static int s_draw_counter = 0;
++static bool s_extra_draw_enabled = false;
++static bool s_2d_viewport_setup = false;
++
++static void draw_rect(s16 x, s16 y, u16 w, u16 h)
 +{
 +    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-+    GX_Position2s16(-curdata->hot_x, -curdata->hot_y);
++    GX_Position2s16(x, y);
 +    GX_TexCoord2u8(0, 0);
-+    GX_Position2s16(curdata->w - curdata->hot_x, -curdata->hot_y);
++    GX_Position2s16(x + w, y);
 +    GX_TexCoord2u8(1, 0);
-+    GX_Position2s16(curdata->w - curdata->hot_x, curdata->h - curdata->hot_y);
++    GX_Position2s16(x + w, h + y);
 +    GX_TexCoord2u8(1, 1);
-+    GX_Position2s16(-curdata->hot_x, curdata->h - curdata->hot_y);
++    GX_Position2s16(x, h + y);
 +    GX_TexCoord2u8(0, 1);
 +    GX_End();
++}
++
++static void draw_cursor_rect(OGC_CursorData *curdata)
++{
++    draw_rect(-curdata->hot_x, -curdata->hot_y, curdata->w, curdata->h);
++}
++
++static void setup_2d_viewport(_THIS)
++{
++    int screen_w, screen_h;
++
++    if (s_2d_viewport_setup) return;
++
++    screen_w = _this->displays[0].current_mode.w;
++    screen_h = _this->displays[0].current_mode.h;
++
++    OGC_set_viewport(0, 0, screen_w, screen_h);
++
++    GX_ClearVtxDesc();
++    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
++    GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
++    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_S16, 0);
++    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U8, 0);
++    GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
++
++    GX_SetTevOp(GX_TEVSTAGE0, GX_REPLACE);
++    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
++    GX_SetNumTevStages(1);
++    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
++    GX_SetZMode(GX_DISABLE, GX_ALWAYS, GX_FALSE);
++    GX_SetCullMode(GX_CULL_NONE);
++    GX_SetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
++
++    GX_SetNumTexGens(1);
++    GX_SetCurrentMtx(GX_PNMTX1);
++
++    s_2d_viewport_setup = true;
 +}
 +
 +/* Create a cursor from a surface */
@@ -5296,62 +5398,198 @@ index 000000000..c6c8afc9b
 +    OGC_CursorData *curdata;
 +    Mtx mv;
 +    int screen_w, screen_h;
++    float angle = 0.0f;
++
++    s_draw_counter++;
++
++    /* mark the texture as invalid */
++    s_cursor_background.x = SHRT_MIN;
 +
 +    if (!mouse || !mouse->cursor_shown ||
 +        !mouse->cur_cursor || !mouse->cur_cursor->driverdata) {
 +        return;
 +    }
 +
++    /* If this is the default cursor, rotate it, and if it's not pointed at the
++     * screen, hide it */
++    if (mouse->cur_cursor == mouse->def_cursor) {
++        WPADData *data = WPAD_Data(mouse->mouseID);
++        angle = data->ir.angle;
++        if (!data->ir.valid) return;
++    }
++
 +    screen_w = _this->displays[0].current_mode.w;
 +    screen_h = _this->displays[0].current_mode.h;
 +
 +    curdata = mouse->cur_cursor->driverdata;
++
++    if (s_extra_draw_enabled) {
++        /* Save the are behind the cursor. We could use GX_ReadBoundingBox() to
++         * figure out which area to save, but that would require calling the
++         * drawing function once mode. So, let's just take a guess at the area,
++         * taking into account possible cursor rotation. */
++        s16 x, y;
++        u16 w, h, radius, side;
++        u32 texture_size;
++
++        /* +1 is for the rounding of x and y */
++        radius = MAX(curdata->w, curdata->h) + 1;
++        x = mouse->x - radius;
++        y = mouse->y - radius;
++        /* x and y must be multiples of 2 */
++        if (x % 2) x--;
++        if (y % 2) y--;
++        w = h = side = radius * 2;
++        if (x < 0) {
++            w += x;
++            x = 0;
++        } else if (x + w > screen_w) {
++            w = screen_w - x;
++        }
++
++        if (y < 0) {
++            h += y;
++            y = 0;
++        } else if (y + h > screen_h) {
++            h = screen_h - y;
++        }
++
++        /* Make sure all our variables are properly aligned */
++        while (side % 4) side++;
++        while (w % 4) w++;
++        while (h % 4) h++;
++
++        if (w > 0 && h > 0) {
++            texture_size = GX_GetTexBufferSize(side, side, GX_TF_RGBA8,
++                                               GX_FALSE, 0);
++            if (!s_cursor_background.texels || side > s_cursor_background.maxside) {
++                free(s_cursor_background.texels);
++                s_cursor_background.texels = memalign(32, texture_size);
++                s_cursor_background.maxside = side;
++            }
++            DCInvalidateRange(s_cursor_background.texels, texture_size);
++            GX_SetTexCopySrc(x, y, w, h);
++            GX_SetTexCopyDst(w, h, GX_TF_RGBA8, GX_FALSE);
++            GX_CopyTex(s_cursor_background.texels, GX_FALSE);
++            s_cursor_background.x = x;
++            s_cursor_background.y = y;
++            s_cursor_background.w = w;
++            s_cursor_background.h = h;
++        }
++    }
++
 +    OGC_load_texture(curdata->texels, curdata->w, curdata->h, GX_TF_RGBA8,
 +                     SDL_ScaleModeNearest);
 +
 +    guMtxIdentity(mv);
 +    guMtxScaleApply(mv, mv, screen_w / 640.0f, screen_h / 480.0f, 1.0f);
-+    /* If this is the default cursor, rotate it too */
-+    if (mouse->cur_cursor == mouse->def_cursor) {
++    if (angle != 0.0f) {
 +        Mtx rot;
-+        float angle;
-+        WPADData *data = WPAD_Data(mouse->mouseID);
-+
-+        angle = data->ir.angle;
 +        guMtxRotDeg(rot, 'z', angle);
 +        guMtxConcat(mv, rot, mv);
 +    }
 +    guMtxTransApply(mv, mv, mouse->x, mouse->y, 0);
 +    GX_LoadPosMtxImm(mv, GX_PNMTX1);
 +
-+    GX_ClearVtxDesc();
-+    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
-+    GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_S16, 0);
-+    GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U8, 0);
-+    GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
++    setup_2d_viewport(_this);
 +
-+    GX_SetTevOp(GX_TEVSTAGE0, GX_REPLACE);
-+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-+    GX_SetNumTevStages(1);
-+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-+
-+    GX_SetNumTexGens(1);
-+    GX_SetCurrentMtx(GX_PNMTX1);
 +    draw_cursor_rect(curdata);
-+    GX_SetCurrentMtx(GX_PNMTX0);
 +    GX_DrawDone();
 +}
 +
++void OGC_restore_viewport(_THIS)
++{
++    /* Restore default state for SDL (opengx restores it at every frame, so we
++     * don't care about it) */
++    s_2d_viewport_setup = false;
++    GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
++    GX_SetCurrentMtx(GX_PNMTX0);
++    if (_this->windows) {
++        /* Restore previous viewport for the renderer */
++        SDL_Renderer *renderer = SDL_GetRenderer(_this->windows);
++        if (renderer) {
++            OGC_set_viewport(renderer->viewport.x, renderer->viewport.y,
++                             renderer->viewport.w, renderer->viewport.h);
++        }
++    }
++}
++
++bool OGC_prep_draw_cursor(_THIS)
++{
++    GXTexObj background;
++    Mtx mv;
++    static u32 last_draw_ms = 0;
++    u32 current_time_ms, elapsed_ms;
++    static int call_counter = 0;
++    static int last_draw_counter = 0;
++
++    /* Ignore calls when a render target is set or OpenGL is not ready to swap
++     * the framebuffer */
++    SDL_Renderer *renderer = SDL_GetRenderer(_this->windows);
++    if (renderer && renderer->target) return false;
++
++    if (_this->gl_config.driver_loaded &&
++        ogx_prepare_swap_buffers() < 0) return false;
++
++    /* If this function is called repeatedly during the same frame, we assume
++     * that this is one of those applications that call SDL_OGC_GL_SwapWindow,
++     * SDL_UpdateWindowSurface or SDL_RenderPresent only if the video contents
++     * have actually changed.
++     * If that's the case, we toggle a flag that makes us redraw the screen
++     * when the mouse position has changed.
++     */
++    if (!s_extra_draw_enabled) {
++        if (last_draw_counter != s_draw_counter) {
++            call_counter = 1;
++            last_draw_counter = s_draw_counter;
++            return false;
++        }
++
++        if (call_counter++ > 10) {
++            s_extra_draw_enabled = true;
++        } else {
++            return false;
++        }
++    }
++
++    /* Avoid drawing too often. 30 FPS should be enough */
++    current_time_ms = gettime() / TB_TIMER_CLOCK;
++    elapsed_ms = current_time_ms - last_draw_ms;
++    if (elapsed_ms < 33) return false;
++
++    /* If we have a texture for the cursor background, restore it; otherwise,
++     * we shouldn't draw the cursor. */
++    if (!s_cursor_background.texels) return false;
++
++    if (s_cursor_background.x != SHRT_MIN) {
++        setup_2d_viewport(_this);
++
++        GX_PixModeSync();
++        GX_InitTexObj(&background, s_cursor_background.texels,
++                      s_cursor_background.w, s_cursor_background.h,
++                      GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
++        GX_InitTexObjLOD(&background, GX_NEAR, GX_NEAR,
++                         0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
++        GX_LoadTexObj(&background, GX_TEXMAP0);
++        GX_InvalidateTexAll();
++
++        guMtxIdentity(mv);
++        GX_LoadPosMtxImm(mv, GX_PNMTX1);
++        draw_rect(s_cursor_background.x, s_cursor_background.y,
++                  s_cursor_background.w, s_cursor_background.h);
++        last_draw_ms = current_time_ms;
++    }
++    return true;
++}
 +#endif /* SDL_VIDEO_DRIVER_OGC */
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcmouse.h b/src/video/ogc/SDL_ogcmouse.h
 new file mode 100644
-index 000000000..5035b4745
+index 0000000000..aa9ff173fe
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcmouse.h
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,37 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -5382,6 +5620,8 @@ index 000000000..5035b4745
 +void OGC_InitMouse(_THIS);
 +void OGC_QuitMouse(_THIS);
 +void OGC_draw_cursor(_THIS);
++void OGC_restore_viewport(_THIS);
++bool OGC_prep_draw_cursor(_THIS);
 +SDL_Cursor *OGC_CreateSystemCursor(SDL_SystemCursor id);
 +
 +#endif /* SDL_OGC_mouse_h_ */
@@ -5389,7 +5629,7 @@ index 000000000..5035b4745
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcpixels.c b/src/video/ogc/SDL_ogcpixels.c
 new file mode 100644
-index 000000000..2d87b40d9
+index 0000000000..2d87b40d95
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcpixels.c
 @@ -0,0 +1,355 @@
@@ -5750,7 +5990,7 @@ index 000000000..2d87b40d9
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcpixels.h b/src/video/ogc/SDL_ogcpixels.h
 new file mode 100644
-index 000000000..c92d032aa
+index 0000000000..c92d032aa4
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcpixels.h
 @@ -0,0 +1,42 @@
@@ -5798,10 +6038,10 @@ index 000000000..c92d032aa
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcvideo.c b/src/video/ogc/SDL_ogcvideo.c
 new file mode 100644
-index 000000000..317484d91
+index 0000000000..5653700f73
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcvideo.c
-@@ -0,0 +1,364 @@
+@@ -0,0 +1,380 @@
 +/*
 +  Simple DirectMedia Layer
 +  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
@@ -5845,6 +6085,8 @@ index 000000000..317484d91
 +#include <ogc/gx.h>
 +#include <ogc/system.h>
 +#include <ogc/video.h>
++
++#include <opengx.h>
 +
 +#define DEFAULT_FIFO_SIZE 256 * 1024
 +
@@ -6007,6 +6249,15 @@ index 000000000..317484d91
 +    SDL_SetKeyboardFocus(window);
 +}
 +
++static int OGC_ShowMessageBox(_THIS, const SDL_MessageBoxData *messageboxdata,
++                              int *buttonid)
++{
++    /* Unimplemented, but at least show the message in the log */
++    SDL_SetError("ShowMessageBox unimplemented: \"%s\", \"%s\"",
++                 messageboxdata->title, messageboxdata->message);
++    return 0;
++}
++
 +/* OGC driver bootstrap functions */
 +
 +static void OGC_DeleteDevice(SDL_VideoDevice *device)
@@ -6045,6 +6296,7 @@ index 000000000..317484d91
 +    device->CreateWindowFramebuffer = SDL_OGC_CreateWindowFramebuffer;
 +    device->UpdateWindowFramebuffer = SDL_OGC_UpdateWindowFramebuffer;
 +    device->DestroyWindowFramebuffer = SDL_OGC_DestroyWindowFramebuffer;
++    device->ShowMessageBox = OGC_ShowMessageBox;
 +
 +#ifdef SDL_VIDEO_OPENGL
 +    device->GL_LoadLibrary = SDL_OGC_GL_LoadLibrary;
@@ -6147,10 +6399,14 @@ index 000000000..317484d91
 +    SDL_VideoData *videodata = _this->driverdata;
 +    void *xfb = OGC_video_get_xfb(_this);
 +
++    if (_this->gl_config.driver_loaded &&
++        ogx_prepare_swap_buffers() < 0) return;
++
 +#ifdef __wii__
 +    OGC_draw_cursor(_this);
++    OGC_restore_viewport(_this);
 +#endif
-+    GX_CopyDisp(xfb, GX_TRUE);
++    GX_CopyDisp(xfb, GX_FALSE);
 +    GX_DrawDone();
 +    GX_Flush();
 +
@@ -6168,7 +6424,7 @@ index 000000000..317484d91
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/src/video/ogc/SDL_ogcvideo.h b/src/video/ogc/SDL_ogcvideo.h
 new file mode 100644
-index 000000000..3821d1966
+index 0000000000..3821d1966c
 --- /dev/null
 +++ b/src/video/ogc/SDL_ogcvideo.h
 @@ -0,0 +1,50 @@
@@ -6223,7 +6479,7 @@ index 000000000..3821d1966
 +
 +/* vi: set ts=4 sw=4 expandtab: */
 diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
-index 52a268561..4cf924dd9 100644
+index 52a268561c..4cf924dd90 100644
 --- a/test/CMakeLists.txt
 +++ b/test/CMakeLists.txt
 @@ -36,6 +36,10 @@ if(N3DS)
