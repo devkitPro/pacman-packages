@@ -26,7 +26,7 @@ build() {
 
   source /opt/devkitpro/ppcvars.sh
 
-  powerpc-eabi-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG_TESTS:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
+  powerpc-eabi-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG_TESTS:BOOLEAN=false -DWITH_SIMD:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
 
   make
 }
