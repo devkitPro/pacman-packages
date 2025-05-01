@@ -1,7 +1,7 @@
 _realname=mbedtls
 pkgname=switch-${_realname}
-pkgver=2.28.3
-pkgrel=3
+pkgver=2.28.9
+pkgrel=1
 pkgdesc='An open source, portable, easy to use, readable and flexible SSL library'
 arch=('any')
 url='https://tls.mbed.org'
@@ -12,8 +12,8 @@ makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 source=( "${_realname}-${pkgver}.tar.gz::https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v${pkgver}.tar.gz"
          "mbedtls-${pkgver}.patch" )
 groups=('switch-portlibs')
-sha256sums=('bdf7c5bbdc338da3edad89b2885d4f8668f9a6fffeba6ec17a60333e36dade6f'
-            'dcd1c485ee21289cac2f813d2ac3c36e23f10a3d402ad5dd35d3eb844be7689c')
+sha256sums=('e4dbcf86a4fb31506482888560f02b161e0ecfb82fee0643abcfc86abee5817e'
+            '31cd10803cb47d7a4bb95124f59d997150e961f87ce2911ed25e1af120086311')
 
 build() {
   cd mbedtls-$pkgver
@@ -25,12 +25,11 @@ build() {
 
   ./scripts/config.pl unset MBEDTLS_SELF_TEST
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   aarch64-none-elf-cmake \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
-    -DCMAKE_CXX_FLAGS="CFLAGS -fno-exceptions -fno-rtti" \
     -DZLIB_ROOT="$PORTLIBS_PREFIX" \
     -DENABLE_ZLIB_SUPPORT=TRUE -DENABLE_TESTING=FALSE -DENABLE_PROGRAMS=FALSE \
     .
@@ -42,9 +41,6 @@ build() {
 package() {
 
   cd mbedtls-$pkgver
-
-  source /opt/devkitpro/switchvars.sh
-
   make install DESTDIR="$pkgdir"
 
   install -d "$pkgdir"$PORTLIBS_PREFIX/licenses/$pkgname
