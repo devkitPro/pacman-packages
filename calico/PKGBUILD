@@ -2,8 +2,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('calico')
-pkgver=1.0.0
-pkgrel=3
+pkgver=1.1.0
+pkgrel=1
 pkgdesc="RTOS-like bare metal platform support library for Nintendo DS(i)"
 arch=('any')
 license=('Zope')
@@ -23,4 +23,4 @@ package() {
 
 }
 
-sha256sums=('6307ca1958c81e777b206c0cc0e04e5a18177118cbd319c7597e40b980aed1e1')
+sha256sums=('3a75103fbf106cd5b838efd04835fb40b3086c6d34ca94952fe3dbb2a86703f4')
