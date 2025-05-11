@@ -20,8 +20,8 @@ else
 fi
 
 pkgname=("${pkgbasename}-${PLATFORM}")
-pkgver=2.0.0
-pkgrel=3
+pkgver=2.1.0
+pkgrel=1
 pkgdesc="${platdesc} Audio library."
 arch=('any')
 license=('custom')
@@ -38,4 +38,5 @@ package() {
   DESTDIR=$pkgdir catnip install
 
 }
-sha256sums=('b6461a971e29cbbf777fd3884c768a502189fe6e4ab5035a0299c8dfa2c4ed7b')
+
+sha256sums=('1d5c76245855704dd4b88de8265885183de32c6a1988b93f7c22bf1ea96ef8b0')
