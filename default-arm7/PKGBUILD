@@ -3,7 +3,7 @@
 
 pkgname=('default-arm7')
 pkgver=0.8.4
-pkgrel=1
+pkgrel=2
 pkgdesc="nds default arm7 binary"
 arch=('any')
 license=('zlib')
