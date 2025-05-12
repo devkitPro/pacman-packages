@@ -3,8 +3,8 @@
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
 pkgname=switch-libpng
-pkgver=1.6.39
-pkgrel=2
+pkgver=1.6.48
+pkgrel=1
 pkgdesc='PNG format graphic files library'
 arch=('any')
 url='http://www.libpng.org'
@@ -14,20 +14,14 @@ depends=('switch-zlib')
 groups=('switch-portlibs')
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 source=("https://download.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
-sha256sums=(
-  '1f4696ce70b4ee5f85f1e1623dc1229b210029fa4b7aee573df3e2ba7b036937'
-)
 
 build() {
   cd libpng-$pkgver
 
-  source /opt/devkitpro/devkita64.sh
   source /opt/devkitpro/switchvars.sh
 
-  sed -i 's/^bin_PROGRAMS = .*//' Makefile.in
-
   ./configure --prefix="$DEVKITPRO/portlibs/switch" --host=aarch64-none-elf \
-    --disable-shared --enable-static
+    --disable-tools --disable-shared --enable-static
 }
 
 package() {
@@ -39,3 +33,5 @@ package() {
   # remove useless stuff
   rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
 }
+
+sha256sums=('46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03')
