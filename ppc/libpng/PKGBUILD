@@ -3,8 +3,8 @@
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
 pkgname=ppc-libpng
-pkgver=1.6.39
-pkgrel=3
+pkgver=1.6.48
+pkgrel=1
 pkgdesc='PNG format graphic files library (for Nintendo Gamecube/Wii homebrew development)'
 arch=('any')
 url='http://www.libpng.org'
@@ -14,20 +14,14 @@ depends=('ppc-zlib')
 makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
 groups=('ppc-portlibs')
 source=("https://download.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
-sha256sums=(
-  '1f4696ce70b4ee5f85f1e1623dc1229b210029fa4b7aee573df3e2ba7b036937'
-)
 
 build() {
   cd libpng-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
   source /opt/devkitpro/ppcvars.sh
 
-  sed -i 's/^bin_PROGRAMS = .*//' Makefile.in
-
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
-    --disable-shared --enable-static
+    --disable-tools --disable-shared --enable-static
   make
 }
 
@@ -44,3 +38,5 @@ package() {
   # remove useless stuff
   rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }
+
+sha256sums=('46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03')
