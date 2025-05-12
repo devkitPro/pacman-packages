@@ -17,7 +17,7 @@ sha256sums=(
  'bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690'
  '2b7c29f4383b6f92b3b33144ce445f9558ff3e3fa4f185cec13d44969c7c9b11'
 )
-makedepends=('nds-pkg-config' 'devkitpro-pkgbuild-helpers')
+makedepends=('nds-pkg-config' 'dkp-toolchain-vars')
 groups=('nds-portlibs')
 
 build() {
