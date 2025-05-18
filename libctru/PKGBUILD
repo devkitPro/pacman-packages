@@ -2,7 +2,7 @@
 
 pkgname=('libctru')
 pkgver=2.5.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Nintendo 3DS userland library."
 arch=('any')
 license=('custom')
