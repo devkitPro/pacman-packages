@@ -27,17 +27,18 @@ else
 fi
 
 pkgname=${pkgbasename}-${PLATFORM}
-pkgver=2.0.1
+pkgver=2.0.2
 pkgrel=1
 pkgdesc="libdvm"
 arch=('any')
 license=('ZPL')
 url="http://github.com/devkitpro/"
 options=(!strip libtool staticlibs)
-fatfs_mod_ver=0.15.1
+fatfs_mod_ver=0.15.2
+libdvm_ver=2.0.1
 
 source=(
-  libdvm-${libdvm_ver}.tar.gz::${url}/libdvm/archive/v${pkgver}.tar.gz
+  libdvm-${libdvm_ver}.tar.gz::${url}/libdvm/archive/v${libdvm_ver}.tar.gz
   fatfs-mod-${fatfs_mod_ver}.tar.gz::${url}/fatfs-mod/archive/v${fatfs_mod_ver}.tar.gz
 )
 
@@ -50,15 +51,15 @@ if [ "$PLATFORM" = "nds" ]; then
 fi
 
 prepare() {
-  mv ${srcdir}/fatfs-mod-${fatfs_mod_ver} ${srcdir}/libdvm-${pkgver}/fatfs
+  mv ${srcdir}/fatfs-mod-${fatfs_mod_ver} ${srcdir}/libdvm-${libdvm_ver}/fatfs
 }
 
 package() {
 
-  cd $srcdir/libdvm-${pkgver}
+  cd $srcdir/libdvm-${libdvm_ver}
   DESTDIR=$pkgdir catnip install ${_target}
 
 }
 
 sha256sums=('fd6a28429c5462050b76d62e19bd77ae301c43298676915d4a6d1e55dc31abe6'
-            'f20e0c4d077436819de47a5cc1dc12f39aace1b34e46db4eecee1c26e6385cab')
+            'cdd4088ea64332e089f7a378f365ab3729bdcb7c174010ed4a68bc142f6647ce')
