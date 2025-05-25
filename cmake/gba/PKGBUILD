@@ -1,6 +1,6 @@
 # Maintainer: fincs <fincs@devkitpro.org>
 pkgname=gba-cmake
-pkgver=1.0.1
+pkgver=1.0.2
 pkgrel=1
 pkgdesc="CMake support for Nintendo GBA"
 arch=('any')
@@ -14,10 +14,6 @@ options=('!strip')
 depends=('devkitarm-cmake' 'gba-tools' 'grit' 'mmutil' 'gba-pkg-config')
 groups=('gba-dev')
 
-sha256sums=('965e5f99e083b0c6f77372d2a46d5cc353c883fca8b612e7d744e3cfa71ab4da'
-            '4f9df4fdb4b443754cb76871ebd46db1b2e3f297703687e9bfd4537531b2572e'
-            '455e29d0a1dc9c45290070d38a68811fda9eddaab05183eb4e834322fc18fd9a')
-
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/portlibs/gba/bin
@@ -28,3 +24,6 @@ package() {
   cp "${srcdir}"/NintendoGBA.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
 
 }
+sha256sums=('54efe57deaa8f0de5212ad35dab0e2ce045642e86542b62e42b1621dbd567d47'
+            '4f9df4fdb4b443754cb76871ebd46db1b2e3f297703687e9bfd4537531b2572e'
+            '455e29d0a1dc9c45290070d38a68811fda9eddaab05183eb4e834322fc18fd9a')
