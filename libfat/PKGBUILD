@@ -27,15 +27,15 @@ else
 fi
 
 pkgname=${pkgbasename}-${PLATFORM}
-pkgver=2.0.2
+pkgver=2.1.0
 pkgrel=1
 pkgdesc="libdvm"
 arch=('any')
 license=('ZPL')
 url="http://github.com/devkitpro/"
 options=(!strip libtool staticlibs)
-fatfs_mod_ver=0.15.2
-libdvm_ver=2.0.1
+fatfs_mod_ver=0.15.3
+libdvm_ver=2.1.0
 
 source=(
   libdvm-${libdvm_ver}.tar.gz::${url}/libdvm/archive/v${libdvm_ver}.tar.gz
@@ -61,5 +61,5 @@ package() {
 
 }
 
-sha256sums=('fd6a28429c5462050b76d62e19bd77ae301c43298676915d4a6d1e55dc31abe6'
-            'cdd4088ea64332e089f7a378f365ab3729bdcb7c174010ed4a68bc142f6647ce')
+sha256sums=('f3fc17671c8234b345a8b742252d4f26bbe481d8f73b6f990b0d820e97a0616f'
+            '26f55e648df6b5cc05204d9288b0c93d30572872c834c2a861b591bad1a3997f')
