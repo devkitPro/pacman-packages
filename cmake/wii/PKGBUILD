@@ -1,7 +1,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=wii-cmake
-pkgver=1.0.0
-pkgrel=2
+pkgver=1.0.1
+pkgrel=1
 pkgdesc="CMake support for Nintendo Wii"
 arch=('any')
 url='http://devkitpro.org/'
@@ -14,12 +14,6 @@ options=('!strip')
 depends=('ogc-cmake' 'wii-pkg-config')
 groups=('wii-dev')
 
-sha256sums=(
-  'f9b17b4f5c3be859e5f9b6fa459049fbffbe7ea8c0a42a923de6323e3b797b02'  # Wii.cmake
-  'e7b633ac937e2b790b948de11877c09c7f1c0d4d2531a2adfb418b8753e81e85'  # NintendoWii.cmake
-  'd1b3443ebfd94ddfb6e53a7f7bf72b6168af2a30016f9399b17bf9930c353576'  # powerpc-eabi-cmake
-)
-
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/portlibs/wii/bin
@@ -30,3 +24,6 @@ package() {
   cp "${srcdir}"/NintendoWii.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
 
 }
+sha256sums=('f9b17b4f5c3be859e5f9b6fa459049fbffbe7ea8c0a42a923de6323e3b797b02'
+            'e7b633ac937e2b790b948de11877c09c7f1c0d4d2531a2adfb418b8753e81e85'
+            '987bbd468d13056cea0a8cd6eab2c23050f9decd05bc5962f6c4e5fa8b0c569a')
