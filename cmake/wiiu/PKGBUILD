@@ -1,6 +1,6 @@
 # Maintainer: fincs <fincs@devkitpro.org>
 pkgname=wiiu-cmake
-pkgver=1.3.1
+pkgver=1.3.2
 pkgrel=1
 pkgdesc="CMake support for Nintendo Wii U"
 arch=('any')
@@ -14,9 +14,6 @@ source=(
 depends=('devkitppc-cmake' 'wut-tools' 'wiiu-pkg-config')
 groups=('wiiu-dev')
 options=('!strip')
-sha256sums=('f17d338c2c6416099a264855336d915ce2d70071b356e9d13b8f712b9daa1730'
-            '1e868f8e0b68253dc1c98d62b9934cc7fba359d2bc2cf0e484b417516e5a88cf'
-            '24b954c35217653a205b550e12aceacf76d1c47a8abf62db0a6794bfc540fbb0')
 
 package() {
 
@@ -28,3 +25,6 @@ package() {
   cp "${srcdir}"/CafeOS.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
 
 }
+sha256sums=('ee87536e1f4826f2f13008c3b935d5dfaaa901f9e1d64979642570070fd96786'
+            '1e868f8e0b68253dc1c98d62b9934cc7fba359d2bc2cf0e484b417516e5a88cf'
+            '24b954c35217653a205b550e12aceacf76d1c47a8abf62db0a6794bfc540fbb0')
