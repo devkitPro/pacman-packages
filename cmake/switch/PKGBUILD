@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-cmake
-pkgver=1.5.1
+pkgver=1.5.2
 pkgrel=1
 pkgdesc="CMake support for Nintendo Switch"
 arch=('any')
@@ -15,10 +15,6 @@ depends=('devkita64-cmake' 'switch-tools' 'uam' 'switch-pkg-config')
 groups=('switch-dev')
 options=('!strip')
 
-sha256sums=('8d19a809aa1db2bb246890398f37c35254cd7a8f46a44dd312c92302352f5927'
-            'c73bb5a328f33ff210228dd93d1257c88bc96722fd16b2dc0702aa57e962ebb0'
-            'db6cbc7f3e9bfcbe45f9745a9a5b9ed8ac54b358a7ac4c491f6850c6e3ee8287')
-
 package() {
 
   install -d "$pkgdir"/opt/devkitpro/portlibs/switch/bin
@@ -29,3 +25,6 @@ package() {
   cp "${srcdir}"/NintendoSwitch.cmake "$pkgdir"/opt/devkitpro/cmake/Platform
 
 }
+sha256sums=('c6e861e5d12da69638e1fae7eb8b48e9632371fe34c3c37920a6aa178fab53df'
+            'c73bb5a328f33ff210228dd93d1257c88bc96722fd16b2dc0702aa57e962ebb0'
+            'db6cbc7f3e9bfcbe45f9745a9a5b9ed8ac54b358a7ac4c491f6850c6e3ee8287')
