@@ -2,7 +2,7 @@
 _libname=libjpeg-turbo
 pkgname=ppc-${_libname}
 pkgver=2.1.2
-pkgrel=4
+pkgrel=5
 pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression'
 arch=('any')
 url='https://github.com/libjpeg-turbo/libjpeg-turbo'
