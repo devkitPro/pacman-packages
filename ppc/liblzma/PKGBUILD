@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=ppc-liblzma
 pkgver=5.2.3
-pkgrel=3
+pkgrel=4
 pkgdesc='A compression library with an API similar to that of zlib.'
 arch=('any')
 url='https://tukaani.org'
@@ -17,7 +17,7 @@ build() {
 
   cd xz-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
 
    ./configure --prefix=${PORTLIBS_PREFIX} --host=powerpc-eabi \
       --enable-static --disable-shared --disable-threads \
@@ -32,7 +32,7 @@ package() {
 
   cd xz-$pkgver
 
-  source /opt/devkitpro/devkitppc.sh
+  source /opt/devkitpro/ppcvars.sh
 
   make DESTDIR="$pkgdir" install
   rm -fr "$pkgdir"${PORTLIBS_PREFIX}/bin
