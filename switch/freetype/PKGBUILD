@@ -4,8 +4,8 @@
 # Contributor: Pablo Curiel <pabloacurielz@gmail.com>
 
 pkgname=switch-freetype
-pkgver=2.13.2
-pkgrel=2
+pkgver=2.13.3
+pkgrel=1
 pkgdesc='FreeType is a freely available software library to render fonts.'
 arch=('any')
 url='https://www.freetype.org/'
@@ -19,20 +19,21 @@ groups=('switch-portlibs')
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 source=("http://download.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz")
 
+prepare() {
+  cd freetype-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  aarch64-none-elf-cmake -B _build -GNinja
+}
+
 build() {
   cd freetype-$pkgver
 
   source /opt/devkitpro/switchvars.sh
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
-    --disable-shared --enable-static \
-    --with-zlib \
-    --with-bzip2 \
-    --with-png \
-    --without-harfbuzz \
-    --enable-freetype-config
+  aarch64-none-elf-cmake --build _build
 
-  make
 }
 
 package() {
@@ -40,17 +41,13 @@ package() {
 
   source /opt/devkitpro/switchvars.sh
 
-  make DESTDIR="$pkgdir" install
+  DESTDIR="$pkgdir"  aarch64-none-elf-cmake --install _build
 
-  # patch the config script to always output static libraries when not relying on pkg-config
-  sed 's/\$show_static/yes/' -i "${pkgdir}/${PORTLIBS_PREFIX}/bin/freetype-config"
 
   # Licenses
   install -Dm644 "LICENSE.TXT" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.TXT"
   install -Dm644 "docs/GPLv2.TXT"   "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
   install -Dm644 "docs/FTL.TXT"     "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
-
-  # remove useless stuff
-  rm -r "${pkgdir}/${PORTLIBS_PREFIX}/share"
 }
-sha256sums=('12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d')
+
+sha256sums=('0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289')
