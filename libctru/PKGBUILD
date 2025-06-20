@@ -1,8 +1,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libctru')
-pkgver=2.5.0
-pkgrel=2
+pkgver=2.6.0
+pkgrel=1
 pkgdesc="Nintendo 3DS userland library."
 arch=('any')
 license=('custom')
@@ -29,4 +29,4 @@ package() {
 
 }
 
-sha256sums=('46e503ffd8808563d1184ef9c2834352dfead2a8e2dc699833cf3280e6593132')
+sha256sums=('bfab6b7e1d5ca773ae482b5d7ec79b3823ddfd51f9ebb4fc9a533ea1c8c05385')
