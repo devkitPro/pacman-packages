@@ -2,7 +2,7 @@
 
 pkgname=ppc-freetype
 pkgver=2.13.3
-pkgrel=1
+pkgrel=2
 pkgdesc='FreeType is a freely available software library to render fonts.'
 arch=('any')
 url='https://www.freetype.org/'
@@ -21,7 +21,10 @@ prepare() {
 
   source /opt/devkitpro/ppcvars.sh
 
-  powerpc-eabi-cmake -S . -B _build -D FT_DISABLE_HARFBUZZ=TRUE -GNinja
+  powerpc-eabi-cmake -S . -B _build \
+    -D FT_DISABLE_HARFBUZZ=TRUE \
+    -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/ppc \
+    -GNinja
 }
 
 build() {
