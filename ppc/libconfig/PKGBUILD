@@ -1,0 +1,47 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+
+pkgname=ppc-libconfig
+pkgver=1.8.1
+pkgrel=1
+pkgdesc='C/C++ Configuration File Library'
+arch=('any')
+url="https://www.hyperrealm.com/libconfig/libconfig.html"
+license=('LGPL')
+options=(!strip libtool staticlibs)
+
+source=("libconfig-${pkgver}.tar.gz::https://github.com/hyperrealm/libconfig/archive/refs/tags/v${pkgver}.tar.gz")
+makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
+groups=('ppc-portlibs')
+
+prepare() {
+  cd libconfig-${pkgver}
+
+  source /opt/devkitpro/ppcvars.sh
+
+  powerpc-eabi-cmake -B _build -S . -GNinja \
+   -DCMAKE_INSTALL_PREFIX=${PORTLIBS_PREFIX} \
+   -DBUILD_EXAMPLES=OFF \
+   -DBUILD_TESTS=OFF \
+   -DBUILD_SHARED_LIBS=OFF
+
+}
+
+build() {
+  cd libconfig-${pkgver}
+
+  source /opt/devkitpro/ppcvars.sh
+  
+  powerpc-eabi-cmake --build _build
+}
+
+package() {
+  cd libconfig-$pkgver
+
+  source /opt/devkitpro/ppcvars.sh
+
+  DESTDIR="$pkgdir"  powerpc-eabi-cmake --install _build
+  # license
+  install -Dm644 COPYING.LIB "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING.LIB
+}
+
+sha256sums=('e95798d2992a66ecd547ce3651d7e10642ff2211427c43a7238186ff4c372627')
