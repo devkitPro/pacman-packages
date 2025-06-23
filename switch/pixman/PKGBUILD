@@ -1,0 +1,37 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: TooTallNate <n@n8.io>
+
+pkgname=switch-pixman
+pkgver=0.42.2
+pkgrel=1
+pkgdesc='Pixman is a low-level software library for pixel manipulation, providing features such as image compositing and trapezoid rasterization.'
+arch=('any')
+url='http://www.pixman.org/'
+license=(MIT)
+options=(!strip libtool staticlibs)
+depends=()
+groups=('switch-portlibs')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+source=("https://www.cairographics.org/releases/pixman-$pkgver.tar.gz")
+sha256sums=(
+    'ea1480efada2fd948bc75366f7c349e1c96d3297d09a3fe62626e38e234a625e'
+)
+
+build() {
+    cd pixman-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+        --disable-shared --enable-static
+
+    make
+}
+
+package() {
+    cd pixman-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    make DESTDIR="$pkgdir" install
+}
