@@ -3,7 +3,7 @@
 pkgbasename=mesa
 pkgname=switch-$pkgbasename
 pkgver=20.1.0
-pkgrel=4
+pkgrel=5
 pkgdesc='The Mesa 3D Graphics Library'
 arch=('any')
 url='https://mesa.freedesktop.org/archive'
@@ -12,13 +12,9 @@ options=(!strip libtool staticlibs)
 source=(
   "${pkgbasename}-${pkgver}.tar.xz::${url}/${pkgbasename}-${pkgver}-rc3.tar.xz"
   "${pkgname}-${pkgver}-${pkgrel}.patch"
+  gl_XML.py.patch
+  glX_XML.py.patch
   OpenGLConfig.cmake
-)
-
-sha256sums=(
-  'c90b75ea34302ebde9b81b87c5642fa864c40fe9c4ad34ce0793170c1413168d'
-  '950f93d3e5b6ae9c5a42c2918623fe9a80d7ee398d92d2e73abec86b62d75916'
-  '016b39536fa560b38cbb456e3e9146439401c0ea29f26400ea065bb9d76f2518'
 )
 
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars' 'dkp-meson-scripts')
@@ -29,6 +25,8 @@ build() {
   cd ${pkgbasename}-${pkgver}-rc3
 
   patch -p1 -i ${srcdir}/${pkgname}-${pkgver}-${pkgrel}.patch
+  patch -p1 -i ${srcdir}/gl_XML.py.patch
+  patch -p1 -i ${srcdir}/glX_XML.py.patch
   /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build -Db_ndebug=true
   ninja -C build
 
@@ -39,6 +37,14 @@ package() {
 
   DESTDIR="$pkgdir" ninja -C build install
 
+  sed -i "s,-lEGL,-lEGL -ldrm_nouveau," ${pkgdir}/opt/devkitpro/portlibs/switch/lib/pkgconfig/egl.pc
+
   install -Dm644 $srcdir/OpenGLConfig.cmake $pkgdir/opt/devkitpro/portlibs/switch/lib/cmake/OpenGL/OpenGLConfig.cmake
 
 }
+
+sha256sums=('c90b75ea34302ebde9b81b87c5642fa864c40fe9c4ad34ce0793170c1413168d'
+            '950f93d3e5b6ae9c5a42c2918623fe9a80d7ee398d92d2e73abec86b62d75916'
+            'a9bc326195b3fe29709e079466a8b2162a2ac9409f694eaad5494490155e2dd4'
+            '1475defcdf8600690eaddeee28d8f01310635c1273fb541f668e8789714d36ca'
+            '016b39536fa560b38cbb456e3e9146439401c0ea29f26400ea065bb9d76f2518')

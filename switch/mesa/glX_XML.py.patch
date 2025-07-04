@@ -1,0 +1,20 @@
+--- mesa-20.1.0-rc3/src/mapi/glapi/gen/glX_XML.py.orig	2025-07-04 16:42:20.934970341 +0100
++++ mesa-20.1.0-rc3/src/mapi/glapi/gen/glX_XML.py	2025-07-04 16:43:56.488512496 +0100
+@@ -48,7 +48,7 @@
+ 
+         self.functions = {}
+ 
+-        for child in element.getchildren():
++        for child in list(element):
+             if child.tag == "size":
+                 n = child.get( "name" )
+                 c = child.get( "count" )
+@@ -130,7 +130,7 @@
+                     self.counter_list.append(param.counter)
+ 
+ 
+-        for child in element.getchildren():
++        for child in list(element):
+             if child.tag == "glx":
+                 rop = child.get( 'rop' )
+                 sop = child.get( 'sop' )
