@@ -39,6 +39,7 @@ build() {
     --disable-pthreads \
     --disable-socketpair \
     --disable-ntlm-wb \
+    --enable-websockets \
     --with-mbedtls=${PORTLIBS_PREFIX} \
     --with-ca-bundle=sdmc:/config/ssl/cacert.pem
 
