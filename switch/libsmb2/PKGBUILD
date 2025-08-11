@@ -1,24 +1,32 @@
 # Maintainer: Rhys Koedijk <rhys@koedijk.co.nz>
 
 pkgname=switch-libsmb2
-pkgver=3.0.0
-pkgrel=2
+pkgver=r285.91d6c8a
+pkgrel=1
 pkgdesc='SMB2/3 userspace client'
 arch=('any')
 url='https://github.com/sahlberg/libsmb2'
 license=('(L)GPL')
 options=(!strip libtool staticlibs)
-source=("https://github.com/sahlberg/libsmb2/archive/v${pkgver}.tar.gz")
-sha256sums=('36d10d1628ad34d56646bf9e7005a8abe8ce6b67ba3a949d537ae3e5f08f701f')
-makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=(${pkgname}::"git+https://github.com/sahlberg/libsmb2.git#commit=91d6c8a44b6f6adaa879cc556cf96ff6077bbb4f")
+sha256sums=('SKIP')
+makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('switch-portlibs')
 
+pkgver() {
+  cd "$srcdir/${pkgname}"
+  printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
 prepare() {
-  cd .
+  cd ${pkgname}
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-define_endian_macros.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-define_getlogin_r.patch"
+  patch -Np1 -i "$srcdir/../libsmb2-91d6c8a-fix_portable_endian_include.patch"
 }
 
 build() {
-  cd libsmb2-$pkgver
+  cd ${pkgname}
 
   source /opt/devkitpro/switchvars.sh
 
@@ -31,13 +39,14 @@ build() {
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
     --disable-shared --enable-static --without-libkrb5
 
-  #cp config.h /lib
-
   make
 }
 
 package() {
-  cd libsmb2-$pkgver
-
+  cd ${pkgname}
+  
   make DESTDIR="$pkgdir" install
+  
+  install -Dm644 LICENCE "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENCE-LGPL-2.1.txt
+  rm -r "$pkgdir"/opt/devkitpro/portlibs/switch/share
 }
