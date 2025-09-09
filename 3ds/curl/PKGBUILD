@@ -3,7 +3,7 @@
 
 pkgname=3ds-curl
 pkgver=8.4.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
 url='https://curl.haxx.se'
