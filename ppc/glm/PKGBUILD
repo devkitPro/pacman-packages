@@ -2,31 +2,38 @@
 # Contributor: Ash Logan <ash [at] heyquark [dot] com>
 
 pkgname=ppc-glm
-pkgver=0.9.9.2
-pkgrel=3
+pkgver=1.0.2
+pkgrel=1
 pkgdesc='OpenGL Mathematics (GLM) header only C++ library'
 arch=('any')
 url='https://github.com/g-truc/glm'
 license=(MIT)
 options=(!strip libtool staticlibs)
-source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip")
-sha256sums=('209b5943d393925e1a6ecb6734e7507b8f6add25e72a605b25d0d0d382e64fd4')
+source=("${url}/releases/download/${pkgver}/glm-${pkgver}.zip"
+        "glm-1.0.2-ppc.patch")
 makedepends=('dkp-toolchain-vars' 'devkitppc-cmake')
 groups=('ppc-portlibs')
 
 build() {
 
+  patch -Np1 -i glm-1.0.2-ppc.patch
+
   mkdir -p build
   cd build
 
   source $DEVKITPRO/ppcvars.sh
+
+  CMAKE_C_COMPILER_LAUNCHER=ccache \
+  CMAKE_CXX_COMPILER_LAUNCHER=ccache \
   powerpc-eabi-cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_CXX_FLAGS="$CFLAGS $CPPFLAGS" \
-    -DGLM_TEST_ENABLE=OFF \
-    ../glm
+    -DGLM_ENABLE_CXX_20=ON \
+    -DGLM_ENABLE_LANG_EXTENSIONS=ON \
+    -DGLM_BUILD_TESTS=OFF \
+    ..
 
   make
 
@@ -37,3 +44,6 @@ package() {
 
   make install DESTDIR="$pkgdir"
 }
+
+sha256sums=('a41adf423315e35489c1e67689c7bb74c7edd4d207a477b7b19c45cd440c2f67'
+            'e07e962989b43c93df568941a8b7410465e5b232b5d6aeaa503b74f0cb01ddfe')
