@@ -1,7 +1,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname="3ds-freetype"
-pkgver=2.13.2
+pkgver=2.14.1
 pkgrel=1
 pkgdesc="TrueType font rendering library (mingw-w64)"
 arch=('any')
@@ -52,4 +52,4 @@ package () {
   install -Dm644 "docs/GPLv2.TXT"   "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/GPLv2.TXT"
   install -Dm644 "docs/FTL.TXT"     "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/FTL.TXT"
 }
-sha256sums=('12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d')
+sha256sums=('32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc')
