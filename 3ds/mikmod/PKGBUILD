@@ -1,9 +1,9 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=3ds-mikmod
-pkgver=3.3.11.1
-pkgrel=2
-pkgdesc="Amodule player and library supporting many formats, including mod, s3m, it, and xm (Nintendo 3DS port)"
+pkgver=3.3.13
+pkgrel=1
+pkgdesc="Module player and library supporting many formats, including mod, s3m, it, and xm (Nintendo 3DS port)"
 arch=('any')
 url="http://mikmod.sourceforge.net/"
 license=("LGPL")
@@ -13,9 +13,7 @@ makedepends=(
  'dkp-toolchain-vars'
 )
 source=("https://sourceforge.net/projects/mikmod/files/libmikmod/$pkgver/libmikmod-$pkgver.tar.gz")
-sha256sums=(
-'ad9d64dfc8f83684876419ea7cd4ff4a41d8bcd8c23ef37ecb3a200a16b46d19'
-)
+sha256sums=('9fc1799f7ea6a95c7c5882de98be85fc7d20ba0a4a6fcacae11c8c6b382bb207')
 groups=('3ds-portlibs')
 build() {
   cd libmikmod-$pkgver
