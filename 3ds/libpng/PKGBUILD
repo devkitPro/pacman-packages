@@ -3,7 +3,7 @@
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
 pkgname=3ds-libpng
-pkgver=1.6.48
+pkgver=1.6.50
 pkgrel=1
 pkgdesc='PNG format graphic files library'
 arch=('any')
@@ -37,4 +37,4 @@ package() {
   # remove useless stuff
   rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
 }
-sha256sums=('46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03')
+sha256sums=('4df396518620a7aa3651443e87d1b2862e4e88cad135a8b93423e01706232307')
