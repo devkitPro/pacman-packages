@@ -1,8 +1,8 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 _libname=libjpeg-turbo
 pkgname=3ds-${_libname}
-pkgver=2.1.2
-pkgrel=2
+pkgver=3.1.2
+pkgrel=1
 pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression'
 arch=('any')
 url='https://github.com/libjpeg-turbo/libjpeg-turbo'
@@ -10,12 +10,8 @@ license=('IJG')
 options=(!strip libtool staticlibs)
 source=(
   "${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz"
-  "libjpeg-turbo.patch"
 )
-sha256sums=(
-  'e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed'
-  '79fb3d6acdc9b405a1695a7c6248c420b40e63c115e4a5cab913eb7c2b0c38e4'
-)
+sha256sums=('560f6338b547544c4f9721b18d8b87685d433ec78b3c644c70d77adad22c55e6')
 makedepends=('3ds-cmake' '3ds-pkg-config' 'dkp-toolchain-vars')
 groups=('3ds-portlibs')
 
@@ -24,7 +20,7 @@ build() {
 
   source /opt/devkitpro/3dsvars.sh
 
-  arm-none-eabi-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG_TESTS:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
+  arm-none-eabi-cmake -DENABLE_SHARED:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
 
   make
 }
