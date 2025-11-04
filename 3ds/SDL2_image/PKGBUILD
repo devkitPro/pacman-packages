@@ -1,0 +1,37 @@
+pkgname=3ds-SDL2_image
+pkgver=2.8.8
+pkgrel=1
+pkgdesc="Image decoding for many popular formats for SDL2 (Nintendo 3DS port)"
+arch=('any')
+url="https://libsdl.org/"
+license=('MIT')
+groups=('3ds-portlibs' '3ds-sdl2-libs')
+depends=(
+    '3ds-libjpeg-turbo'
+    '3ds-libpng'
+    '3ds-SDL2'
+)
+makedepends=(
+    '3ds-pkg-config'
+    'cmake'
+    'dkp-toolchain-vars'
+)
+options=(!strip libtool staticlibs)
+source=("https://github.com/libsdl-org/SDL_image/releases/download/release-$pkgver/SDL2_image-$pkgver.tar.gz")
+sha256sums=('2213b56fdaff2220d0e38c8e420cbe1a83c87374190cba8c70af2156097ce30a')
+
+build() {
+    source /opt/devkitpro/3dsvars.sh
+
+    arm-none-eabi-cmake \
+        -S SDL2_image-$pkgver \
+        -B build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DSDL2IMAGE_BACKEND_STB=OFF \
+        -DSDL2IMAGE_DEPS_SHARED=OFF
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
