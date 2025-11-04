@@ -1,0 +1,35 @@
+pkgname=3ds-SDL2_gfx
+pkgver=1.0.4
+pkgrel=1
+pkgdesc="SDL2 graphics drawing primitives and other support functions (Nintendo 3DS port)"
+arch=('any')
+url="https://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/"
+license=('zlib')
+groups=('3ds-portlibs' '3ds-sdl2-libs')
+depends=(
+    '3ds-SDL2'
+)
+makedepends=(
+    '3ds-pkg-config'
+    'dkp-toolchain-vars'
+)
+options=(!strip libtool staticlibs)
+source=("https://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-$pkgver.tar.gz")
+sha256sums=('63e0e01addedc9df2f85b93a248f06e8a04affa014a835c2ea34bfe34e576262')
+
+build() {
+    source /opt/devkitpro/3dsvars.sh
+
+    cd SDL2_gfx-$pkgver
+    ./configure \
+        --prefix="$PORTLIBS_PREFIX" \
+        --host=arm-none-eabi \
+        --disable-shared \
+        --enable-static \
+        --disable-mmx
+    make
+}
+
+package() {
+    make -C SDL2_gfx-$pkgver DESTDIR="$pkgdir" install
+}
