@@ -109,7 +109,7 @@ function(grit_add_binary_target target input)
 		list(APPEND GRIT_OUTPUTS "${GRIT_OUTPUT_MAP}")
 	endif()
 
-	if(NOT GRIT_NO_PAL)
+	if(NOT GRIT_NO_PALETTE)
 		__grit_output_name(OUTPUT_PAL pal)
 		__grit_rename_cmd("~$${target}.pal.bin" "${GRIT_OUTPUT_PAL}")
 		list(APPEND GRIT_OUTPUTS "${GRIT_OUTPUT_PAL}")
