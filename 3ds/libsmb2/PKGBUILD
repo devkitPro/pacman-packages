@@ -1,14 +1,14 @@
 # Maintainers: André Guilherme <andregui17@outlook.com>
 
 pkgname=3ds-libsmb2
-pkgver=r307.aef1888
+pkgver=r307.73cea8c
 pkgrel=1
 pkgdesc='SMB2/3 userspace client'
 arch=('any')
 url='https://github.com/sahlberg/libsmb2'
 license=('(L)GPL')
 options=(!strip libtool staticlibs)
-source=(${pkgname}::"git+https://github.com/sahlberg/libsmb2.git")
+source=(${pkgname}::"git+https://github.com/sahlberg/libsmb2.git#commit=73cea8c53b250b9fc623eb5f4af25e6e91dfde97")
 sha256sums=('SKIP')
 makedepends=('git' '3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
 groups=('3ds-portlibs')
@@ -20,8 +20,6 @@ pkgver() {
 
 build() {
   cd ${pkgname}
-
-  source /opt/devkitpro/3dsvars.sh
 
 	cmake -S . -B build "-DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake" 
 	cmake --build build
