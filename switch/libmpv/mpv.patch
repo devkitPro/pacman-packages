@@ -1,30 +1,27 @@
-diff --git a/audio/out/ao.c b/audio/out/ao.c
-index ee20b736a3..11fa28929f 100644
---- a/audio/out/ao.c
-+++ b/audio/out/ao.c
-@@ -54,6 +54,7 @@ extern const struct ao_driver audio_out_wasapi;
+diff -urN a/audio/out/ao.c b/audio/out/ao.c
+--- a/audio/out/ao.c	2025-12-21 20:08:20.000000000 +0100
++++ b/audio/out/ao.c	2025-12-22 15:59:01.661990655 +0100
+@@ -54,6 +54,7 @@
  extern const struct ao_driver audio_out_pcm;
  extern const struct ao_driver audio_out_lavc;
  extern const struct ao_driver audio_out_sdl;
 +extern const struct ao_driver audio_out_hos;
+ extern const struct ao_driver audio_out_aaudio;
  
  static const struct ao_driver * const audio_out_drivers[] = {
- // native:
-@@ -99,6 +100,9 @@ static const struct ao_driver * const audio_out_drivers[] = {
- #endif
+@@ -104,6 +105,9 @@
  #if HAVE_SNDIO
      &audio_out_sndio,
-+#endif
+ #endif
 +#if HAVE_HOS_AUDIO
 +    &audio_out_hos,
- #endif
++#endif
      &audio_out_null,
  #if HAVE_COREAUDIO
-diff --git a/audio/out/ao_hos.c b/audio/out/ao_hos.c
-new file mode 100644
-index 0000000000..83bd03de7d
---- /dev/null
-+++ b/audio/out/ao_hos.c
+     &audio_out_coreaudio_exclusive,
+diff -urN a/audio/out/ao_hos.c b/audio/out/ao_hos.c
+--- a/audio/out/ao_hos.c	1970-01-01 01:00:00.000000000 +0100
++++ b/audio/out/ao_hos.c	2025-12-22 15:00:08.143704970 +0100
 @@ -0,0 +1,298 @@
 +/*
 + * audio output driver for Horizon OS using audren
@@ -324,11 +321,10 @@ index 0000000000..83bd03de7d
 +    },
 +    .options_prefix   = "ao-hos",
 +};
-diff --git a/common/common.h b/common/common.h
-index 7466ea2d61..a14d2084c6 100644
---- a/common/common.h
-+++ b/common/common.h
-@@ -26,7 +26,7 @@
+diff -urN a/common/common.h b/common/common.h
+--- a/common/common.h	2025-12-21 20:08:20.000000000 +0100
++++ b/common/common.h	2025-12-22 15:01:57.423602458 +0100
+@@ -25,7 +25,7 @@
  
  #include "config.h"
  
@@ -337,11 +333,10 @@ index 7466ea2d61..a14d2084c6 100644
  #include <strings.h>
  #include <unistd.h>
  #endif
-diff --git a/meson.build b/meson.build
-index b7bcb1b0ba..266fbbb75d 100644
---- a/meson.build
-+++ b/meson.build
-@@ -301,7 +301,8 @@ endif
+diff -urN a/meson.build b/meson.build
+--- a/meson.build	2025-12-21 20:08:20.000000000 +0100
++++ b/meson.build	2025-12-22 15:06:34.848250797 +0100
+@@ -314,7 +314,8 @@
  
  darwin = host_machine.system() == 'darwin'
  win32 = host_machine.system() == 'cygwin' or host_machine.system() == 'windows'
@@ -351,7 +346,7 @@ index b7bcb1b0ba..266fbbb75d 100644
  
  features += {'darwin': darwin}
  features += {'posix': posix}
-@@ -322,7 +323,7 @@ if host_machine.system() == 'cygwin'
+@@ -335,7 +336,7 @@
      flags += [mswin_flags, '-mwin32']
  endif
  
@@ -360,7 +355,7 @@ index b7bcb1b0ba..266fbbb75d 100644
      flags += ['-D_GNU_SOURCE']
  endif
  
-@@ -347,6 +348,8 @@ if features['libdl']
+@@ -355,6 +356,8 @@
      dependencies += libdl
  endif
  
@@ -369,10 +364,11 @@ index b7bcb1b0ba..266fbbb75d 100644
  # C11 atomics are mandatory but linking to the library is not always required.
  dependencies += cc.find_library('atomic', required: false)
  
-@@ -407,6 +410,17 @@ if features['cocoa']
-     main_fn_source = files('osdep/main-fn-mac.c')
+@@ -438,7 +441,18 @@
+     main_fn_source = files('osdep/main-fn-unix.c')
  endif
  
+-if posix and not darwin
 +if hos
 +    path_source  = files('osdep/path-unix.c')
 +    timer_source = files('osdep/timer-linux.c')
@@ -384,11 +380,12 @@ index b7bcb1b0ba..266fbbb75d 100644
 +                     'sub/filter_regex.c')
 +endif
 +
- if posix
++if posix and not darwin and not hos
      path_source = files('osdep/path-unix.c')
-     if cc.has_function('fork', prefix : '#include <unistd.h>')
-@@ -895,6 +909,12 @@ if features['sdl2-audio']
-     sources += files('audio/out/ao_sdl.c')
+     timer_source = files('osdep/timer-linux.c')
+ endif
+@@ -914,6 +928,12 @@
+     dependencies += sdl2
  endif
  
 +features += {'hos-audio': hos and libnx.found()}
@@ -400,37 +397,49 @@ index b7bcb1b0ba..266fbbb75d 100644
  sndio = dependency('sndio', required: get_option('sndio'))
  features += {'sndio': sndio.found()}
  features += {'sndio-1-9': sndio.version().version_compare('>= 1.9.0')}
-diff --git a/osdep/io.c b/osdep/io.c
-index 6c3c8b7c36..75ebae4128 100644
---- a/osdep/io.c
-+++ b/osdep/io.c
-@@ -62,7 +62,7 @@ bool mp_set_cloexec(int fd)
-     return true;
+diff -urN a/osdep/io.c b/osdep/io.c
+--- a/osdep/io.c	2025-12-21 20:08:20.000000000 +0100
++++ b/osdep/io.c	2025-12-22 15:35:04.149344793 +0100
+@@ -63,6 +63,13 @@
  }
  
--#ifdef _WIN32
-+#if defined(__MINGW32__) || defined(__SWITCH__)
+ #ifndef _WIN32
++#ifdef __SWITCH__
++int mp_make_cloexec_pipe(int pipes[2])
++{
++    pipes[0] = pipes[1] = -1;
++    return -1;
++}
++#else
  int mp_make_cloexec_pipe(int pipes[2])
  {
-     pipes[0] = pipes[1] = -1;
-diff --git a/osdep/io.h b/osdep/io.h
-index 722413456d..9356ee4724 100644
---- a/osdep/io.h
-+++ b/osdep/io.h
-@@ -242,7 +242,7 @@ void freelocale(locale_t);
+     if (pipe(pipes) != 0) {
+@@ -74,6 +81,7 @@
+         mp_set_cloexec(pipes[i]);
+     return 0;
+ }
++#endif
+ 
+ // create a pipe, and set it to non-blocking (and also set FD_CLOEXEC)
+ int mp_make_wakeup_pipe(int pipes[2])
+diff -urN a/osdep/io.h b/osdep/io.h
+--- a/osdep/io.h	2025-12-21 20:08:20.000000000 +0100
++++ b/osdep/io.h	2025-12-22 15:18:20.446078080 +0100
+@@ -248,7 +248,11 @@
  
  #else /* __MINGW32__ */
  
--#include <sys/mman.h>
++#ifdef __SWITCH__
 +#include "switch/sys/mman.h"
++#else
+ #include <sys/mman.h>
++#endif
  
  extern char **environ;
  
-diff --git a/osdep/switch/sys/mman.h b/osdep/switch/sys/mman.h
-new file mode 100644
-index 0000000000..398ff01729
---- /dev/null
-+++ b/osdep/switch/sys/mman.h
+diff -urN a/osdep/switch/sys/mman.h b/osdep/switch/sys/mman.h
+--- a/osdep/switch/sys/mman.h	1970-01-01 01:00:00.000000000 +0100
++++ b/osdep/switch/sys/mman.h	2025-12-22 15:14:18.823779144 +0100
 @@ -0,0 +1,15 @@
 +#ifndef _MEMMAP_H_
 +#define _MEMMAP_H_
@@ -447,35 +456,21 @@ index 0000000000..398ff01729
 +#define munmap(a, b) free(a)
 +
 +#endif
-diff --git a/osdep/terminal-dummy.c b/osdep/terminal-dummy.c
-index a2cfe741a8..5a01e5b7d1 100644
---- a/osdep/terminal-dummy.c
-+++ b/osdep/terminal-dummy.c
-@@ -42,3 +42,7 @@ bool terminal_try_attach(void)
- {
-     return false;
- }
-+
-+void terminal_set_mouse_input(bool enable)
-+{
-+}
-diff --git a/player/lua/stats.lua b/player/lua/stats.lua
-index 8b8913fc45..7e904f2cc0 100644
---- a/player/lua/stats.lua
-+++ b/player/lua/stats.lua
-@@ -52,7 +52,7 @@ local o = {
-     plot_bg_border_width = 0.5,
+diff -urN a/player/lua/stats.lua b/player/lua/stats.lua
+--- a/player/lua/stats.lua	2025-12-21 20:08:20.000000000 +0100
++++ b/player/lua/stats.lua	2025-12-22 17:07:49.277266416 +0100
+@@ -52,7 +52,7 @@
+     plot_bg_border_width = 1.25,
  
      -- Text style
 -    font = "",
 +    font = "nintendo_udsg-r_std_003",
      font_mono = "monospace",   -- monospaced digits are sufficient
-     font_size = 8,
+     font_size = 20,
      font_color = "",
-diff --git a/sub/filter_regex.c b/sub/filter_regex.c
-index 1d29ea1ac1..3218e12be5 100644
---- a/sub/filter_regex.c
-+++ b/sub/filter_regex.c
+diff -urN a/sub/filter_regex.c b/sub/filter_regex.c
+--- a/sub/filter_regex.c	2025-12-21 20:08:20.000000000 +0100
++++ b/sub/filter_regex.c	2025-12-22 15:19:17.952460158 +0100
 @@ -1,5 +1,5 @@
 -#include <regex.h>
  #include <sys/types.h>
@@ -483,32 +478,30 @@ index 1d29ea1ac1..3218e12be5 100644
  
  #include "common/common.h"
  #include "common/msg.h"
-diff --git a/sub/osd.c b/sub/osd.c
-index 6a57574a52..83294f3139 100644
---- a/sub/osd.c
-+++ b/sub/osd.c
-@@ -80,7 +80,7 @@ const struct m_sub_options osd_style_conf = {
+diff -urN a/sub/osd.c b/sub/osd.c
+--- a/sub/osd.c	2025-12-21 20:08:20.000000000 +0100
++++ b/sub/osd.c	2025-12-22 15:21:04.487040006 +0100
+@@ -80,7 +80,7 @@
      .opts = style_opts,
      .size = sizeof(struct osd_style_opts),
      .defaults = &(const struct osd_style_opts){
 -        .font = "sans-serif",
 +        .font = "nintendo_udsg-r_std_003",
-         .font_size = 55,
+         .font_size = 30,
          .color = {255, 255, 255, 255},
          .outline_color = {0, 0, 0, 255},
-@@ -100,7 +100,7 @@ const struct m_sub_options sub_style_conf = {
+@@ -100,7 +100,7 @@
      .opts = style_opts,
      .size = sizeof(struct osd_style_opts),
      .defaults = &(const struct osd_style_opts){
 -        .font = "sans-serif",
 +        .font = "nintendo_udsg-r_std_003",
-         .font_size = 55,
+         .font_size = 38,
          .color = {255, 255, 255, 255},
          .outline_color = {0, 0, 0, 255},
-diff --git a/sub/sd_ass.c b/sub/sd_ass.c
-index 47b3109ec7..f133298aea 100644
---- a/sub/sd_ass.c
-+++ b/sub/sd_ass.c
+diff -urN a/sub/sd_ass.c b/sub/sd_ass.c
+--- a/sub/sd_ass.c	2025-12-21 20:08:20.000000000 +0100
++++ b/sub/sd_ass.c	2025-12-22 15:22:18.877360486 +0100
 @@ -21,6 +21,10 @@
  #include <math.h>
  #include <limits.h>
@@ -520,7 +513,7 @@ index 47b3109ec7..f133298aea 100644
  #include <libavutil/common.h>
  #include <ass/ass.h>
  
-@@ -206,6 +210,18 @@ static void enable_output(struct sd *sd, bool enable)
+@@ -240,6 +244,18 @@
      } else {
          ctx->ass_renderer = ass_renderer_init(ctx->ass_library);
  
@@ -539,11 +532,10 @@ index 47b3109ec7..f133298aea 100644
          mp_ass_configure_fonts(ctx->ass_renderer, sd->opts->sub_style,
                                 sd->global, sd->log);
      }
-diff --git a/video/mp_image.c b/video/mp_image.c
-index b809dae765..0a9cace6db 100644
---- a/video/mp_image.c
-+++ b/video/mp_image.c
-@@ -175,7 +175,7 @@ static bool mp_image_alloc_planes(struct mp_image *mpi)
+diff -urN a/video/mp_image.c b/video/mp_image.c
+--- a/video/mp_image.c	2025-12-21 20:08:20.000000000 +0100
++++ b/video/mp_image.c	2025-12-22 15:22:51.902483440 +0100
+@@ -175,7 +175,7 @@
          return false;
  
      // Note: mp_image_pool assumes this creates only 1 AVBufferRef.
@@ -552,10 +544,9 @@ index b809dae765..0a9cace6db 100644
      if (!mpi->bufs[0])
          return false;
  
-diff --git a/video/mp_image.h b/video/mp_image.h
-index 2208deb26d..751fccfaf7 100644
---- a/video/mp_image.h
-+++ b/video/mp_image.h
+diff -urN a/video/mp_image.h b/video/mp_image.h
+--- a/video/mp_image.h	2025-12-21 20:08:20.000000000 +0100
++++ b/video/mp_image.h	2025-12-22 15:23:25.994599008 +0100
 @@ -32,7 +32,7 @@
  // libraries except libavcodec don't really know what alignment they want.
  // Things will randomly crash or get slower if the alignment is not satisfied.
