@@ -1,0 +1,57 @@
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+_realname=newlib
+_target=aarch64-none-elf
+
+pkgname=devkita64-${_realname}
+
+pkgver=4.5.0.20241231
+pkgrel=2
+pkgdesc='devkitA64 newlib'
+
+arch=('any')
+
+source=(
+    "https://sourceware.org/pub/newlib/newlib-${pkgver}.tar.gz"
+    "https://pkg.devkitpro.org/pacthes/devkita64-newlib-${pkgver}.patch"
+)
+
+export _TOOLPATH=${TOOLPATH:-/opt/devkitpro/devkitA64}
+
+options=(!strip)
+
+prepare() {
+  patch -p1 -d ${srcdir}/newlib-${pkgver} -i ${srcdir}/devkita64-newlib-${pkgver}.patch
+}
+
+build() {
+
+  export PATH=${_TOOLPATH}/bin:${PATH}
+
+  mkdir -p ${srcdir}/_build_newlib
+  cd ${srcdir}/_build_newlib
+
+  CFLAGS_FOR_TARGET="-O2 -ffunction-sections -fdata-sections" \
+  ${srcdir}/newlib-${pkgver}/configure \
+    --target=${_target} \
+    --prefix=/opt/devkitpro/devkitA64/ \
+    --disable-newlib-supplied-syscalls \
+    --enable-newlib-mb \
+    --disable-newlib-wide-orient
+
+  make
+
+}
+
+package() {
+
+  cd ${srcdir}/_build_newlib
+  make DESTDIR="${pkgdir}" install
+
+  find ${pkgdir}/opt/devkitpro/devkitA64/${_target}/lib \( -name "*.a" -or -name "*.o" \) -exec ${_target}-objcopy -R .comment -R .note -R .debug_info -R .debug_aranges -R .debug_pubnames -R .debug_pubtypes -R .debug_abbrev -R .debug_line -R .debug_str -R .debug_ranges -R .debug_loc '{}' \;
+
+
+}
+
+sha256sums=('33f12605e0054965996c25c1382b3e463b0af91799001f5bb8c0630f2ec8c852'
+            '277ed7e425a37de7335891916260f12556e891e439e6ff2b5bc8ab91b8944d60')
