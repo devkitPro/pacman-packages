@@ -1,0 +1,32 @@
+
+# Maintainer: Dave Murphy <davem@devkitpro.org>
+
+pkgname=('devkitppc-crtls')
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="devkitPPC crtls."
+arch=('any')
+license=('custom')
+url="https://devkitpro.org"
+options=(!strip libtool staticlibs)
+
+source=(
+  ogc.ld
+  rvl.ld
+  gcn.ld
+)
+
+makedepends=('devkitPPC')
+groups=('gamecube-dev' 'wii-dev')
+
+package() {
+
+  mkdir -p $pkgdir/opt/devkitpro/devkitPPC/powerpc-eabi/lib
+  cp ${srcdir}/ogc.ld ${srcdir}/rvl.ld ${srcdir}/gcn.ld ${pkgdir}/opt/devkitpro/devkitPPC/powerpc-eabi/lib
+
+}
+
+sha256sums=('0c7b991a2a8427bca0a64db37138ecc95276eef3958a9be6da6310afd1a1066f')
+sha256sums=('0bbbe0bcecfeaa27266af43632b8d418939a8e3ae994d798a310c2761cc09799'
+            'ba31352f38fe972f8e6b65522f123021b8d28bebd9147ae04e6fd59f0514dbe3'
+            '7ffaf3ccb7b0adcb4dc2c83c46702ad83cb25cba4c185226bc6884886474f86f')
