@@ -4,7 +4,7 @@
 pkgbasename=libmpv
 pkgname=switch-${pkgbasename}
 pkgver=0.39.0
-pkgrel=2
+pkgrel=3
 pkgdesc='Command line video player (library only)'
 arch=('any')
 url='https://mpv.io/'
@@ -28,7 +28,7 @@ build() {
   cd mpv-$pkgver
 
   /opt/devkitpro/meson-cross.sh switch ../crossfile.txt build \
-    -Dlibmpv=true -Dcplayer=false -Dtests=false -Dplain-gl=enabled -Dlua=enabled \
+    -Dlibmpv=true -Dcplayer=false -Dtests=false -Dplain-gl=enabled -Dlua=disabled \
     -Dsdl2=enabled -Dsdl2-gamepad=enabled -Dsdl2-audio=enabled -Dsdl2-video=enabled \
     -Diconv=disabled
 
