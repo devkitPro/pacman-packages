@@ -16,7 +16,6 @@ source=(
   gcn.ld
 )
 
-makedepends=('devkitPPC')
 groups=('gamecube-dev' 'wii-dev')
 
 package() {
