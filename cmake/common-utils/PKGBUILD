@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-cmake-common-utils
-pkgver=1.5.2
+pkgver=1.5.3
 pkgrel=1
 pkgdesc="Common utilities and infrastructure for devkitPro CMake"
 arch=('any')
@@ -25,7 +25,7 @@ sha256sums=('758b8cc680112d87870f84e8d69abfadc0cbcd1b0987e88329d1fafa7470f9f4'
             '0f0ac9a7a92c6dff4975c2204433d4b7515893bc461b3022a135b0ed4728b32d'
             'b39f405f459b4e4aa55ad3a04d8d56ba567da2c02425e3b8d60f46bde55d5274'
             'f24abd66dea5a2b60be52f1244c4523025828cc9fa71e14cf4c58f24a06007d0'
-            '267dbce68e315e78dba3f334c3efbfe0383d104ab0c4e30d9d0cf0d4556bcfe6')
+            '161873070c09b4ac759f25a9ba5d2ae72194ca66e2d577fd121fb835229536d3')
 
 package() {
   install -d "$pkgdir"/opt/devkitpro/cmake

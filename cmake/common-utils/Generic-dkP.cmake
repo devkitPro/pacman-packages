@@ -33,9 +33,8 @@ macro(__dkp_init_platform_settings platform)
 	string(APPEND CMAKE_ASM_FLAGS_INIT " -x assembler-with-cpp")
 
 	if(NOT DKP_PLATFORM_BOOTSTRAP)
-		set(CMAKE_EXE_LINKER_FLAGS_INIT "${${platform}_ARCH_SETTINGS} ${${platform}_LINKER_FLAGS}")
+		set(CMAKE_EXE_LINKER_FLAGS_INIT "${${platform}_LINKER_FLAGS}")
 	else()
-		set(CMAKE_EXE_LINKER_FLAGS_INIT "${${platform}_ARCH_SETTINGS}")
 		set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 	endif()
 
