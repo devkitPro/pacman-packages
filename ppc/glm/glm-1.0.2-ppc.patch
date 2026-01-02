@@ -1,0 +1,35 @@
+diff -Nur glm-1.0.2-original/CMakeLists.txt glm-1.0.2-ppc/CMakeLists.txt
+--- glm-1.0.2-original/CMakeLists.txt	2025-10-15 08:07:40.000000000 -0300
++++ glm-1.0.2-ppc/CMakeLists.txt	2025-10-19 00:09:15.312057716 -0300
+@@ -296,6 +296,17 @@
+ 		IMMEDIATE @ONLY
+ 	)
+ 
++	if (GLM_BUILD_LIBRARY)
++		set(PC_LIBS_LINE "Libs: -L\${libdir} -lglm")
++	else()
++		set(PC_LIBS_LINE "")
++	endif()
++	configure_file(glm.pc.in glm.pc @ONLY)
++	install(
++		FILES ${CMAKE_CURRENT_BINARY_DIR}/glm.pc
++		DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
++	)
++
+ 	add_custom_target(
+ 		uninstall
+ 		"${CMAKE_COMMAND}" -P
+Binary files glm-1.0.2-original/.git/index and glm-1.0.2-ppc/.git/index differ
+diff -Nur glm-1.0.2-original/glm.pc.in glm-1.0.2-ppc/glm.pc.in
+--- glm-1.0.2-original/glm.pc.in	1969-12-31 21:00:00.000000000 -0300
++++ glm-1.0.2-ppc/glm.pc.in	2025-10-19 00:16:51.008077897 -0300
+@@ -0,0 +1,9 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++includedir=${prefix}/include
++libdir=${prefix}/lib
++
++Name: @PROJECT_NAME@
++Description: OpenGL Mathematics
++Version: @PROJECT_VERSION@
++Cflags: -I${includedir}
++@PC_LIBS_LINE@
