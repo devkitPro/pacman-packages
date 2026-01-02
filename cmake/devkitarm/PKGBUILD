@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=devkitarm-cmake
-pkgver=1.2.3
+pkgver=1.2.4
 pkgrel=1
 pkgdesc="CMake support files for devkitARM"
 arch=('any')
@@ -29,8 +29,9 @@ package() {
   cp "${srcdir}"/dkp-gba-ds-utils.cmake "$pkgdir"/opt/devkitpro/cmake
 
 }
+
 sha256sums=('f1029f9a04b2e543e5b49255fe501839dabe7f80e626dca0196531de744704db'
             '4c3e36904b48e270604c578d77890b3f0a1fa0d49fc2dbb6dddafdb29a3b2a58'
             'a49c325d3a02425bfa9898b251232a3f3c5cce11a7edbf9adff9f140b02880b1'
             '0892748da89275191bba16b747faed6361b4f1fd09d2d3641160b44dc0b3a8e5'
-            'f114ef69e2b853237b8d1450c603a1fc64c99cca99c8606aae568951cee506c8')
+            '1ef2d30b7dde4ef70164239f2a1feb57fd16c95f1e78f4cf9c3ee0031601001f')
