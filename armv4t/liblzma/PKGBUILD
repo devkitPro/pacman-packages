@@ -1,7 +1,7 @@
 
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=armv4t-liblzma
-pkgver=5.2.3
+pkgver=5.8.2
 pkgrel=1
 pkgdesc='A compression library with an API similar to that of zlib. (for armv4t homebrew development)'
 arch=('any')
@@ -9,7 +9,7 @@ url='https://tukaani.org'
 license=('GPL')
 options=(!strip libtool staticlibs)
 source=("https://tukaani.org/xz/xz-${pkgver}.tar.xz")
-sha256sums=('7876096b053ad598c31f6df35f7de5cd9ff2ba3162e5a5554e4fc198447e0347')
+
 makedepends=('dkp-toolchain-vars')
 groups=('armv4t-portlibs')
 
@@ -17,7 +17,6 @@ build() {
 
   cd xz-$pkgver
 
-  source /opt/devkitpro/devkitarm.sh
   source /opt/devkitpro/armv4tvars.sh
 
    ./configure --prefix=${PORTLIBS_PREFIX} --host=arm-none-eabi \
@@ -39,3 +38,4 @@ package() {
   rm -fr "$pkgdir"${PORTLIBS_PREFIX}/bin
 
 }
+sha256sums=('890966ec3f5d5cc151077879e157c0593500a522f413ac50ba26d22a9a145214')
