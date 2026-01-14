@@ -1,0 +1,39 @@
+# Contributor: Teddy Astie <TSnake@Outlook.fr>
+
+pkgname=3ds-luajit
+pkgver=2.0.5
+pkgrel=1
+pkgdesc='Just-in-time compiler and drop-in replacement for Lua 5.1 (for Nintendo 3DS homebrew development)'
+arch=('any')
+url='http://luajit.org/'
+license=('MIT')
+options=(!strip)
+makedepends=('3ds-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=("https://luajit.org/download/LuaJIT-$pkgver.tar.gz")
+sha256sums=('874b1f8297c697821f561f9b73b57ffd419ed8f4278c82e05b48806d30c1e979')
+groups=('3ds-portlibs')
+
+build() {
+  cd LuaJIT-$pkgver
+  source /opt/devkitpro/3dsvars.sh
+
+  # Remove link options. 
+  sed -i -e "s| *-Wl,-E||g" -e "s|-ldl||g" etc/luajit.pc
+
+  touch src/luajit src/jit/vmdef.lua
+  make BUILDMODE=static \
+    TARGET_FLAGS="$CFLAGS -I$PORTLIBS_PREFIX/include" TARGET_T=libluajit.a \
+    CFLAGS="" LDFLAGS="" LIBS="" HOST_CFLAGS="" HOST_LIBS="" HOST_LDFLAGS="" \
+    HOST_CC="gcc -m32" XCFLAGS="-DLUAJIT_USE_SYSMALLOC" CROSS=${TOOL_PREFIX} \
+    amalg
+}
+
+package() {
+  cd LuaJIT-$pkgver
+  source /opt/devkitpro/3dsvars.sh
+
+  make PREFIX=$PORTLIBS_PREFIX DESTDIR=$pkgdir INSTALL_DEP= install
+
+  cd $pkgdir$PORTLIBS_PREFIX
+  rm -rf bin share lib/lua
+}
