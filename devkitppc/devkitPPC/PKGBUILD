@@ -1,7 +1,7 @@
 # Maintainer: Dave Murphy <davem[at]devkitpro.org>
 pkgname=devkitPPC
-pkgver=r48
-pkgrel=8
+pkgver=r49
+pkgrel=2
 pkgdesc='devkitPPC metapackage'
 url='https://devkitpro.org'
 arch=('any')
@@ -9,6 +9,6 @@ license=('GPL')
 depends=(
   'devkitppc-binutils=2.45.1-2'
   'devkitppc-mn10200-binutils=2.24-3'
-  'devkitppc-gcc=15.2.0-3'
-  'devkitppc-newlib=4.5.0.20241231-2'
+  'devkitppc-gcc=15.2.0-6'
+  'devkitppc-newlib=4.5.0.20241231-6'
 )
