@@ -4,8 +4,8 @@ _realname=newlib
 
 pkgname=devkitppc-${_realname}
 
-pkgver=4.5.0.20241231
-pkgrel=2
+pkgver=4.6.0.20260123
+pkgrel=1
 pkgdesc='devkitPPC newlib'
 
 arch=('any')
@@ -22,7 +22,8 @@ source=(
 options=(!strip)
 
 prepare() {
-  patch -p1 -d ${srcdir}/newlib-${pkgver} -i ${srcdir}/devkitppc-newlib-${pkgver}.patch
+  patch -p1 -d ${srcdir}/newlib-${pkgver} -i ${srcdir}/newlib-${pkgver}-${pkgrel}.patch
+  touch ${srcdir}/newlib-${pkgver}/libgloss/doc/porting.info
 }
 
 build() {
@@ -54,5 +55,5 @@ package() {
 
 }
 
-sha256sums=('33f12605e0054965996c25c1382b3e463b0af91799001f5bb8c0630f2ec8c852'
-            '1ad5b49e3f45d0b8e82153c6434e6a6d22132baab71b6425a282e08943a0e34c')
+sha256sums=('6ff27e3bf022666f43f7802255be680eeff722ac181b1725d21e2e8318604ee3'
+            'b32fd954fd36f3813794842de2093aee68f3497c18c94bb5e93a6e466be9d026')
