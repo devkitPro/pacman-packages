@@ -105,7 +105,7 @@ index 0000000000..625de93b93
 +          export PKG_CONFIG_PATH=${{ env.SDL2_DIR }}/lib/pkgconfig
 +          cmake/test/test_pkgconfig.sh
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b38a8bbc11..9129cea2a9 100644
+index b38a8bbc11..b127adb242 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -141,6 +141,7 @@ check_cpu_architecture(x64 SDL_CPU_X64)
@@ -152,7 +152,7 @@ index b38a8bbc11..9129cea2a9 100644
          list(APPEND EXTRA_LIBS m)
        endif()
      endif()
-@@ -2883,6 +2884,76 @@ elseif(N3DS)
+@@ -2883,6 +2884,75 @@ elseif(N3DS)
      endif()
      list(APPEND EXTRA_LIBS ${lib})
    endforeach()
@@ -187,13 +187,6 @@ index b38a8bbc11..9129cea2a9 100644
 +    set(HAVE_SDL_JOYSTICK TRUE)
 +  endif()
 +
-+  if(SDL_THREADS)
-+    set(SDL_THREAD_OGC 1)
-+    file(GLOB OGC_THREAD_SOURCES ${SDL2_SOURCE_DIR}/src/thread/ogc/*.c)
-+    list(APPEND SOURCE_FILES ${OGC_THREAD_SOURCES} ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_systls.c)
-+    set(HAVE_SDL_THREADS TRUE)
-+  endif()
-+
 +  if(SDL_TIMERS)
 +    set(SDL_TIMER_OGC 1)
 +    file(GLOB OGC_TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/ogc/*.c)
@@ -216,6 +209,12 @@ index b38a8bbc11..9129cea2a9 100644
 +      target_include_directories(sdl-build-options INTERFACE ${OPENGX_INCLUDE_DIRS})
 +    endif()
 +  endif()
++
++  set(SDL_PTHREADS ON)
++  set(SDL_THREADS ON)
++  set(PTHREADS_SEM ON)
++  message(STATUS "pthread")
++  CheckPTHREAD()
 +
 +  if(NOT SDL2_DISABLE_SDL2MAIN)
 +    list(INSERT SDL_LIBS 0 "-lSDL2main")
@@ -2278,7 +2277,7 @@ index 0000000000..f0d42bed96
 +/* vi: set sts=4 ts=4 sw=4 expandtab: */
 diff --git a/src/main/wii/SDL_wii_main.c b/src/main/wii/SDL_wii_main.c
 new file mode 100644
-index 0000000000..47b8b207fe
+index 0000000000..ec6329d5f0
 --- /dev/null
 +++ b/src/main/wii/SDL_wii_main.c
 @@ -0,0 +1,91 @@
@@ -2330,7 +2329,7 @@ index 0000000000..47b8b207fe
 +    OGC_PowerOffRequested = true;
 +}
 +
-+static void ResetCB()
++static void ResetCB(u32, void *)
 +{
 +    OGC_ResetRequested = true;
 +}
@@ -3345,7 +3344,7 @@ index 0000000000..352fd7bf66
 +}
 diff --git a/src/thread/ogc/SDL_sysmutex.c b/src/thread/ogc/SDL_sysmutex.c
 new file mode 100644
-index 0000000000..210fef09b7
+index 0000000000..be3ba470ae
 --- /dev/null
 +++ b/src/thread/ogc/SDL_sysmutex.c
 @@ -0,0 +1,81 @@
@@ -3392,7 +3391,7 @@ index 0000000000..210fef09b7
 +    /* Allocate mutex memory */
 +    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
 +    if (mutex) {
-+        LWP_MutexInit(&mutex->id, 0);
++        LWP_MutexInit(&mutex->id, 1);
 +    } else {
 +        SDL_OutOfMemory();
 +    }
@@ -3758,6 +3757,28 @@ index 0000000000..43caca7ebc
 +#include "SDL_config.h"
 +
 +typedef Uint32 SYS_ThreadHandle;
+diff --git a/src/thread/pthread/SDL_systhread.c b/src/thread/pthread/SDL_systhread.c
+index 5316807058..0effd6138e 100644
+--- a/src/thread/pthread/SDL_systhread.c
++++ b/src/thread/pthread/SDL_systhread.c
+@@ -162,7 +162,7 @@ void SDL_SYS_SetupThread(const char *name)
+     }
+ 
+    /* NativeClient does not yet support signals.*/
+-#if !defined(__NACL__)
++#if !defined(__NACL__) && !defined(__wii__) && !defined(__gamecube__)
+     /* Mask asynchronous signals for this thread */
+     sigemptyset(&mask);
+     for (i = 0; sig_list[i]; ++i) {
+@@ -188,7 +188,7 @@ SDL_threadID SDL_ThreadID(void)
+ 
+ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+ {
+-#if __NACL__ || __RISCOS__ || __OS2__
++#if __NACL__ || __RISCOS__ || __OS2__ || __wii__ || __gamecube__
+     /* FIXME: Setting thread priority does not seem to be supported in NACL */
+     return 0;
+ #else
 diff --git a/src/timer/ogc/SDL_systimer.c b/src/timer/ogc/SDL_systimer.c
 new file mode 100644
 index 0000000000..664e495c5f
