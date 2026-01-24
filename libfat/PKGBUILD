@@ -2,6 +2,13 @@
 
 pkgbasename=('libfat')
 
+pkgname=${pkgbasename}-${PLATFORM}
+pkgver=2.1.0
+pkgrel=4
+pkgdesc="libdvm"
+arch=('any')
+license=('ZPL')
+
 if [ -z "$PLATFORM" ];then
   PLATFORM=nds
 fi
@@ -26,12 +33,6 @@ else
   exit 1
 fi
 
-pkgname=${pkgbasename}-${PLATFORM}
-pkgver=2.1.0
-pkgrel=1
-pkgdesc="libdvm"
-arch=('any')
-license=('ZPL')
 url="http://github.com/devkitpro/"
 options=(!strip libtool staticlibs)
 fatfs_mod_ver=0.15.3
@@ -42,7 +43,7 @@ source=(
   fatfs-mod-${fatfs_mod_ver}.tar.gz::${url}/fatfs-mod/archive/v${fatfs_mod_ver}.tar.gz
 )
 
-makedepends=('catnip' 'devkitARM' 'devkitarm-rules' 'devkitarm-crtls' 'libnds')
+makedepends=('catnip')
 
 if [ "$PLATFORM" = "nds" ]; then
   replaces+=('libfilesystem')
