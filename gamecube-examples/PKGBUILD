@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('gamecube-examples')
-pkgver=20210525
+pkgver=20260125
 pkgrel=1
 pkgdesc="Nintendo Gamecube example code."
 arch=('any')
@@ -19,3 +19,4 @@ package() {
   mkdir -p "$pkgdir"/opt/devkitpro/examples/gamecube
   cp -R $srcdir/${pkgname}-${pkgver}/* "$pkgdir"/opt/devkitpro/examples/gamecube  
 }
+sha256sums=('9f504404795048e386d19b00d6eb156afd124d163bd778e9d22dd2d2774b8094')
