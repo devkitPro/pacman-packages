@@ -2,7 +2,7 @@
 
 pkgname=('libogc')
 pkgver=3.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Nintendo Gamecube & Wii library."
 arch=('any')
 license=('custom')
@@ -24,4 +24,4 @@ package() {
   LIBOGC_VER=v${pkgver} DESTDIR=$pkgdir catnip install
 }
 
-sha256sums=('6a657f69b84a55f8770c2e6bcaf469ac2c503daa5418e007cd344142989f581b')
+sha256sums=('80eccb081190938fe5a555b6e205e4142e7b9af6a2973c7b8ecea5cc2c150e56')
