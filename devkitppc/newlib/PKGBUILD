@@ -16,7 +16,7 @@ export _TOOLPATH=${TOOLPATH:-/opt/devkitpro/devkitPPC}
 
 source=(
     "https://sourceware.org/pub/newlib/newlib-${pkgver}.tar.gz"
-    "https://pkg.devkitpro.org/patches/devkitppc-newlib-${pkgver}.patch"
+    "https://raw.githubusercontent.com/devkitPro/buildscripts/refs/tags/devkitPPC_r49/patches/newlib-${pkgver}-${pkgrel}.patch"
 )
 
 options=(!strip)
