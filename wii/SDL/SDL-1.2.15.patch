@@ -626,7 +626,7 @@ index 0000000000..532db57424
 +#endif /* _SDL_dummyaudio_h */
 diff --git a/src/joystick/ogc/SDL_sysjoystick.c b/src/joystick/ogc/SDL_sysjoystick.c
 new file mode 100644
-index 0000000000..954609987a
+index 0000000000..1ecf6df0ad
 --- /dev/null
 +++ b/src/joystick/ogc/SDL_sysjoystick.c
 @@ -0,0 +1,796 @@
@@ -751,6 +751,12 @@ index 0000000000..954609987a
 +static const int __numgcjoysticks = 4;
 +
 +#ifdef __wii__
++#define GC_JOYSTICK_FROM_INDEX(index) (index - num_wii_joysticks)
++#else
++#define GC_JOYSTICK_FROM_INDEX(index) (index)
++#endif
++
++#ifdef __wii__
 +static const int __jswpad_enabled = 1;
 +static const int __numwiijoysticks = 4;
 +static int split_joysticks = 0;
@@ -814,12 +820,6 @@ index 0000000000..954609987a
 +};
 +#define SDL_WII_NUM_BUTTONS_CLASSIC \
 +	(sizeof(sdl_buttons_classic) / sizeof(sdl_buttons_classic[0]))
-+
-+#ifdef __wii__
-+#define GC_JOYSTICK_FROM_INDEX(index) (index - num_wii_joysticks)
-+#else
-+#define GC_JOYSTICK_FROM_INDEX(index) (index)
-+#endif
 +
 +/* Helpers to separate nunchuk vs classic buttons which share the
 + * same scan codes. In particular, up on the classic controller is
@@ -1460,7 +1460,7 @@ index 0000000000..1ad5a19bd5
 +}
 diff --git a/src/main/wii/SDL_wii_main.c b/src/main/wii/SDL_wii_main.c
 new file mode 100644
-index 0000000000..297be85622
+index 0000000000..75851d4b1c
 --- /dev/null
 +++ b/src/main/wii/SDL_wii_main.c
 @@ -0,0 +1,76 @@
@@ -1489,7 +1489,7 @@ index 0000000000..297be85622
 +	TerminateRequested = 1;
 +	ShutdownRequested = 1;
 +}
-+static void ResetCB()
++static void ResetCB(u32, void*)
 +{
 +	TerminateRequested = 1;
 +	ResetRequested = 1;
