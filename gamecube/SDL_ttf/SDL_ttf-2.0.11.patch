@@ -1,0 +1,61 @@
+diff -NBaur SDL_ttf-2.0.11.old/configure.in SDL_ttf-2.0.11.new/configure.in
+--- SDL_ttf-2.0.11.old/configure.in	2012-01-15 04:44:08.000000000 +0000
++++ SDL_ttf-2.0.11.new/configure.in	2026-01-27 03:21:46.888291721 +0000
+@@ -91,39 +91,13 @@
+ AM_CONDITIONAL(USE_VERSION_RC, test x$use_version_rc = xtrue)
+ 
+ dnl Check for the FreeType 2 library
+-dnl
+-dnl Get the cflags and libraries from the freetype-config script
+-dnl
+-AC_ARG_WITH(freetype-prefix,[  --with-freetype-prefix=PFX   Prefix where FREETYPE is 
+-installed (optional)],
+-            freetype_prefix="$withval", freetype_prefix="")
+-AC_ARG_WITH(freetype-exec-prefix,[  --with-freetype-exec-prefix=PFX Exec prefix 
+-where FREETYPE is installed (optional)],
+-            freetype_exec_prefix="$withval", freetype_exec_prefix="")
+-
+-if test x$freetype_exec_prefix != x ; then
+-     freetype_args="$freetype_args --exec-prefix=$freetype_exec_prefix"
+-     if test x${FREETYPE_CONFIG+set} != xset ; then
+-        FREETYPE_CONFIG=$freetype_exec_prefix/bin/freetype-config
+-     fi
+-fi
+-if test x$freetype_prefix != x ; then
+-     freetype_args="$freetype_args --prefix=$freetype_prefix"
+-     if test x${FREETYPE_CONFIG+set} != xset ; then
+-        FREETYPE_CONFIG=$freetype_prefix/bin/freetype-config
+-     fi
+-fi
+-AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
+-no_freetype=""
+-if test "$FREETYPE_CONFIG" = "no" ; then
+-    AC_MSG_ERROR([
+-*** Unable to find FreeType2 library (http://www.freetype.org/)
+-])
+-else
+-    CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
+-    LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"
+-fi
++PKG_CHECK_MODULES([FT2],
++	 [freetype2],,AC_MSG_ERROR([*** freetype2 not found!])
++)
++CFLAGS="$CFLAGS $FT2_CFLAGS"
++LIBS="$LIBS $FT2_LIBS"
+ 
++AC_SUBST(FT2_LIBS)
+ dnl Check for SDL
+ SDL_VERSION=1.2.4
+ AC_SUBST(SDL_VERSION)
+diff -NBaur SDL_ttf-2.0.11.old/SDL_ttf.pc.in SDL_ttf-2.0.11.new/SDL_ttf.pc.in
+--- SDL_ttf-2.0.11.old/SDL_ttf.pc.in	2012-01-15 04:44:08.000000000 +0000
++++ SDL_ttf-2.0.11.new/SDL_ttf.pc.in	2026-01-27 03:22:14.604837684 +0000
+@@ -7,6 +7,7 @@
+ Description: ttf library for Simple DirectMedia Layer with FreeType 2 support
+ Version: @VERSION@
+ Requires: sdl >= @SDL_VERSION@
+-Libs: -L${libdir} -lSDL_ttf
++Libs: -L${libdir} -lSDL_ttf @FT2_LIBS@
++Libs.private: -L${libdir} -lSDL_ttf @FT2_LIBS@
+ Cflags: -I${includedir}/SDL
+ 
