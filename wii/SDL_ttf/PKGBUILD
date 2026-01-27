@@ -2,7 +2,7 @@
 
 pkgname=wii-sdl_ttf
 pkgver=2.0.11
-pkgrel=5
+pkgrel=6
 pkgdesc="A sample library which allows you to use TrueType fonts in your SDL applications"
 arch=('any')
 url="https://libsdl.org"
@@ -16,18 +16,21 @@ makedepends=(
  'wii-pkg-config'
  'dkp-toolchain-vars'
 )
-source=("${url}/projects/SDL_ttf/release/SDL_ttf-${pkgver}.tar.gz")
-groups=('wii-portlibs' 'wii-sdl-libs')
-sha256sums=(
-'724cd895ecf4da319a3ef164892b72078bd92632a5d812111261cde248ebcdb7'
+source=(
+  "${url}/projects/SDL_ttf/release/SDL_ttf-${pkgver}.tar.gz"
+  SDL_ttf-${pkgver}.patch
 )
+groups=('wii-portlibs' 'wii-sdl-libs')
 
 build() {
   cd SDL_ttf-$pkgver
 
   source /opt/devkitpro/wiivars.sh
 
+  patch -p1 -i ${srcdir}/SDL_ttf-${pkgver}.patch
+  ./autogen.sh
   sed '/^noinst_PROGRAMS/d' -i Makefile.in
+
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static
   make
@@ -41,3 +44,5 @@ package() {
   make DESTDIR="$pkgdir" install
 
 }
+sha256sums=('724cd895ecf4da319a3ef164892b72078bd92632a5d812111261cde248ebcdb7'
+            'd0076b03127a5e74cc03677d44a6d74a2201a1809c0a4b44e7a136c5ca6ec975')
