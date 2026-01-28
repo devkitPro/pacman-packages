@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-toolchain-vars
-pkgver=1.0.4
+pkgver=1.0.5
 pkgrel=1
 
 pkgdesc='helper scripts to set variables for devkitPro toolchains'
@@ -36,7 +36,7 @@ sha256sums=('000b49cce7a925cb096fbac43501ef1c89511861a3ea2091569ae71aa108369b'
             'b69edeee95dfece986941531a7e2c314cc550ab578b300997e0d5de9e825597c'
             'e3156d1e6671bfc9ad6a343d26da8cbddcfc4d8e5321ddc07cb2b4934e20ed66'
             '004fd94dfc9e7a19281fec19c0341686f4dbf00d1f3c9c5590a150e1faac2360'
-            '171163964fadcaeb90375a1e6485f7cb23d4d2c6122f63fd6736d17d5693c4f2'
+            'e35283a019b5e032c8085e3085b46ab80cea58851c087ba4269a502195ade359'
             '0f096b32a3216916553360948d2f91f92f4657844a1618cb84bf96a797c44979'
             'f3caba3a8864a31a50ff50131f39d160013b6d0b8a2e7e6ac90ca44b591fcb57'
             '5ade1211e616a7eb540c3660839d17af050c41c7c9ee89242ce4fe7afac4df52'
