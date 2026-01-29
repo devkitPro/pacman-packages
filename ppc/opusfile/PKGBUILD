@@ -1,7 +1,7 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
 pkgname=ppc-opusfile
-pkgver=0.11
+pkgver=0.12
 pkgrel=1
 pkgdesc='Library for opening, seeking, and decoding .opus files'
 arch=('any')
@@ -14,13 +14,23 @@ makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 depends=('ppc-libogg' 'ppc-libopus')
 groups=('ppc-portlibs')
 
+prepare() {
+
+  cd opusfile-$pkgver
+
+#  sed 's/c89/gnu89/' -i configure.ac
+#  autoreconf -i
+
+}
+
 build() {
   cd opusfile-$pkgver
 
   source /opt/devkitpro/ppcvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
-    --enable-fixed-point  --disable-shared --enable-static
+    --enable-fixed-point  --disable-shared --enable-static \
+    --disable-examples --disable-docs
 
   make
 }
@@ -32,3 +42,4 @@ package() {
 
   make DESTDIR="$pkgdir" install
 }
+sha256sums=('118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b')
