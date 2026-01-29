@@ -2,43 +2,55 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=ppc-libfribidi
-pkgver=1.0.12
+pkgver=1.0.16
 pkgrel=1
 pkgdesc='Free Implementation of the Unicode Bidirectional Algorithm (for Nintendo Gamecube/Wii homebrew development)'
 arch=('any')
 url="https://github.com/fribidi/fribidi"
 license=('LGPL2.1')
 options=(!strip staticlibs)
-makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
-source=("https://github.com/fribidi/fribidi/releases/download/v$pkgver/fribidi-$pkgver.tar.xz")
-sha256sums=('0cd233f97fc8c67bb3ac27ce8440def5d3ffacf516765b91c2cc654498293495')
+makedepends=('ppc-pkg-config' 'dkp-toolchain-vars' 'dkp-meson-scripts')
+
+source=(
+  "https://github.com/fribidi/fribidi/releases/download/v$pkgver/fribidi-$pkgver.tar.xz"
+  "fribidi-ansi.patch::https://github.com/fribidi/fribidi/commit/b28f43bd3e8e31a5967830f721bab218c1aa114c.patch"
+)
+
 groups=('ppc-portlibs')
 
 prepare() {
+
   cd fribidi-$pkgver
-  # patch out binaries, as they conflict with getopt and do not work anyway
-  sed '/^SUBDIRS/ s/bin //' -i Makefile.am
-  ./autogen.sh
+
+  patch -Np1 -i $srcdir/fribidi-ansi.patch
+
 }
 
 build() {
+
   cd fribidi-$pkgver
 
   source /opt/devkitpro/ppcvars.sh
 
-  ./configure --prefix="$PORTLIBS_PREFIX" --host=powerpc-eabi \
-    --disable-shared --enable-static
+  /opt/devkitpro/meson-cross.sh ppc ../crossfile.txt \
+    -Dbin=false -Dtests=false -Ddeprecated=false -Ddocs=false \
+    build
 
-  make
 }
 
 package() {
+
   cd fribidi-$pkgver
 
   source /opt/devkitpro/ppcvars.sh
 
-  make DESTDIR="$pkgdir" install
+  DESTDIR="$pkgdir" meson install -C build
 
   # remove documentation
   rm -fr "$pkgdir"${PORTLIBS_PREFIX}/share
+
 }
+
+sha256sums=('1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c')
+sha256sums=('1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c'
+            '8165dea3622f8e99611ff32d18bca284f41c1f5b105b3988f87c1dc5e9e7fafa')
