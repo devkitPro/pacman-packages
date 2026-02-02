@@ -2,41 +2,51 @@
 # Contributor: carstene1ns <arch carsten-teibes de> - http://git.io/ctPKG
 # Contributor: Aaron Lindsay <aaron@aaronlindsay.com>
 
-pkgname=ppc-libpng
-pkgver=1.6.48
+_libname=libpng
+pkgname=ppc-${_libname}
+pkgver=1.6.54
 pkgrel=1
 pkgdesc='PNG format graphic files library (for Nintendo Gamecube/Wii homebrew development)'
 arch=('any')
 url='http://www.libpng.org'
-license=('custom')
+license=('libpng-2.0')
 options=(!strip libtool staticlibs)
 depends=('ppc-zlib')
-makedepends=('ppc-pkg-config' 'dkp-toolchain-vars')
+makedepends=(
+  'dkp-toolchain-vars'
+  'ppc-pkg-config'
+)
 groups=('ppc-portlibs')
-source=("https://download.sourceforge.net/libpng/libpng-$pkgver.tar.xz")
+source=("https://download.sourceforge.net/libpng/${_libname}-${pkgver}.tar.gz")
 
 build() {
-  cd libpng-$pkgver
+  cd "${_libname}-${pkgver}"
 
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
-    --disable-tools --disable-shared --enable-static
+  ./configure \
+    --prefix="${PORTLIBS_PREFIX}" \
+    --host=powerpc-eabi \
+    --disable-tools \
+    --disable-tests \
+    --disable-shared \
+    --enable-static
+
   make
 }
 
 package() {
-  cd libpng-$pkgver
+  cd "${_libname}-${pkgver}"
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  make LN_S=cp DESTDIR="$pkgdir" install
+  make install LN_S=cp DESTDIR="$pkgdir"
 
   # license
-  install -Dm644 LICENSE "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/LICENSE
+  install -Dm644 LICENSE "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE"
+
   # remove useless stuff
-  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+  rm -r "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
-sha256sums=('46fd06ff37db1db64c0dc288d78a3f5efd23ad9ac41561193f983e20937ece03')
+sha256sums=('472db714567391842e410090df5a37e0f5b2ec67148a3007678b0482d2ba5219')
