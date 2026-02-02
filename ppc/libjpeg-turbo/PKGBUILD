@@ -1,49 +1,51 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 _libname=libjpeg-turbo
 pkgname=ppc-${_libname}
-pkgver=2.1.2
-pkgrel=5
-pkgdesc='libjpeg derivative with accelerated baseline JPEG compression and decompression'
+pkgver=3.1.3
+pkgrel=1
+pkgdesc='The TurboJPEG library.'
 arch=('any')
 url='https://github.com/libjpeg-turbo/libjpeg-turbo'
 license=('IJG')
 options=(!strip libtool staticlibs)
-source=(
-  "${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz"
-  "libjpeg-turbo-${pkgver}.patch"
+source=("${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz")
+makedepends=(
+  'devkitppc-cmake'
+  'ppc-pkg-config'
+  'dkp-toolchain-vars'
 )
-sha256sums=(
-  'e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed'
-  '79fb3d6acdc9b405a1695a7c6248c420b40e63c115e4a5cab913eb7c2b0c38e4'
-)
-makedepends=('devkitppc-cmake' 'ppc-pkg-config' 'dkp-toolchain-vars')
 groups=('ppc-portlibs')
 
 build() {
-  cd libjpeg-turbo-$pkgver
+  cd "${_libname}-${pkgver}"
 
-  patch -Np1 -i ${srcdir}/libjpeg-turbo-${pkgver}.patch
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  source /opt/devkitpro/ppcvars.sh
+  powerpc-eabi-cmake \
+      -B build \
+      -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}" \
+      -DENABLE_SHARED=OFF \
+      -DHAVE_THREAD_LOCAL=OFF \
+      -DWITH_SIMD=OFF \
+      -DWITH_TESTS=OFF \
+      -DWITH_TOOLS=OFF
 
-  powerpc-eabi-cmake -DENABLE_SHARED:BOOLEAN=false -DWITH_TURBOJPEG_TESTS:BOOLEAN=false -DWITH_SIMD:BOOLEAN=false -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX .
-
-  make
+  make -C build
 }
 
 package() {
-  cd libjpeg-turbo-$pkgver
+  cd "${_libname}-${pkgver}"
 
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  make DESTDIR="$pkgdir" install
+  make -C build install DESTDIR="$pkgdir"
+
   # license
-  install -d "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
-  cp -v LICENSE.md "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/
-  # remove useless stuff
-  rm -r "$pkgdir"${PORTLIBS_PREFIX}/share
+  install -d "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}"
+  cp -v LICENSE.md "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/"
 
+  # remove useless stuff
+  rm -r "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
-sha256sums=('e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed'
-            'bb601fb840fd084b5e8d94a14714537c68b3bb621530f59fb7b8994c2fdf8872')
+sha256sums=('3a13a5ba767dc8264bc40b185e41368a80d5d5f945944d1dbaa4b2fb0099f4e5')
