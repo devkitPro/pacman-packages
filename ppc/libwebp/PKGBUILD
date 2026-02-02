@@ -1,0 +1,44 @@
+_pkgname=libwebp
+pkgname=ppc-${_pkgname}
+pkgver=1.6.0
+pkgrel=1
+pkgdesc='A library to encode and decode images in WebP format.'
+arch=('any')
+url='https://chromium.googlesource.com/webm/libwebp/'
+license=('BSD')
+options=(!buildflags !strip libtool staticlibs)
+depends=('devkitPPC')
+makedepends=('dkp-toolchain-vars')
+groups=('ppc-portlibs')
+source=("https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$pkgver.tar.gz")
+
+build() {
+  cd "${srcdir}/${_pkgname}-${pkgver}"
+
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  ./configure \
+    --prefix="${PORTLIBS_PREFIX}" \
+    --host=powerpc-eabi \
+    --disable-shared \
+    --enable-static \
+    --enable-libwebpdecoder \
+    --enable-libwebpdemux \
+    --enable-libwebpmux
+
+  make
+}
+
+package() {
+  cd "${srcdir}/${_pkgname}-${pkgver}"
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm 644 COPYING -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
+
+  # Remove example programs and manual.
+  rm -rfv "${pkgdir}/${PORTLIBS_PREFIX}/bin"
+  rm -rfv "${pkgdir}/${PORTLIBS_PREFIX}/share"
+}
+
+sha256sums=('e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564')
