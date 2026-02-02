@@ -1,36 +1,43 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
-pkgname=ppc-zlib
-pkgver=1.3
+
+_libname=zlib
+pkgname=ppc-${_libname}
+pkgver=1.3.1
 pkgrel=1
-pkgdesc='Deflate compression method library'
+pkgdesc='The zlib compresion library.'
 arch=('any')
 url='http://www.zlib.net'
 license=('zlib')
 options=(!strip libtool staticlibs)
-source=("${url}/zlib-$pkgver.tar.xz")
 makedepends=('dkp-toolchain-vars')
 groups=('ppc-portlibs')
-build() {
-  cd zlib-$pkgver
+source=("${url}/${_libname}-${pkgver}.tar.gz")
 
-  source /opt/devkitpro/devkitppc.sh
-  source /opt/devkitpro/ppcvars.sh
+build() {
+  cd "${_libname}-${pkgver}"
+
+  source "${DEVKITPRO}/ppcvars.sh"
 
   CHOST=powerpc-eabi \
-    ./configure --prefix="/opt/devkitpro/portlibs/ppc" --static
+    ./configure \
+      --prefix="${PORTLIBS_PREFIX}" \
+      --static
+
   make libz.a # only build library, no programs
 }
 
 package() {
-  cd zlib-$pkgver
+  cd "${_libname}-${pkgver}"
 
-  source /opt/devkitpro/devkitppc.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  make DESTDIR="$pkgdir" install
+  make install DESTDIR="$pkgdir"
+
   # license
-  install -d "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname
-  tail -n 31 README > "$pkgdir"/opt/devkitpro/portlibs/ppc/licenses/$pkgname/LICENSE
+  install -Dm644 LICENSE "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE"
+
   # remove useless stuff
-  rm -r "$pkgdir"/opt/devkitpro/portlibs/ppc/share
+  rm -r "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
-sha256sums=('8a9ba2898e1d0d774eca6ba5b4627a11e5588ba85c8851336eb38de4683050a7')
+
+sha256sums=('9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23')
