@@ -5,15 +5,15 @@ _target=aarch64-none-elf
 
 pkgname=devkita64-${_realname}
 
-pkgver=4.5.0.20241231
-pkgrel=2
+pkgver=4.6.0.20260123
+pkgrel=3
 pkgdesc='devkitA64 newlib'
 
 arch=('any')
 
 source=(
     "https://sourceware.org/pub/newlib/newlib-${pkgver}.tar.gz"
-    "https://pkg.devkitpro.org/pacthes/devkita64-newlib-${pkgver}.patch"
+    "https://raw.githubusercontent.com/devkitPro/buildscripts/refs/tags/devkitA64_r29.1/patches/newlib-${pkgver}-${pkgrel}.patch"
 )
 
 export _TOOLPATH=${TOOLPATH:-/opt/devkitpro/devkitA64}
@@ -21,7 +21,7 @@ export _TOOLPATH=${TOOLPATH:-/opt/devkitpro/devkitA64}
 options=(!strip)
 
 prepare() {
-  patch -p1 -d ${srcdir}/newlib-${pkgver} -i ${srcdir}/devkita64-newlib-${pkgver}.patch
+  patch -p1 -d ${srcdir}/newlib-${pkgver} -i ${srcdir}/newlib-${pkgver}-${pkgrel}.patch
 }
 
 build() {
@@ -53,5 +53,5 @@ package() {
 
 }
 
-sha256sums=('33f12605e0054965996c25c1382b3e463b0af91799001f5bb8c0630f2ec8c852'
-            '277ed7e425a37de7335891916260f12556e891e439e6ff2b5bc8ab91b8944d60')
+sha256sums=('6ff27e3bf022666f43f7802255be680eeff722ac181b1725d21e2e8318604ee3'
+            'b2dd30720f77f54f4f417434148112275612ef7130b190be2d87dbd0cf465cd3')
