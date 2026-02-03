@@ -1,7 +1,7 @@
 # Maintainer: fincs <fincs@devkitpro.org>
 
 pkgname=('catnip')
-pkgver=0.1.0
+pkgver=0.2.0
 pkgrel=1
 pkgdesc="Helper tool for devkitPro CMake"
 arch=('any')
@@ -32,4 +32,4 @@ package() {
 
 }
 
-sha256sums=('96d17c17095b9ed57eac9db0951b8f1385d658b4583c4f59d547cb160b6dfc3c')
+sha256sums=('383b503f0826e123fa00680a7615b8d584f94d2ac28aa56b007a74079680f9c7')
