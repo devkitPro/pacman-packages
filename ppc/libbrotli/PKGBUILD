@@ -1,0 +1,54 @@
+_pkgname=brotli
+pkgname=ppc-lib${_pkgname}
+pkgver=1.2.0
+pkgrel=1
+pkgdesc='Brotli compression library.'
+arch=('any')
+url='https://github.com/google/brotli'
+license=('MIT')
+groups=('ppc-portlibs')
+options=(!buildflags !strip staticlibs)
+depends=('devkitPPC')
+makedepends=(
+    'devkitppc-cmake'
+    'dkp-toolchain-vars'
+)
+source=(
+    "${_pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
+    "${_pkgname}-${pkgver}.patch"
+)
+
+prepare() {
+    patch -Np 0 -i "${_pkgname}-${pkgver}.patch"
+}
+
+build() {
+    cd "${_pkgname}-${pkgver}"
+
+    source "${DEVKITPRO}/ppcvars.sh"
+
+    powerpc-eabi-cmake \
+        -B build \
+        -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}" \
+        -DBROTLI_BUILD_TOOLS=OFF
+
+    make -C build
+}
+
+package() {
+    cd "${_pkgname}-${pkgver}"
+
+    source "${DEVKITPRO}/ppcvars.sh"
+
+    make -C build install DESTDIR="$pkgdir"
+
+    # Remove man pages.
+    rm -r "${pkgdir}${PORTLIBS_PREFIX}/share"
+
+    install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" LICENSE
+}
+
+sha256sums=(
+    '816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec'
+    'f2249e6aa41b7c6b3e557036324ee4ebcd3240e1b6c4d582666e55480e4f4039'
+)
