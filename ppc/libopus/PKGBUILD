@@ -35,6 +35,12 @@ package() {
   cd "${_pkgname}-${pkgver}"
 
   make install DESTDIR="$pkgdir"
+
+  # install license
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING
+  
+  # remove autoconf macros
+  rm -rfv "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
 sha256sums=('6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1')
