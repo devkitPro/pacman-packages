@@ -1,0 +1,54 @@
+_pkgname=zstd
+pkgname=ppc-lib${_pkgname}
+pkgver=1.5.7
+pkgrel=1
+pkgdesc='The Zstandard (zstd) compression library.'
+arch=('any')
+url='https://facebook.github.io/zstd/'
+license=('BSD' 'GPLv2')
+options=(!buildflags !strip staticlibs)
+depends=('devkitPPC')
+makedepends=(
+  'devkitppc-cmake'
+  'dkp-toolchain-vars'
+)
+groups=('ppc-portlibs')
+source=(
+  "https://github.com/facebook/zstd/releases/download/v${pkgver}/${_pkgname}-${pkgver}.tar.gz"
+  "${_pkgname}-${pkgver}.patch"
+)
+
+prepare() {
+  patch -N -p 0 -i "${_pkgname}-${pkgver}.patch"
+}
+
+build() {
+  cd "${_pkgname}-${pkgver}"
+
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  powerpc-eabi-cmake \
+      -DCMAKE_INSTALL_PREFIX="${PORTLIBS_PREFIX}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DZSTD_BUILD_PROGRAMS=OFF \
+      -DZSTD_BUILD_SHARED=OFF \
+      -DZSTD_BUILD_STATIC=ON \
+      build/cmake
+
+    make
+}
+
+package() {
+  cd "${_pkgname}-${pkgver}"
+
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  make install DESTDIR="$pkgdir"
+
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING LICENSE
+}
+
+sha256sums=(
+  'eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3'
+  '42eb0d49a01cab8cefcc4972a334c550a9572e1feee985baaa9af113d98a2425'
+)
