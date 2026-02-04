@@ -1,45 +1,49 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=ppc-opusfile
+_pkgname=opusfile
+pkgname=ppc-${_pkgname}
 pkgver=0.12
-pkgrel=1
+pkgrel=2
 pkgdesc='Library for opening, seeking, and decoding .opus files'
 arch=('any')
 url='https://opus-codec.org/'
-license=(BSD)
-options=(!strip libtool staticlibs)
-source=("https://downloads.xiph.org/releases/opus/opusfile-$pkgver.tar.gz")
-sha256sums=('74ce9b6cf4da103133e7b5c95df810ceb7195471e1162ed57af415fabf5603bf')
-makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
-depends=('ppc-libogg' 'ppc-libopus')
+license=(BSD-3-Clause)
+options=(!buildflags !strip libtool staticlibs)
 groups=('ppc-portlibs')
-
-prepare() {
-
-  cd opusfile-$pkgver
-
-#  sed 's/c89/gnu89/' -i configure.ac
-#  autoreconf -i
-
-}
+depends=(
+  'ppc-libogg'
+  'ppc-libopus'
+)
+makedepends=(
+  'dkp-toolchain-vars'
+  'ppc-pkg-config'
+)
+source=("https://downloads.xiph.org/releases/opus/${_pkgname}-${pkgver}.tar.gz")
 
 build() {
-  cd opusfile-$pkgver
+  cd "${_pkgname}-${pkgver}"
 
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
-    --enable-fixed-point  --disable-shared --enable-static \
-    --disable-examples --disable-docs
+  ./configure \
+      --prefix="${PORTLIBS_PREFIX}" \
+      --host=powerpc-eabi \
+      --disable-shared \
+      --enable-static \
+      --enable-fixed-point  \
+      --disable-examples \
+      --disable-doc \
+      --disable-http
 
   make
 }
 
 package() {
-  cd opusfile-$pkgver
+  cd "${_pkgname}-${pkgver}"
 
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  make DESTDIR="$pkgdir" install
+  make install DESTDIR="$pkgdir"
 }
+
 sha256sums=('118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b')
