@@ -1,6 +1,6 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=dkp-toolchain-vars
-pkgver=1.0.5
+pkgver=1.0.6
 pkgrel=1
 
 pkgdesc='helper scripts to set variables for devkitPro toolchains'
@@ -9,10 +9,18 @@ arch=('any')
 url='http://devkitpro.org/'
 
 source=(
-  'devkitarm.sh' '3dsvars.sh' 'ndsvars.sh' 'armv4tvars.sh'
-  'devkitppc.sh' 'ppcvars.sh' 'cubevars.sh' 'wiivars.sh' 'wiiuvars.sh'
-  'devkita64.sh' 'switchvars.sh'
+  '3dsvars.sh'
+  'armv4tvars.sh'
+  'cubevars.sh'
+  'devkita64.sh'
+  'devkitarm.sh'
+  'devkitppc.sh'
+  'ndsvars.sh'
   'portlibs_prefix.sh'
+  'ppcvars.sh'
+  'switchvars.sh'
+  'wiiuvars.sh'
+  'wiivars.sh'
 )
 
 conflicts=('devkitpro-pkgbuild-helpers')
@@ -20,24 +28,25 @@ conflicts=('devkitpro-pkgbuild-helpers')
 options=(!strip)
 
 package() {
+  install -d "${pkgdir}/opt/devkitpro/cmake"
 
-  install -d "$pkgdir"/opt/devkitpro/cmake
-  install -Dm644 devkitarm.sh 3dsvars.sh ndsvars.sh armv4tvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkita64.sh switchvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm644 devkitppc.sh ppcvars.sh cubevars.sh wiivars.sh wiiuvars.sh "$pkgdir"/opt/devkitpro
-  install -Dm755 portlibs_prefix.sh "$pkgdir"/opt/devkitpro
+  install -Dm644 -t "${pkgdir}/opt/devkitpro" \
+          devkitarm.sh 3dsvars.sh ndsvars.sh armv4tvars.sh \
+          devkita64.sh switchvars.sh \
+          devkitppc.sh ppcvars.sh cubevars.sh wiivars.sh wiiuvars.sh
 
+  install -Dm755 -t "${pkgdir}/opt/devkitpro" portlibs_prefix.sh
 }
 
-sha256sums=('000b49cce7a925cb096fbac43501ef1c89511861a3ea2091569ae71aa108369b'
-            '679c9e428c6ee6f482299679c1f0b576cec628afb145e19def497894864dd509'
-            '223f87989791295ef5170d33698390fb1389c4f3cfad735f47fec5757f13c452'
-            '7bc0176c5dbea1ab6acaa98a055a1ab81989152d68b582fc57612972f394ac07'
-            'b69edeee95dfece986941531a7e2c314cc550ab578b300997e0d5de9e825597c'
-            'e3156d1e6671bfc9ad6a343d26da8cbddcfc4d8e5321ddc07cb2b4934e20ed66'
-            '004fd94dfc9e7a19281fec19c0341686f4dbf00d1f3c9c5590a150e1faac2360'
-            'e35283a019b5e032c8085e3085b46ab80cea58851c087ba4269a502195ade359'
-            '0f096b32a3216916553360948d2f91f92f4657844a1618cb84bf96a797c44979'
-            'f3caba3a8864a31a50ff50131f39d160013b6d0b8a2e7e6ac90ca44b591fcb57'
-            '5ade1211e616a7eb540c3660839d17af050c41c7c9ee89242ce4fe7afac4df52'
-            '7913cb3d38e78ede19673912f25970d678912404399e5c10c744726bbafd5f84')
+sha256sums=('0703e516af61d0ba19544b872c40b47df856af0eee9b2100ea0b7d0240aeaba0'
+            'f6e3d527bd8ff0acdcd6e0513c2fef3b16cb2a02dd3977ad5bfc4d0a39854117'
+            'c473dce11d9168cf3ef4a6c97ac414283e8ad9c8cfcbd2c7ef54e37d46d1aa49'
+            '6b6b684941f7d72dbf67e07fc13432c9d377a313bd8240d1e333e523db97bb5d'
+            '6710d3650879d587546cf6d81246b9e23b884072a6e5785288c8da4d85df304b'
+            'b346347a9ed184f68d24ec7daf68b2d81872eebb672bb01f1032c5211479898f'
+            'd0b3c7a5f21b89c00344587dcfa62e28f95cc0cf3a1aea136921bd74ae8dcb72'
+            '7913cb3d38e78ede19673912f25970d678912404399e5c10c744726bbafd5f84'
+            '47e1277dfa760a3609a54a4ab03cf14c12762523c38ae480cbfb0eab6292730e'
+            '142bf14d1c997212b0fc2720134302ceb3957a247fef85d10a0f34ce32361b17'
+            '2121714135a10d02ea30ee5c5a7b8f2fafefe5c2165cb3dc0e5350cfbccd3b07'
+            '51e325721e36f978d58c9fe1cd8c6a624a6f5610a648238531d551a847ae40ec')
