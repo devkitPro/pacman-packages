@@ -44,6 +44,12 @@ package() {
   source "${DEVKITPRO}/ppcvars.sh"
 
   make install DESTDIR="$pkgdir"
+
+  # install license
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING
+
+  # remove docs
+  rm -rfv "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
 sha256sums=('118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b')
