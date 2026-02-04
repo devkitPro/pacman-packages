@@ -1,0 +1,41 @@
+_pkgname=faad2
+pkgname=ppc-lib${_pkgname}
+pkgver=2.11.2
+pkgrel=1
+pkgdesc='Freeware Advanced Audio (AAC) Decoder.'
+arch=('any')
+url='https://github.com/knik0/faad2'
+license=('GPLv2')
+options=(!strip libtool staticlibs)
+groups=('ppc-portlibs')
+source=("${_pkgname}-${pkgver}::${url}/archive/refs/tags/${pkgver}.tar.gz")
+
+build() {
+  cd "${_pkgname}-${pkgver}"
+
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  powerpc-eabi-cmake \
+    -B build \
+    -DCMAKE_INSTALL_PREFIX="$PORTLIBS_PREFIX" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DFAAD_BUILD_CLI=OFF
+
+  make -C build
+}
+
+package() {
+  cd "${_pkgname}-${pkgver}"
+
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  make -C build install DESTDIR="$pkgdir"
+
+  # install license
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING
+
+  # remove man pages
+  rm -rfv "${pkgdir}${PORTLIBS_PREFIX}/share"
+}
+
+sha256sums=('3fcbd305e4abd34768c62050e18ca0986f7d9c5eca343fb98275418013065c0e')
