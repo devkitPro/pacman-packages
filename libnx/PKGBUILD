@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libnx')
-pkgver=4.11.1
+pkgver=4.12.0
 pkgrel=1
 pkgdesc="Nintendo Switch AArch64-only userland library."
 arch=('any')
@@ -31,4 +31,4 @@ package() {
 
 }
 
-sha256sums=('0670939dffc471a52d999f70d636e03962e3cce71878b3dccc222d92ddb7ca4d')
+sha256sums=('1665209994d67b4b236d80fa200499853473a7e2bb502d5045d00fc0170f90ef')
