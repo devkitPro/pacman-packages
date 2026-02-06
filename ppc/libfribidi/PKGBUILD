@@ -50,7 +50,5 @@ package() {
   rm -fr "$pkgdir"${PORTLIBS_PREFIX}/share
 
 }
-
-sha256sums=('1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c')
 sha256sums=('1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c'
             '8165dea3622f8e99611ff32d18bca284f41c1f5b105b3988f87c1dc5e9e7fafa')
