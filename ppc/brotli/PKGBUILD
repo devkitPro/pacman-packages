@@ -1,9 +1,9 @@
 _pkgname=brotli
 pkgname=ppc-${_pkgname}
-provides=("ppc-lib${_pkgname}")
-conflicts=("ppc-lib${_pkgname}")
 pkgver=1.2.0
 pkgrel=1
+provides=("ppc-lib${_pkgname}=${pkgver}")
+conflicts=("ppc-lib${_pkgname}")
 pkgdesc='Brotli compression library.'
 arch=('any')
 url='https://github.com/google/brotli'
