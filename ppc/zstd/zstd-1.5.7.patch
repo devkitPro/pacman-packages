@@ -1,0 +1,72 @@
+--- zstd-1.5.7/build/cmake/CMakeModules/AddZstdCompilationFlags.cmake.orig	2025-02-19 00:04:24.000000000 +0000
++++ zstd-1.5.7/build/cmake/CMakeModules/AddZstdCompilationFlags.cmake	2025-02-19 00:04:24.000000000 +0000
+@@ -50,10 +50,6 @@
+ endfunction()
+ 
+ macro(ADD_ZSTD_COMPILATION_FLAGS)
+-    # We set ZSTD_HAS_NOEXECSTACK if we are certain we've set all the required
+-    # compiler flags to mark the stack as non-executable.
+-    set(ZSTD_HAS_NOEXECSTACK false)
+-
+     if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" OR MINGW) #Not only UNIX but also WIN32 for MinGW
+         # It's possible to select the exact standard used for compilation.
+         # It's not necessary, but can be employed for specific purposes.
+@@ -77,24 +73,6 @@
+         if (CMAKE_BUILD_TYPE MATCHES "Debug")
+             EnableCompilerFlag("-DDEBUGLEVEL=1" true true false)
+         endif ()
+-        # Add noexecstack flags
+-        # LDFLAGS
+-        EnableCompilerFlag("-Wl,-z,noexecstack" false false true)
+-        # CFLAGS & CXXFLAGS
+-        EnableCompilerFlag("-Qunused-arguments" true true false)
+-        EnableCompilerFlag("-Wa,--noexecstack" true true false)
+-        # NOTE: Using 3 nested ifs because the variables are sometimes
+-        # empty if the condition is false, and sometimes equal to false.
+-        # This implicitly converts them to truthy values. There may be
+-        # a better way to do this, but this reliably works.
+-        if (${LD_FLAG_WL_Z_NOEXECSTACK})
+-            if (${C_FLAG_WA_NOEXECSTACK})
+-                if (${CXX_FLAG_WA_NOEXECSTACK})
+-                    # We've succeeded in marking the stack as non-executable
+-                    set(ZSTD_HAS_NOEXECSTACK true)
+-                endif()
+-            endif()
+-        endif()
+     elseif (MSVC) # Add specific compilation flags for Windows Visual
+ 
+         set(ACTIVATE_MULTITHREADED_COMPILATION "ON" CACHE BOOL "activate multi-threaded compilation (/MP flag)")
+--- zstd-1.5.7/build/cmake/lib/CMakeLists.txt.orig	2025-02-19 00:04:24.000000000 +0000
++++ zstd-1.5.7/build/cmake/lib/CMakeLists.txt	2025-02-19 00:04:24.000000000 +0000
+@@ -39,7 +39,7 @@
+ if (MSVC)
+     add_compile_options(-DZSTD_DISABLE_ASM)
+ else ()
+-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|AMD64.*|x86_64.*|X86_64.*" AND ${ZSTD_HAS_NOEXECSTACK})
++    if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|AMD64.*|x86_64.*|X86_64.*")
+         set(DecompressSources ${DecompressSources} ${LIBRARY_DIR}/decompress/huf_decompress_amd64.S)
+     else()
+         add_compile_options(-DZSTD_DISABLE_ASM)
+@@ -233,7 +233,6 @@
+     set_target_properties(
+             libzstd_static
+             PROPERTIES
+-            POSITION_INDEPENDENT_CODE On
+             OUTPUT_NAME ${STATIC_LIBRARY_BASE_NAME})
+ 
+     if (ZSTD_FRAMEWORK)
+--- zstd-1.5.7/lib/common/xxhash.h.orig	2025-02-19 00:04:24.000000000 +0000
++++ zstd-1.5.7/lib/common/xxhash.h	2025-02-19 00:04:24.000000000 +0000
+@@ -2253,9 +2253,9 @@
+ 
+ #ifndef XXH_FORCE_ALIGN_CHECK  /* can be defined externally */
+    /* don't check on sizeopt, x86, aarch64, or arm when unaligned access is available */
+-#  if XXH_SIZE_OPT >= 1 || \
+-      defined(__i386)  || defined(__x86_64__) || defined(__aarch64__) || defined(__ARM_FEATURE_UNALIGNED) \
+-   || defined(_M_IX86) || defined(_M_X64)     || defined(_M_ARM64)    || defined(_M_ARM) /* visual */
++#  if XXH_SIZE_OPT >= 1 \
++   || defined(__i386)  || defined(__x86_64__) || defined(__aarch64__) || defined(__ARM_FEATURE_UNALIGNED) || defined(__PPC__) \
++   || defined(_M_IX86) || defined(_M_X64)     || defined(_M_ARM64)    || defined(_M_ARM)                  || defined(_M_PPC) /* visual */
+ #    define XXH_FORCE_ALIGN_CHECK 0
+ #  else
+ #    define XXH_FORCE_ALIGN_CHECK 1
