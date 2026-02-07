@@ -1,7 +1,9 @@
 _pkgname=zstd
-pkgname=ppc-lib${_pkgname}
+pkgname=ppc-${_pkgname}
 pkgver=1.5.7
 pkgrel=1
+provides=("ppc-lib${_pkgname}=${pkgver}")
+conflicts=("ppc-lib${_pkgname}")
 pkgdesc='The Zstandard (zstd) compression library.'
 arch=('any')
 url='https://facebook.github.io/zstd/'
@@ -35,7 +37,7 @@ build() {
       -DZSTD_BUILD_STATIC=ON \
       build/cmake
 
-    make
+  make
 }
 
 package() {
@@ -48,7 +50,5 @@ package() {
   install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING LICENSE
 }
 
-sha256sums=(
-  'eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3'
-  '42eb0d49a01cab8cefcc4972a334c550a9572e1feee985baaa9af113d98a2425'
-)
+sha256sums=('eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3'
+            '42eb0d49a01cab8cefcc4972a334c550a9572e1feee985baaa9af113d98a2425')
