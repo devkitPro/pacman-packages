@@ -1,51 +1,56 @@
 # Maintainer:  Dave Murphy <davem@devkitpro.org>
 
-pkgname=ppc-flac
-pkgver=1.4.3
-pkgrel=2
-pkgdesc='FLAC stands for Free Lossless Audio Codec, an audio format similar to MP3, but lossless...'
+_pkgname=flac
+pkgname=ppc-${_pkgname}
+pkgver=1.5.0
+pkgrel=1
+pkgdesc='Free Lossless Audio Codec (FLAC) library.'
 arch=('any')
 url='https://xiph.org/flac/'
 license=(Xiph.org)
 options=(!strip libtool staticlibs)
-depends=("ppc-libogg")
-makedepends=('dkp-toolchain-vars')
-source=(
-  "https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$pkgver.tar.xz"
-  "flac-${pkgver}.patch"
-)
 groups=('ppc-portlibs')
-
-sha256sums=(
-  '91cfc3ed61dc40f47f050a109b08610667d73477af6ef36dcad31c31a4a8d53f'
-  '7ddddd4d96ff19b5e41f2fbcbff6cf78b29669b25c10e7c04cb18fd0e53d4fa5'
+depends=(
+  'ppc-libogg'
 )
+makedepends=(
+  'dkp-toolchain-vars'
+)
+source=("https://github.com/xiph/flac/releases/download/${pkgver}/${_pkgname}-${pkgver}.tar.xz")
 
 build() {
-  cd flac-$pkgver
+  cd "${_pkgname}-${pkgver}"
 
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  patch -Np1 -i "$srcdir/flac-${pkgver}.patch"
+  ./configure \
+      --prefix="${PORTLIBS_PREFIX}" \
+      --host=powerpc-eabi \
+      --disable-shared \
+      --enable-static \
+      --without-pic \
+      --disable-doxygen-docs \
+      --disable-examples \
+      --disable-oggtest \
+      --disable-programs \
+      --disable-thorough-tests \
+      --enable-cpplibs
 
-  CFLAGS="${CFLAGS} -D__WIIU__ " \
-    ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
-    --disable-shared --enable-static \
-    --without-pic \
-    --enable-cpplibs \
-    --disable-programs \
-    --disable-examples
-
-  make -C src/libFLAC
+  make
 }
 
 package() {
-  cd flac-$pkgver
+  cd "${_pkgname}-${pkgver}"
 
-  make DESTDIR="$pkgdir" install
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  make install DESTDIR="$pkgdir"
+
+  # copy license for libFLAC/libFLAC++
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING.Xiph
+
+  # remove extra files
+  rm -rfv "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
-sha256sums=('e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4'
-            '5244952358deec901fc98dbfdbc7f63317cc6e0f2b036f241fe75c1cf3647302')
-sha256sums=('6c58e69cd22348f441b861092b825e591d0b822e106de6eb0ee4d05d27205b70'
-            '5244952358deec901fc98dbfdbc7f63317cc6e0f2b036f241fe75c1cf3647302')
+sha256sums=('f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920')
