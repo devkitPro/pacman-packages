@@ -1,5 +1,5 @@
 _pkgname=faad2
-pkgname=ppc-lib${_pkgname}
+pkgname=ppc-${_pkgname}
 pkgver=2.11.2
 pkgrel=1
 pkgdesc='Freeware Advanced Audio (AAC) Decoder.'
