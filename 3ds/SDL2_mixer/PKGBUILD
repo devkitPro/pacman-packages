@@ -1,0 +1,47 @@
+pkgname=3ds-SDL2_mixer
+pkgver=2.8.1
+pkgrel=1
+pkgdesc="Audio mixer that supports various file formats for SDL2 (Nintendo 3DS port)"
+arch=('any')
+url="https://libsdl.org/"
+license=('MIT')
+groups=('3ds-portlibs' '3ds-sdl2-libs')
+depends=(
+    '3ds-flac'
+    '3ds-libmodplug'
+    '3ds-libvorbisidec'
+    '3ds-mpg123'
+    '3ds-opusfile'
+    '3ds-SDL2'
+)
+makedepends=(
+    '3ds-pkg-config'
+    'cmake'
+    'dkp-toolchain-vars'
+)
+options=(!strip libtool staticlibs)
+source=("https://github.com/libsdl-org/SDL_mixer/releases/download/release-$pkgver/SDL2_mixer-$pkgver.tar.gz")
+sha256sums=('cb760211b056bfe44f4a1e180cc7cb201137e4d1572f2002cc1be728efd22660')
+
+build() {
+    source /opt/devkitpro/3dsvars.sh
+
+    arm-none-eabi-cmake \
+        -S SDL2_mixer-$pkgver \
+        -B build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DSDL2MIXER_DEPS_SHARED=OFF \
+        -DSDL2MIXER_FLAC_LIBFLAC=ON \
+        -DSDL2MIXER_MIDI=OFF \
+        -DSDL2MIXER_MOD_MODPLUG=ON \
+        -DSDL2MIXER_MOD_XMP=OFF \
+        -DSDL2MIXER_MP3_MPG123=ON \
+        -DSDL2MIXER_VORBIS=TREMOR \
+        -DSDL2MIXER_WAVPACK=OFF
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+    sed 's/tremor/vorbisidec/g' -i "$pkgdir/opt/devkitpro/portlibs/3ds/lib/pkgconfig/SDL2_mixer.pc"
+}
