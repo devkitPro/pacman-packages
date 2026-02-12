@@ -1,0 +1,18 @@
+--- src/meson.build.ori	2026-02-12 03:27:40.994247931 -0300
++++ src/meson.build	2026-02-12 03:28:11.628700713 -0300
+@@ -656,6 +656,7 @@
+   install: true,
+   darwin_versions: darwin_versions,
+   link_language: libharfbuzz_link_language,
++  pic: false,
+ )
+ 
+ libharfbuzz_dep = declare_dependency(
+@@ -681,6 +682,7 @@
+   install: true,
+   darwin_versions: darwin_versions,
+   link_language: chosen_linker,
++  pic: false,
+ )
+ 
+ custom_target('harfbuzz-subset.cc',
