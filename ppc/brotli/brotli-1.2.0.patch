@@ -1,0 +1,23 @@
+--- brotli-1.2.0/c/common/platform.h.orig	2025-10-27 13:07:48.000000000 +0000
++++ brotli-1.2.0/c/common/platform.h	2025-10-27 13:07:48.000000000 +0000
+@@ -191,6 +191,10 @@
+ #define BROTLI_TARGET_X64
+ #endif
+ 
++#if defined(__PPC__)
++#define BROTLI_TARGET_POWERPC
++#endif
++
+ #if defined(__PPC64__)
+ #define BROTLI_TARGET_POWERPC64
+ #endif
+@@ -267,7 +271,8 @@
+ #define BROTLI_UNALIGNED_READ_FAST (!!0)
+ #elif defined(BROTLI_TARGET_X86) || defined(BROTLI_TARGET_X64) ||       \
+     defined(BROTLI_TARGET_ARMV7) || defined(BROTLI_TARGET_ARMV8_ANY) || \
+-    defined(BROTLI_TARGET_RISCV64) || defined(BROTLI_TARGET_LOONGARCH64)
++    defined(BROTLI_TARGET_POWERPC) || defined(BROTLI_TARGET_RISCV64) || \
++    defined(BROTLI_TARGET_LOONGARCH64)
+ /* These targets are known to generate efficient code for unaligned reads
+  * (e.g. a single instruction, not multiple 1-byte loads, shifted and or'd
+  * together). */

@@ -1,49 +1,56 @@
 # Maintainer: Gabriel Kind <gabriel-dkp mastergk de>
 
-pkgname=ppc-mpg123
-pkgver=1.31.3
-pkgrel=4
+_pkgname=mpg123
+pkgname=ppc-${_pkgname}
+pkgver=1.33.4
+pkgrel=1
 pkgdesc="A real time MPEG audio decoder for layer 1, 2 and 3"
 arch=('any')
 url="http://sourceforge.net/projects/mpg123"
-license=('LGPL2.1')
-options=(!strip libtool staticlibs)
-source=(
- "http://downloads.sourceforge.net/sourceforge/mpg123/mpg123-${pkgver}.tar.bz2"
- "mpg123-${pkgver}.patch"
+license=('LGPL-2.1-only')
+options=(!buildflags !strip libtool staticlibs)
+makedepends=(
+  'devkitPPC'
+  'dkp-toolchain-vars'
+  'ppc-pkg-config'
 )
-sha256sums=('1ca77d3a69a5ff845b7a0536f783fee554e1041139a6b978f6afe14f5814ad1a'
-            'e23f7c9981f26c1748b3e4cb72eed4a1c6fd92f7c51f6d6cc97e2ad2001f0cd3')
-
-makedepends=('dkp-toolchain-vars' 'ppc-pkg-config' 'devkitPPC')
 groups=('ppc-portlibs')
+source=("http://downloads.sourceforge.net/sourceforge/mpg123/${_pkgname}-${pkgver}.tar.bz2")
 
 build() {
-  cd mpg123-$pkgver
+  cd "${_pkgname}-${pkgver}"
 
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  patch -Np1 -i "$srcdir"/mpg123-${pkgver}.patch
-
-  autoreconf -fi
-
-  ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
-    --disable-shared --enable-static --enable-fifo=no \
-    --enable-ipv6=no --enable-network=no --enable-int-quality=no \
-    --with-cpu=generic --with-default-audio=dummy
-
+  ./configure \
+      --prefix="${PORTLIBS_PREFIX}" \
+      --host=powerpc-eabi \
+      --disable-shared \
+      --enable-static \
+      --disable-components \
+      --enable-libmpg123 \
+      --enable-libsyn123 \
+      --disable-fifo \
+      --disable-int-quality \
+      --disable-ipv6 \
+      --disable-network \
+      --with-cpu=generic
+ 
   make
 }
 
 package() {
-  cd mpg123-$pkgver
+  cd "${_pkgname}-${pkgver}"
 
-  source /opt/devkitpro/devkitppc.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  make DESTDIR="$pkgdir" install
+  make install DESTDIR="$pkgdir"
 
-  # remove useless stuff
-  rm -rf "$pkgdir"${PORTLIBS_PREFIX}/bin "$pkgdir"${PORTLIBS_PREFIX}/share
+  # install license
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING
+  
+  # remove empty bin dir
+  rm -rfv "${pkgdir}${PORTLIBS_PREFIX}/bin"
 }
-sha256sums=('1ca77d3a69a5ff845b7a0536f783fee554e1041139a6b978f6afe14f5814ad1a'
-            '99e86f82aa5c53769747c7e104f6d2f3a679b29481df38386321beb6f7ef0b70')
+
+sha256sums=('3ae8c9ff80a97bfc0e22e89fbcd74687eca4fc1db315b12607f27f01cb5a47d9')
