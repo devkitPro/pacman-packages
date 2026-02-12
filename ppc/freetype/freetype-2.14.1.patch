@@ -1,0 +1,9 @@
+--- builds/unix/freetype2.in.ori	2026-02-12 04:21:02.411103782 -0300
++++ builds/unix/freetype2.in	2026-02-12 04:25:48.369287035 -0300
+@@ -10,5 +10,5 @@
+ Requires: %PKGCONFIG_REQUIRES%
+ Requires.private: %PKGCONFIG_REQUIRES_PRIVATE%
+ Libs: %PKGCONFIG_LIBS%
+-Libs.private: %PKGCONFIG_LIBS_PRIVATE%
++Libs.private: %PKGCONFIG_LIBS_PRIVATE% -Wl,--start-group,-lfreetype,-lharfbuzz,--end-group
+ Cflags: -I${includedir}/freetype2

@@ -2,6 +2,7 @@
 
 _pkgname=freetype
 pkgname=ppc-${_pkgname}
+replaces=(ppc-${_pkgname}-bootstrap)
 pkgver=2.14.1
 pkgrel=1
 pkgdesc='FreeType is a freely available software library to render fonts.'
@@ -11,17 +12,26 @@ license=(GPL-2.0-only FTL)
 options=(!strip libtool staticlibs)
 groups=('ppc-portlibs')
 depends=(
+  'ppc-brotli'
   'ppc-bzip2'
   'ppc-harfbuzz'
   'ppc-libpng'
   'ppc-zlib'
-  'ppc-brotli'
 )
 makedepends=(
   'dkp-toolchain-vars'
   'ppc-pkg-config'
 )
-source=("http://download.savannah.gnu.org/releases/freetype/${_pkgname}-${pkgver}.tar.xz")
+source=(
+  "http://download.savannah.gnu.org/releases/freetype/${_pkgname}-${pkgver}.tar.xz"
+  "${_pkgname}-${pkgver}.patch"
+)
+
+prepare() {
+  cd "${_pkgname}-${pkgver}"
+
+  patch -Nu -p 0 -i "${srcdir}/${_pkgname}-${pkgver}.patch"
+}
 
 build() {
   cd "${_pkgname}-${pkgver}"
@@ -59,4 +69,5 @@ package() {
   rm -rfv "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
-sha256sums=('32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc')
+sha256sums=('32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc'
+            '9bdff57896773e9d1207f73725fe252ec1676555c81f55b910659a7513ff1f4b')

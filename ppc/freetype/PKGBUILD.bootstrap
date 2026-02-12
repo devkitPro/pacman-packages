@@ -13,10 +13,10 @@ license=(GPL-2.0-only FTL)
 options=(!strip libtool staticlibs)
 groups=('ppc-portlibs')
 depends=(
+  'ppc-brotli'
   'ppc-bzip2'
   'ppc-libpng'
   'ppc-zlib'
-  'ppc-brotli'
 )
 makedepends=(
   'dkp-toolchain-vars'
