@@ -15,6 +15,7 @@ depends=(
   'ppc-harfbuzz'
   'ppc-libpng'
   'ppc-zlib'
+  'ppc-brotli'
 )
 makedepends=(
   'dkp-toolchain-vars'
@@ -27,13 +28,6 @@ build() {
 
   source "${DEVKITPRO}/ppcvars.sh"
 
-  # Note: freetype and harfbuzz have circular dependencies.
-  # Build order:
-  #   1. freetype with no harfbuzz
-  #   2. harfbuzz
-  #   3. freetype with harfbuzz
-  USE_HARFBUZZ=yes
-
   ./configure \
       --host=powerpc-eabi \
       --prefix="$PORTLIBS_PREFIX" \
@@ -44,7 +38,7 @@ build() {
       --enable-year2038 \
       --with-brotli=yes \
       --with-bzip2=yes \
-      --with-harfbuzz=$USE_HARFBUZZ \
+      --with-harfbuzz=yes \
       --with-png=yes \
       --with-zlib=yes
 
@@ -65,4 +59,4 @@ package() {
   rm -rfv "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
-sha256sums=('SKIP')
+sha256sums=('32427e8c471ac095853212a37aef816c60b42052d4d9e48230bab3bdf2936ccc')
