@@ -12,7 +12,6 @@ options=(!strip libtool staticlibs)
 groups=('ppc-portlibs')
 depends=(
   'ppc-bzip2'
-  'ppc-harfbuzz'
   'ppc-libpng'
   'ppc-zlib'
 )
@@ -32,7 +31,7 @@ build() {
   #   1. freetype with no harfbuzz
   #   2. harfbuzz
   #   3. freetype with harfbuzz
-  USE_HARFBUZZ=yes
+  USE_HARFBUZZ=no
 
   ./configure \
       --host=powerpc-eabi \
