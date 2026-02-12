@@ -37,15 +37,15 @@ build() {
       --host=powerpc-eabi \
       --prefix="$PORTLIBS_PREFIX" \
       --disable-shared \
-       --enable-static \
-       --disable-pic \
-       --disable-mmap \
-       --enable-year2038 \
-       --with-zlib=yes \
-       --with-bzip2=yes \
-       --with-png=yes \
-       --with-harfbuzz=$USE_HARFBUZZ \
-       --with-brotli=yes
+      --enable-static \
+      --disable-pic \
+      --disable-mmap \
+      --enable-year2038 \
+      --with-brotli=yes \
+      --with-bzip2=yes \
+      --with-harfbuzz=$USE_HARFBUZZ \
+      --with-png=yes \
+      --with-zlib=yes
 
   make
 }
