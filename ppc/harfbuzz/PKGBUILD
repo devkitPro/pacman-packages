@@ -13,16 +13,7 @@ makedepends=(
 )
 depends=('ppc-freetype')
 options=(!buildflags !strip staticlibs)
-source=(
-    "https://github.com/harfbuzz/harfbuzz/releases/download/${pkgver}/${_pkgname}-${pkgver}.tar.xz"
-    "${_pkgname}-${pkgver}.patch"
-)
-
-prepare() {
-  cd "${_pkgname}-${pkgver}"
-
-  patch -Nu -p 0 -i "${srcdir}/${_pkgname}-${pkgver}.patch"
-}
+source=("https://github.com/harfbuzz/harfbuzz/releases/download/${pkgver}/${_pkgname}-${pkgver}.tar.xz")
 
 build() {
   cd "${_pkgname}-${pkgver}"
@@ -35,7 +26,8 @@ build() {
       build \
       -Dutilities=disabled \
       -Dtests=disabled \
-      -Ddocs=disabled
+      -Ddocs=disabled \
+      -Db_staticpic=false
 
   meson compile -C build -j 1
 }
@@ -51,5 +43,4 @@ package() {
   install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" COPYING
 }
 
-sha256sums=('6f6db164359a2da5a84ef826615b448b33e6306067ad829d85d5b0bf936f1bb8'
-            '2b55426962f29a0db31eb27e7502d92cee8a17dfa3143916dca5e2c862f6f78a')
+sha256sums=('6f6db164359a2da5a84ef826615b448b33e6306067ad829d85d5b0bf936f1bb8')
