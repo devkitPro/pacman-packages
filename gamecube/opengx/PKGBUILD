@@ -1,6 +1,6 @@
 pkgname=gamecube-opengx
 pkgver=0.17.0
-pkgrel=1
+pkgrel=2
 pkgdesc='opengl/gx translation library'
 arch=('any')
 url='https://github.com/devkitPro/opengx'
