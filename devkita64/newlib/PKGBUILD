@@ -6,7 +6,7 @@ _target=aarch64-none-elf
 pkgname=devkita64-${_realname}
 
 pkgver=4.6.0.20260123
-pkgrel=3
+pkgrel=4
 pkgdesc='devkitA64 newlib'
 
 arch=('any')
@@ -55,3 +55,5 @@ package() {
 
 sha256sums=('6ff27e3bf022666f43f7802255be680eeff722ac181b1725d21e2e8318604ee3'
             'b2dd30720f77f54f4f417434148112275612ef7130b190be2d87dbd0cf465cd3')
+sha256sums=('6ff27e3bf022666f43f7802255be680eeff722ac181b1725d21e2e8318604ee3'
+            '6d5aba4356553c727765c98e7553d3784f31d361c856e220ef27cc26353fb88f')
