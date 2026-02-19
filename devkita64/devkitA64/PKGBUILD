@@ -1,6 +1,6 @@
 # Maintainer: Dave Murphy <davem[at]devkitpro.org>
 pkgname=devkitA64
-pkgver=r29.1
+pkgver=r29.2
 pkgrel=1
 pkgdesc='devkitA64 metapackage'
 url='https://devkitpro.org'
@@ -9,5 +9,5 @@ license=('GPL')
 depends=(
   'devkita64-binutils>=2.45.1-2'
   'devkita64-gcc>=15.2.0-7'
-  'devkita64-newlib>=4.6.0.20260123-3'
+  'devkita64-newlib>=4.6.0.20260123-4'
 )
