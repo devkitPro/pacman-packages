@@ -2,8 +2,8 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('dswifi')
-pkgver=2.0.2
-pkgrel=3
+pkgver=2.1.0
+pkgrel=1
 pkgdesc="Nintendo DS wifi library."
 arch=('any')
 license=('zlib')
@@ -23,5 +23,4 @@ package() {
 
 }
 
-sha256sums=('deba3a0945143739923bed1f1169b1299aea8433b6a406ab31ff1ba92ceb085d')
-sha256sums=('c1a77954401ff3639588860ae1cc711ff5b2df595814f757ed3f027315af93e4')
+sha256sums=('359410535c6e693a3fea0652bf86faed843dff94e7db31466354075fa8b251a7')
