@@ -2,7 +2,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libnds')
-pkgver=2.0.1
+pkgver=2.0.2
 pkgrel=1
 pkgdesc="Nintendo DS library."
 arch=('any')
@@ -21,4 +21,4 @@ package() {
   make -C  $srcdir/${pkgname}-${pkgver} DESTDIR=$pkgdir install
 
 }
-sha256sums=('ae85a5eca31a706df5ea59cdaebe8c9249316d3d0ef1d1341d06b32f53358c15')
+sha256sums=('7bd4acd777b4f0fb5087897c16ed4087642fb0e2c0ac1970a9079b255d5865d4')
