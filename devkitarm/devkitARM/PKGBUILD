@@ -1,14 +1,14 @@
 # Maintainer: Dave Murphy <davem[at]devkitpro.org>
 pkgname=devkitARM
-pkgver=r67
-pkgrel=4
+pkgver=r67.1
+pkgrel=1
 pkgdesc='devkitARM metapackage'
 url='https://devkitpro.org'
 arch=('any')
 license=('GPL')
 depends=(
-  'devkitarm-binutils=2.45.1-2'
-  'devkitarm-gcc=15.2.0-6'
-  'devkitarm-newlib=4.5.0.20241231-4'
+  'devkitarm-binutils>=2.45.1-2'
+  'devkitarm-gcc>=15.2.0-7'
+  'devkitarm-newlib>=4.6.0.20260123-4'
 )
 groups=('gp32-dev' 'gp2x-dev' 'gba-dev' 'nds-dev' '3ds-dev')
