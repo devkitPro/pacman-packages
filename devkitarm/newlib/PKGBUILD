@@ -5,7 +5,7 @@ _target=arm-none-eabi
 
 pkgname=devkitarm-${_realname}
 
-pkgver=4.5.0.20241231
+pkgver=4.6.0.20260123
 pkgrel=4
 
 pkgdesc='devkitARM newlib'
@@ -14,7 +14,7 @@ arch=('any')
 
 source=(
     "https://sourceware.org/pub/newlib/newlib-${pkgver}.tar.gz"
-    "https://pkg.devkitpro.org/patches/devkitarm-newlib-${pkgver}.patch"
+    "https://raw.githubusercontent.com/devkitPro/buildscripts/refs/tags/devkitARM_r67.1/patches/newlib-${pkgver}-${pkgrel}.patch"
 )
 
 groups=('gp32-dev' 'gp2x-dev' 'gba-dev' 'nds-dev' '3ds-dev')
@@ -24,7 +24,7 @@ options=(!strip)
 export _TOOLPATH=${TOOLPATH:-/opt/devkitpro/devkitARM}
 
 prepare() {
-  patch -p1 -d ${srcdir}/newlib-${pkgver} -i ${srcdir}/devkitarm-newlib-${pkgver}.patch
+  patch -p1 -d ${srcdir}/newlib-${pkgver} -i ${srcdir}/newlib-${pkgver}-${pkgrel}.patch
 }
 
 build() {
@@ -56,5 +56,5 @@ package() {
 
 }
 
-sha256sums=('33f12605e0054965996c25c1382b3e463b0af91799001f5bb8c0630f2ec8c852'
-            '277ed7e425a37de7335891916260f12556e891e439e6ff2b5bc8ab91b8944d60')
+sha256sums=('6ff27e3bf022666f43f7802255be680eeff722ac181b1725d21e2e8318604ee3'
+            '6d5aba4356553c727765c98e7553d3784f31d361c856e220ef27cc26353fb88f')
