@@ -5,7 +5,7 @@ _realname=newlib
 pkgname=devkitppc-${_realname}
 
 pkgver=4.6.0.20260123
-pkgrel=2
+pkgrel=4
 pkgdesc='devkitPPC newlib'
 
 arch=('any')
@@ -16,7 +16,7 @@ export _TOOLPATH=${TOOLPATH:-/opt/devkitpro/devkitPPC}
 
 source=(
     "https://sourceware.org/pub/newlib/newlib-${pkgver}.tar.gz"
-    "https://raw.githubusercontent.com/devkitPro/buildscripts/refs/tags/devkitPPC_r49.1/patches/newlib-${pkgver}-${pkgrel}.patch"
+    "https://raw.githubusercontent.com/devkitPro/buildscripts/refs/tags/devkitPPC_r49.2/patches/newlib-${pkgver}-${pkgrel}.patch"
 )
 
 options=(!strip)
@@ -56,4 +56,4 @@ package() {
 }
 
 sha256sums=('6ff27e3bf022666f43f7802255be680eeff722ac181b1725d21e2e8318604ee3'
-            'a34a75651e573c7bd8ac5c0c26cca79403fedb78f06d7c7ec665b7452f71598c')
+            '6d5aba4356553c727765c98e7553d3784f31d361c856e220ef27cc26353fb88f')
