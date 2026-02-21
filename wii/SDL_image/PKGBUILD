@@ -2,7 +2,7 @@
 
 pkgname=wii-sdl_image
 pkgver=1.2.12
-pkgrel=5
+pkgrel=6
 pkgdesc="A simple library to load images of various formats as SDL surfaces."
 arch=('any')
 url="https://libsdl.org"
@@ -32,6 +32,7 @@ build() {
 
   source /opt/devkitpro/wiivars.sh
 
+  CPPFLAGS="${CPPFLAGS} -Wno-incompatible-pointer-types" \
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=powerpc-eabi \
     --disable-shared --enable-static
   make
@@ -45,6 +46,6 @@ package() {
   make DESTDIR="$pkgdir" install
 
   # add our static libs
-  echo "Requires.private: libpng libturbojpeg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL_image.pc"
+  echo "Requires.private: libpng libjpeg" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL_image.pc"
 
 }
