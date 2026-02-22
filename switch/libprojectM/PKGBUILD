@@ -1,0 +1,52 @@
+# Maintainer: Rhys Koedijk <rhys@koedijk.co.nz>
+
+pkgbasename=libprojectm
+pkgname=switch-$pkgbasename
+pkgver=r1871.0e46a1fb7
+pkgrel=1
+pkgdesc='Cross-platform music visualization. Open-source and Milkdrop-compatible'
+arch=('any')
+url='https://github.com/projectM-visualizer/projectm'
+license=('(L)GPL')
+options=(!strip libtool staticlibs)
+source=(${pkgname}::"git+${url}.git#commit=0e46a1fb785851870f030cec8368faba13882f13")
+sha256sums=('SKIP')
+depends=('switch-ftgl' 'switch-mesa')
+makedepends=('git' 'switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+
+pkgver() {
+  cd "$srcdir/${pkgname}"
+  printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd ${pkgname}
+  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-platform_definitions.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-4befa4516-disable_navtive_preset_factory.patch"
+}
+
+build() {
+  cd ${pkgname}
+
+  source /opt/devkitpro/switchvars.sh
+
+  libtoolize
+  aclocal
+  autoheader
+  automake --add-missing
+  autoconf
+
+  ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+    --disable-shared --enable-static --disable-threading --disable-sdl
+
+  make
+}
+
+package() {
+  cd ${pkgname}
+  
+  make DESTDIR="$pkgdir" install
+  
+  install -Dm644 LICENSE.txt "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/LICENSE
+}
