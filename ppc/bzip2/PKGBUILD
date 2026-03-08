@@ -1,38 +1,54 @@
-
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
-pkgname=('ppc-bzip2')
+_pkgname=bzip2
+pkgname=ppc-${_pkgname}
 pkgver=1.0.8
-pkgrel=2
-pkgdesc="A high-quality data compression program"
+pkgrel=3
+pkgdesc="The bzip2 compression library."
 arch=('any')
-license=('custom')
+license=('bzip2')
 url="https://sourceware.org/bzip2/"
 options=(!strip libtool staticlibs)
-source=(https://sourceware.org/pub/bzip2/bzip2-${pkgver}.tar.gz)
-sha256sums=(
-  'ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269'
-)
-makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 groups=('ppc-portlibs')
+makedepends=(
+  'dkp-toolchain-vars'
+  'ppc-pkg-config'
+)
+source=(
+  "https://sourceware.org/pub/bzip2/${_pkgname}-${pkgver}.tar.gz"
+  'bzip2.pc.in'
+)
 
 build() {
+  cd "${srcdir}/${_pkgname}-${pkgver}"
 
-  source /opt/devkitpro/ppcvars.sh
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  make -C "$srcdir/bzip2-$pkgver" \
-  CC=${TOOL_PREFIX}gcc \
-  AR=${TOOL_PREFIX}ar \
-  RANLIB=${TOOL_PREFIX}ranlib \
-  CPPFLAGS="${CPPFLAGS}" \
-  CFLAGS="-D_FILE_OFFSET_BITS=64 -Winline ${CFLAGS}" libbz2.a
+  sed -e "s!@PREFIX@!${PORTLIBS_PREFIX}!g" \
+      -e "s/@VERSION@/${pkgver}/g" \
+      -e "s/@DESCRIPTION@/${pkgdesc}/g" \
+      "${srcdir}/bzip2.pc.in" > bzip2.pc
+
+  # Note: this Makefile does not use CPPFLAGS
+  make libbz2.a \
+       CC="$CC" \
+       AR="$AR" \
+       RANLIB="$RANLIB" \
+       LDFLAGS="$LDFLAGS" \
+       CFLAGS="$CFLAGS -Winline -D_FILE_OFFSET_BITS=64 $CPPFLAGS"
 
 }
 
 package() {
-  source /opt/devkitpro/ppcvars.sh
+  cd "${srcdir}/${_pkgname}-${pkgver}"
 
-  install -Dm 644 "$srcdir/bzip2-$pkgver"/LICENSE -t "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}"
-  install -Dm 644 "$srcdir/bzip2-$pkgver"/bzlib.h -t "${pkgdir}/${PORTLIBS_PREFIX}/include/"
-  install -Dm 644 "$srcdir/bzip2-$pkgver"/libbz2.a -t "${pkgdir}/${PORTLIBS_PREFIX}/lib"
+  source "${DEVKITPRO}/ppcvars.sh"
+
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" LICENSE
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/include/" bzlib.h
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/lib" libbz2.a
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/lib/pkgconfig" bzip2.pc
 }
+
+sha256sums=('ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269'
+            '2d06ce340a63adca41063f3392771bec1a9fffae860a16d3cba8ea39e9a27693')
