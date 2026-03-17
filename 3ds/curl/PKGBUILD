@@ -1,62 +1,48 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 # Contributor: Elouan Martinet <exa@elou.world>
+# Contributor: Grady Link <homebrew@grady.link>
 
 pkgname=3ds-curl
-pkgver=8.4.0
+pkgver=8.15.0
 pkgrel=1
 pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew development)'
 arch=('any')
-url='https://curl.haxx.se'
+url='https://curl.se'
 license=('MIT')
-options=(!strip libtool staticlibs)
+options=(!strip !debug libtool staticlibs)
 depends=('3ds-zlib' '3ds-mbedtls')
 makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
 
-source=("https://curl.haxx.se/download/curl-${pkgver}.tar.xz"
+source=("https://curl.se/download/curl-${pkgver}.tar.xz"
         "curl-${pkgver}.patch"
 )
 
-sha256sums=('03c7d5e6697f7b7e40ada1b2256e565a555657398e6c1fcfa4cb251ccd819d4f'
-            'fd18f93838addd62776b30c699ab9ea472e1d7f31f3d19d28c92728830a06413')
+sha256sums=('6cd0a8a5b126ddfda61c94dc2c3fc53481ba7a35461cf7c5ab66aa9d6775b609'
+            'bc8c3cc47c732c37d4ec4825afb818718dc530d9166113e1292902c9f26a22a7')
 groups=('3ds-portlibs')
 
-build() {
-  cd curl-$pkgver
-
-  source /opt/devkitpro/3dsvars.sh
-
+prepare() {
+  cd "$srcdir/curl-$pkgver"
   patch -Np1 -i $srcdir/curl-${pkgver}.patch
+}
 
-  ./configure CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" LIBS="-lctru" \
-    --prefix=${PORTLIBS_PREFIX} \
-    --host=arm-none-eabi \
-    --disable-shared \
-    --enable-static \
-    --disable-ipv6 \
-    --disable-unix-sockets \
-    --disable-threaded-resolver \
-    --disable-manual \
-    --disable-pthreads \
-    --disable-socketpair \
-    --disable-ntlm-wb \
-    --with-mbedtls=${PORTLIBS_PREFIX} \
-    --with-ca-bundle=sdmc:/config/ssl/cacert.pem
+build() {
+  source /opt/devkitpro/3dsvars.sh
+  cd "$srcdir/curl-$pkgver"
 
-  make -C lib
+  arm-none-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX -DBUILD_CURL_EXE=OFF -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF -DENABLE_MANUAL=OFF -DCURL_USE_MBEDTLS=ON -DCURL_USE_LIBPSL=OFF
+
+  cmake --build build
 }
 
 package() {
-  cd curl-$pkgver
-
   source /opt/devkitpro/3dsvars.sh
+  cd "$srcdir/curl-$pkgver"
 
-  make DESTDIR="$pkgdir" -C lib install
-  make DESTDIR="$pkgdir" -C include install
-  make DESTDIR="$pkgdir" install-binSCRIPTS install-pkgconfigDATA
+  DESTDIR=$pkgdir cmake --install build
+
+  rm "$pkgdir"${PORTLIBS_PREFIX}/bin/wcurl
 
   mkdir -p "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname
-
   install -m644 COPYING "$pkgdir"${PORTLIBS_PREFIX}/licenses/$pkgname/COPYING
 }
-sha256sums=('16c62a9c4af0f703d28bda6d7bbf37ba47055ad3414d70dec63e2e6336f2a82d'
-            'e41d19d24631f3dce4a0e1c5f9fd92c36f4ddd803d07a943507dab525813ecbe')
