@@ -11,7 +11,7 @@ url='https://curl.se'
 license=('MIT')
 options=(!strip !debug libtool staticlibs)
 depends=('3ds-zlib' '3ds-mbedtls')
-makedepends=('3ds-pkg-config' 'dkp-toolchain-vars')
+makedepends=('3ds-cmake' 'dkp-toolchain-vars')
 
 source=("https://curl.se/download/curl-${pkgver}.tar.xz"
         "curl-${pkgver}.patch"
