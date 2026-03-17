@@ -9,7 +9,7 @@ pkgdesc='Library for transferring data with URLs. (for Nintendo 3DS homebrew dev
 arch=('any')
 url='https://curl.se'
 license=('MIT')
-options=(!strip !debug libtool staticlibs)
+options=(!strip !debug staticlibs)
 depends=('3ds-zlib' '3ds-mbedtls')
 makedepends=('3ds-cmake' 'dkp-toolchain-vars')
 
