@@ -2,7 +2,7 @@
 
 pkgname=3ds-opusfile
 pkgver=0.11
-pkgrel=1
+pkgrel=2
 pkgdesc='Library for opening, seeking, and decoding .opus files'
 arch=('any')
 url='https://opus-codec.org/'
@@ -20,7 +20,7 @@ build() {
   source /opt/devkitpro/3dsvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
-    --disable-shared --enable-static
+    --disable-shared --enable-static --enable-fixed-point --disable-float
 
   make
 }
