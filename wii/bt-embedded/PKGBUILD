@@ -1,0 +1,27 @@
+pkgname=bt-embedded
+pkgver=0.1
+pkgrel=2
+pkgdesc='Bluetooch classic library for embedded devices'
+arch=('any')
+url='https://github.com/embedded-game-controller/bt-embedded'
+license=('BSD-3-Clause')
+options=(!strip libtool staticlibs)
+makedepends=('catnip')
+depends=('libogc')
+groups=('wii-portlibs')
+
+source=(
+  "bt-embedded-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
+)
+
+build() {
+  cd bt-embedded-${pkgver}
+  catnip -t wii
+}
+
+package() {
+  cd bt-embedded-${pkgver}
+  DESTDIR=${pkgdir} catnip install
+}
+
+sha256sums=('57d84c51572d973c46c807cf7663fa0694c65d3ee6032ccbb223a088b5cd6ab4')
