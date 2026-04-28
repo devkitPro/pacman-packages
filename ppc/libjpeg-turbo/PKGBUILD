@@ -1,18 +1,18 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 _libname=libjpeg-turbo
 pkgname=ppc-${_libname}
-pkgver=3.1.3
+pkgver=3.1.4.1
 pkgrel=1
 pkgdesc='The TurboJPEG library.'
 arch=('any')
 url='https://github.com/libjpeg-turbo/libjpeg-turbo'
 license=('IJG')
-options=(!strip libtool staticlibs)
+options=(!buildflags !strip staticlibs)
 source=("${_libname}-${pkgver}.tar.gz::${url}/archive/refs/tags/${pkgver}.tar.gz")
 makedepends=(
   'devkitppc-cmake'
-  'ppc-pkg-config'
   'dkp-toolchain-vars'
+  'ppc-pkg-config'
 )
 groups=('ppc-portlibs')
 
@@ -38,14 +38,13 @@ package() {
 
   source "${DEVKITPRO}/ppcvars.sh"
 
-  make -C build install DESTDIR="$pkgdir"
+  make -C build install DESTDIR="${pkgdir}"
 
   # license
-  install -d "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}"
-  cp -v LICENSE.md "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}/"
+  install -Dm 644 -t "${pkgdir}${PORTLIBS_PREFIX}/licenses/${pkgname}" LICENSE.md
 
   # remove useless stuff
   rm -r "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
 
-sha256sums=('3a13a5ba767dc8264bc40b185e41368a80d5d5f945944d1dbaa4b2fb0099f4e5')
+sha256sums=('a7da42b640377c2a9a9665e2c4b0ea60cd5599afb48c2521e6df0c9dc9d15a25')
