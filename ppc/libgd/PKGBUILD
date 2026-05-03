@@ -3,7 +3,7 @@
 
 pkgname=ppc-libgd
 pkgver=2.3.3
-pkgrel=2
+pkgrel=3
 pkgdesc="Library for the dynamic creation of images"
 url="https://libgd.github.io"
 license=("custom")
