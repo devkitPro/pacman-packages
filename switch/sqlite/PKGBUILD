@@ -1,0 +1,61 @@
+# Contributor: Martin Larralde <martin.larralde@ens-paris-saclay.fr>
+
+pkgname="switch-sqlite"
+_srcver=3300100
+_docver=${_srcver}
+pkgver=3.30.1
+pkgrel=1
+pkgdesc="A C library that implements an SQL database engine"
+arch=('any')
+license=('custom:Public Domain')
+options=(!emptydirs !makeflags !strip libtool staticlibs)
+url="https://www.sqlite.org/"
+depends=('switch-zlib')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+source=(https://www.sqlite.org/2019/sqlite-src-${_srcver}.zip
+        license.txt)
+provides=("switch-sqlite3=$pkgver")
+replaces=("switch-sqlite3")
+groups=('switch-portlibs')
+
+sha1sums=('3dec734206fab0cdceb421021964ff7e3fedf3b0'
+          'f34f6daa4ab3073d74e774aad21d66878cf26853')
+
+prepare() {
+  cd sqlite-src-$_srcver
+  # autoreconf -vfi
+}
+
+build() {
+  # get devkitpro variables
+  source /opt/devkitpro/switchvars.sh
+
+  # additional compatibility flags for the Switch
+  export CPPFLAGS="$CPPFLAGS -DSQLITE_OMIT_WAL=1"
+
+  # build only the sqlite libray
+  cd sqlite-src-$_srcver
+  ./configure --prefix=$PORTLIBS_PREFIX \
+  --host=aarch64-none-elf \
+  --disable-shared \
+  --enable-static \
+  --disable-load-extension \
+  --disable-readline \
+  --disable-tcl \
+  --with-gnu-ld \
+  --with-pic
+  make libsqlite3.la
+}
+
+package() {
+  source /opt/devkitpro/switchvars.sh
+
+  # install the library
+  cd sqlite-src-$_srcver
+  libtool --mode install install -D -m644 libsqlite3.la "${pkgdir}"/${PORTLIBS_PREFIX}/lib/libsqlite3.la
+  install -D -m644 sqlite3.h "${pkgdir}"/${PORTLIBS_PREFIX}/include/sqlite3.h
+  install -D -m644 sqlite3.pc -t "${pkgdir}"/${PORTLIBS_PREFIX}/lib/pkgconfig/sqlite3.pc
+
+  # install the license
+  install -D -m644 "${srcdir}"/license.txt "${pkgdir}"/usr/share/licenses/${pkgname}/license.txt
+}
