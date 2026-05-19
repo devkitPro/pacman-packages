@@ -1,0 +1,37 @@
+diff --git a/configure.ac b/configure.ac
+index 79a42bd7..581596fa 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -65,7 +65,6 @@ AC_CONFIG_FILES([
+   src/Makefile
+   src/libprojectM/Makefile
+   src/libprojectM/Renderer/Makefile
+-  src/libprojectM/NativePresetFactory/Makefile
+   src/libprojectM/MilkdropPresetFactory/Makefile
+   src/libprojectM/libprojectM.pc
+   src/NativePresets/Makefile
+diff --git a/src/libprojectM/Makefile.am b/src/libprojectM/Makefile.am
+index a7799c8f..4887383c 100644
+--- a/src/libprojectM/Makefile.am
++++ b/src/libprojectM/Makefile.am
+@@ -1,7 +1,7 @@
+ EXTRA_DIST=
+ CLEANFILES=
+ 
+-SUBDIRS=Renderer NativePresetFactory MilkdropPresetFactory
++SUBDIRS=Renderer MilkdropPresetFactory
+ 
+ AM_CPPFLAGS = \
+   ${my_CFLAGS} \
+@@ -16,10 +16,9 @@ lib_LTLIBRARIES = libprojectM.la  # public, possibly-shared library
+ # link flags
+ libprojectM_la_LDFLAGS = $(CG_LDFLAGS) -no-undefined -version-info 4:1:1
+ 
+-# link libRenderer, MilkdropPresetFactory, NativePresetFactory, and libprojectM sources
++# link libRenderer, MilkdropPresetFactory, and libprojectM sources
+ libprojectM_la_LIBADD = \
+ ../libprojectM/MilkdropPresetFactory/libMilkdropPresetFactory.la \
+-../libprojectM/NativePresetFactory/libNativePresetFactory.la \
+ ../libprojectM/Renderer/libRenderer.la
+ libprojectM_la_SOURCES = ConfigFile.cpp Preset.cpp PresetLoader.cpp timer.cpp \
+   KeyHandler.cpp PresetChooser.cpp TimeKeeper.cpp PCM.cpp PresetFactory.cpp \
