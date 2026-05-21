@@ -2,7 +2,7 @@
 # Contributor: Julian Uy <uyjulian@gmail.com>
 
 pkgname=switch-mupdf
-pkgver=1.17.0
+pkgver=1.24.11
 pkgrel=1
 pkgdesc='MuPDF is a lightweight PDF, XPS, and E-book viewer.'
 arch=('any')
@@ -10,19 +10,20 @@ url='https://www.mupdf.com/'
 license=('AGPL')
 options=(!strip libtool staticlibs)
 depends=("switch-freetype"
+         "switch-harfbuzz"
          "switch-libjpeg-turbo"
          "switch-zlib"
 )
 
-makedepends=('dkp-toolchain-vars')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
 
-source=("https://www.mupdf.com/downloads/archive/mupdf-$pkgver-source.tar.xz" "mupdf.patch")
+source=("https://casper.mupdf.com/downloads/archive/mupdf-$pkgver-source.tar.lz" "mupdf.patch")
 
 groups=('switch-portlibs')
 
 sha256sums=(
-  'c935fb2593d9a28d9b56b59dad6e3b0716a6790f8a257a68fa7dcb4430bc6086'
-  '5641105980d95c2cb77cf053a13d2255c422767b5c9ec4c2a13c1aa14d1e18bb'
+    'ac159293040934e250e4495782f8cd04c8cbbaf992fbd9faf32dab2ec657117b'
+    '396a8350670e363adabe12485e3ee32b695c46b7a97e9acd50a0816fc110eabf'
 )
 
 build() {
@@ -44,7 +45,5 @@ package() {
   make build=release \
     prefix="${PORTLIBS_PREFIX}" DESTDIR="$pkgdir" \
     OS=switch \
-    TOOL_APPS=/dev/null \
-    VIEW_APPS= \
-    install
+    install-libs
 }
