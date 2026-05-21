@@ -2,7 +2,7 @@
 # Maintainer: WinterMute <davem@devkitpro.org>
 pkgname=switch-curl
 pkgver=7.69.1
-pkgrel=5
+pkgrel=6
 pkgdesc='An URL retrieval utility and library'
 arch=('any')
 url='http://www.zlib.net/'
@@ -34,6 +34,7 @@ build() {
   ./configure --prefix=$PORTLIBS_PREFIX --host=aarch64-none-elf \
     --disable-shared --enable-static --disable-ipv6 --disable-unix-sockets \
     --disable-manual --disable-ntlm-wb --disable-threaded-resolver \
+    --enable-websockets \
     --without-ssl --without-polar-ssl --without-cyassl --without-wolfssl \
     --without-mbedtls \
     --with-libnx \
