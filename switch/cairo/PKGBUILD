@@ -1,0 +1,37 @@
+# Maintainer:  Dave Murphy <davem@devkitpro.org>
+# Contributor: Nathan Rajlich <n@n8.io>
+
+pkgname=switch-cairo
+pkgver=1.16.0
+pkgrel=1
+pkgdesc='Cairo is a 2D graphics library with support for multiple output devices.'
+arch=('any')
+url='https://www.cairographics.org/'
+license=(MPL)
+options=(!strip libtool staticlibs)
+#depends=("switch-pixman")
+groups=('switch-portlibs')
+makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+source=("https://www.cairographics.org/releases/cairo-$pkgver.tar.xz")
+sha256sums=(
+    '5e7b29b3f113ef870d1e3ecf8adf21f923396401604bda16d44be45e66052331'
+)
+
+build() {
+    cd cairo-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    ./configure --prefix="${PORTLIBS_PREFIX}" --host=aarch64-none-elf \
+        --disable-shared --enable-static
+
+    make -C src
+}
+
+package() {
+    cd cairo-$pkgver
+
+    source /opt/devkitpro/switchvars.sh
+
+    make DESTDIR="$pkgdir" -C src install
+}
