@@ -1,0 +1,1112 @@
+From 1fa3221a01402910b45bcd8a60f2fba5d02dcc40 Mon Sep 17 00:00:00 2001
+From: Connor Rigby <connorr@hey.com>
+Date: Wed, 17 Feb 2021 06:39:38 -0800
+Subject: [PATCH] Add platform: Nintendo Switch
+
+---
+ CMakeLists.txt                             |   1 +
+ cmake/lws_config.h.in                      |   1 +
+ include/libwebsockets.h                    |   3 +-
+ include/libwebsockets/lws-network-helper.h |   4 +
+ lib/CMakeLists.txt                         |   2 +
+ lib/core-net/close.c                       |   2 +-
+ lib/core-net/private-lib-core-net.h        |   2 +-
+ lib/core/context.c                         |   4 +-
+ lib/core/libwebsockets.c                   |   2 +-
+ lib/core/private-lib-core.h                |   4 +-
+ lib/misc/lwsac/cached-file.c               |   2 +-
+ lib/plat/nx/CMakeLists.txt                 |  51 ++++
+ lib/plat/nx/nx-fds.c                       |  37 +++
+ lib/plat/nx/nx-init.c                      |  56 ++++
+ lib/plat/nx/nx-misc.c                      |  25 ++
+ lib/plat/nx/nx-pipe.c                      | 102 +++++++
+ lib/plat/nx/nx-service.c                   | 167 +++++++++++
+ lib/plat/nx/nx-sockets.c                   | 323 +++++++++++++++++++++
+ lib/plat/nx/private-lib-plat-nx.h          |  68 +++++
+ lib/tls/tls.c                              |   4 +-
+ 20 files changed, 850 insertions(+), 10 deletions(-)
+ create mode 100644 lib/plat/nx/CMakeLists.txt
+ create mode 100644 lib/plat/nx/nx-fds.c
+ create mode 100644 lib/plat/nx/nx-init.c
+ create mode 100644 lib/plat/nx/nx-misc.c
+ create mode 100644 lib/plat/nx/nx-pipe.c
+ create mode 100644 lib/plat/nx/nx-service.c
+ create mode 100644 lib/plat/nx/nx-sockets.c
+ create mode 100644 lib/plat/nx/private-lib-plat-nx.h
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e02cd5cc..fa3dcfcf 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -180,6 +180,7 @@ option(LWS_WITH_ESP32 "Build for ESP32" OFF)
+ option(LWS_PLAT_OPTEE "Build for OPTEE" OFF)
+ option(LWS_PLAT_FREERTOS "Build for FreeRTOS" OFF)
+ option(LWS_PLAT_ANDROID "Android flavour of unix platform" OFF)
++option(LSW_PLAT_NX, "Build for Nintendo Switch" OFF)
+ 
+ #
+ # Client / Server / Test Apps build control
+diff --git a/cmake/lws_config.h.in b/cmake/lws_config.h.in
+index 69d18775..1d05cc70 100644
+--- a/cmake/lws_config.h.in
++++ b/cmake/lws_config.h.in
+@@ -102,6 +102,7 @@
+ #cmakedefine LWS_PLAT_OPTEE
+ #cmakedefine LWS_PLAT_UNIX
+ #cmakedefine LWS_PLAT_FREERTOS
++#cmakedefine LWS_PLAT_NX
+ #cmakedefine LWS_ROLE_CGI
+ #cmakedefine LWS_ROLE_DBUS
+ #cmakedefine LWS_ROLE_H1
+diff --git a/include/libwebsockets.h b/include/libwebsockets.h
+index 6bde374c..1f16df3e 100644
+--- a/include/libwebsockets.h
++++ b/include/libwebsockets.h
+@@ -131,7 +131,7 @@ typedef unsigned long long lws_intptr_t;
+ #define LWS_O_CREAT O_CREAT
+ #define LWS_O_TRUNC O_TRUNC
+ 
+-#if !defined(LWS_PLAT_OPTEE) && !defined(OPTEE_TA) && !defined(LWS_PLAT_FREERTOS)
++#if !defined(LWS_PLAT_OPTEE) && !defined(OPTEE_TA) && !defined(LWS_PLAT_FREERTOS) && !defined(LWS_PLAT_NX)
+ #include <poll.h>
+ #include <netdb.h>
+ #define LWS_INVALID_FILE -1
+@@ -468,6 +468,7 @@ struct lws_pollfd;
+ struct sockaddr_in;
+ #endif
+ #else
++#include <poll.h>
+ #define lws_pollfd pollfd
+ #define LWS_POLLHUP (POLLHUP | POLLERR)
+ #define LWS_POLLIN (POLLIN)
+diff --git a/include/libwebsockets/lws-network-helper.h b/include/libwebsockets/lws-network-helper.h
+index 3ba324a7..f4d85a28 100644
+--- a/include/libwebsockets/lws-network-helper.h
++++ b/include/libwebsockets/lws-network-helper.h
+@@ -33,6 +33,10 @@
+ #include <lwip/sockets.h>
+ #endif
+ 
++#if defined(LWS_PLAT_NX)
++#include <netinet/in.h>
++#endif
++
+ typedef union {
+ #if defined(LWS_WITH_IPV6)
+ 	struct sockaddr_in6 sa6;
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index 82b9170c..6d14e83c 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -78,6 +78,8 @@ if (LWS_PLAT_FREERTOS)
+ else()
+ 	if (LWS_PLAT_OPTEE)
+ 		add_subdir_include_dirs(plat/optee)
++	elseif (LWS_PLAT_NX)
++		add_subdir_include_dirs(plat/nx)
+ 	else()
+ 		if (WIN32)
+ 			add_subdir_include_dirs(plat/windows)
+diff --git a/lib/core-net/close.c b/lib/core-net/close.c
+index 3ed50535..15f81005 100644
+--- a/lib/core-net/close.c
++++ b/lib/core-net/close.c
+@@ -705,7 +705,7 @@ __lws_close_free_wsi_final(struct lws *wsi)
+ 		if (lws_socket_is_valid(wsi->desc.sockfd))
+ 			delete_from_fd(wsi->a.context, wsi->desc.sockfd);
+ 
+-#if !defined(LWS_PLAT_FREERTOS) && !defined(WIN32) && !defined(LWS_PLAT_OPTEE)
++#if !defined(LWS_PLAT_FREERTOS) && !defined(WIN32) && !defined(LWS_PLAT_OPTEE) && !defined(LWS_PLAT_NX)
+ 		delete_from_fdwsi(wsi->a.context, wsi);
+ #endif
+ 
+diff --git a/lib/core-net/private-lib-core-net.h b/lib/core-net/private-lib-core-net.h
+index e8a9097b..7c3d51e3 100644
+--- a/lib/core-net/private-lib-core-net.h
++++ b/lib/core-net/private-lib-core-net.h
+@@ -1448,7 +1448,7 @@ _lws_generic_transaction_completed_active_conn(struct lws **wsi, char take_vh_lo
+ #define ACTIVE_CONNS_QUEUED 2
+ #define ACTIVE_CONNS_FAILED 3
+ 
+-#if defined(_DEBUG) && !defined(LWS_PLAT_FREERTOS) && !defined(WIN32) && !defined(LWS_PLAT_OPTEE)
++#if defined(_DEBUG) && !defined(LWS_PLAT_FREERTOS) && !defined(WIN32) && !defined(LWS_PLAT_OPTEE) && !defined(LWS_PLAT_NX)
+ 
+ int
+ sanity_assert_no_wsi_traces(const struct lws_context *context, struct lws *wsi);
+diff --git a/lib/core/context.c b/lib/core/context.c
+index 77dbf7e4..593aa2eb 100644
+--- a/lib/core/context.c
++++ b/lib/core/context.c
+@@ -683,7 +683,7 @@ lws_create_context(const struct lws_context_creation_info *info)
+ 
+ 	context->options = info->options;
+ 
+-#if !defined(LWS_PLAT_FREERTOS) && !defined(LWS_PLAT_OPTEE) && !defined(WIN32)
++#if !defined(LWS_PLAT_FREERTOS) && !defined(LWS_PLAT_OPTEE) && !defined(WIN32) && !defined(LWS_PLAT_NX)
+ 	/*
+ 	 * If asked, try to set the rlimit / ulimit for process sockets / files.
+ 	 * We read the effective limit in a moment, so we will find out the
+@@ -712,7 +712,7 @@ lws_create_context(const struct lws_context_creation_info *info)
+ 	}
+ 	context->max_fds = rt.rlim_cur;
+ #else
+-#if defined(WIN32) || defined(_WIN32) || defined(LWS_AMAZON_RTOS) || defined(LWS_ESP_PLATFORM)
++#if defined(WIN32) || defined(_WIN32) || defined(LWS_AMAZON_RTOS) || defined(LWS_ESP_PLATFORM) || defined(LWS_PLAT_NX)
+ 	context->max_fds = getdtablesize();
+ #else
+ 	{
+diff --git a/lib/core/libwebsockets.c b/lib/core/libwebsockets.c
+index a44e6d5f..34b9bb70 100644
+--- a/lib/core/libwebsockets.c
++++ b/lib/core/libwebsockets.c
+@@ -175,7 +175,7 @@ lws_hex_random(struct lws_context *context, char *dest, size_t len)
+ 	return 0;
+ }
+ 
+-#if !defined(LWS_PLAT_OPTEE)
++#if !defined(LWS_PLAT_OPTEE) && !defined(LWS_PLAT_NX)
+ 
+ #if defined(LWS_WITH_FILE_OPS)
+ int lws_open(const char *__file, int __oflag, ...)
+diff --git a/lib/core/private-lib-core.h b/lib/core/private-lib-core.h
+index b47b4b2b..37b93791 100644
+--- a/lib/core/private-lib-core.h
++++ b/lib/core/private-lib-core.h
+@@ -126,6 +126,8 @@
+  #else
+   #if defined(LWS_PLAT_OPTEE)
+    #include "private-lib-plat.h"
++	#elif defined(LWS_PLAT_NX)
++		#include "private-lib-plat-nx.h"
+   #else
+    #include "private-lib-plat-unix.h"
+   #endif
+@@ -292,7 +294,7 @@ struct lws_context {
+ 	lws_retry_bo_t				default_retry;
+ 	lws_sorted_usec_list_t			sul_system_state;
+ 
+-#if defined(LWS_PLAT_FREERTOS)
++#if defined(LWS_PLAT_FREERTOS) || defined(LWS_PLAT_NX)
+ 	struct sockaddr_in			frt_pipe_si;
+ #endif
+ 
+diff --git a/lib/misc/lwsac/cached-file.c b/lib/misc/lwsac/cached-file.c
+index d5573ee6..d70e965b 100644
+--- a/lib/misc/lwsac/cached-file.c
++++ b/lib/misc/lwsac/cached-file.c
+@@ -22,7 +22,7 @@
+  * IN THE SOFTWARE.
+  */
+ 
+-#if !defined(LWS_PLAT_OPTEE) && !defined(OPTEE_DEV_KIT)
++#if !defined(LWS_PLAT_OPTEE) && !defined(OPTEE_DEV_KIT) && !defined(LWS_PLAT_NX)
+ 
+ #include "private-lib-core.h"
+ #include "private-lib-misc-lwsac.h"
+diff --git a/lib/plat/nx/CMakeLists.txt b/lib/plat/nx/CMakeLists.txt
+new file mode 100644
+index 00000000..89df5333
+--- /dev/null
++++ b/lib/plat/nx/CMakeLists.txt
+@@ -0,0 +1,51 @@
++#
++# libwebsockets - small server side websockets and web server implementation
++#
++# Copyright (C) 2010 - 2020 Andy Green <andy@warmcat.com>
++#
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to
++# deal in the Software without restriction, including without limitation the
++# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++# sell copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++#
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++#
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++# IN THE SOFTWARE.
++#
++# The strategy is to only export to PARENT_SCOPE
++#
++#  - changes to LIB_LIST
++#  - changes to SOURCES
++#  - includes via include_directories
++#
++# and keep everything else private
++
++include_directories(.)
++
++list(APPEND SOURCES
++	plat/nx/nx-fds.c
++	plat/nx/nx-init.c
++	plat/nx/nx-misc.c
++	plat/nx/nx-pipe.c
++	plat/nx/nx-service.c
++)
++if (LWS_WITH_NETWORK)
++	list(APPEND SOURCES
++		plat/nx/nx-sockets.c
++	)
++endif()
++
++#
++# Keep explicit parent scope exports at end
++#
++
++exports_to_parent_scope()
+diff --git a/lib/plat/nx/nx-fds.c b/lib/plat/nx/nx-fds.c
+new file mode 100644
+index 00000000..63b682fe
+--- /dev/null
++++ b/lib/plat/nx/nx-fds.c
+@@ -0,0 +1,37 @@
++#include "private-lib-core.h"
++
++void
++lws_plat_insert_socket_into_fds(struct lws_context *context, struct lws *wsi)
++{
++	struct lws_context_per_thread *pt = &context->pt[(int)wsi->tsi];
++
++	pt->fds[pt->fds_count++].revents = 0;
++}
++
++void
++lws_plat_delete_socket_from_fds(struct lws_context *context,
++						struct lws *wsi, int m)
++{
++	struct lws_context_per_thread *pt = &context->pt[(int)wsi->tsi];
++
++	pt->fds_count--;
++}
++
++int
++lws_plat_change_pollfd(struct lws_context *context,
++		      struct lws *wsi, struct lws_pollfd *pfd)
++{
++	return 0;
++}
++
++int
++insert_wsi(const struct lws_context *context, struct lws *wsi)
++{
++    assert(context->lws_lookup[wsi->desc.sockfd -
++                               lws_plat_socket_offset()] == 0);
++
++    context->lws_lookup[wsi->desc.sockfd - \
++                      lws_plat_socket_offset()] = wsi;
++
++    return 0;
++}
+\ No newline at end of file
+diff --git a/lib/plat/nx/nx-init.c b/lib/plat/nx/nx-init.c
+new file mode 100644
+index 00000000..b6d58dbe
+--- /dev/null
++++ b/lib/plat/nx/nx-init.c
+@@ -0,0 +1,56 @@
++#include "private-lib-core.h"
++
++int
++lws_plat_context_early_init(void)
++{
++	return 0;
++}
++
++void
++lws_plat_context_early_destroy(struct lws_context *context)
++{
++}
++
++void
++lws_plat_context_late_destroy(struct lws_context *context)
++{
++	if (context->lws_lookup)
++		lws_free(context->lws_lookup);
++}
++
++#if defined(LWS_WITH_HTTP2)
++/*
++ * These are the default SETTINGS used on this platform.  The user
++ * can selectively modify them for a vhost during vhost creation.
++ */
++const struct http2_settings lws_h2_defaults_esp32 = { {
++	1,
++	/* H2SET_HEADER_TABLE_SIZE */			 512,
++	/* H2SET_ENABLE_PUSH */				   0,
++	/* H2SET_MAX_CONCURRENT_STREAMS */		   8,
++	/* H2SET_INITIAL_WINDOW_SIZE */		           0,
++	/* H2SET_MAX_FRAME_SIZE */		       16384,
++	/* H2SET_MAX_HEADER_LIST_SIZE */	 	 512,
++	/* H2SET_RESERVED7 */				   0,
++	/* H2SET_ENABLE_CONNECT_PROTOCOL */		   1,
++}};
++#endif
++
++int
++lws_plat_init(struct lws_context *context,
++	      const struct lws_context_creation_info *info)
++{
++	/* master context has the global fd lookup array */
++	context->lws_lookup = lws_zalloc(sizeof(struct lws *) *
++					 context->max_fds, "nx lws_lookup");
++	if (context->lws_lookup == NULL) {
++		lwsl_err("OOM on lws_lookup array for %d connections\n",
++			 context->max_fds);
++		return 1;
++	}
++
++	lwsl_notice(" mem: platform fd map: %5lu bytes\n",
++		    (unsigned long)(sizeof(struct lws *) * context->max_fds));
++
++	return 0;
++}
+diff --git a/lib/plat/nx/nx-misc.c b/lib/plat/nx/nx-misc.c
+new file mode 100644
+index 00000000..f1bc6d20
+--- /dev/null
++++ b/lib/plat/nx/nx-misc.c
+@@ -0,0 +1,25 @@
++#include "private-lib-core.h"
++#include <switch/kernel/random.h>
++
++size_t
++lws_get_random(struct lws_context *context, void *buf, size_t len)
++{
++  randomGet(buf, len);
++  return len;
++}
++
++lws_usec_t
++lws_now_usecs(void)
++{
++	// lwsl_user("lws_now_usecs\n");
++	struct timeval tv;
++	gettimeofday(&tv, NULL);
++	// lwsl_user("gettimeofday done\n");
++	return ((unsigned long long)tv.tv_sec * 1000000LL) + tv.tv_usec;
++}
++
++int
++lws_plat_drop_app_privileges(struct lws_context *context, int actually_init)
++{
++	return 0;
++}
+\ No newline at end of file
+diff --git a/lib/plat/nx/nx-pipe.c b/lib/plat/nx/nx-pipe.c
+new file mode 100644
+index 00000000..31d96623
+--- /dev/null
++++ b/lib/plat/nx/nx-pipe.c
+@@ -0,0 +1,102 @@
++#include "private-lib-core.h"
++
++int
++lws_plat_pipe_create(struct lws *wsi)
++{
++	struct lws_context_per_thread *pt = &wsi->a.context->pt[(int)wsi->tsi];
++	struct sockaddr_in *si = &wsi->a.context->frt_pipe_si;
++	lws_sockfd_type *fd = pt->dummy_pipe_fds;
++	socklen_t sl;
++
++	/*
++	 * There's no pipe abstraction on lwip / freertos... use a UDP socket
++	 * listening on 127.0.0.1:xxxx and send a byte to it from a second UDP
++	 * socket to cancel the wait.
++	 *
++	 * Set the port to 0 at the bind, so lwip will choose a free one in the
++	 * ephemeral range for us.
++	 */
++
++	fd[0] = socket(AF_INET, SOCK_DGRAM, 0);
++	if (fd[0] < 0)
++		goto bail;
++
++	fd[1] = socket(AF_INET, SOCK_DGRAM, 0);
++	if (fd[1] < 0)
++		goto bail;
++
++	/*
++	 * No need for memset since it's in zalloc'd context... it's in the
++	 * context so we can reuse the prepared sockaddr to send tp fd[0] whem
++	 * we want to cancel the wait
++	 */
++
++	si->sin_family = AF_INET;
++	si->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
++	si->sin_port = 0;
++
++	if (bind(fd[0], (const struct sockaddr *)si, sizeof(*si)) < 0)
++		goto bail;
++
++	/*
++	 * Query the socket to set context->frt_pipe_si to the full sockaddr it
++	 * wants to be addressed by, including the port that lwip chose.
++	 *
++	 * Afterwards, we can use this prepared sockaddr stashed in the context
++	 * to trigger the "pipe" without any other preliminaries.
++	 */
++
++	sl = sizeof(*si);
++	if (getsockname(fd[0], (struct sockaddr *)si, &sl))
++		goto bail;
++
++	lwsl_info("%s: cancel UDP skt port %d\n", __func__,
++		  ntohs(si->sin_port));
++
++	return 0;
++
++bail:
++	lwsl_err("%s: failed\n", __func__);
++
++	return 1;
++}
++
++int
++lws_plat_pipe_signal(struct lws *wsi)
++{
++	struct lws_context_per_thread *pt = &wsi->a.context->pt[(int)wsi->tsi];
++	struct sockaddr_in *si = &wsi->a.context->frt_pipe_si;
++	lws_sockfd_type *fd = pt->dummy_pipe_fds;
++	uint8_t u = 0;
++	int n;
++
++	/*
++	 * Send a single UDP byte payload to the listening socket fd[0], forcing
++	 * the event loop wait to wake.  fd[1] and context->frt_pipe_si are
++	 * set at context creation and are static, the UDP sendto is supposed to
++	 * be threadsafe for lwip:
++	 *
++	 * https://lwip.fandom.com/wiki/LwIP_and_multithreading
++	 *
++	 * Sockets generally can't be used by more than one application thread
++	 * (on udp/raw netconn, doing a sendto/recv is currently possible).
++	 */
++
++	n = sendto(fd[1], &u, 1, 0, (struct sockaddr *)si, sizeof(*si));
++
++	return n != 1;
++}
++
++void
++lws_plat_pipe_close(struct lws *wsi)
++{
++	struct lws_context_per_thread *pt = &wsi->a.context->pt[(int)wsi->tsi];
++	lws_sockfd_type *fd = pt->dummy_pipe_fds;
++
++	if (fd[0] && fd[0] != -1)
++		close(fd[0]);
++	if (fd[1] && fd[1] != -1)
++		close(fd[1]);
++
++	fd[0] = fd[1] = -1;
++}
+diff --git a/lib/plat/nx/nx-service.c b/lib/plat/nx/nx-service.c
+new file mode 100644
+index 00000000..0bebe451
+--- /dev/null
++++ b/lib/plat/nx/nx-service.c
+@@ -0,0 +1,167 @@
++#include "private-lib-core.h"
++#include <sys/time.h>
++
++int
++lws_plat_service(struct lws_context *context, int timeout_ms)
++{
++	int n = _lws_plat_service_tsi(context, timeout_ms, 0);
++	return n;
++}
++
++
++int
++_lws_plat_service_tsi(struct lws_context *context, int timeout_ms, int tsi)
++{
++	struct lws_context_per_thread *pt;
++	lws_usec_t timeout_us;
++	int n = -1, m, c, a = 0;
++
++	/* stay dead once we are dead */
++
++	if (!context)
++		return 1;
++  
++
++	pt = &context->pt[tsi];
++	lws_stats_bump(pt, LWSSTATS_C_SERVICE_ENTRY, 1);
++
++	if (timeout_ms < 0)
++		timeout_ms = 0;
++	else
++		/* force a default timeout of 23 days */
++		timeout_ms = 2000000000;
++	timeout_us = ((lws_usec_t)timeout_ms) * LWS_US_PER_MS;
++
++	if (!pt->service_tid_detected && context->vhost_list) {
++		lws_fakewsi_def_plwsa(pt);
++
++		lws_fakewsi_prep_plwsa_ctx(context);
++
++		pt->service_tid = context->vhost_list->protocols[0].callback(
++			(struct lws *)plwsa, LWS_CALLBACK_GET_THREAD_ID,
++			NULL, NULL, 0);
++		pt->service_tid_detected = 1;
++	}
++
++	/*
++	 * is there anybody with pending stuff that needs service forcing?
++	 */
++	if (lws_service_adjust_timeout(context, 1, tsi)) {
++
++again:
++		a = 0;
++		if (timeout_us) {
++			lws_usec_t us;
++			lws_pt_lock(pt, __func__);
++
++			/* don't stay in poll wait longer than next hr timeout */
++			us = __lws_sul_service_ripe(pt->pt_sul_owner,
++						    LWS_COUNT_PT_SUL_OWNERS,
++						    lws_now_usecs());
++			if (us && us < timeout_us)
++				timeout_us = us;
++
++			lws_pt_unlock(pt);
++		}
++
++	//	n = poll(pt->fds, pt->fds_count, timeout_ms);
++		{
++			fd_set readfds, writefds, errfds;
++			struct timeval tv = { timeout_us / LWS_US_PER_SEC,
++					      timeout_us % LWS_US_PER_SEC }, *ptv = &tv;
++			
++			int max_fd = 0;
++			FD_ZERO(&readfds);
++			FD_ZERO(&writefds);
++			FD_ZERO(&errfds);
++
++			for (n = 0; n < (int)pt->fds_count; n++) {
++				pt->fds[n].revents = 0;
++				if (pt->fds[n].fd >= max_fd)
++					max_fd = pt->fds[n].fd;
++				if (pt->fds[n].events & LWS_POLLIN)
++					FD_SET(pt->fds[n].fd, &readfds);
++				if (pt->fds[n].events & LWS_POLLOUT)
++					FD_SET(pt->fds[n].fd, &writefds);
++				FD_SET(pt->fds[n].fd, &errfds);
++			}
++			n = select(max_fd + 1, &readfds, &writefds, &errfds, ptv);
++			n = 0;
++
++	#if defined(LWS_WITH_DETAILED_LATENCY)
++			/*
++			 * so we can track how long it took before we actually read a POLLIN
++			 * that was signalled when we last exited poll()
++			 */
++			if (context->detailed_latency_cb)
++				pt->ust_left_poll = lws_now_usecs();
++	#endif
++
++			for (m = 0; m < (int)pt->fds_count; m++) {
++				c = 0;
++				if (FD_ISSET(pt->fds[m].fd, &readfds)) {
++					pt->fds[m].revents |= LWS_POLLIN;
++					c = 1;
++				}
++				if (FD_ISSET(pt->fds[m].fd, &writefds)) {
++					pt->fds[m].revents |= LWS_POLLOUT;
++					c = 1;
++				}
++				if (FD_ISSET(pt->fds[m].fd, &errfds)) {
++					// lwsl_notice("errfds %d\n", pt->fds[m].fd);
++					pt->fds[m].revents |= LWS_POLLHUP;
++					c = 1;
++				}
++
++				if (c)
++					n++;
++			}
++		}
++
++		m = 0;
++
++	#if defined(LWS_ROLE_WS) && !defined(LWS_WITHOUT_EXTENSIONS)
++		m |= !!pt->ws.rx_draining_ext_list;
++	#endif
++
++#if defined(LWS_WITH_TLS)
++		if (pt->context->tls_ops &&
++		    pt->context->tls_ops->fake_POLLIN_for_buffered)
++			m |= pt->context->tls_ops->fake_POLLIN_for_buffered(pt);
++#endif
++		if (!m && !n)
++			return 0;
++	} else
++		a = 1;
++
++	m = lws_service_flag_pending(context, tsi);
++	if (m)
++		c = -1; /* unknown limit */
++	else
++		if (n < 0) {
++			if (LWS_ERRNO != LWS_EINTR)
++				return -1;
++			return 0;
++		} else
++			c = n;
++
++	/* any socket with events to service? */
++	for (n = 0; n < (int)pt->fds_count && c; n++) {
++		if (!pt->fds[n].revents)
++			continue;
++
++		c--;
++
++		m = lws_service_fd_tsi(context, &pt->fds[n], tsi);
++		if (m < 0)
++			return -1;
++		/* if something closed, retry this slot */
++		if (m)
++			n--;
++	}
++
++	if (a)
++		goto again;
++
++	return 0;
++}
+\ No newline at end of file
+diff --git a/lib/plat/nx/nx-sockets.c b/lib/plat/nx/nx-sockets.c
+new file mode 100644
+index 00000000..4cb2a9ba
+--- /dev/null
++++ b/lib/plat/nx/nx-sockets.c
+@@ -0,0 +1,323 @@
++/*
++ * libwebsockets - small server side websockets and web server implementation
++ *
++ * Copyright (C) 2010 - 2019 Andy Green <andy@warmcat.com>
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to
++ * deal in the Software without restriction, including without limitation the
++ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++ * sell copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include "private-lib-core.h"
++#include <netinet/tcp.h>
++
++#include <errno.h>
++#if defined(LWS_WITH_MBEDTLS)
++#if defined(LWS_HAVE_MBEDTLS_NET_SOCKETS)
++#include "mbedtls/net_sockets.h"
++#else
++#include "mbedtls/net.h"
++#endif
++#endif
++
++int
++lws_send_pipe_choked(struct lws *wsi)
++{
++	struct lws *wsi_eff = wsi;
++	fd_set writefds;
++	struct timeval tv = { 0, 0 };
++	int n;
++#if defined(LWS_WITH_HTTP2)
++	wsi_eff = lws_get_network_wsi(wsi);
++#endif
++
++	/* the fact we checked implies we avoided back-to-back writes */
++	wsi_eff->could_have_pending = 0;
++
++	/* treat the fact we got a truncated send pending as if we're choked */
++	if (lws_has_buffered_out(wsi)
++#if defined(LWS_WITH_HTTP_STREAM_COMPRESSION)
++	    || wsi->http.comp_ctx.buflist_comp ||
++	       wsi->http.comp_ctx.may_have_more
++#endif
++	)
++		return 1;
++
++	FD_ZERO(&writefds);
++	FD_SET(wsi_eff->desc.sockfd, &writefds);
++
++	n = select(wsi_eff->desc.sockfd + 1, NULL, &writefds, NULL, &tv);
++	if (n < 0)
++		return 1; /* choked */
++
++	return !n; /* n = 0 = not writable = choked */
++}
++
++int
++lws_poll_listen_fd(struct lws_pollfd *fd)
++{
++	fd_set readfds;
++	struct timeval tv = { 0, 0 };
++
++	FD_ZERO(&readfds);
++	FD_SET(fd->fd, &readfds);
++
++	return select(fd->fd + 1, &readfds, NULL, NULL, &tv);
++}
++
++int
++lws_plat_set_nonblocking(lws_sockfd_type fd)
++{
++	return fcntl(fd, F_SETFL, O_NONBLOCK) < 0;
++}
++
++int
++lws_plat_set_socket_options(struct lws_vhost *vhost, int fd, int unix_skt)
++{
++	int optval = 1;
++	socklen_t optlen = sizeof(optval);
++
++#if defined(__APPLE__) || \
++    defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
++    defined(__NetBSD__) || \
++    defined(__OpenBSD__)
++	struct protoent *tcp_proto;
++#endif
++
++	if (vhost->ka_time) {
++		/* enable keepalive on this socket */
++		optval = 1;
++		if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
++			       (const void *)&optval, optlen) < 0)
++			return 1;
++
++#if defined(__APPLE__) || \
++    defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
++    defined(__NetBSD__) || \
++        defined(__CYGWIN__) || defined(__OpenBSD__) || defined (__sun)
++
++		/*
++		 * didn't find a way to set these per-socket, need to
++		 * tune kernel systemwide values
++		 */
++#else
++		/* set the keepalive conditions we want on it too */
++		optval = vhost->ka_time;
++		if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE,
++			       (const void *)&optval, optlen) < 0)
++			return 1;
++
++		optval = vhost->ka_interval;
++		if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPINTVL,
++			       (const void *)&optval, optlen) < 0)
++			return 1;
++
++		optval = vhost->ka_probes;
++		if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPCNT,
++			       (const void *)&optval, optlen) < 0)
++			return 1;
++#endif
++	}
++
++	/* Disable Nagle */
++	optval = 1;
++	if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &optval, optlen) < 0)
++		return 1;
++
++	return lws_plat_set_nonblocking(fd);
++}
++
++/* cast a struct sockaddr_in6 * into addr for ipv6 */
++
++int
++lws_interface_to_sa(int ipv6, const char *ifname, struct sockaddr_in *addr,
++		    size_t addrlen)
++{
++#if 0
++	int rc = LWS_ITOSA_NOT_EXIST;
++
++	struct ifaddrs *ifr;
++	struct ifaddrs *ifc;
++#ifdef LWS_WITH_IPV6
++	struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)addr;
++#endif
++
++	getifaddrs(&ifr);
++	for (ifc = ifr; ifc != NULL && rc; ifc = ifc->ifa_next) {
++		if (!ifc->ifa_addr)
++			continue;
++
++		lwsl_info(" interface %s vs %s\n", ifc->ifa_name, ifname);
++
++		if (strcmp(ifc->ifa_name, ifname))
++			continue;
++
++		switch (ifc->ifa_addr->sa_family) {
++		case AF_INET:
++#ifdef LWS_WITH_IPV6
++			if (ipv6) {
++				/* map IPv4 to IPv6 */
++				memset((char *)&addr6->sin6_addr, 0,
++						sizeof(struct in6_addr));
++				addr6->sin6_addr.s6_addr[10] = 0xff;
++				addr6->sin6_addr.s6_addr[11] = 0xff;
++				memcpy(&addr6->sin6_addr.s6_addr[12],
++					&((struct sockaddr_in *)ifc->ifa_addr)->sin_addr,
++							sizeof(struct in_addr));
++			} else
++#endif
++				memcpy(addr,
++					(struct sockaddr_in *)ifc->ifa_addr,
++						    sizeof(struct sockaddr_in));
++			break;
++#ifdef LWS_WITH_IPV6
++		case AF_INET6:
++			memcpy(&addr6->sin6_addr,
++			  &((struct sockaddr_in6 *)ifc->ifa_addr)->sin6_addr,
++						       sizeof(struct in6_addr));
++			break;
++#endif
++		default:
++			continue;
++		}
++		rc = LWS_ITOSA_USABLE;
++	}
++
++	freeifaddrs(ifr);
++
++	if (rc == LWS_ITOSA_NOT_EXIST) {
++		/* check if bind to IP address */
++#ifdef LWS_WITH_IPV6
++		if (inet_pton(AF_INET6, ifname, &addr6->sin6_addr) == 1)
++			rc = LWS_ITOSA_USABLE;
++		else
++#endif
++		if (inet_pton(AF_INET, ifname, &addr->sin_addr) == 1)
++			rc = LWS_ITOSA_USABLE;
++	}
++
++	return rc;
++#endif
++
++	return LWS_ITOSA_NOT_EXIST;
++}
++
++const char *
++lws_plat_inet_ntop(int af, const void *src, char *dst, int cnt)
++{
++	return inet_ntop(af, src, dst, cnt);
++}
++
++int
++lws_plat_inet_pton(int af, const char *src, void *dst)
++{
++	return 1; //  inet_pton(af, src, dst);
++}
++
++int
++lws_plat_ifname_to_hwaddr(int fd, const char *ifname, uint8_t *hwaddr, int len)
++{
++	lwsl_err("%s: UNIMPLEMENTED on this platform\n", __func__);
++
++	return -1;
++}
++
++int
++lws_plat_rawudp_broadcast(uint8_t *p, const uint8_t *canned, int canned_len,
++			  int n, int fd, const char *iface)
++{
++	lwsl_err("%s: UNIMPLEMENTED on this platform\n", __func__);
++
++	return -1;
++}
++
++int
++lws_plat_if_up(const char *ifname, int fd, int up)
++{
++	lwsl_err("%s: UNIMPLEMENTED on this platform\n", __func__);
++
++	return -1;
++}
++
++int
++lws_plat_BINDTODEVICE(lws_sockfd_type fd, const char *ifname)
++{
++	lwsl_err("%s: UNIMPLEMENTED on this platform\n", __func__);
++
++	return -1;
++}
++
++int
++lws_plat_ifconfig_ip(const char *ifname, int fd, uint8_t *ip, uint8_t *mask_ip,
++			uint8_t *gateway_ip)
++{
++	lwsl_err("%s: UNIMPLEMENTED on this platform\n", __func__);
++
++	return -1;
++}
++
++#if defined(LWS_WITH_MBEDTLS)
++int
++lws_plat_mbedtls_net_send(void *ctx, const uint8_t *buf, size_t len)
++{
++	int fd = ((mbedtls_net_context *) ctx)->fd;
++	int ret;
++
++	if (fd < 0)
++		return MBEDTLS_ERR_NET_INVALID_CONTEXT;
++
++	ret = write(fd, buf, len);
++	if (ret >= 0)
++		return ret;
++
++	if (errno == EAGAIN || errno == EWOULDBLOCK)
++		return MBEDTLS_ERR_SSL_WANT_WRITE;
++
++	if (errno == EPIPE || errno == ECONNRESET)
++		return MBEDTLS_ERR_NET_CONN_RESET;
++
++	if( errno == EINTR )
++		return MBEDTLS_ERR_SSL_WANT_WRITE;
++
++	return MBEDTLS_ERR_NET_SEND_FAILED;
++}
++
++int
++lws_plat_mbedtls_net_recv(void *ctx, unsigned char *buf, size_t len)
++{
++	int fd = ((mbedtls_net_context *) ctx)->fd;
++	int ret;
++
++	if (fd < 0)
++		return MBEDTLS_ERR_NET_INVALID_CONTEXT;
++
++	ret = (int)read(fd, buf, len);
++	if (ret >= 0)
++		return ret;
++
++	if (errno == EAGAIN || errno == EWOULDBLOCK)
++		return MBEDTLS_ERR_SSL_WANT_READ;
++
++	if (errno == EPIPE || errno == ECONNRESET)
++		return MBEDTLS_ERR_NET_CONN_RESET;
++
++	if (errno == EINTR || !errno)
++		return MBEDTLS_ERR_SSL_WANT_READ;
++
++	return MBEDTLS_ERR_NET_RECV_FAILED;
++}
++#endif
+\ No newline at end of file
+diff --git a/lib/plat/nx/private-lib-plat-nx.h b/lib/plat/nx/private-lib-plat-nx.h
+new file mode 100644
+index 00000000..fcd633d4
+--- /dev/null
++++ b/lib/plat/nx/private-lib-plat-nx.h
+@@ -0,0 +1,68 @@
++/*
++* libwebsockets - small server side websockets and web server implementation
++*
++* Copyright (C) 2010 - 2019 Andy Green <andy@warmcat.com>
++*
++* Permission is hereby granted, free of charge, to any person obtaining a copy
++* of this software and associated documentation files (the "Software"), to
++* deal in the Software without restriction, including without limitation the
++* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++* sell copies of the Software, and to permit persons to whom the Software is
++* furnished to do so, subject to the following conditions:
++*
++* The above copyright notice and this permission notice shall be included in
++* all copies or substantial portions of the Software.
++*
++* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++* IN THE SOFTWARE.
++*
++* Included from lib/private-lib-core.h if LWS_WITH_NX
++*/
++
++#include <unistd.h>
++#include <sys/types.h>
++#include <netdb.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++#include <fcntl.h>
++#include <switch/kernel/mutex.h>
++#include <switch/services/bsd.h>
++#include <switch/runtime/devices/romfs_dev.h>
++#include <switch/runtime/devices/fs_dev.h>
++
++#define LWS_ERRNO errno
++#define LWS_EAGAIN EAGAIN
++#define LWS_EALREADY EALREADY
++#define LWS_EINPROGRESS EINPROGRESS
++#define LWS_EINTR EINTR
++#define LWS_EISCONN EISCONN
++#define LWS_ENOTCONN ENOTCONN
++#define LWS_EWOULDBLOCK EWOULDBLOCK
++#define LWS_EADDRINUSE EADDRINUSE
++#define lws_set_blocking_send(wsi)
++#define LWS_SOCK_INVALID (-1)
++
++#define compatible_close(x) close(x)
++#define lws_plat_socket_offset() 0
++#define wsi_from_fd(A,B)  A->lws_lookup[B - lws_plat_socket_offset()]
++#define shutdown(sockfd, how) bsdShutdown(sockfd, how)
++
++struct lws_context;
++struct lws;
++
++int
++insert_wsi(const struct lws_context *context, struct lws *wsi);
++
++#define delete_from_fd(A,B) A->lws_lookup[B - lws_plat_socket_offset()] = 0
++
++typedef Mutex lws_mutex_t;
++#define lws_mutex_init(x)	mutexInit(&(x))
++#define lws_mutex_lock(x)	mutexLock(&(x))
++#define lws_mutex_unlock(x)	mutexUnlock(&(x))
++// This is probably a memory leak. Not sure why there's no destroy for switch mutex
++#define lws_mutex_destroy(x)	mutexUnlock(&(x))
+\ No newline at end of file
+diff --git a/lib/tls/tls.c b/lib/tls/tls.c
+index 3021c0c2..7fd9f034 100644
+--- a/lib/tls/tls.c
++++ b/lib/tls/tls.c
+@@ -345,7 +345,7 @@ lws_tls_alloc_pem_to_der_file(struct lws_context *context, const char *filename,
+ 
+ #endif
+ 
+-#if !defined(LWS_PLAT_FREERTOS) && !defined(LWS_PLAT_OPTEE) && !defined(OPTEE_DEV_KIT)
++#if !defined(LWS_PLAT_FREERTOS) && !defined(LWS_PLAT_OPTEE) && !defined(OPTEE_DEV_KIT) && !defined(LWS_PLAT_NX)
+ 
+ 
+ static int
+@@ -398,7 +398,7 @@ lws_tls_extant(const char *name)
+ enum lws_tls_extant
+ lws_tls_use_any_upgrade_check_extant(const char *name)
+ {
+-#if !defined(LWS_PLAT_OPTEE) && !defined(LWS_AMAZON_RTOS)
++#if !defined(LWS_PLAT_OPTEE) && !defined(LWS_AMAZON_RTOS) && !defined(LWS_PLAT_NX)
+ 
+ 	int n;
+ 
+-- 
+2.30.1
+
