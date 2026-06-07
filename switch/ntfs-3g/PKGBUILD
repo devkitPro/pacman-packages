@@ -2,8 +2,8 @@
 # Maintainer: DarkMatterCore <pabloacurielz@gmail.com>
 
 pkgname=switch-ntfs-3g
-pkgver=2022.10.3
-pkgrel=4
+pkgver=2026.2.25
+pkgrel=1
 pkgdesc='An open source, freely available read/write NTFS driver'
 arch=('any')
 url='https://www.tuxera.com/community/open-source-ntfs-3g/'
@@ -18,13 +18,13 @@ source=(
 )
 
 prepare() {
-  cd ntfs-3g_ntfsprogs-${pkgver}
+  cd ntfs-3g-${pkgver}
   patch -Np1 -i ${srcdir}/ntfs-3g-${pkgver}.patch
-  sed -i 's#$(MAKE) $(AM_MAKEFLAGS) install-exec-hook#$(MAKE) $(AM_MAKEFLAGS)#' libntfs-3g/Makefile.in 
+  sed -i 's#$(MAKE) $(AM_MAKEFLAGS) install-exec-hook#$(MAKE) $(AM_MAKEFLAGS)#' libntfs-3g/Makefile.in
 }
 
 build() {
-  cd ntfs-3g_ntfsprogs-${pkgver}
+  cd ntfs-3g-${pkgver}
 
   source /opt/devkitpro/switchvars.sh
 
@@ -43,7 +43,7 @@ build() {
 }
 
 package() {
-  cd ntfs-3g_ntfsprogs-${pkgver}
+  cd ntfs-3g-${pkgver}
 
   source /opt/devkitpro/switchvars.sh
 
@@ -54,5 +54,5 @@ package() {
 
   rm -fr "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
-sha256sums=('f20e36ee68074b845e3629e6bced4706ad053804cbaf062fbae60738f854170c'
-            'a37bd1ce5e8e9f8471bbc521a6e4b268d74db6d5ca07607fdab3b09084d5f415')
+sha256sums=('7754f3b32e8baf9c472459b4e9c981e3ae0f5039107cdd8d8201aed0a949008a'
+            '06623754a0d35587a665e57f5d00bb5b2f0dd9c64ff87eef5955630bb10b6e44')
