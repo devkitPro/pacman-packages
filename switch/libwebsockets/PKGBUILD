@@ -1,0 +1,71 @@
+
+# Maintainer: WinterMute <davem@devkitpro.org>
+pkgname=switch-libwebsockets
+pkgver=4.1.6 
+pkgrel=1
+pkgdesc='canonical libwebsockets.org networking library'
+arch=('any')
+url='https://github.com/warmcat/libwebsockets'
+license=('mit')
+options=(!strip libtool staticlibs)
+source=(
+  "https://github.com/warmcat/libwebsockets/archive/v${pkgver}.tar.gz"
+  "0001-Add-platform-Nintendo-Switch.patch"
+)
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+sha256sums=(
+  '402e9a8df553c9cd2aff5d7a9758e9e5285bf3070c82539082864633db3deb83'
+  'b35dc32e1c06e65a1d66155b9980424505d29f3d36f9e7be1072032c19e6f892'
+)
+groups=('switch-portlibs')
+
+build() {
+  cd libwebsockets-$pkgver
+
+  patch -Np1 -i $srcdir/0001-Add-platform-Nintendo-Switch.patch
+
+  source /opt/devkitpro/switchvars.sh
+
+  cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CFLAGS" \
+    -DLWS_WITHOUT_SERVER=ON \
+    -DLWS_WITHOUT_TESTAPPS=ON \
+    -DLWS_WITHOUT_TEST_SERVER=ON \
+    -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=ON \
+    -DLWS_WITHOUT_TEST_PING=ON \
+    -DLWS_WITHOUT_TEST_CLIENT=ON \
+    -DLWS_WITH_SHARED=OFF \
+    -DLWS_LINK_TESTAPPS_DYNAMIC=OFF \
+    -DLWS_STATIC_PIC=OFF \
+    -DLWS_WITH_SSL=ON \
+    -DLWS_WITH_MBEDTLS=ON \
+    -DLWS_SSL_CLIENT_USE_OS_CA_CERTS=ON \
+    -DLWS_ROLE_RAW_FILE=OFF \
+    -DLWS_WITH_HTTP2=OFF \
+    -DLWS_WITH_LWSWS=OFF \
+    -DLWS_UNIX_SOCK=OFF \
+    -DLWS_IPV6=OFF \
+    -DLWS_UNIX_SOCK=OFF \
+    -DLWS_PLAT_NX=ON \
+    -DLWS_WITH_UDP=OFF \
+    -DLWS_WITH_FILE_OPS=OFF \
+    -DCMAKE_BUILD_TYPE=DEBUG \
+    -DBUILD_SHARED_LIBS:BOOL=OFF \
+    -G"Unix Makefiles" \
+    .
+
+  make
+
+}
+
+package() {
+
+  cd libwebsockets-$pkgver
+
+  source /opt/devkitpro/switchvars.sh
+
+  make install DESTDIR="$pkgdir"
+
+}
