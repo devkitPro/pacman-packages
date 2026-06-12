@@ -1,0 +1,12 @@
+diff --git a/lib/aes128ccm.c b/lib/aes128ccm.c
+index 10bd11d..bcc492d 100644
+--- a/lib/aes128ccm.c
++++ b/lib/aes128ccm.c
+@@ -21,6 +21,7 @@
+ #include <string.h>
+ 
+ #include "aes.h"
++#include "portable-endian.h"
+ 
+ static void aes_ccm_generate_b0(unsigned char *nonce, int nlen,
+                                 int alen, int plen, int mlen,

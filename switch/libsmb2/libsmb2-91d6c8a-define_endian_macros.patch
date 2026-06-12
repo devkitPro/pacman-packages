@@ -1,0 +1,30 @@
+diff --git a/include/portable-endian.h b/include/portable-endian.h
+index e0730b2..17e1b3f 100644
+--- a/include/portable-endian.h
++++ b/include/portable-endian.h
+@@ -110,6 +110,25 @@
+ #     error platform not supported
+ #   endif
+ 
++#elif defined(__SWITCH__)
++
++#  include <machine/endian.h>
++
++#  define htobe16(x) __bswap16(x)
++#  define htole16(x) (x)
++#  define be16toh(x) __bswap16(x)
++#  define le16toh(x) (x)
++
++#  define htobe32(x) __bswap32(x)
++#  define htole32(x) (x)
++#  define be32toh(x) __bswap32(x)
++#  define le32toh(x) (x)
++
++#  define htobe64(x) __bswap64(x)
++#  define htole64(x) (x)
++#  define be64toh(x) __bswap64(x)
++#  define le64toh(x) (x)
++
+ #else
+ #  error platform not supported
+ #endif
