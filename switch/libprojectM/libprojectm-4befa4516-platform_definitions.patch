@@ -1,0 +1,171 @@
+diff --git a/src/libprojectM/Common.hpp b/src/libprojectM/Common.hpp
+index 45e248a1..b8841dee 100755
+--- a/src/libprojectM/Common.hpp
++++ b/src/libprojectM/Common.hpp
+@@ -61,6 +61,10 @@ extern FILE *fmemopen(void *buf, size_t len, const char *pMode);
+ #define STRING_BUFFER_SIZE 1024*150
+ #define STRING_LINE_SIZE 1024
+ 
++#ifdef __SWITCH__
++#include <cstdlib>
++#define projectM_isnan std::isnan
++#endif
+ 
+ #ifdef __unix__
+ #include <cstdlib>
+@@ -80,6 +84,10 @@ extern FILE *fmemopen(void *buf, size_t len, const char *pMode);
+ #define projectM_isnan(x) ((x) != (x))
+ #endif
+ 
++#ifdef __SWITCH__
++#define projectM_fmax fmax
++#endif
++
+ #ifdef __unix__
+ #define projectM_fmax fmax
+ #endif
+@@ -92,6 +100,10 @@ extern FILE *fmemopen(void *buf, size_t len, const char *pMode);
+ #define projectM_fmax(x,y) ((x) >= (y) ? (x): (y))
+ #endif
+ 
++#ifdef __SWITCH__
++#define projectM_fmin fmin
++#endif
++
+ #ifdef __unix__
+ #define projectM_fmin fmin
+ #endif
+diff --git a/src/libprojectM/PresetLoader.cpp b/src/libprojectM/PresetLoader.cpp
+index a685d22c..15b5b694 100644
+--- a/src/libprojectM/PresetLoader.cpp
++++ b/src/libprojectM/PresetLoader.cpp
+@@ -16,6 +16,13 @@
+ #include <sstream>
+ #include <set>
+ 
++#ifdef __SWITCH__
++extern "C"
++{
++#include <errno.h>
++}
++#endif
++
+ #ifdef __unix__
+ extern "C"
+ {
+diff --git a/src/libprojectM/PresetLoader.hpp b/src/libprojectM/PresetLoader.hpp
+index b6ca2782..2eca5346 100644
+--- a/src/libprojectM/PresetLoader.hpp
++++ b/src/libprojectM/PresetLoader.hpp
+@@ -9,6 +9,10 @@
+ #include "dirent.h"
+ #endif
+ 
++#ifdef __SWITCH__
++#include <dirent.h>
++#endif
++
+ #ifdef __unix__
+ #include <dirent.h>
+ #endif
+diff --git a/src/libprojectM/Renderer/TextureManager.cpp b/src/libprojectM/Renderer/TextureManager.cpp
+index 9f4ab41f..4fde0e8e 100644
+--- a/src/libprojectM/Renderer/TextureManager.cpp
++++ b/src/libprojectM/Renderer/TextureManager.cpp
+@@ -10,6 +10,10 @@
+ #include "dirent.h"
+ #endif
+ 
++#ifdef __SWITCH__
++#include <dirent.h>
++#endif
++
+ #ifdef __unix__
+ #include <dirent.h>
+ #endif
+ diff --git a/src/libprojectM/Renderer/hlslparser/src/Engine.cpp b/src/libprojectM/Renderer/hlslparser/src/Engine.cpp
+index a7e4f0ed..efe730ed 100755
+--- a/src/libprojectM/Renderer/hlslparser/src/Engine.cpp
++++ b/src/libprojectM/Renderer/hlslparser/src/Engine.cpp
+@@ -5,6 +5,27 @@
+ #include <string.h> // strcmp, strcasecmp
+ #include <stdlib.h>	// strtod, strtol
+ 
++#ifdef __SWITCH__
++#include <strings.h>    // strcasecmp
++#include <stdlib.h>
++
++char *strdup(const char *src)
++{
++    char *str;
++    char *p;
++    int len = 0;
++
++    while (src[len])
++        len++;
++    str = (char *)malloc(len + 1);
++    p = str;
++    while (*src)
++        *p++ = *src++;
++    *p = '\0';
++    return str;
++}
++
++#endif
+ 
+ namespace M4 {
+ 
+diff --git a/src/libprojectM/Renderer/hlslparser/src/HLSLParser.cpp b/src/libprojectM/Renderer/hlslparser/src/HLSLParser.cpp
+index 99bcb313..caf63851 100755
+--- a/src/libprojectM/Renderer/hlslparser/src/HLSLParser.cpp
++++ b/src/libprojectM/Renderer/hlslparser/src/HLSLParser.cpp
+@@ -24,6 +24,9 @@
+ #include <malloc.h>
+ #endif /** WIN32 */
+ 
++#ifdef __SWITCH__
++#include <alloca.h>
++#endif
+ 
+ namespace M4
+ {
+diff --git a/src/libprojectM/projectM.cpp b/src/libprojectM/projectM.cpp
+index fcda10c7..0768035f 100755
+--- a/src/libprojectM/projectM.cpp
++++ b/src/libprojectM/projectM.cpp
+@@ -30,6 +30,10 @@
+ 
+ #include "timer.h"
+ #include <iostream>
++#ifdef __SWITCH__
++#include "time.h"
++#endif
++
+ #ifdef __unix__
+ #include "time.h"
+ #endif
+@@ -179,6 +183,10 @@ void projectM::readConfig (const std::string & configFile )
+             ( "Smooth Preset Duration", config.read<int>("Smooth Transition Duration", 10));
+     _settings.presetDuration = config.read<int> ( "Preset Duration", 15 );
+ 
++#ifdef __SWITCH__
++    _settings.presetURL = config.read<string> ( "Preset Path", "/projectM/presets" );
++#endif
++
+ #ifdef __unix__
+     _settings.presetURL = config.read<string> ( "Preset Path", "/usr/local/share/projectM/presets" );
+ #endif
+@@ -199,6 +207,13 @@ void projectM::readConfig (const std::string & configFile )
+     ( "Menu Font", "../Resources/fonts/VeraMono.ttf");
+ #endif
+ 
++#ifdef __SWITCH__
++    _settings.titleFontURL = config.read<string>
++            ( "Title Font", "/projectM/fonts/Vera.tff" );
++    _settings.menuFontURL = config.read<string>
++            ( "Menu Font", "/projectM/fonts/VeraMono.tff" );
++#endif
++
+ #ifdef __unix__
+     _settings.titleFontURL = config.read<string>
+             ( "Title Font", "/usr/local/share/projectM/fonts/Vera.tff" );
