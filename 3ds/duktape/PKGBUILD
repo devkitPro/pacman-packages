@@ -1,0 +1,32 @@
+# Maintainer: 
+# Contributor: Teddy Astie <TSnake@Outlook.fr>
+
+pkgname=3ds-duktape
+pkgver=2.5.0
+pkgrel=1
+pkgdesc='Embeddable Javascript engine (for Nintendo 3DS homebrew development)'
+arch=('any')
+url='https://duktape.org/index.html'
+license=('MIT')
+options=(!strip)
+makedepends=('devkitpro-pkgbuild-helpers')
+source=("https://duktape.org/duktape-$pkgver.tar.xz")
+sha256sums=('83d411560a1cd36ea132bd81d8d9885efe9285c6bc6685c4b71e69a0c4329616')
+groups=('3ds-portlibs')
+
+build() {
+  cd duktape-$pkgver
+  source /opt/devkitpro/3dsvars.sh
+
+  ${TOOL_PREFIX}gcc -c -o duktape.o src/duktape.c ${CFLAGS}
+  ${TOOL_PREFIX}ar rcu libduktape.a duktape.o
+}
+
+package() {
+  cd duktape-$pkgver
+  source /opt/devkitpro/3dsvars.sh
+
+  mkdir -p ${pkgdir}${PORTLIBS_PREFIX}/lib/ ${pkgdir}${PORTLIBS_PREFIX}/include/
+  cp libduktape.a ${pkgdir}${PORTLIBS_PREFIX}/lib/
+  cp src/duktape.h src/duk_config.h ${pkgdir}${PORTLIBS_PREFIX}/include/
+}
