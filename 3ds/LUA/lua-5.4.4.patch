@@ -1,0 +1,49 @@
+--- src/Makefile	2022-05-24 15:43:55.149997400 -0300
++++ src/Makefile	2022-05-24 15:44:21.061908400 -0300
+@@ -4,15 +4,17 @@
+ # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
+ 
+ # Your platform. See PLATS for possible values.
+-PLAT= guess
++include $(DEVKITARM)/3ds_rules
+ 
+-CC= gcc -std=gnu99
+-CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+-LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
++PLAT= none
++ARCH= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
++CC= arm-none-eabi-gcc
++CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS) $(ARCH)
++LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS) $(ARCH)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+ 
+-AR= ar rcu
+-RANLIB= ranlib
++AR= arm-none-eabi-ar rcu
++RANLIB= arm-none-eabi-ranlib
+ RM= rm -f
+ UNAME= uname
+ 
+@@ -143,15 +145,15 @@
+ # Targets that do not create files (not all makes understand .PHONY).
+ .PHONY: all $(PLATS) help test clean default o a depend echo
+ 
+-# Compiler modules may use special flags.
+-llex.o:
+-	$(CC) $(CFLAGS) $(CMCFLAGS) -c llex.c
++# # Compiler modules may use special flags.
++# llex.o:
++# 	$(CC) $(CFLAGS) $(CMCFLAGS) -c llex.c
+ 
+-lparser.o:
+-	$(CC) $(CFLAGS) $(CMCFLAGS) -c lparser.c
++# lparser.o:
++# 	$(CC) $(CFLAGS) $(CMCFLAGS) -c lparser.c
+ 
+-lcode.o:
+-	$(CC) $(CFLAGS) $(CMCFLAGS) -c lcode.c
++# lcode.o:
++# 	$(CC) $(CFLAGS) $(CMCFLAGS) -c lcode.c
+ 
+ # DO NOT DELETE
+ 
