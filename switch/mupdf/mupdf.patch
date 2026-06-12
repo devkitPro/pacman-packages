@@ -1,8 +1,8 @@
 diff --git a/Makerules b/Makerules
-index b96fc7138..91b853208 100644
+index f582dc0614..81178aa2b7 100644
 --- a/Makerules
 +++ b/Makerules
-@@ -201,3 +201,18 @@ ifeq "$(OS)" "ios"
+@@ -379,3 +379,20 @@ ifeq "$(OS)" "ios"
    LD = xcrun ld
    RANLIB = xcrun ranlib
  endif
@@ -17,17 +17,19 @@ index b96fc7138..91b853208 100644
 +  USE_SYSTEM_FREETYPE = yes
 +  SYS_FREETYPE_CFLAGS = $(shell freetype-config --cflags)
 +  SYS_FREETYPE_LIBS = $(shell freetype-config --libs)
++  USE_SYSTEM_HARFBUZZ = yes
++  SYS_HARFBUZZ_CFLAGS = $(shell aarch64-none-elf-pkg-config --cflags harfbuzz)
++  SYS_HARFBUZZ_LIBS = $(shell aarch64-none-elf-pkg-config --libs harfbuzz)
 +  USE_SYSTEM_LIBJPEG = yes
 +  USE_SYSTEM_ZLIB = yes
 +endif
-+
 diff --git a/source/fitz/string.c b/source/fitz/string.c
-index 2918c3f16..c8b709c2f 100644
+index 4a0de4fc48..aeaf8cabf6 100644
 --- a/source/fitz/string.c
 +++ b/source/fitz/string.c
-@@ -158,7 +158,11 @@ char *fz_realpath(const char *path, char buf[PATH_MAX])
+@@ -235,7 +235,11 @@ char *fz_realpath(const char *path, char *buf)
  
- char *fz_realpath(const char *path, char buf[PATH_MAX])
+ char *fz_realpath(const char *path, char *buf)
  {
 +#ifdef __SWITCH__
 +	return NULL;
@@ -37,18 +39,3 @@ index 2918c3f16..c8b709c2f 100644
  }
  
  #endif
-Submodule thirdparty/harfbuzz contains modified content
-diff --git a/thirdparty/harfbuzz/src/hb.hh b/thirdparty/harfbuzz/src/hb.hh
-index fcbd3305..ff36ef63 100644
---- a/thirdparty/harfbuzz/src/hb.hh
-+++ b/thirdparty/harfbuzz/src/hb.hh
-@@ -182,6 +182,7 @@
- #include <assert.h>
- #include <stdio.h>
- #include <stdarg.h>
-+#include <climits>
- 
- #if (defined(_MSC_VER) && _MSC_VER >= 1500) || defined(__MINGW32__)
- #ifdef __MINGW32_VERSION
-Submodule thirdparty/lcms2 05db680de...29b0d7953 (commits not present)
-Submodule thirdparty/libjpeg 9a532f2d5...cae42f6ea (commits not present)
