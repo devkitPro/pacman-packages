@@ -2,7 +2,7 @@
 # Maintainer: DarkMatterCore <pabloacurielz@gmail.com>
 
 pkgname=switch-ntfs-3g
-pkgver=2026.2.25
+pkgver=2026.7.7
 pkgrel=1
 pkgdesc='An open source, freely available read/write NTFS driver'
 arch=('any')
@@ -54,5 +54,5 @@ package() {
 
   rm -fr "${pkgdir}${PORTLIBS_PREFIX}/share"
 }
-sha256sums=('7754f3b32e8baf9c472459b4e9c981e3ae0f5039107cdd8d8201aed0a949008a'
+sha256sums=('d67b769025d32860549d35c2147e45024d172f81c540d750390ce3602c059dab'
             '06623754a0d35587a665e57f5d00bb5b2f0dd9c64ff87eef5955630bb10b6e44')
