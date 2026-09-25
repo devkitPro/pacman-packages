@@ -3,24 +3,23 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=switch-sdl2_mixer
-pkgver=2.0.4
-pkgrel=2
+pkgver=2.8.2
+pkgrel=1
 pkgdesc="A sample multi-channel audio mixer library."
 arch=('any')
-url="https://libsdl.org/projects/SDL_mixer/"
+url="https://github.com/libsdl-org/SDL_mixer"
 license=("zlib")
 options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+# MP3, FLAC and OGG use the decoders bundled with SDL_mixer (minimp3, dr_flac,
+# stb_vorbis); MOD and Opus still need their libraries.
 depends=(
   'switch-sdl2'
-  'switch-flac'
-  'switch-libvorbisidec'
   'switch-libmodplug'
-  'switch-mpg123'
   'switch-opusfile'
 )
-source=("${url}release/SDL2_mixer-${pkgver}.tar.gz")
-sha256sums=('b4cf5a382c061cd75081cf246c2aa2f9df8db04bdda8dcdc6b6cca55bede2419')
+source=("${url}/releases/download/release-${pkgver}/SDL2_mixer-${pkgver}.tar.gz")
+sha256sums=('938dff531d00ace2296557a6599abe6f34599e2f34f0a4a08a397e2ccac8b8f7')
 groups=('switch-portlibs' 'switch-sdl2')
 
 build() {
@@ -31,11 +30,19 @@ build() {
   # patch out compiling playwave and playmus
   sed 's|\$(objects)/play.*mus\$(EXE)||' -i Makefile.in
 
+  # There is no dynamic loading on Switch: every format is linked in or off.
   LIBS="-lm" ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=aarch64-none-elf --disable-shared --enable-static \
+    --disable-sdltest \
     --disable-music-cmd \
-    --enable-music-ogg-tremor \
-    --enable-music-mod-modplug
+    --enable-music-mp3-minimp3 --disable-music-mp3-mpg123 \
+    --enable-music-flac-drflac --disable-music-flac-libflac \
+    --enable-music-ogg-stb --disable-music-ogg-vorbis --disable-music-ogg-tremor \
+    --enable-music-mod-modplug --disable-music-mod-modplug-shared \
+    --disable-music-mod-xmp \
+    --enable-music-opus --disable-music-opus-shared \
+    --disable-music-midi-fluidsynth --disable-music-midi-native \
+    --disable-music-gme --disable-music-wavpack
 
   make
 }
@@ -43,13 +50,10 @@ build() {
 package() {
   cd SDL2_mixer-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
 
-  # add our static libs
-  echo "Requires.private: vorbisidec libmodplug libmpg123 opusfile" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_mixer.pc"
-
   # License
-  install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
+  install -Dm644 "LICENSE.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.txt"
 }
