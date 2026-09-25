@@ -3,25 +3,24 @@
 # Contributor: carstene1ns <dev f4ke de>
 
 pkgname=switch-sdl2_image
-pkgver=2.0.4
+pkgver=2.8.12
 pkgrel=1
 pkgdesc="SDL2 image loading library (Nintendo Switch port)."
 arch=('any')
-url="https://libsdl.org/projects/SDL_image/"
+url="https://github.com/libsdl-org/SDL_image"
 license=("zlib")
 options=(!strip libtool staticlibs)
 makedepends=('switch-pkg-config' 'dkp-toolchain-vars')
+# JPG and PNG are decoded by the bundled stb_image (NEON-accelerated), and
+# saved with the bundled miniz and tiny_jpeg, so neither libjpeg nor libpng is
+# linked any more. libjpeg's error handling longjmps out of the decoder, and a
+# corrupt JPEG was enough to take an app down through it.
 depends=(
   'switch-sdl2'
-  'switch-libpng'
-  'switch-libjpeg-turbo'
   'switch-libwebp'
 )
-source=("${url}release/SDL2_image-${pkgver}.tar.gz" "Makefile.in.patch")
-sha256sums=(
-  'e74ec49c2402eb242fbfa16f2f43a19582a74c2eabfbfb873f00d4250038ceac'
-  'c15da8e087e7ca4ceef3dcce8501b21cbe6569563c345cf2a1591f20316d8d86'
-)
+source=("${url}/releases/download/release-${pkgver}/SDL2_image-${pkgver}.tar.gz")
+sha256sums=('393f5efb50536ec13ca4f4affb69cc9966d3c3f969e6c5e701faddf9f9785381')
 groups=('switch-portlibs' 'switch-sdl2-libs')
 
 build() {
@@ -29,11 +28,17 @@ build() {
 
   source ${DEVKITPRO}/switchvars.sh
 
-  patch -Np1 -i "$srcdir"/Makefile.in.patch Makefile.in
+  # patch out compiling showimage and showanim
+  sed '/^noinst_PROGRAMS/d' -i Makefile.in
 
+  # There is no dynamic loading on Switch: every format is linked in or off.
   ./configure --prefix="${PORTLIBS_PREFIX}" \
     --host=aarch64-none-elf --disable-shared --enable-static \
     --disable-sdltest \
+    --enable-stb-image \
+    --enable-webp --disable-webp-shared \
+    --disable-avif --disable-jxl --disable-tif \
+    --disable-jpg-shared --disable-png-shared \
     --with-sdl-prefix=${PORTLIBS_PREFIX}
 
   make
@@ -42,13 +47,10 @@ build() {
 package() {
   cd SDL2_image-$pkgver
 
-  source /opt/devkitpro/switchvars.sh
+  source ${DEVKITPRO}/switchvars.sh
 
   make DESTDIR="$pkgdir" install
 
-  # add our static libs
-  echo "Requires.private: libpng libjpeg libwebp" >> "${pkgdir}/${PORTLIBS_PREFIX}/lib/pkgconfig/SDL2_image.pc"
-
   # License
-  install -Dm644 "COPYING.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/COPYING.txt"
+  install -Dm644 "LICENSE.txt" "${pkgdir}/${PORTLIBS_PREFIX}/licenses/${pkgname}/LICENSE.txt"
 }
