@@ -1,7 +1,7 @@
 # Maintainer: Dave Murphy <davem@devkitpro.org>
 
 pkgname=('libogc')
-pkgver=3.1.0
+pkgver=3.2.1
 pkgrel=1
 pkgdesc="Nintendo Gamecube & Wii library."
 arch=('any')
@@ -24,4 +24,4 @@ package() {
   LIBOGC_VER=v${pkgver} DESTDIR=$pkgdir catnip install
 }
 
-sha256sums=('e8106f4006752146eff9bb7f7ff7c74c56aff8c7f348942533f4fcb03b8b731e')
+sha256sums=('d7b106dd1dcebe78e30a56700e6dc06e8d7ce932432c254d0d3638fa394b9962')
