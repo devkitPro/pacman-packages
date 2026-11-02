@@ -2,44 +2,38 @@
 # Contributor: oreo639 <oreo6391@gmail.com>
 
 pkgname=3ds-wildmidi
-pkgver=0.4.3
-pkgrel=2
+pkgver=0.5.0
+pkgrel=1
 pkgdesc='Core softsynth library that can be used with other applications.'
 arch=('any')
 url='https://www.mindwerks.net/projects/wildmidi/'
 license=('LGPL')
 options=(!strip libtool staticlibs)
-source=( "https://github.com/Mindwerks/wildmidi/archive/wildmidi-${pkgver}.tar.gz" "wildmidi-0.4.3.patch")
+source=( "https://github.com/Mindwerks/wildmidi/archive/wildmidi-${pkgver}.tar.gz" "wildmidi-0.5.0.patch")
 groups=('3ds-portlibs')
-makedepends=('dkp-toolchain-vars')
-sha256sums=(
-'498e5a96455bb4b91b37188ad6dcb070824e92c44f5ed452b90adbaec8eef3c5'
-'2ff10193fe06e908b0658f9035711576a2781314e3f0cfe7969dde590f18b813')
+makedepends=('3ds-cmake' 'dkp-toolchain-vars')
+sha256sums=('2164396d5fe80153fd2af9764fcd991883d06fbf1fdfd96efbc99eed21ed1a2f'
+            '1fefd1957f24f84698eec8049985f2ac3561c01f0c0d0c9f7170db54efb5431c')
+
+prepare() {
+  patch -d wildmidi-wildmidi-$pkgver -i $srcdir/wildmidi-0.5.0.patch
+}
 
 build() {
-  cd wildmidi-wildmidi-$pkgver
-
   source /opt/devkitpro/3dsvars.sh
 
-  patch -p1 -i $srcdir/wildmidi-0.4.3.patch
-
-  cmake . -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/3ds.cmake \
-    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
-    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
-    -DWANT_PLAYER=OFF -DWANT_STATIC=ON \
-    -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -G"Unix Makefiles"
-
-  make
-
+  cmake \
+    -S wildmidi-wildmidi-$pkgver \
+    -B build \
+    -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/cmake/3ds.cmake \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_TESTING=OFF \
+    -DWANT_STATIC=ON \
+    -DWANT_PLAYER=OFF
+  cmake --build build
 }
 
 package() {
-
-  cd wildmidi-wildmidi-$pkgver
-
-  source /opt/devkitpro/3dsvars.sh
-
-  make DESTDIR="$pkgdir" install
-
+  DESTDIR="$pkgdir" cmake --install build
 }
