@@ -1,0 +1,48 @@
+# Maintainer: Rhys Koedijk <rhys@koedijk.co.nz>
+
+pkgbasename=ftgl
+pkgname=switch-$pkgbasename
+pkgver=2.4.0
+pkgrel=1
+pkgdesc='FTGL is a free cross-platform Open Source C++ library that uses Freetype2 to simplify rendering fonts in OpenGL applications'
+arch=('any')
+url='https://github.com/frankheckenbach/ftgl/'
+license=('MIT')
+options=(!strip libtool staticlibs)
+source=("${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('aa97da1c3442a8fd3941037655df18016d70b5266381c81d81e8b5335f196ea8')
+depends=('switch-freetype' 'switch-glu' 'switch-mesa')
+makedepends=('switch-pkg-config' 'devkitpro-pkgbuild-helpers')
+groups=('switch-portlibs')
+
+prepare() {
+  cd ${pkgbasename}-${pkgver}
+  patch -Np1 -i "${startdir}/${pkgbasename}-2.4.0-install_pkgconfig.patch"
+  patch -Np1 -i "${startdir}/${pkgbasename}-2.4.0-fix_libftgl_la_sources.patch"
+}
+
+build() {
+  cd ${pkgbasename}-${pkgver}
+
+  source /opt/devkitpro/switchvars.sh
+
+  cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
+    -DCMAKE_INSTALL_PREFIX=$PORTLIBS_PREFIX \
+    -DCMAKE_C_FLAGS="$CFLAGS $CPPFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CFLAGS" \
+    -DCMAKE_AR="/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc-ar" \
+    -DBUILD_SHARED_LIBS:BOOL=OFF \
+    -DOPENGL_USE_EGL:BOOL=ON \
+    -DOPENGL_opengl_LIBRARY="${PORTLIBS_PREFIX}/lib" \
+    .
+  
+  make
+}
+
+package() {
+  cd ${pkgbasename}-${pkgver}
+
+  make DESTDIR="$pkgdir" install
+  
+  install -Dm644 COPYING "$pkgdir"/opt/devkitpro/portlibs/switch/licenses/$pkgname/COPYING
+}
