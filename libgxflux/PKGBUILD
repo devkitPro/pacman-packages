@@ -1,36 +1,38 @@
 # Maintainer: TurtleP <jpostelnek@outlook.com>
 
-pkgname=libgxflux
+_libname=libgxflux
+pkgname=${_libname}
 pkgver=20230423
 _snapshot=91430ea
-pkgrel=3
+pkgrel=4
 pkgdesc="libgxflux"
 arch=("any")
 url="https://repo.or.cz/libgxflux.git"
 license=("GPL2")
-options=("staticlibs" "!strip")
-source=(
-  "libgxflux-${snapshot}.tar.gx::${url}/snapshot/${_snapshot}.tar.gz"
-  "libgxflux-destdir.patch"
-)
-
-sha256sums=('07b7453f7c2eb54aa049498245bea2694feb0a7ae6d7eeb94c3e625d927ac885'
-            '85a819135fd777a00ff7dde8f8370a35f2aaadff8a8afec6791ac9fb19b0e4ce')
-
-
+options=(staticlibs !strip)
 makedepends=("dkp-toolchain-vars")
+depends=("libogc")
 groups=("wii-dev" "gamecube-dev")
+source=("${_libname}-${_snapshot}.tar.gz::${url}/snapshot/${_snapshot}.tar.gz"
+        "libgxflux-changes.patch")
+
+prepare() {
+  cd "${_libname}-${_snapshot}"
+
+  patch -Np1 -i ${srcdir}/libgxflux-changes.patch
+}
 
 package() {
+  source "${DEVKITPRO}/ppcvars.sh"
 
-  source /opt/devkitpro/ppcvars.sh
+  cd "${_libname}-${_snapshot}"
 
-  cd libgxflux-${_snapshot}
-
-  patch -Np1 -i ${srcdir}/libgxflux-destdir.patch
-
-  make -C src install DESTDIR=${pkgdir}
   make -C src clean
-  make -C src install GAMECUBE=1 DESTDIR=${pkgdir} 
-
+  make -C src install DESTDIR="$pkgdir"
+  make -C src clean
+  make -C src install GAMECUBE=1 DESTDIR="$pkgdir"
+  make -C src clean
 }
+
+sha256sums=('07b7453f7c2eb54aa049498245bea2694feb0a7ae6d7eeb94c3e625d927ac885'
+            'abef4126333bd8a41404ae82286ca51a44ad0c2b3e27a4f573c804314827a85a')
