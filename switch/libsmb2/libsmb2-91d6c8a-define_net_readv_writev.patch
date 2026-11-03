@@ -1,0 +1,102 @@
+--- a/lib/socket.c
++++ b/lib/socket.c
+@@ -80,6 +80,99 @@
+ 
+ #define MAX_URL_SIZE 256
+ 
++#ifdef __SWITCH__
++
++#include <netdb.h>
++#include <netinet/tcp.h>
++#include <netinet/in.h>
++#include <poll.h>
++
++
++ssize_t writev(int fd, const struct iovec *vector, int count)
++{
++    size_t bytes = 0;
++
++    for (int i = 0; i < count; ++i)
++    {
++        bytes += vector[i].iov_len;
++    }
++
++    char *buffer = (char *)malloc(bytes);
++
++    if (buffer == NULL)
++    {
++        return -1;
++    }
++
++    size_t to_copy = bytes;
++    char *bp = buffer;
++
++    for (int i = 0; i < count; ++i)
++    {
++        size_t copy = MIN(vector[i].iov_len, to_copy);
++        bp = mempcpy((void *)bp, (void *)vector[i].iov_base, copy);
++        to_copy -= copy;
++        if (to_copy == 0)
++        {
++            break;
++        }
++    }
++
++    ssize_t bytes_written = write(fd, buffer, bytes);
++    free(buffer);
++    return bytes_written;
++}
++
++ssize_t readv(int fd, const struct iovec *iov, int iovcnt)
++{
++  ssize_t total = 0, bytes_read = 0;
++  
++  for (int j = 0; j < iovcnt; j++) {
++	  total += iov[j].iov_len;
++  }
++  
++  char *buffer = (char *)malloc(total);
++  char *bp = buffer;
++  
++  if(buffer == NULL) {
++	  return -1;
++  }
++  
++  int bytes_left = read(fd, buffer, total);
++  
++  if (bytes_left == -1) {
++	  free((void*)buffer);
++      return -1;
++  }
++  
++  if(bytes_left == 0)
++  {
++	  return 0;
++  }
++  
++  for (int i = 0; i < iovcnt; i++)
++  {
++    int sz = MIN(iov[i].iov_len, bytes_left);
++	
++	memcpy(iov[i].iov_base, bp, sz);
++
++	bp += sz;
++	bytes_read += sz;
++	bytes_left -= sz;
++	
++	if(bytes_left < 1)
++	{
++		break;
++	}
++  }
++  
++  free((void*)buffer);
++  return bytes_read;
++}
++
++
++#endif
++
+ static int
+ smb2_get_credit_charge(struct smb2_context *smb2, struct smb2_pdu *pdu)
+ {

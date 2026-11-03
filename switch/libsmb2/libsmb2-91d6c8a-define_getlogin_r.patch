@@ -1,0 +1,16 @@
+diff --git a/lib/init.c b/lib/init.c
+index aeb1982..f349cd4 100644
+--- a/lib/init.c
++++ b/lib/init.c
+@@ -74,6 +74,11 @@
+ #endif
+ #endif // __ANDROID__
+ 
++#ifdef __SWITCH__
++#include <errno.h>
++#define getlogin_r(a,b) ENXIO
++#endif // __SWITCH__
++
+ static int
+ smb2_parse_args(struct smb2_context *smb2, const char *args)
+ {
