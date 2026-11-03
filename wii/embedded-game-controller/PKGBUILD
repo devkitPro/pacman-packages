@@ -1,0 +1,27 @@
+pkgname=embedded-game-controller
+pkgver=0.2
+pkgrel=1
+pkgdesc='Game controller library for embedded devices'
+arch=('any')
+url='https://github.com/embedded-game-controller/embedded-game-controller'
+license=('MIT')
+options=(!strip libtool staticlibs)
+makedepends=('catnip')
+depends=('libogc' 'bt-embedded')
+groups=('wii-portlibs')
+
+source=(
+  "embedded-game-controller-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
+)
+
+build() {
+  cd embedded-game-controller-${pkgver}
+  catnip -t wii
+}
+
+package() {
+  cd embedded-game-controller-${pkgver}
+  DESTDIR=${pkgdir} catnip install
+}
+
+sha256sums=('591ba3ad0ca8c12481b6f0b9538dafa368befe0b390d5660125035503ad78a6c')
