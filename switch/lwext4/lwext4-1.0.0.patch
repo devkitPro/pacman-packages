@@ -1,7 +1,14 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index eec0993..ce64c51 100644
+index eec0993..789903a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ project(lwext4 C)
+-cmake_minimum_required(VERSION 3.4)
++cmake_minimum_required(VERSION 3.5)
+ 
+ 
+ include_directories(include)
 @@ -30,11 +30,21 @@ elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL  msp430g2210)
      add_definitions(-DCONFIG_DEBUG_ASSERT=0)
      #...
@@ -49,8 +56,58 @@ index 12ee5c7..413317d 100644
  
  all: 
  	generic
+diff --git a/include/ext4.h b/include/ext4.h
+index 18e756e..479f643 100644
+--- a/include/ext4.h
++++ b/include/ext4.h
+@@ -494,6 +494,22 @@ int ext4_mtime_get(const char *path, uint32_t *mtime);
+  * @return  standard error code*/
+ int ext4_ctime_get(const char *path, uint32_t *ctime);
+ 
++/**@brief Set file/directory/link creation time (crtime).
++ *
++ * @param path   Path to file/dir/link.
++ * @param crtime Creation timestamp.
++ *
++ * @return  Standard error code.*/
++int ext4_crtime_set(const char *path, uint32_t crtime);
++
++/**@brief Get file/directory/link creation time (crtime).
++ *
++ * @param path   Path to file/dir/link.
++ * @param crtime Creation timestamp.
++ *
++ * @return  Standard error code.*/
++int ext4_crtime_get(const char *path, uint32_t *crtime);
++
+ /**@brief Create symbolic link.
+  *
+  * @param target Destination entry path.
+diff --git a/include/ext4_inode.h b/include/ext4_inode.h
+index 11fd1d9..d9453dd 100644
+--- a/include/ext4_inode.h
++++ b/include/ext4_inode.h
+@@ -127,6 +127,18 @@ uint32_t ext4_inode_get_modif_time(struct ext4_inode *inode);
+  */
+ void ext4_inode_set_modif_time(struct ext4_inode *inode, uint32_t time);
+ 
++/**@brief Get file creation time (crtime).
++ * @param inode I-node
++ * @return Creation time (POSIX), or 0 if not available
++ */
++uint32_t ext4_inode_get_crtime(struct ext4_inode *inode);
++
++/**@brief Set file creation time (crtime).
++ * @param inode I-node
++ * @param time  Creation time (POSIX)
++ */
++void ext4_inode_set_crtime(struct ext4_inode *inode, uint32_t time);
++
+ /**@brief Get time, when i-node was deleted.
+  * @param inode I-node
+  * @return Time of the delete action (POSIX)
 diff --git a/src/ext4.c b/src/ext4.c
-index 90ce45e..2bdd520 100644
+index 90ce45e..6be0763 100644
 --- a/src/ext4.c
 +++ b/src/ext4.c
 @@ -461,14 +461,13 @@ int ext4_umount(const char *mount_point)
@@ -94,7 +151,92 @@ index 90ce45e..2bdd520 100644
  
  	EXT4_MP_UNLOCK(f->mp);
  	return r;
-@@ -3146,8 +3146,10 @@ int ext4_dir_mk(const char *path)
+@@ -1849,7 +1849,7 @@ int ext4_fwrite(ext4_file *file, const void *buf, size_t size, size_t *wcnt)
+ 	if (file->mp->fs.read_only)
+ 		return EROFS;
+ 
+-	if (file->flags & O_RDONLY)
++	if (!((file->flags & O_WRONLY) || (file->flags & O_RDWR)))
+ 		return EPERM;
+ 
+ 	if (!size)
+@@ -2437,6 +2437,75 @@ int ext4_ctime_get(const char *path, uint32_t *ctime)
+ 	return r;
+ }
+ 
++int ext4_crtime_set(const char *path, uint32_t crtime)
++{
++	struct ext4_inode_ref inode_ref;
++	struct ext4_mountpoint *mp = ext4_get_mount(path);
++	int r;
++
++	if (!mp)
++		return ENOENT;
++
++	if (mp->fs.read_only)
++		return EROFS;
++
++	/* crtime only exists in extended inodes (inode_size > 128) */
++	uint16_t inode_size = ext4_get16(&mp->fs.sb, inode_size);
++	if (inode_size <= EXT4_GOOD_OLD_INODE_SIZE)
++		return ENOTSUP;
++
++	EXT4_MP_LOCK(mp);
++
++	r = ext4_trans_get_inode_ref(path, mp, &inode_ref);
++	if (r != EOK)
++		goto Finish;
++
++	ext4_inode_set_crtime(inode_ref.inode, crtime);
++	inode_ref.dirty = true;
++	r = ext4_trans_put_inode_ref(mp, &inode_ref);
++
++	Finish:
++	EXT4_MP_UNLOCK(mp);
++
++	return r;
++}
++
++int ext4_crtime_get(const char *path, uint32_t *crtime)
++{
++	struct ext4_inode_ref inode_ref;
++	struct ext4_mountpoint *mp = ext4_get_mount(path);
++	ext4_file f;
++	int r;
++
++	if (!mp)
++		return ENOENT;
++
++	/* crtime only exists in extended inodes (inode_size > 128) */
++	uint16_t inode_size = ext4_get16(&mp->fs.sb, inode_size);
++	if (inode_size <= EXT4_GOOD_OLD_INODE_SIZE) {
++		*crtime = 0;
++		return ENOTSUP;
++	}
++
++	EXT4_MP_LOCK(mp);
++
++	r = ext4_generic_open2(&f, path, O_RDONLY, EXT4_DE_UNKNOWN, NULL, NULL);
++	if (r != EOK)
++		goto Finish;
++
++	r = ext4_fs_get_inode_ref(&mp->fs, f.inode, &inode_ref);
++	if (r != EOK)
++		goto Finish;
++
++	*crtime = ext4_inode_get_crtime(inode_ref.inode);
++	r = ext4_fs_put_inode_ref(&inode_ref);
++
++	Finish:
++	EXT4_MP_UNLOCK(mp);
++
++	return r;
++}
++
+ static int ext4_fsymlink_set(ext4_file *f, const void *buf, uint32_t size)
+ {
+ 	struct ext4_inode_ref ref;
+@@ -3146,8 +3215,10 @@ int ext4_dir_mk(const char *path)
  
  	/*Check if exist.*/
  	r = ext4_generic_open(&f, path, "r", false, 0, 0);
@@ -106,3 +248,33 @@ index 90ce45e..2bdd520 100644
  
  	/*Create new directory.*/
  	r = ext4_generic_open(&f, path, "w", false, 0, 0);
+diff --git a/src/ext4_inode.c b/src/ext4_inode.c
+index ff3c234..03d076f 100644
+--- a/src/ext4_inode.c
++++ b/src/ext4_inode.c
+@@ -163,6 +163,16 @@ void ext4_inode_set_modif_time(struct ext4_inode *inode, uint32_t time)
+ 	inode->modification_time = to_le32(time);
+ }
+ 
++uint32_t ext4_inode_get_crtime(struct ext4_inode *inode)
++{
++	return to_le32(inode->crtime);
++}
++
++void ext4_inode_set_crtime(struct ext4_inode *inode, uint32_t time)
++{
++	inode->crtime = to_le32(time);
++}
++
+ uint32_t ext4_inode_get_del_time(struct ext4_inode *inode)
+ {
+ 	return to_le32(inode->deletion_time);
+@@ -295,7 +305,7 @@ uint64_t ext4_inode_get_file_acl(struct ext4_inode *inode,
+ 	uint64_t v = to_le32(inode->file_acl_lo);
+ 
+ 	if (ext4_get32(sb, creator_os) == EXT4_SUPERBLOCK_OS_LINUX)
+-		v |= (uint32_t)to_le16(inode->osd2.linux2.file_acl_high) << 16;
++		v |= (uint64_t)to_le16(inode->osd2.linux2.file_acl_high) << 32;
+ 
+ 	return v;
+ }
