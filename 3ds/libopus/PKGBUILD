@@ -2,7 +2,7 @@
 
 pkgname=3ds-libopus
 pkgver=1.4
-pkgrel=1
+pkgrel=2
 pkgdesc='Reference implementation of the lossy audio codec, Opus'
 arch=('any')
 url='https://opus-codec.org/'
@@ -19,7 +19,7 @@ build() {
   source /opt/devkitpro/3dsvars.sh
 
   ./configure --prefix="${PORTLIBS_PREFIX}" --host=arm-none-eabi \
-    --disable-shared --enable-static
+    --disable-shared --enable-static --enable-fixed-point --disable-rtcd
 
   make
 }
