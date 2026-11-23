@@ -1,5 +1,5 @@
 pkgname=3ds-SDL2_image
-pkgver=2.8.8
+pkgver=2.8.12
 pkgrel=1
 pkgdesc="Image decoding for many popular formats for SDL2 (Nintendo 3DS port)"
 arch=('any')
@@ -18,7 +18,7 @@ makedepends=(
 )
 options=(!strip libtool staticlibs)
 source=("https://github.com/libsdl-org/SDL_image/releases/download/release-$pkgver/SDL2_image-$pkgver.tar.gz")
-sha256sums=('2213b56fdaff2220d0e38c8e420cbe1a83c87374190cba8c70af2156097ce30a')
+sha256sums=('393f5efb50536ec13ca4f4affb69cc9966d3c3f969e6c5e701faddf9f9785381')
 
 build() {
     source /opt/devkitpro/3dsvars.sh
