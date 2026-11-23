@@ -1,5 +1,5 @@
 pkgname=3ds-SDL2_mixer
-pkgver=2.8.1
+pkgver=2.8.2
 pkgrel=1
 pkgdesc="Audio mixer that supports various file formats for SDL2 (Nintendo 3DS port)"
 arch=('any')
@@ -21,7 +21,7 @@ makedepends=(
 )
 options=(!strip libtool staticlibs)
 source=("https://github.com/libsdl-org/SDL_mixer/releases/download/release-$pkgver/SDL2_mixer-$pkgver.tar.gz")
-sha256sums=('cb760211b056bfe44f4a1e180cc7cb201137e4d1572f2002cc1be728efd22660')
+sha256sums=('938dff531d00ace2296557a6599abe6f34599e2f34f0a4a08a397e2ccac8b8f7')
 
 build() {
     source /opt/devkitpro/3dsvars.sh
