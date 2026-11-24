@@ -1,0 +1,34 @@
+pkgname=3ds-SDL2_gfx
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="SDL2 graphics drawing primitives and other support functions (Nintendo 3DS port)"
+arch=('any')
+url="https://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/"
+license=('zlib')
+groups=('3ds-portlibs' '3ds-sdl2-libs')
+depends=(
+    '3ds-SDL2'
+)
+makedepends=(
+    '3ds-pkg-config'
+    'cmake'
+    'dkp-toolchain-vars'
+)
+options=(!strip libtool staticlibs)
+source=("SDL2_gfx-$pkgver.tar.gz::https://github.com/ferzkopp/SDL2_gfx/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('1f67be2795d7f2d46a29aa7818210bc7fff58fbfd8c7a12e255a42071fd9ad15')
+
+build() {
+    source /opt/devkitpro/3dsvars.sh
+
+    arm-none-eabi-cmake \
+        -S SDL2_gfx-$pkgver \
+        -B build \
+        -DCMAKE_BUILD_TYPE=Release \
+        -Wno-author
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}
