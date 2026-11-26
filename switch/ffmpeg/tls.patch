@@ -75,31 +75,10 @@ index 4d6eb8a..3a54dec 100644
                     char *serv, int servlen, int flags)
 diff --git a/libavformat/tls_libnx.c b/libavformat/tls_libnx.c
 new file mode 100644
-index 0000000..e09b8ed
+index 0000000..0e8e9d0
 --- /dev/null
 +++ b/libavformat/tls_libnx.c
-@@ -0,0 +1,194 @@
-+/*
-+ * TLS/SSL Protocol
-+ * Copyright (c) 2018 Thomas Volkert
-+ *
-+ * This file is part of FFmpeg.
-+ *
-+ * FFmpeg is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2.1 of the License, or (at your option) any later version.
-+ *
-+ * FFmpeg is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with FFmpeg; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-+ */
-+
+@@ -0,0 +1,193 @@
 +#include <switch.h>
 +
 +#include "avformat.h"
@@ -120,6 +99,8 @@ index 0000000..e09b8ed
 +{
 +    TLSContext *tls_ctx = h->priv_data;
 +
++    /* libnx serviceClose() skips the IPC calls on a zeroed Service, so the
++     * handles may be closed unconditionally even if creation failed. */
 +    sslConnectionClose(&tls_ctx->conn);
 +    sslContextClose(&tls_ctx->context);
 +
@@ -131,6 +112,7 @@ index 0000000..e09b8ed
 +{
 +    TLSContext *tls_ctx = h->priv_data;
 +    TLSShared *shr = &tls_ctx->tls_shared;
++    int64_t deadline = 0;
 +    int ret;
 +    Result rc;
 +
@@ -175,7 +157,8 @@ index 0000000..e09b8ed
 +
 +    if (R_SUCCEEDED(rc)) {
 +        u32 verifyopt = SslVerifyOption_DateCheck;
-+        if (shr->verify) verifyopt |= SslVerifyOption_PeerCa;
++        if (shr->verify)
++            verifyopt |= SslVerifyOption_PeerCa | SslVerifyOption_HostName;
 +        rc = sslConnectionSetVerifyOption(&tls_ctx->conn, verifyopt);
 +    }
 +
@@ -187,6 +170,22 @@ index 0000000..e09b8ed
 +
 +    while (rc = sslConnectionDoHandshake(&tls_ctx->conn, NULL, NULL, NULL, 0)) {
 +        if (R_VALUE(rc) == MAKERESULT(123, 204)) { // PR_WOULD_BLOCK_ERROR
++            int64_t now;
++
++            if (ff_check_interrupt(&h->interrupt_callback)) {
++                ret = AVERROR_EXIT;
++                goto fail;
++            }
++            now = av_gettime_relative();
++            if (h->rw_timeout) {
++                if (!deadline)
++                    deadline = now + h->rw_timeout;
++                else if (now > deadline) {
++                    av_log(h, AV_LOG_ERROR, "TLS handshake timed out.\n");
++                    ret = AVERROR(ETIMEDOUT);
++                    goto fail;
++                }
++            }
 +            av_usleep(10000);
 +            continue;
 +        }
